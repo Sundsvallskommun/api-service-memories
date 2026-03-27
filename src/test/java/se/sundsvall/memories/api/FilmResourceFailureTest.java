@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
 import se.sundsvall.dept44.problem.violations.Violation;
@@ -23,15 +24,15 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @ActiveProfiles("junit")
 class FilmResourceFailureTest {
 
-	@org.springframework.test.context.bean.override.mockito.MockitoBean
+	private static final String INVALID_MUNICIPALITY_ID = "bad-municipality-id";
+	private static final String SEARCH_PATH = "/{municipalityId}/films";
+	private static final String GET_PATH = "/{municipalityId}/films/{id}";
+
+	@MockitoBean
 	private FilmService serviceMock;
 
 	@Autowired
 	private WebTestClient webTestClient;
-
-	private static final String INVALID_MUNICIPALITY_ID = "bad-municipality-id";
-	private static final String SEARCH_PATH = "/{municipalityId}/films";
-	private static final String GET_PATH = "/{municipalityId}/films/{id}";
 
 	@Test
 	void searchFilmsWithInvalidMunicipalityId() {

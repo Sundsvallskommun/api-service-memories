@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.Film;
@@ -22,15 +23,15 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @ActiveProfiles("junit")
 class FilmResourceTest {
 
-	@org.springframework.test.context.bean.override.mockito.MockitoBean
+	private static final String MUNICIPALITY_ID = "2281";
+	private static final String SEARCH_PATH = "/{municipalityId}/films";
+	private static final String GET_PATH = "/{municipalityId}/films/{id}";
+
+	@MockitoBean
 	private FilmService serviceMock;
 
 	@Autowired
 	private WebTestClient webTestClient;
-
-	private static final String MUNICIPALITY_ID = "2281";
-	private static final String SEARCH_PATH = "/{municipalityId}/films";
-	private static final String GET_PATH = "/{municipalityId}/films/{id}";
 
 	@Test
 	void searchFilms() {
