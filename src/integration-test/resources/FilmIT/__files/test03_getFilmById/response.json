@@ -1,0 +1,18 @@
+{
+	"filmId": 1,
+	"filnamn": "midsommar1985.mp4",
+	"filmObjFil": "/media/film/midsommar1985.mp4",
+	"objtyp": "VIDEO",
+	"datum": "1985-06-21",
+	"doktitel": "Midsommarfirande i Sundsvall 1985",
+	"filmTId": 1,
+	"filmOplats": "Sundsvall",
+	"filmOId": 1,
+	"filmUEId": 0,
+	"filmUId": 1,
+	"kommentFilm": "Film om midsommarfirande på Stora torget",
+	"filmMimeType": "video/mp4",
+	"asv": "ASV001",
+	"nodeId": 100,
+	"options": 0
+}

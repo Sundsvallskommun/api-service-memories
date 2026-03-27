@@ -4,3 +4,15 @@
 logging:
   level:
     root: DEBUG
+spring:
+  datasource:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:mariadb:10.6:///
+  flyway:
+    enabled: true
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        show-sql: false
+        format_sql: true

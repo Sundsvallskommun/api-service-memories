@@ -1,6 +1,11 @@
 #========================================
 # Test profile settings (IT tests)
 #========================================
-logging:
-  level:
-    root: DEBUG
+spring:
+  main:
+    banner-mode: off
+  datasource:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:mariadb:10.6:///
+  flyway:
+    enabled: true
