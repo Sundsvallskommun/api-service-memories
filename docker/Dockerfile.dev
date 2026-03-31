@@ -1,0 +1,24 @@
+# Multi-stage build: Maven build + runtime
+FROM maven:3.9-eclipse-temurin-25 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY .git ./.git
+RUN mvn dependency:go-offline -B
+COPY src ./src
+RUN mvn package -DskipTests -B
+
+# Runtime
+FROM eclipse-temurin:25-jre
+WORKDIR /app
+
+RUN useradd -u 10001 -r -s /usr/sbin/nologin appuser
+
+COPY --from=build /app/target/*.jar /app/app.jar
+
+RUN chown -R appuser:appuser /app
+USER appuser
+
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=25 -XX:+ExitOnOutOfMemoryError --enable-preview"
+
+EXPOSE 8080
+ENTRYPOINT ["java","--enable-preview","-jar","/app/app.jar"]
