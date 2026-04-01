@@ -1,4 +1,4 @@
-CREATE TABLE film (
+CREATE TABLE FILM (
     FILM_ID bigint NOT NULL PRIMARY KEY,
     FILNAMN varchar(256),
     FILM_OBJ_FIL varchar(256),
@@ -9,7 +9,7 @@ CREATE TABLE film (
     FILM_OPLATS varchar(64),
     FILM_O_ID bigint DEFAULT 1,
     FILM_U_E_ID bigint DEFAULT 0,
-    FILM_U_ID bigint DEFAULT 1,
+    FILM_U_J_ID bigint DEFAULT 1,
     KOMMENT_FILM varchar(4000),
     FILM_MIME_TYPE varchar(50),
     ASV varchar(20),
