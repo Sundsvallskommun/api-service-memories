@@ -14,6 +14,6 @@ CREATE TABLE FILM (
     FILM_MIME_TYPE varchar(50),
     ASV varchar(20),
     NODEID bigint,
-    OPTIONS_ bigint DEFAULT 0,
+    `OPTIONS` bigint DEFAULT 0,
     DELETEDDATE date
 ) ENGINE=InnoDB;

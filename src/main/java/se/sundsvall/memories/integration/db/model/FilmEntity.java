@@ -57,7 +57,7 @@ public class FilmEntity {
 	@Column(name = "NODEID")
 	private Long nodeId;
 
-	@Column(name = "OPTIONS_")
+	@Column(name = "OPTIONS")
 	private Long options;
 
 	@Column(name = "DELETEDDATE")
