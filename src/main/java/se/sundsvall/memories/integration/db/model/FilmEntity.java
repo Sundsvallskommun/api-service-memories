@@ -42,7 +42,7 @@ public class FilmEntity {
 	@Column(name = "FILM_U_E_ID")
 	private Long filmUEId;
 
-	@Column(name = "FILM_U_ID")
+	@Column(name = "FILM_U_J_ID")
 	private Long filmUId;
 
 	@Column(name = "KOMMENT_FILM", length = 4000)
