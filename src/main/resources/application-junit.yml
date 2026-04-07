@@ -16,3 +16,11 @@ spring:
       hibernate:
         show-sql: false
         format_sql: true
+integration:
+  samba:
+    host: localhost
+    port: 445
+    domain: WORKGROUP
+    username: user
+    password: password
+    share: /share/

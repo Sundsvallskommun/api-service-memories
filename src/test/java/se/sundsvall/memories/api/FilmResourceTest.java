@@ -1,5 +1,6 @@
 package se.sundsvall.memories.api;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,8 @@ import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.service.FilmService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -26,6 +29,7 @@ class FilmResourceTest {
 	private static final String MUNICIPALITY_ID = "2281";
 	private static final String SEARCH_PATH = "/{municipalityId}/films";
 	private static final String GET_PATH = "/{municipalityId}/films/{id}";
+	private static final String FILE_PATH = "/{municipalityId}/films/{id}/file";
 
 	@MockitoBean
 	private FilmService serviceMock;
@@ -91,5 +95,18 @@ class FilmResourceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getFilmId()).isEqualTo(filmId);
 		verify(serviceMock).getById(filmId);
+	}
+
+	@Test
+	void getFilmFile() {
+		final var filmId = 1L;
+
+		webTestClient.get()
+			.uri(builder -> builder.path(FILE_PATH)
+				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", filmId)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock).streamFile(eq(filmId), any(HttpServletResponse.class));
 	}
 }
