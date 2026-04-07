@@ -27,12 +27,12 @@ class SambaIntegrationTest {
 		"localhost", 445, "WORKGROUP", "user", "password", "/share/");
 
 	@Test
-	void streamFile() throws IOException {
+	void streamFile() {
 		final var fileContent = "test-file-content".getBytes();
 		final var outputStream = new ByteArrayOutputStream();
 
-		try (MockedConstruction<SmbFile> ignored = mockConstruction(SmbFile.class);
-			MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
+		try (final var _ = mockConstruction(SmbFile.class);
+			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
 				(mock, _) -> doAnswer(invocation -> {
 					new ByteArrayInputStream(fileContent).transferTo(invocation.getArgument(0));
 					return null;
@@ -50,8 +50,8 @@ class SambaIntegrationTest {
 	void streamFileNotFound() {
 		final var outputStream = new ByteArrayOutputStream();
 
-		try (MockedConstruction<SmbFile> ignored = mockConstruction(SmbFile.class);
-			MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
+		try (var _ = mockConstruction(SmbFile.class);
+			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
 				(mock, _) -> doThrow(new IOException("The system cannot find the file specified"))
 					.when(mock).transferTo(any()))) {
 
@@ -70,8 +70,8 @@ class SambaIntegrationTest {
 	void streamFileIOException() {
 		final var outputStream = new ByteArrayOutputStream();
 
-		try (MockedConstruction<SmbFile> ignored = mockConstruction(SmbFile.class);
-			MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
+		try (final var _ = mockConstruction(SmbFile.class);
+			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
 				(mock, _) -> doThrow(new IOException("Connection reset"))
 					.when(mock).transferTo(any()))) {
 
@@ -90,8 +90,8 @@ class SambaIntegrationTest {
 	void streamFileIOExceptionWithNullMessage() {
 		final var outputStream = new ByteArrayOutputStream();
 
-		try (MockedConstruction<SmbFile> ignored = mockConstruction(SmbFile.class);
-			MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
+		try (final var _ = mockConstruction(SmbFile.class);
+			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
 				(mock, _) -> doThrow(new IOException((String) null))
 					.when(mock).transferTo(any()))) {
 
