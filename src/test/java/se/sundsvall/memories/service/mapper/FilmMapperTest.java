@@ -88,4 +88,5 @@ class FilmMapperTest {
 	void toFilmListWithNull() {
 		assertThat(FilmMapper.toFilmList(null)).isEmpty();
 	}
+
 }

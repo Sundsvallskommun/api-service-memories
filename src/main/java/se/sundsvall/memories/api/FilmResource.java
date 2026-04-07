@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -61,5 +62,17 @@ class FilmResource {
 		@PathVariable final Long id) {
 
 		return ok(filmService.getById(id));
+	}
+
+	@GetMapping(path = "/{id}/file")
+	@Operation(summary = "Get film file", description = "Download the file associated with a film")
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
+	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	void getFilmFile(
+		@PathVariable @ValidMunicipalityId final String municipalityId,
+		@PathVariable final Long id,
+		final HttpServletResponse response) {
+
+		filmService.streamFile(id, response);
 	}
 }

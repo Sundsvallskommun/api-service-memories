@@ -27,6 +27,7 @@ class FilmResourceFailureTest {
 	private static final String INVALID_MUNICIPALITY_ID = "bad-municipality-id";
 	private static final String SEARCH_PATH = "/{municipalityId}/films";
 	private static final String GET_PATH = "/{municipalityId}/films/{id}";
+	private static final String FILE_PATH = "/{municipalityId}/films/{id}/file";
 
 	@MockitoBean
 	private FilmService serviceMock;
@@ -72,6 +73,27 @@ class FilmResourceFailureTest {
 		assertThat(response.getViolations())
 			.extracting(Violation::field, Violation::message)
 			.containsExactlyInAnyOrder(tuple("getFilm.municipalityId", "not a valid municipality ID"));
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	@Test
+	void getFilmFileWithInvalidMunicipalityId() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(FILE_PATH)
+				.build(Map.of("municipalityId", INVALID_MUNICIPALITY_ID, "id", 1)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getTitle()).isEqualTo("Constraint Violation");
+		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
+		assertThat(response.getViolations())
+			.extracting(Violation::field, Violation::message)
+			.containsExactlyInAnyOrder(tuple("getFilmFile.municipalityId", "not a valid municipality ID"));
 
 		verifyNoInteractions(serviceMock);
 	}
