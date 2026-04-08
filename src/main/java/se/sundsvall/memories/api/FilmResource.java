@@ -59,7 +59,7 @@ class FilmResource {
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	ResponseEntity<Film> getFilm(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@PathVariable final Long id) {
+		@PathVariable final Integer id) {
 
 		return ok(filmService.getById(id));
 	}
@@ -70,7 +70,7 @@ class FilmResource {
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void getFilmFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@PathVariable final Long id,
+		@PathVariable final Integer id,
 		final HttpServletResponse response) {
 
 		filmService.streamFile(id, response);

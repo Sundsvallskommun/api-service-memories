@@ -44,7 +44,7 @@ class FilmServiceTest {
 	@Test
 	void searchWithQuery() {
 		final var query = "sundsvall";
-		final var entity = FilmEntity.create().withFilmId(1L).withDoktitel("Sundsvall film");
+		final var entity = FilmEntity.create().withFilmId(1).withDoktitel("Sundsvall film");
 
 		when(repositoryMock.findAll(any(Specification.class))).thenReturn(List.of(entity));
 
@@ -58,7 +58,7 @@ class FilmServiceTest {
 
 	@Test
 	void searchWithNullQuery() {
-		final var entity = FilmEntity.create().withFilmId(1L);
+		final var entity = FilmEntity.create().withFilmId(1);
 
 		when(repositoryMock.findAll()).thenReturn(List.of(entity));
 
@@ -71,7 +71,7 @@ class FilmServiceTest {
 
 	@Test
 	void searchWithBlankQuery() {
-		final var entity = FilmEntity.create().withFilmId(1L);
+		final var entity = FilmEntity.create().withFilmId(1);
 
 		when(repositoryMock.findAll()).thenReturn(List.of(entity));
 
@@ -84,7 +84,7 @@ class FilmServiceTest {
 
 	@Test
 	void getById() {
-		final var id = 1L;
+		final var id = 1;
 		final var entity = FilmEntity.create().withFilmId(id).withDoktitel("Test");
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
@@ -99,7 +99,7 @@ class FilmServiceTest {
 
 	@Test
 	void getByIdNotFound() {
-		final var id = 999L;
+		final var id = 999;
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.empty());
 
@@ -112,7 +112,7 @@ class FilmServiceTest {
 
 	@Test
 	void streamFile() throws IOException {
-		final var id = 1L;
+		final var id = 1;
 		final var filePath = "/films/test.mp4";
 		final var entity = FilmEntity.create()
 			.withFilmId(id)
@@ -135,7 +135,7 @@ class FilmServiceTest {
 
 	@Test
 	void streamFileNotFound() {
-		final var id = 999L;
+		final var id = 999;
 		final var responseMock = mock(HttpServletResponse.class);
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.empty());

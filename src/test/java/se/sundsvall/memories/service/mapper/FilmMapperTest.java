@@ -15,6 +15,46 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 class FilmMapperTest {
 
+	private static Stream<Arguments> toFilmArguments() {
+		return Stream.of(
+			Arguments.of(null, null),
+			Arguments.of(
+				FilmEntity.create()
+					.withFilmId(1)
+					.withFilnamn("test.mp4")
+					.withFilmObjFil("/path/test.mp4")
+					.withObjtyp("VIDEO")
+					.withDatum("2020-01-01")
+					.withDoktitel("Test film")
+					.withFilmTId(2)
+					.withFilmOplats("Sundsvall")
+					.withFilmOId(3)
+					.withFilmUEId(4)
+					.withFilmUId(5)
+					.withKommentFilm("A comment")
+					.withFilmMimeType("video/mp4")
+					.withNodeId(6)
+					.withOptions(0)
+					.withDeletedDate(LocalDate.of(2026, 1, 15)),
+				Film.create()
+					.withFilmId(1)
+					.withFilnamn("test.mp4")
+					.withFilmObjFil("/path/test.mp4")
+					.withObjtyp("VIDEO")
+					.withDatum("2020-01-01")
+					.withDoktitel("Test film")
+					.withFilmTId(2)
+					.withFilmOplats("Sundsvall")
+					.withFilmOId(3)
+					.withFilmUEId(4)
+					.withFilmUId(5)
+					.withKommentFilm("A comment")
+					.withFilmMimeType("video/mp4")
+					.withNodeId(6)
+					.withOptions(0)
+					.withDeletedDate(LocalDate.of(2026, 1, 15))));
+	}
+
 	@ParameterizedTest
 	@MethodSource("toFilmArguments")
 	void toFilm(final FilmEntity input, final Film expected) {
@@ -29,59 +69,17 @@ class FilmMapperTest {
 		}
 	}
 
-	private static Stream<Arguments> toFilmArguments() {
-		return Stream.of(
-			Arguments.of(null, null),
-			Arguments.of(
-				FilmEntity.create()
-					.withFilmId(1L)
-					.withFilnamn("test.mp4")
-					.withFilmObjFil("/path/test.mp4")
-					.withObjtyp("VIDEO")
-					.withDatum("2020-01-01")
-					.withDoktitel("Test film")
-					.withFilmTId(2L)
-					.withFilmOplats("Sundsvall")
-					.withFilmOId(3L)
-					.withFilmUEId(4L)
-					.withFilmUId(5L)
-					.withKommentFilm("A comment")
-					.withFilmMimeType("video/mp4")
-					.withAsv("ASV001")
-					.withNodeId(6L)
-					.withOptions(0L)
-					.withDeletedDate(LocalDate.of(2026, 1, 15)),
-				Film.create()
-					.withFilmId(1L)
-					.withFilnamn("test.mp4")
-					.withFilmObjFil("/path/test.mp4")
-					.withObjtyp("VIDEO")
-					.withDatum("2020-01-01")
-					.withDoktitel("Test film")
-					.withFilmTId(2L)
-					.withFilmOplats("Sundsvall")
-					.withFilmOId(3L)
-					.withFilmUEId(4L)
-					.withFilmUId(5L)
-					.withKommentFilm("A comment")
-					.withFilmMimeType("video/mp4")
-					.withAsv("ASV001")
-					.withNodeId(6L)
-					.withOptions(0L)
-					.withDeletedDate(LocalDate.of(2026, 1, 15))));
-	}
-
 	@Test
 	void toFilmList() {
 		final var entities = List.of(
-			FilmEntity.create().withFilmId(1L).withDoktitel("Film A"),
-			FilmEntity.create().withFilmId(2L).withDoktitel("Film B"));
+			FilmEntity.create().withFilmId(1).withDoktitel("Film A"),
+			FilmEntity.create().withFilmId(2).withDoktitel("Film B"));
 
 		final var result = FilmMapper.toFilmList(entities);
 
 		assertThat(result)
 			.extracting(Film::getFilmId, Film::getDoktitel)
-			.containsExactly(tuple(1L, "Film A"), tuple(2L, "Film B"));
+			.containsExactly(tuple(1, "Film A"), tuple(2, "Film B"));
 	}
 
 	@Test

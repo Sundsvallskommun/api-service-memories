@@ -27,7 +27,6 @@ public final class FilmMapper {
 				.withFilmUId(e.getFilmUId())
 				.withKommentFilm(e.getKommentFilm())
 				.withFilmMimeType(e.getFilmMimeType())
-				.withAsv(e.getAsv())
 				.withNodeId(e.getNodeId())
 				.withOptions(e.getOptions())
 				.withDeletedDate(e.getDeletedDate()))

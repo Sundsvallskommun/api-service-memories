@@ -40,7 +40,7 @@ class FilmResourceTest {
 	@Test
 	void searchFilms() {
 		final var query = "sundsvall";
-		final var film = Film.create().withFilmId(1L).withDoktitel("Sundsvall film");
+		final var film = Film.create().withFilmId(1).withDoktitel("Sundsvall film");
 
 		when(serviceMock.search(query)).thenReturn(List.of(film));
 
@@ -78,7 +78,7 @@ class FilmResourceTest {
 
 	@Test
 	void getFilmById() {
-		final var filmId = 1L;
+		final var filmId = 1;
 		final var film = Film.create().withFilmId(filmId).withDoktitel("Test");
 
 		when(serviceMock.getById(filmId)).thenReturn(film);
@@ -99,7 +99,7 @@ class FilmResourceTest {
 
 	@Test
 	void getFilmFile() {
-		final var filmId = 1L;
+		final var filmId = 1;
 
 		webTestClient.get()
 			.uri(builder -> builder.path(FILE_PATH)

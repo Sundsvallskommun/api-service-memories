@@ -2,6 +2,7 @@ package se.sundsvall.memories.api.model;
 
 import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
+import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -16,9 +17,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 class FilmTest {
 
+	private static final Random random = new Random();
+
 	@BeforeAll
 	static void setup() {
-		BeanMatchers.registerValueGenerator(() -> LocalDate.now().plusDays((long) (Math.random() * 10000)), LocalDate.class);
+		BeanMatchers.registerValueGenerator(() -> LocalDate.now().plusDays(random.nextInt()), LocalDate.class);
 	}
 
 	@Test
@@ -33,22 +36,21 @@ class FilmTest {
 
 	@Test
 	void testBuilderMethods() {
-		final var filmId = 1L;
+		final var filmId = 1;
 		final var filnamn = "film001.mp4";
 		final var filmObjFil = "/path/to/file.mp4";
 		final var objtyp = "VIDEO";
 		final var datum = "1985-06-15";
 		final var doktitel = "Midsommarfirande i Sundsvall";
-		final var filmTId = 2L;
+		final var filmTId = 2;
 		final var filmOplats = "Sundsvall";
-		final var filmOId = 3L;
-		final var filmUEId = 4L;
-		final var filmUId = 5L;
+		final var filmOId = 3;
+		final var filmUEId = 4;
+		final var filmUId = 5;
 		final var kommentFilm = "En film om midsommarfirande";
 		final var filmMimeType = "video/mp4";
-		final var asv = "ASV001";
-		final var nodeId = 6L;
-		final var options = 0L;
+		final var nodeId = 6;
+		final var options = 0;
 		final var deletedDate = LocalDate.of(2026, 1, 15);
 
 		final var result = Film.create()
@@ -65,7 +67,6 @@ class FilmTest {
 			.withFilmUId(filmUId)
 			.withKommentFilm(kommentFilm)
 			.withFilmMimeType(filmMimeType)
-			.withAsv(asv)
 			.withNodeId(nodeId)
 			.withOptions(options)
 			.withDeletedDate(deletedDate);
@@ -84,7 +85,6 @@ class FilmTest {
 		assertThat(result.getFilmUId()).isEqualTo(filmUId);
 		assertThat(result.getKommentFilm()).isEqualTo(kommentFilm);
 		assertThat(result.getFilmMimeType()).isEqualTo(filmMimeType);
-		assertThat(result.getAsv()).isEqualTo(asv);
 		assertThat(result.getNodeId()).isEqualTo(nodeId);
 		assertThat(result.getOptions()).isEqualTo(options);
 		assertThat(result.getDeletedDate()).isEqualTo(deletedDate);
