@@ -13,7 +13,7 @@ public class FilmEntity {
 
 	@Id
 	@Column(name = "FILM_ID")
-	private Long filmId;
+	private Integer filmId;
 
 	@Column(name = "FILNAMN", length = 256)
 	private String filnamn;
@@ -31,19 +31,19 @@ public class FilmEntity {
 	private String doktitel;
 
 	@Column(name = "FILM_T_ID")
-	private Long filmTId;
+	private Integer filmTId;
 
 	@Column(name = "FILM_OPLATS", length = 64)
 	private String filmOplats;
 
 	@Column(name = "FILM_O_ID")
-	private Long filmOId;
+	private Integer filmOId;
 
 	@Column(name = "FILM_U_E_ID")
-	private Long filmUEId;
+	private Integer filmUEId;
 
 	@Column(name = "FILM_U_J_ID")
-	private Long filmUId;
+	private Integer filmUId;
 
 	@Column(name = "KOMMENT_FILM", length = 4000)
 	private String kommentFilm;
@@ -51,14 +51,11 @@ public class FilmEntity {
 	@Column(name = "FILM_MIME_TYPE", length = 50)
 	private String filmMimeType;
 
-	@Column(name = "ASV", length = 20)
-	private String asv;
-
 	@Column(name = "NODEID")
-	private Long nodeId;
+	private Integer nodeId;
 
 	@Column(name = "OPTIONS")
-	private Long options;
+	private Integer options;
 
 	@Column(name = "DELETEDDATE")
 	private LocalDate deletedDate;
@@ -67,15 +64,15 @@ public class FilmEntity {
 		return new FilmEntity();
 	}
 
-	public Long getFilmId() {
+	public Integer getFilmId() {
 		return filmId;
 	}
 
-	public void setFilmId(final Long filmId) {
+	public void setFilmId(final Integer filmId) {
 		this.filmId = filmId;
 	}
 
-	public FilmEntity withFilmId(final Long filmId) {
+	public FilmEntity withFilmId(final Integer filmId) {
 		this.filmId = filmId;
 		return this;
 	}
@@ -145,15 +142,15 @@ public class FilmEntity {
 		return this;
 	}
 
-	public Long getFilmTId() {
+	public Integer getFilmTId() {
 		return filmTId;
 	}
 
-	public void setFilmTId(final Long filmTId) {
+	public void setFilmTId(final Integer filmTId) {
 		this.filmTId = filmTId;
 	}
 
-	public FilmEntity withFilmTId(final Long filmTId) {
+	public FilmEntity withFilmTId(final Integer filmTId) {
 		this.filmTId = filmTId;
 		return this;
 	}
@@ -171,41 +168,41 @@ public class FilmEntity {
 		return this;
 	}
 
-	public Long getFilmOId() {
+	public Integer getFilmOId() {
 		return filmOId;
 	}
 
-	public void setFilmOId(final Long filmOId) {
+	public void setFilmOId(final Integer filmOId) {
 		this.filmOId = filmOId;
 	}
 
-	public FilmEntity withFilmOId(final Long filmOId) {
+	public FilmEntity withFilmOId(final Integer filmOId) {
 		this.filmOId = filmOId;
 		return this;
 	}
 
-	public Long getFilmUEId() {
+	public Integer getFilmUEId() {
 		return filmUEId;
 	}
 
-	public void setFilmUEId(final Long filmUEId) {
+	public void setFilmUEId(final Integer filmUEId) {
 		this.filmUEId = filmUEId;
 	}
 
-	public FilmEntity withFilmUEId(final Long filmUEId) {
+	public FilmEntity withFilmUEId(final Integer filmUEId) {
 		this.filmUEId = filmUEId;
 		return this;
 	}
 
-	public Long getFilmUId() {
+	public Integer getFilmUId() {
 		return filmUId;
 	}
 
-	public void setFilmUId(final Long filmUId) {
+	public void setFilmUId(final Integer filmUId) {
 		this.filmUId = filmUId;
 	}
 
-	public FilmEntity withFilmUId(final Long filmUId) {
+	public FilmEntity withFilmUId(final Integer filmUId) {
 		this.filmUId = filmUId;
 		return this;
 	}
@@ -236,41 +233,28 @@ public class FilmEntity {
 		return this;
 	}
 
-	public String getAsv() {
-		return asv;
-	}
-
-	public void setAsv(final String asv) {
-		this.asv = asv;
-	}
-
-	public FilmEntity withAsv(final String asv) {
-		this.asv = asv;
-		return this;
-	}
-
-	public Long getNodeId() {
+	public Integer getNodeId() {
 		return nodeId;
 	}
 
-	public void setNodeId(final Long nodeId) {
+	public void setNodeId(final Integer nodeId) {
 		this.nodeId = nodeId;
 	}
 
-	public FilmEntity withNodeId(final Long nodeId) {
+	public FilmEntity withNodeId(final Integer nodeId) {
 		this.nodeId = nodeId;
 		return this;
 	}
 
-	public Long getOptions() {
+	public Integer getOptions() {
 		return options;
 	}
 
-	public void setOptions(final Long options) {
+	public void setOptions(final Integer options) {
 		this.options = options;
 	}
 
-	public FilmEntity withOptions(final Long options) {
+	public FilmEntity withOptions(final Integer options) {
 		this.options = options;
 		return this;
 	}
@@ -293,16 +277,15 @@ public class FilmEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final FilmEntity that = (FilmEntity) o;
-		return Objects.equals(filmId, that.filmId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(filmObjFil, that.filmObjFil) && Objects.equals(objtyp, that.objtyp)
-			&& Objects.equals(datum, that.datum) && Objects.equals(doktitel, that.doktitel) && Objects.equals(filmTId, that.filmTId) && Objects.equals(filmOplats, that.filmOplats)
-			&& Objects.equals(filmOId, that.filmOId) && Objects.equals(filmUEId, that.filmUEId) && Objects.equals(filmUId, that.filmUId) && Objects.equals(kommentFilm, that.kommentFilm)
-			&& Objects.equals(filmMimeType, that.filmMimeType) && Objects.equals(asv, that.asv) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options)
-			&& Objects.equals(deletedDate, that.deletedDate);
+		return Objects.equals(filmId, that.filmId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(filmObjFil, that.filmObjFil) && Objects.equals(objtyp, that.objtyp) && Objects.equals(datum,
+			that.datum) && Objects.equals(doktitel, that.doktitel) && Objects.equals(filmTId, that.filmTId) && Objects.equals(filmOplats, that.filmOplats) && Objects.equals(filmOId, that.filmOId)
+			&& Objects.equals(filmUEId, that.filmUEId) && Objects.equals(filmUId, that.filmUId) && Objects.equals(kommentFilm, that.kommentFilm) && Objects.equals(filmMimeType, that.filmMimeType)
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(filmId, filnamn, filmObjFil, objtyp, datum, doktitel, filmTId, filmOplats, filmOId, filmUEId, filmUId, kommentFilm, filmMimeType, asv, nodeId, options, deletedDate);
+		return Objects.hash(filmId, filnamn, filmObjFil, objtyp, datum, doktitel, filmTId, filmOplats, filmOId, filmUEId, filmUId, kommentFilm, filmMimeType, nodeId, options, deletedDate);
 	}
 
 	@Override
@@ -321,7 +304,6 @@ public class FilmEntity {
 			", filmUId=" + filmUId +
 			", kommentFilm='" + kommentFilm + '\'' +
 			", filmMimeType='" + filmMimeType + '\'' +
-			", asv='" + asv + '\'' +
 			", nodeId=" + nodeId +
 			", options=" + options +
 			", deletedDate=" + deletedDate +

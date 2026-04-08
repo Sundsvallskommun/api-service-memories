@@ -39,13 +39,13 @@ public class FilmService {
 		return toFilmList(filmRepository.findAll(withQuery(query)));
 	}
 
-	public Film getById(final Long id) {
+	public Film getById(final Integer id) {
 		return filmRepository.findById(id)
 			.map(FilmMapper::toFilm)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
 	}
 
-	public void streamFile(final Long id, final HttpServletResponse response) {
+	public void streamFile(final Integer id, final HttpServletResponse response) {
 		final var entity = filmRepository.findById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
 

@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "1.1"
+  version: "2.0"
 servers:
-  - url: http://localhost:63997
+  - url: http://localhost:53767
     description: Generated server url
 tags:
   - name: Films
@@ -73,7 +73,7 @@ paths:
           required: true
           schema:
             type: integer
-            format: int64
+            format: int32
       responses:
         "200":
           description: Successful operation
@@ -119,7 +119,7 @@ paths:
           required: true
           schema:
             type: integer
-            format: int64
+            format: int32
       responses:
         "200":
           description: Successful operation
@@ -231,7 +231,7 @@ components:
       properties:
         filmId:
           type: integer
-          format: int64
+          format: int32
           description: Film ID
           examples:
             - "123"
@@ -262,7 +262,7 @@ components:
             - Midsommarfirande i Sundsvall
         filmTId:
           type: integer
-          format: int64
+          format: int32
           description: Film type ID
           examples:
             - "1"
@@ -273,19 +273,19 @@ components:
             - Sundsvall
         filmOId:
           type: integer
-          format: int64
+          format: int32
           description: Film organization ID
           examples:
             - "1"
         filmUEId:
           type: integer
-          format: int64
+          format: int32
           description: Film sub-entity ID
           examples:
             - "0"
         filmUId:
           type: integer
-          format: int64
+          format: int32
           description: Film unit ID
           examples:
             - "1"
@@ -299,20 +299,15 @@ components:
           description: MIME type
           examples:
             - video/mp4
-        asv:
-          type: string
-          description: Archive creator
-          examples:
-            - ASV001
         nodeId:
           type: integer
-          format: int64
+          format: int32
           description: Node ID
           examples:
             - "456"
         options:
           type: integer
-          format: int64
+          format: int32
           description: Options
           examples:
             - "0"

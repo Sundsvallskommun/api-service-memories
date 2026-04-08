@@ -13,7 +13,6 @@
 		"filmUId": 1,
 		"kommentFilm": "Film om midsommarfirande på Stora torget",
 		"filmMimeType": "video/mp4",
-		"asv": "ASV001",
 		"nodeId": 100,
 		"options": 0
 	},
@@ -31,7 +30,6 @@
 		"filmUId": 1,
 		"kommentFilm": "Dokumentation av stadsfesten",
 		"filmMimeType": "video/mp4",
-		"asv": "ASV002",
 		"nodeId": 101,
 		"options": 0
 	},
@@ -49,7 +47,6 @@
 		"filmUId": 1,
 		"kommentFilm": "Marknadsdag i Timrå centrum",
 		"filmMimeType": "video/mp4",
-		"asv": "ASV003",
 		"nodeId": 102,
 		"options": 0
 	}
