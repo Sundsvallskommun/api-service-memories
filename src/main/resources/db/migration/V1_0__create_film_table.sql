@@ -19,12 +19,6 @@ CREATE TABLE FILM
     DELETEDDATE    date
 ) ENGINE = InnoDB;
 
-CREATE TABLE PUBL_TYP
-(
-    ID        int NOT NULL PRIMARY KEY,
-    PUBLIKTYP varchar(256)
-) ENGINE = InnoDB;
-
 CREATE TABLE PUBL
 (
     P_ID          bigint NOT NULL PRIMARY KEY,

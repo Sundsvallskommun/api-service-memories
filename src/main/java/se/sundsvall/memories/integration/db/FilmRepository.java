@@ -16,6 +16,15 @@ public interface FilmRepository extends JpaRepository<FilmEntity, Integer> {
 		""", nativeQuery = true)
 	List<FilmEntity> findAllPublished();
 
+	/**
+	 * Searches for published film entries by matching the specified query against the `DOKTITEL` and `KOMMENT_FILM` fields
+	 * in the database using full-text search with Boolean mode. Only entries with `OPTIONS` set to 4 are considered. Option
+	 * 4 means the
+	 * record is published.
+	 *
+	 * @param  query the search query to be matched against the `DOKTITEL` and `KOMMENT_FILM` fields.
+	 * @return       a list of {@code FilmEntity} objects that match the search query and meet the filtering criteria.
+	 */
 	@Query(value = """
 		SELECT * FROM FILM
 		WHERE MATCH (DOKTITEL, KOMMENT_FILM) AGAINST (:query IN BOOLEAN MODE)

@@ -28,7 +28,6 @@ class PublicationTest {
 		final var publId = 207;
 		final var filnamn = "alfwar-1841.xml";
 		final var publiktyp = "";
-		final var publiktypName = "Tidningar";
 		final var datum = "1841-02-18";
 		final var tidtitel = "Alfwar och Skämt";
 		final var tidnr = "8";
@@ -48,7 +47,6 @@ class PublicationTest {
 			.withPublId(publId)
 			.withFilnamn(filnamn)
 			.withPubliktyp(publiktyp)
-			.withPubliktypName(publiktypName)
 			.withDatum(datum)
 			.withTidtitel(tidtitel)
 			.withTidnr(tidnr)
@@ -68,7 +66,6 @@ class PublicationTest {
 		assertThat(result.getPublId()).isEqualTo(publId);
 		assertThat(result.getFilnamn()).isEqualTo(filnamn);
 		assertThat(result.getPubliktyp()).isEqualTo(publiktyp);
-		assertThat(result.getPubliktypName()).isEqualTo(publiktypName);
 		assertThat(result.getDatum()).isEqualTo(datum);
 		assertThat(result.getTidtitel()).isEqualTo(tidtitel);
 		assertThat(result.getTidnr()).isEqualTo(tidnr);

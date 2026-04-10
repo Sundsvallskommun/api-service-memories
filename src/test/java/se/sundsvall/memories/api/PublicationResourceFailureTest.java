@@ -1,11 +1,7 @@
 package se.sundsvall.memories.api;
 
 import java.util.Map;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
@@ -31,7 +27,7 @@ class PublicationResourceFailureTest {
 	private static final String INVALID_MUNICIPALITY_ID = "bad-municipality-id";
 	private static final String SEARCH_PATH = "/{municipalityId}/publications";
 	private static final String GET_PATH = "/{municipalityId}/publications/{id}";
-	private static final String FILE_PATH = "/{municipalityId}/publications/{id}/file/{variant}";
+	private static final String FILE_PATH = "/{municipalityId}/publications/{id}/file";
 
 	@MockitoBean
 	private PublicationService serviceMock;
@@ -81,21 +77,12 @@ class PublicationResourceFailureTest {
 		verifyNoInteractions(serviceMock);
 	}
 
-	static Stream<Arguments> fileVariantPaths() {
-		return Stream.of(
-			Arguments.of("liten", "getPublicationFileLiten.municipalityId"),
-			Arguments.of("stor", "getPublicationFileStor.municipalityId"),
-			Arguments.of("original", "getPublicationFileOriginal.municipalityId"),
-			Arguments.of("txt", "getPublicationFileTxt.municipalityId"),
-			Arguments.of("xtra", "getPublicationFileXtra.municipalityId"));
-	}
-
-	@ParameterizedTest
-	@MethodSource("fileVariantPaths")
-	void getPublicationFileWithInvalidMunicipalityId(final String variant, final String expectedField) {
+	@Test
+	void getPublicationFileWithInvalidMunicipalityId() {
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(FILE_PATH)
-				.build(Map.of("municipalityId", INVALID_MUNICIPALITY_ID, "id", 1, "variant", variant)))
+				.queryParam("variant", "liten")
+				.build(Map.of("municipalityId", INVALID_MUNICIPALITY_ID, "id", 1)))
 			.exchange()
 			.expectStatus().isBadRequest()
 			.expectBody(ConstraintViolationProblem.class)
@@ -107,7 +94,7 @@ class PublicationResourceFailureTest {
 		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
 		assertThat(response.getViolations())
 			.extracting(Violation::field, Violation::message)
-			.containsExactlyInAnyOrder(tuple(expectedField, "not a valid municipality ID"));
+			.containsExactlyInAnyOrder(tuple("getPublicationFile.municipalityId", "not a valid municipality ID"));
 
 		verifyNoInteractions(serviceMock);
 	}

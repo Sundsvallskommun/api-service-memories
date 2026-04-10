@@ -15,9 +15,6 @@ public class Publication {
 	@Schema(description = "Publication type (free text)", examples = "")
 	private String publiktyp;
 
-	@Schema(description = "Resolved publication type name (from PUBL_TYP)", examples = "Tidningar")
-	private String publiktypName;
-
 	@Schema(description = "Publication date", examples = "1841-02-18")
 	private String datum;
 
@@ -100,19 +97,6 @@ public class Publication {
 
 	public Publication withPubliktyp(final String publiktyp) {
 		this.publiktyp = publiktyp;
-		return this;
-	}
-
-	public String getPubliktypName() {
-		return publiktypName;
-	}
-
-	public void setPubliktypName(final String publiktypName) {
-		this.publiktypName = publiktypName;
-	}
-
-	public Publication withPubliktypName(final String publiktypName) {
-		this.publiktypName = publiktypName;
 		return this;
 	}
 
@@ -303,7 +287,7 @@ public class Publication {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final Publication that = (Publication) o;
-		return Objects.equals(publId, that.publId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(publiktyp, that.publiktyp) && Objects.equals(publiktypName, that.publiktypName)
+		return Objects.equals(publId, that.publId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(publiktyp, that.publiktyp)
 			&& Objects.equals(datum, that.datum) && Objects.equals(tidtitel, that.tidtitel) && Objects.equals(tidnr, that.tidnr) && Objects.equals(tidsida, that.tidsida)
 			&& Objects.equals(forlagOplats, that.forlagOplats) && Objects.equals(doktitel, that.doktitel) && Objects.equals(pubOplats, that.pubOplats) && Objects.equals(kommentPubl, that.kommentPubl)
 			&& Objects.equals(filLiten, that.filLiten) && Objects.equals(filStor, that.filStor) && Objects.equals(filOriginal, that.filOriginal) && Objects.equals(filTxt, that.filTxt)
@@ -312,7 +296,7 @@ public class Publication {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(publId, filnamn, publiktyp, publiktypName, datum, tidtitel, tidnr, tidsida, forlagOplats, doktitel, pubOplats, kommentPubl, filLiten, filStor, filOriginal, filTxt,
+		return Objects.hash(publId, filnamn, publiktyp, datum, tidtitel, tidnr, tidsida, forlagOplats, doktitel, pubOplats, kommentPubl, filLiten, filStor, filOriginal, filTxt,
 			filXtra, xmltext);
 	}
 
@@ -322,7 +306,6 @@ public class Publication {
 			"publId=" + publId +
 			", filnamn='" + filnamn + '\'' +
 			", publiktyp='" + publiktyp + '\'' +
-			", publiktypName='" + publiktypName + '\'' +
 			", datum='" + datum + '\'' +
 			", tidtitel='" + tidtitel + '\'' +
 			", tidnr='" + tidnr + '\'' +

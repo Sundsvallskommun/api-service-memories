@@ -34,7 +34,7 @@ class PublicationResourceTest {
 	private static final String MUNICIPALITY_ID = "2281";
 	private static final String SEARCH_PATH = "/{municipalityId}/publications";
 	private static final String GET_PATH = "/{municipalityId}/publications/{id}";
-	private static final String FILE_PATH = "/{municipalityId}/publications/{id}/file/{variant}";
+	private static final String FILE_PATH = "/{municipalityId}/publications/{id}/file";
 
 	@MockitoBean
 	private PublicationService serviceMock;
@@ -118,7 +118,8 @@ class PublicationResourceTest {
 
 		webTestClient.get()
 			.uri(builder -> builder.path(FILE_PATH)
-				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", publicationId, "variant", pathSegment)))
+				.queryParam("variant", pathSegment)
+				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", publicationId)))
 			.exchange()
 			.expectStatus().isOk();
 

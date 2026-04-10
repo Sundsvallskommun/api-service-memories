@@ -16,9 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.integration.db.PublRepository;
-import se.sundsvall.memories.integration.db.PublTypRepository;
 import se.sundsvall.memories.integration.db.model.PublEntity;
-import se.sundsvall.memories.integration.db.model.PublTypEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.PublicationService.FileVariant;
@@ -45,22 +43,16 @@ class PublicationServiceTest {
 	private PublRepository publRepositoryMock;
 
 	@Mock
-	private PublTypRepository publTypRepositoryMock;
-
-	@Mock
 	private SambaIntegration sambaIntegrationMock;
 
 	private PublicationService service;
-
-	private static PublTypEntity publTyp(final int id, final String name) {
-		return PublTypEntity.create().withId(id).withPubliktyp(name);
-	}
 
 	private static PublEntity entity() {
 		return PublEntity.create()
 			.withPublId(207)
 			.withDoktitel("Alfwar och Skämt")
 			.withPtId(4)
+			.withPubliktyp("Broschyrer")
 			.withFilLiten("PUBL.id_207_fil_liten.jpeg")
 			.withFilStor("PUBL.id_207_fil_stor.jpeg")
 			.withFilOriginal("PUBL.id_207_fil_original.jpeg")
@@ -81,18 +73,17 @@ class PublicationServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new PublicationService(publRepositoryMock, publTypRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES);
+		service = new PublicationService(publRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES);
 	}
 
 	@Test
 	void searchWithQueryUsesFulltextRepository() {
-		when(publTypRepositoryMock.findAll()).thenReturn(List.of(publTyp(4, "Broschyrer")));
 		when(publRepositoryMock.searchPublished("Drunkningsolycka*")).thenReturn(List.of(entity()));
 
 		final var result = service.search("Drunkningsolycka");
 
 		assertThat(result).hasSize(1);
-		assertThat(result.getFirst().getPubliktypName()).isEqualTo("Broschyrer");
+		assertThat(result.getFirst().getPubliktyp()).isEqualTo("Broschyrer");
 		assertThat(result.getFirst().getXmltext()).isNull();
 		verify(publRepositoryMock).searchPublished("Drunkningsolycka*");
 		verifyNoMoreInteractions(publRepositoryMock);
@@ -100,7 +91,6 @@ class PublicationServiceTest {
 
 	@Test
 	void searchWithNullQueryUsesFindAllPublished() {
-		when(publTypRepositoryMock.findAll()).thenReturn(List.of(publTyp(4, "Broschyrer")));
 		when(publRepositoryMock.findAllPublished()).thenReturn(List.of(entity()));
 
 		final var result = service.search(null);
@@ -112,7 +102,6 @@ class PublicationServiceTest {
 
 	@Test
 	void searchWithBlankQueryUsesFindAllPublished() {
-		when(publTypRepositoryMock.findAll()).thenReturn(List.of());
 		when(publRepositoryMock.findAllPublished()).thenReturn(List.of());
 
 		final var result = service.search("   ");
@@ -124,7 +113,6 @@ class PublicationServiceTest {
 
 	@Test
 	void searchWithOperatorOnlyQueryFallsBackToFindAll() {
-		when(publTypRepositoryMock.findAll()).thenReturn(List.of());
 		when(publRepositoryMock.findAllPublished()).thenReturn(List.of());
 
 		final var result = service.search("+-*");
@@ -136,7 +124,6 @@ class PublicationServiceTest {
 
 	@Test
 	void getByIdIncludesXmltext() {
-		when(publTypRepositoryMock.findAll()).thenReturn(List.of(publTyp(4, "Broschyrer")));
 		when(publRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
 
 		final var result = service.getById(207);
@@ -144,7 +131,7 @@ class PublicationServiceTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getPublId()).isEqualTo(207);
 		assertThat(result.getXmltext()).isEqualTo("<text>content</text>");
-		assertThat(result.getPubliktypName()).isEqualTo("Broschyrer");
+		assertThat(result.getPubliktyp()).isEqualTo("Broschyrer");
 	}
 
 	@Test

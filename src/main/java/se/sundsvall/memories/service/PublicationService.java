@@ -3,17 +3,13 @@ package se.sundsvall.memories.service;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.Publication;
 import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PublRepository;
-import se.sundsvall.memories.integration.db.PublTypRepository;
 import se.sundsvall.memories.integration.db.model.PublEntity;
-import se.sundsvall.memories.integration.db.model.PublTypEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PublicationMapper;
@@ -29,14 +25,12 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 public class PublicationService {
 
 	private final PublRepository publRepository;
-	private final PublTypRepository publTypRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
 
-	public PublicationService(final PublRepository publRepository, final PublTypRepository publTypRepository,
+	public PublicationService(final PublRepository publRepository,
 		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties) {
 		this.publRepository = publRepository;
-		this.publTypRepository = publTypRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
 	}
@@ -47,13 +41,13 @@ public class PublicationService {
 			? publRepository.findAllPublished()
 			: publRepository.searchPublished(sanitized);
 
-		return PublicationMapper.toPublicationList(entities, loadPubliktypLookup());
+		return PublicationMapper.toPublicationList(entities);
 	}
 
 	public Publication getById(final Integer id) {
-		final var lookup = loadPubliktypLookup();
+
 		return publRepository.findById(id)
-			.map(entity -> PublicationMapper.toPublication(entity, lookup))
+			.map(PublicationMapper::toPublication)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));
 	}
 
@@ -80,12 +74,6 @@ public class PublicationService {
 			throw Problem.valueOf(INTERNAL_SERVER_ERROR,
 				"IOException occurred when streaming file for publication with id '%s': %s".formatted(id, e.getMessage()));
 		}
-	}
-
-	private Map<Integer, String> loadPubliktypLookup() {
-		return publTypRepository.findAll().stream()
-			.filter(entity -> entity.getId() != null)
-			.collect(Collectors.toMap(PublTypEntity::getId, PublTypEntity::getPubliktyp));
 	}
 
 	public enum FileVariant {

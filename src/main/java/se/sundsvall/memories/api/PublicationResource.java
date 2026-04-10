@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import se.sundsvall.dept44.common.validators.annotation.OneOf;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
@@ -65,63 +66,18 @@ class PublicationResource {
 		return ok(publicationService.getById(id));
 	}
 
-	@GetMapping(path = "/{id}/file/liten")
-	@Operation(summary = "Get publication thumbnail file", description = "Download the thumbnail (FIL_LITEN) associated with a publication")
+	@GetMapping(path = "/{id}/file")
+	@Operation(summary = "Get publication file", description = "Download a file associated with a publication by specifying the variant (liten, stor, original, txt, xtra)")
 	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
-	void getPublicationFileLiten(
+	void getPublicationFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
 		@PathVariable final Integer id,
+		@RequestParam @OneOf({
+			"liten", "stor", "original", "txt", "xtra"
+		}) final String variant,
 		final HttpServletResponse response) {
 
-		publicationService.streamFile(id, FileVariant.LITEN, response);
-	}
-
-	@GetMapping(path = "/{id}/file/stor")
-	@Operation(summary = "Get publication large image file", description = "Download the large image (FIL_STOR) associated with a publication")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
-	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
-	void getPublicationFileStor(
-		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@PathVariable final Integer id,
-		final HttpServletResponse response) {
-
-		publicationService.streamFile(id, FileVariant.STOR, response);
-	}
-
-	@GetMapping(path = "/{id}/file/original")
-	@Operation(summary = "Get publication original file", description = "Download the original file (FIL_ORIGINAL) associated with a publication")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
-	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
-	void getPublicationFileOriginal(
-		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@PathVariable final Integer id,
-		final HttpServletResponse response) {
-
-		publicationService.streamFile(id, FileVariant.ORIGINAL, response);
-	}
-
-	@GetMapping(path = "/{id}/file/txt")
-	@Operation(summary = "Get publication text/XML file", description = "Download the OCR/XML file (FIL_TXT) associated with a publication")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
-	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
-	void getPublicationFileTxt(
-		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@PathVariable final Integer id,
-		final HttpServletResponse response) {
-
-		publicationService.streamFile(id, FileVariant.TXT, response);
-	}
-
-	@GetMapping(path = "/{id}/file/xtra")
-	@Operation(summary = "Get publication extra file", description = "Download the extra file (FIL_XTRA) associated with a publication")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
-	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
-	void getPublicationFileXtra(
-		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@PathVariable final Integer id,
-		final HttpServletResponse response) {
-
-		publicationService.streamFile(id, FileVariant.XTRA, response);
+		publicationService.streamFile(id, FileVariant.valueOf(variant.toUpperCase()), response);
 	}
 }
