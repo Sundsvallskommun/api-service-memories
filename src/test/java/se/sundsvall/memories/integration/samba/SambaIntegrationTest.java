@@ -24,7 +24,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class SambaIntegrationTest {
 
 	private static final SambaIntegrationProperties PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/");
 
 	@Test
 	void streamFile() {

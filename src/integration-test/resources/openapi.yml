@@ -1,37 +1,40 @@
 openapi: 3.1.0
 info:
   title: api-service-memories
-  contact: { }
+  contact: {}
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "2.0"
+  version: "2.1"
 servers:
-  - url: http://localhost:53767
-    description: Generated server url
+- url: http://localhost:55279
+  description: Generated server url
 tags:
-  - name: Films
-    description: Film search operations
+- name: Films
+  description: Film search operations
+- name: Publications
+  description: Publication search and file operations
 paths:
-  /{municipalityId}/films:
+  /{municipalityId}/publications:
     get:
       tags:
-        - Films
-      summary: Search films
-      description: "Search films by free text query across title, filename, location,\
-        \ comment and date"
-      operationId: searchFilms
+      - Publications
+      summary: Search publications
+      description: "Fulltext search across title, comment and OCR text; only published\
+        \ (OPTIONS=4) publications are returned. XMLTEXT is excluded from the list\
+        \ response."
+      operationId: searchPublications
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: query
-          in: query
-          required: false
-          schema:
-            type: string
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: query
+        in: query
+        required: false
+        schema:
+          type: string
       responses:
         "400":
           description: Bad request
@@ -39,8 +42,317 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Publication"
+  /{municipalityId}/publications/{id}:
+    get:
+      tags:
+      - Publications
+      summary: Get publication by ID
+      description: "Get a specific publication by its ID, including the full XMLTEXT\
+        \ OCR content"
+      operationId: getPublication
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Publication"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/publications/{id}/file/xtra:
+    get:
+      tags:
+      - Publications
+      summary: Get publication extra file
+      description: Download the extra file (FIL_XTRA) associated with a publication
+      operationId: getPublicationFileXtra
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/publications/{id}/file/txt:
+    get:
+      tags:
+      - Publications
+      summary: Get publication text/XML file
+      description: Download the OCR/XML file (FIL_TXT) associated with a publication
+      operationId: getPublicationFileTxt
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/publications/{id}/file/stor:
+    get:
+      tags:
+      - Publications
+      summary: Get publication large image file
+      description: Download the large image (FIL_STOR) associated with a publication
+      operationId: getPublicationFileStor
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/publications/{id}/file/original:
+    get:
+      tags:
+      - Publications
+      summary: Get publication original file
+      description: Download the original file (FIL_ORIGINAL) associated with a publication
+      operationId: getPublicationFileOriginal
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/publications/{id}/file/liten:
+    get:
+      tags:
+      - Publications
+      summary: Get publication thumbnail file
+      description: Download the thumbnail (FIL_LITEN) associated with a publication
+      operationId: getPublicationFileLiten
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/films:
+    get:
+      tags:
+      - Films
+      summary: Search films
+      description: "Search films by free text query across title, filename, location,\
+        \ comment and date"
+      operationId: searchFilms
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: query
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -58,22 +370,22 @@ paths:
   /{municipalityId}/films/{id}:
     get:
       tags:
-        - Films
+      - Films
       summary: Get film by ID
       description: Get a specific film by its ID
       operationId: getFilm
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: Successful operation
@@ -93,8 +405,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -104,27 +416,27 @@ paths:
   /{municipalityId}/films/{id}/file:
     get:
       tags:
-        - Films
+      - Films
       summary: Get film file
       description: Download the file associated with a film
       operationId: getFilmFile
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: Successful operation
           content:
-            application/octet-stream: { }
+            application/octet-stream: {}
         "404":
           description: Not found
           content:
@@ -137,8 +449,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -148,7 +460,7 @@ paths:
   /api-docs:
     get:
       tags:
-        - API
+      - API
       summary: OpenAPI
       operationId: getApiDocs
       responses:
@@ -217,7 +529,7 @@ components:
         instance:
           type: string
           format: uri
-        causeAsProblem: { }
+        causeAsProblem: {}
     Violation:
       type: object
       properties:
@@ -225,6 +537,99 @@ components:
           type: string
         message:
           type: string
+    Publication:
+      type: object
+      description: Publication model
+      properties:
+        publId:
+          type: integer
+          format: int32
+          description: Publication ID
+          examples:
+          - "207"
+        filnamn:
+          type: string
+          description: Original filename from archive
+          examples:
+          - F21051/1841-02-18_Alfwar och Skämt nr 8.xml
+        publiktyp:
+          type: string
+          description: Publication type (free text)
+          examples:
+          - ""
+        publiktypName:
+          type: string
+          description: Resolved publication type name (from PUBL_TYP)
+          examples:
+          - Tidningar
+        datum:
+          type: string
+          description: Publication date
+          examples:
+          - 1841-02-18
+        tidtitel:
+          type: string
+          description: Periodical title (newspaper/magazine name)
+          examples:
+          - Alfwar och Skämt
+        tidnr:
+          type: string
+          description: Periodical issue number
+          examples:
+          - "8"
+        tidsida:
+          type: string
+          description: Periodical page number
+          examples:
+          - "3"
+        forlagOplats:
+          type: string
+          description: Publisher location
+          examples:
+          - Sundsvall
+        doktitel:
+          type: string
+          description: Document title
+          examples:
+          - Sida 3 Alfwar och Skämt nr 8 1841
+        pubOplats:
+          type: string
+          description: Publication location
+          examples:
+          - Sundsvall
+        kommentPubl:
+          type: string
+          description: Comment / description
+          examples:
+          - Tidningsnummer från 1841
+        filLiten:
+          type: string
+          description: Thumbnail file name
+          examples:
+          - PUBL.id_207_fil_liten.jpeg
+        filStor:
+          type: string
+          description: Large image file name
+          examples:
+          - PUBL.id_207_fil_stor.jpeg
+        filOriginal:
+          type: string
+          description: Original file name
+          examples:
+          - PUBL.id_207_fil_original.jpeg
+        filTxt:
+          type: string
+          description: OCR/text file name
+          examples:
+          - PUBL.id_207_fil_txt.xml
+        filXtra:
+          type: string
+          description: Extra file name
+          examples:
+          - PUBL.id_207_fil_xtra.jpeg
+        xmltext:
+          type: string
+          description: Full OCR/XML text (only returned on detail lookup)
     Film:
       type: object
       description: Film model
@@ -234,87 +639,87 @@ components:
           format: int32
           description: Film ID
           examples:
-            - "123"
+          - "123"
         filnamn:
           type: string
           description: Filename
           examples:
-            - film001.mp4
+          - film001.mp4
         filmObjFil:
           type: string
           description: Film object file path
           examples:
-            - /path/to/file.mp4
+          - /path/to/file.mp4
         objtyp:
           type: string
           description: Object type
           examples:
-            - VIDEO
+          - VIDEO
         datum:
           type: string
           description: Date
           examples:
-            - 1985-06-15
+          - 1985-06-15
         doktitel:
           type: string
           description: Document title
           examples:
-            - Midsommarfirande i Sundsvall
+          - Midsommarfirande i Sundsvall
         filmTId:
           type: integer
           format: int32
           description: Film type ID
           examples:
-            - "1"
+          - "1"
         filmOplats:
           type: string
           description: Film location
           examples:
-            - Sundsvall
+          - Sundsvall
         filmOId:
           type: integer
           format: int32
           description: Film organization ID
           examples:
-            - "1"
+          - "1"
         filmUEId:
           type: integer
           format: int32
           description: Film sub-entity ID
           examples:
-            - "0"
+          - "0"
         filmUId:
           type: integer
           format: int32
           description: Film unit ID
           examples:
-            - "1"
+          - "1"
         kommentFilm:
           type: string
           description: Comment
           examples:
-            - En film om midsommarfirande
+          - En film om midsommarfirande
         filmMimeType:
           type: string
           description: MIME type
           examples:
-            - video/mp4
+          - video/mp4
         nodeId:
           type: integer
           format: int32
           description: Node ID
           examples:
-            - "456"
+          - "456"
         options:
           type: integer
           format: int32
           description: Options
           examples:
-            - "0"
+          - "0"
         deletedDate:
           type: string
           format: date
           description: Deleted date
           examples:
-            - 2026-01-15
-  securitySchemes: { }
+          - 2026-01-15
+  securitySchemes: {}

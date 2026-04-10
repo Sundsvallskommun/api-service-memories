@@ -5,21 +5,21 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import se.sundsvall.memories.integration.db.model.FilmEntity;
+import se.sundsvall.memories.integration.db.model.PublEntity;
 
-@CircuitBreaker(name = "filmRepository")
-public interface FilmRepository extends JpaRepository<FilmEntity, Integer> {
+@CircuitBreaker(name = "publRepository")
+public interface PublRepository extends JpaRepository<PublEntity, Integer> {
 
 	@Query(value = """
-		SELECT * FROM FILM
+		SELECT * FROM PUBL
 		WHERE `OPTIONS` = 4
 		""", nativeQuery = true)
-	List<FilmEntity> findAllPublished();
+	List<PublEntity> findAllPublished();
 
 	@Query(value = """
-		SELECT * FROM FILM
-		WHERE MATCH (DOKTITEL, KOMMENT_FILM) AGAINST (:query IN BOOLEAN MODE)
+		SELECT * FROM PUBL
+		WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE)
 		  AND `OPTIONS` = 4
 		""", nativeQuery = true)
-	List<FilmEntity> searchPublished(@Param("query") String query);
+	List<PublEntity> searchPublished(@Param("query") String query);
 }
