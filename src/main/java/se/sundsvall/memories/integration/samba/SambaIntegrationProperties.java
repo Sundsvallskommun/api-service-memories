@@ -4,11 +4,14 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("integration.samba")
-record SambaIntegrationProperties(
+public record SambaIntegrationProperties(
 
 	@NotBlank String host,
 	int port,
 	@NotBlank String domain,
 	@NotBlank String username,
 	@NotBlank String password,
-	@NotBlank String share) {}
+	@NotBlank String share,
+	@NotBlank String filmFolder,
+	@NotBlank String publFolder) {
+}

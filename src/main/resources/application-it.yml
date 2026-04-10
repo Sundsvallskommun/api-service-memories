@@ -9,3 +9,12 @@ spring:
     url: jdbc:tc:mariadb:10.6:///
   flyway:
     enabled: true
+integration:
+  samba:
+    host: localhost
+    port: 445
+    domain: WORKGROUP
+    username: user
+    password: password
+    share: /share/
+    publ-folder: /publ/

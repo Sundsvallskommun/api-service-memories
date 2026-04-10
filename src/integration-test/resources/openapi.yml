@@ -5,14 +5,156 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "2.0"
+  version: "2.1"
 servers:
-  - url: http://localhost:53767
+  - url: http://localhost:50342
     description: Generated server url
 tags:
   - name: Films
     description: Film search operations
+  - name: Publications
+    description: Publication search and file operations
 paths:
+  /{municipalityId}/publications:
+    get:
+      tags:
+        - Publications
+      summary: Search publications
+      description: "Fulltext search across title, comment and OCR text; only published\
+        \ (OPTIONS=4) publications are returned. XMLTEXT is excluded from the list\
+        \ response."
+      operationId: searchPublications
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Publication"
+  /{municipalityId}/publications/{id}:
+    get:
+      tags:
+        - Publications
+      summary: Get publication by ID
+      description: "Get a specific publication by its ID, including the full XMLTEXT\
+        \ OCR content"
+      operationId: getPublication
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Publication"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/publications/{id}/file:
+    get:
+      tags:
+        - Publications
+      summary: Get publication file
+      description: "Download a file associated with a publication by specifying the\
+        \ variant (liten, stor, original, txt, xtra)"
+      operationId: getPublicationFile
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: variant
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: { }
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/films:
     get:
       tags:
@@ -194,10 +336,10 @@ components:
             $ref: "#/components/schemas/Violation"
         title:
           type: string
-        causeAsProblem:
-          $ref: "#/components/schemas/ThrowableProblem"
         detail:
           type: string
+        causeAsProblem:
+          $ref: "#/components/schemas/ThrowableProblem"
         instance:
           type: string
           format: uri
@@ -225,6 +367,94 @@ components:
           type: string
         message:
           type: string
+    Publication:
+      type: object
+      description: Publication model
+      properties:
+        publId:
+          type: integer
+          format: int32
+          description: Publication ID
+          examples:
+            - "207"
+        filnamn:
+          type: string
+          description: Original filename from archive
+          examples:
+            - F21051/1841-02-18_Alfwar och Skämt nr 8.xml
+        publiktyp:
+          type: string
+          description: Publication type (free text)
+          examples:
+            - ""
+        datum:
+          type: string
+          description: Publication date
+          examples:
+            - 1841-02-18
+        tidtitel:
+          type: string
+          description: Periodical title (newspaper/magazine name)
+          examples:
+            - Alfwar och Skämt
+        tidnr:
+          type: string
+          description: Periodical issue number
+          examples:
+            - "8"
+        tidsida:
+          type: string
+          description: Periodical page number
+          examples:
+            - "3"
+        forlagOplats:
+          type: string
+          description: Publisher location
+          examples:
+            - Sundsvall
+        doktitel:
+          type: string
+          description: Document title
+          examples:
+            - Sida 3 Alfwar och Skämt nr 8 1841
+        pubOplats:
+          type: string
+          description: Publication location
+          examples:
+            - Sundsvall
+        kommentPubl:
+          type: string
+          description: Comment / description
+          examples:
+            - Tidningsnummer från 1841
+        filLiten:
+          type: string
+          description: Thumbnail file name
+          examples:
+            - PUBL.id_207_fil_liten.jpeg
+        filStor:
+          type: string
+          description: Large image file name
+          examples:
+            - PUBL.id_207_fil_stor.jpeg
+        filOriginal:
+          type: string
+          description: Original file name
+          examples:
+            - PUBL.id_207_fil_original.jpeg
+        filTxt:
+          type: string
+          description: OCR/text file name
+          examples:
+            - PUBL.id_207_fil_txt.xml
+        filXtra:
+          type: string
+          description: Extra file name
+          examples:
+            - PUBL.id_207_fil_xtra.jpeg
+        xmltext:
+          type: string
+          description: Full OCR/XML text (only returned on detail lookup)
     Film:
       type: object
       description: Film model
