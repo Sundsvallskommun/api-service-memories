@@ -2,7 +2,7 @@ package se.sundsvall.memories.api.model;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import se.sundsvall.dept44.models.api.paging.PagingMetaData;
+import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
@@ -28,7 +28,7 @@ class PagedPublicationResponseTest {
 	@Test
 	void testBuilderMethods() {
 		final var publications = List.of(Publication.create().withPublId(1));
-		final var meta = PagingMetaData.create().withPage(1).withLimit(100);
+		final var meta = PagingAndSortingMetaData.create().withPage(1).withLimit(100);
 
 		final var result = PagedPublicationResponse.create()
 			.withPublications(publications)

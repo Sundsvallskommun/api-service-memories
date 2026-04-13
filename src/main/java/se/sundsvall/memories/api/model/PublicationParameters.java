@@ -2,10 +2,10 @@ package se.sundsvall.memories.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
-import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingBase;
+import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Publication search parameters")
-public class PublicationParameters extends AbstractParameterPagingBase {
+public class PublicationParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Free text search query", examples = "Drunkningsolycka")
 	private String query;
@@ -58,6 +58,8 @@ public class PublicationParameters extends AbstractParameterPagingBase {
 			"query='" + query + '\'' +
 			", page=" + page +
 			", limit=" + limit +
+			", sortBy=" + sortBy +
+			", sortDirection=" + sortDirection +
 			'}';
 	}
 }

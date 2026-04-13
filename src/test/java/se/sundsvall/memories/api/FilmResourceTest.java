@@ -10,7 +10,7 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import se.sundsvall.dept44.models.api.paging.PagingMetaData;
+import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.api.model.PagedFilmResponse;
@@ -44,7 +44,7 @@ class FilmResourceTest {
 		final var film = Film.create().withFilmId(1).withDoktitel("Sundsvall film");
 		final var pagedResponse = PagedFilmResponse.create()
 			.withFilms(List.of(film))
-			.withMetaData(PagingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
+			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
 
@@ -69,7 +69,7 @@ class FilmResourceTest {
 	void searchFilmsWithoutQuery() {
 		final var pagedResponse = PagedFilmResponse.create()
 			.withFilms(List.of())
-			.withMetaData(PagingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
+			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
 

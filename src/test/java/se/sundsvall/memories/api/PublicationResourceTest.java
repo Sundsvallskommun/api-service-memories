@@ -14,7 +14,7 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import se.sundsvall.dept44.models.api.paging.PagingMetaData;
+import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
@@ -49,7 +49,7 @@ class PublicationResourceTest {
 		final var publication = Publication.create().withPublId(1).withDoktitel("Drunkningsolycka");
 		final var pagedResponse = PagedPublicationResponse.create()
 			.withPublications(List.of(publication))
-			.withMetaData(PagingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
+			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
 
@@ -74,7 +74,7 @@ class PublicationResourceTest {
 	void searchPublicationsWithoutQuery() {
 		final var pagedResponse = PagedPublicationResponse.create()
 			.withPublications(List.of())
-			.withMetaData(PagingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
+			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
 

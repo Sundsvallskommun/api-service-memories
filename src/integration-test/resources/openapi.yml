@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "2.2"
 servers:
-  - url: http://localhost:62699
+  - url: http://localhost:50211
     description: Generated server url
 tags:
   - name: Films
@@ -300,6 +300,11 @@ paths:
       x-wso2-mutual-ssl: Optional
 components:
   schemas:
+    Direction:
+      type: string
+      enum:
+        - ASC
+        - DESC
     PublicationParameters:
       type: object
       description: Publication search parameters
@@ -320,6 +325,18 @@ components:
           examples:
             - "15"
           minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+              - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+            - ASC
         query:
           type: string
           description: Free text search query
@@ -397,11 +414,11 @@ components:
             $ref: "#/components/schemas/Publication"
             readOnly: true
         _meta:
-          $ref: "#/components/schemas/PagingMetaData"
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true
-    PagingMetaData:
+    PagingAndSortingMetaData:
       type: object
-      description: PagingMetaData model
+      description: PagingAndSortingMetaData model
       properties:
         page:
           type: integer
@@ -438,6 +455,19 @@ components:
           examples:
             - "23"
           readOnly: true
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort by
+            examples:
+              - property
+            readOnly: true
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+            - ASC
     Publication:
       type: object
       description: Publication model
@@ -546,6 +576,18 @@ components:
           examples:
             - "15"
           minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+              - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+            - ASC
         query:
           type: string
           description: Free text search query
@@ -653,6 +695,6 @@ components:
             $ref: "#/components/schemas/Film"
             readOnly: true
         _meta:
-          $ref: "#/components/schemas/PagingMetaData"
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true
   securitySchemes: { }

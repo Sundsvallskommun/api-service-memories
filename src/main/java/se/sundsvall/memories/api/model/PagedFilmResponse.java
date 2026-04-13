@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Objects;
-import se.sundsvall.dept44.models.api.paging.PagingMetaData;
+import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
@@ -16,8 +16,8 @@ public class PagedFilmResponse {
 	private List<Film> films;
 
 	@JsonProperty("_meta")
-	@Schema(implementation = PagingMetaData.class, accessMode = READ_ONLY)
-	private PagingMetaData metaData;
+	@Schema(implementation = PagingAndSortingMetaData.class, accessMode = READ_ONLY)
+	private PagingAndSortingMetaData metaData;
 
 	public static PagedFilmResponse create() {
 		return new PagedFilmResponse();
@@ -36,15 +36,15 @@ public class PagedFilmResponse {
 		return this;
 	}
 
-	public PagingMetaData getMetaData() {
+	public PagingAndSortingMetaData getMetaData() {
 		return metaData;
 	}
 
-	public void setMetaData(final PagingMetaData metaData) {
+	public void setMetaData(final PagingAndSortingMetaData metaData) {
 		this.metaData = metaData;
 	}
 
-	public PagedFilmResponse withMetaData(final PagingMetaData metaData) {
+	public PagedFilmResponse withMetaData(final PagingAndSortingMetaData metaData) {
 		this.metaData = metaData;
 		return this;
 	}

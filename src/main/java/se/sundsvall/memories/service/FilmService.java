@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import se.sundsvall.dept44.models.api.paging.PagingMetaData;
+import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.api.model.FilmParameters;
@@ -47,7 +47,7 @@ public class FilmService {
 	}
 
 	public PagedFilmResponse search(final FilmParameters parameters) {
-		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit());
+		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
 		final var page = sanitized == null
@@ -56,12 +56,7 @@ public class FilmService {
 
 		return PagedFilmResponse.create()
 			.withFilms(toFilmList(page.getContent()))
-			.withMetaData(PagingMetaData.create()
-				.withPage(page.getNumber() + 1)
-				.withLimit(page.getSize())
-				.withCount(page.getNumberOfElements())
-				.withTotalRecords(page.getTotalElements())
-				.withTotalPages(page.getTotalPages()));
+			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
 	public Film getById(final Integer id) {

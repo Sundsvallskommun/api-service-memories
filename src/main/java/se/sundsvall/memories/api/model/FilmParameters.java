@@ -2,10 +2,10 @@ package se.sundsvall.memories.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
-import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingBase;
+import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Film search parameters")
-public class FilmParameters extends AbstractParameterPagingBase {
+public class FilmParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Free text search query", examples = "midsommar")
 	private String query;
@@ -58,6 +58,8 @@ public class FilmParameters extends AbstractParameterPagingBase {
 			"query='" + query + '\'' +
 			", page=" + page +
 			", limit=" + limit +
+			", sortBy=" + sortBy +
+			", sortDirection=" + sortDirection +
 			'}';
 	}
 }
