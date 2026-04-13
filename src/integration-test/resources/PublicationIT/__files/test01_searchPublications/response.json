@@ -1,50 +1,59 @@
-[
-	{
-		"publId": 207,
-		"filnamn": "F21051/1841-02-18_Sida 3 Alfwar och Skämt nr 8 1841.xml",
-		"publiktyp": "",
-		"datum": "1841-02-18",
-		"tidtitel": "Alfwar och Skämt",
-		"tidnr": "8",
-		"tidsida": "3",
-		"forlagOplats": "Sundsvall",
-		"doktitel": "Sida 3 Alfwar och Skämt nr 8 1841",
-		"pubOplats": "Sundsvall",
-		"kommentPubl": "Tidningsnummer från 1841",
-		"filLiten": "PUBL.id_207_fil_liten.jpeg",
-		"filStor": "PUBL.id_207_fil_stor.jpeg",
-		"filOriginal": "PUBL.id_207_fil_original.jpeg",
-		"filTxt": "PUBL.id_207_fil_txt.xml",
-		"filXtra": "PUBL.id_207_fil_xtra.jpeg"
+{
+	"_meta": {
+		"count": 3,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 3
 	},
-	{
-		"publId": 300,
-		"filnamn": "broschyr_1950.xml",
-		"publiktyp": "",
-		"datum": "1950-01-01",
-		"forlagOplats": "Sundsvall",
-		"doktitel": "Kommunal informationsbroschyr 1950",
-		"pubOplats": "Sundsvall",
-		"kommentPubl": "Kommunens informationsbroschyr",
-		"filLiten": "PUBL.id_300_fil_liten.jpeg",
-		"filStor": "PUBL.id_300_fil_stor.jpeg",
-		"filOriginal": "PUBL.id_300_fil_original.pdf",
-		"filTxt": "PUBL.id_300_fil_txt.xml",
-		"filXtra": "PUBL.id_300_fil_xtra.jpeg"
-	},
-	{
-		"publId": 400,
-		"filnamn": "affisch_1975.xml",
-		"publiktyp": "",
-		"datum": "1975-06-01",
-		"forlagOplats": "Sundsvall",
-		"doktitel": "Affisch Sundsvallsstämman 1975",
-		"pubOplats": "Sundsvall",
-		"kommentPubl": "Reklamaffisch för årlig stämma",
-		"filLiten": "PUBL.id_400_fil_liten.jpeg",
-		"filStor": "PUBL.id_400_fil_stor.jpeg",
-		"filOriginal": "PUBL.id_400_fil_original.jpeg",
-		"filTxt": "PUBL.id_400_fil_txt.xml",
-		"filXtra": "PUBL.id_400_fil_xtra.jpeg"
-	}
-]
+	"publications": [
+		{
+			"publId": 207,
+			"filnamn": "F21051/1841-02-18_Sida 3 Alfwar och Skämt nr 8 1841.xml",
+			"publiktyp": "",
+			"datum": "1841-02-18",
+			"tidtitel": "Alfwar och Skämt",
+			"tidnr": "8",
+			"tidsida": "3",
+			"forlagOplats": "Sundsvall",
+			"doktitel": "Sida 3 Alfwar och Skämt nr 8 1841",
+			"pubOplats": "Sundsvall",
+			"kommentPubl": "Tidningsnummer från 1841",
+			"filLiten": "PUBL.id_207_fil_liten.jpeg",
+			"filStor": "PUBL.id_207_fil_stor.jpeg",
+			"filOriginal": "PUBL.id_207_fil_original.jpeg",
+			"filTxt": "PUBL.id_207_fil_txt.xml",
+			"filXtra": "PUBL.id_207_fil_xtra.jpeg"
+		},
+		{
+			"publId": 300,
+			"filnamn": "broschyr_1950.xml",
+			"publiktyp": "",
+			"datum": "1950-01-01",
+			"forlagOplats": "Sundsvall",
+			"doktitel": "Kommunal informationsbroschyr 1950",
+			"pubOplats": "Sundsvall",
+			"kommentPubl": "Kommunens informationsbroschyr",
+			"filLiten": "PUBL.id_300_fil_liten.jpeg",
+			"filStor": "PUBL.id_300_fil_stor.jpeg",
+			"filOriginal": "PUBL.id_300_fil_original.pdf",
+			"filTxt": "PUBL.id_300_fil_txt.xml",
+			"filXtra": "PUBL.id_300_fil_xtra.jpeg"
+		},
+		{
+			"publId": 400,
+			"filnamn": "affisch_1975.xml",
+			"publiktyp": "",
+			"datum": "1975-06-01",
+			"forlagOplats": "Sundsvall",
+			"doktitel": "Affisch Sundsvallsstämman 1975",
+			"pubOplats": "Sundsvall",
+			"kommentPubl": "Reklamaffisch för årlig stämma",
+			"filLiten": "PUBL.id_400_fil_liten.jpeg",
+			"filStor": "PUBL.id_400_fil_stor.jpeg",
+			"filOriginal": "PUBL.id_400_fil_original.jpeg",
+			"filTxt": "PUBL.id_400_fil_txt.xml",
+			"filXtra": "PUBL.id_400_fil_xtra.jpeg"
+		}
+	]
+}

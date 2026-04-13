@@ -2,10 +2,13 @@ package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import se.sundsvall.dept44.models.api.paging.PagingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.Film;
+import se.sundsvall.memories.api.model.FilmParameters;
+import se.sundsvall.memories.api.model.PagedFilmResponse;
 import se.sundsvall.memories.integration.db.FilmRepository;
 import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
@@ -43,13 +46,22 @@ public class FilmService {
 			.orElseGet(() -> "film-" + entity.getFilmId());
 	}
 
-	public List<Film> search(final String query) {
-		final var sanitized = FulltextQuery.sanitize(query);
-		if (sanitized == null) {
-			return toFilmList(filmRepository.findAllPublished());
-		}
+	public PagedFilmResponse search(final FilmParameters parameters) {
+		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit());
+		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
-		return toFilmList(filmRepository.searchPublished(sanitized));
+		final var page = sanitized == null
+			? filmRepository.findAllPublished(pageable)
+			: filmRepository.searchPublished(sanitized, pageable);
+
+		return PagedFilmResponse.create()
+			.withFilms(toFilmList(page.getContent()))
+			.withMetaData(PagingMetaData.create()
+				.withPage(page.getNumber() + 1)
+				.withLimit(page.getSize())
+				.withCount(page.getNumberOfElements())
+				.withTotalRecords(page.getTotalElements())
+				.withTotalPages(page.getTotalPages()));
 	}
 
 	public Film getById(final Integer id) {

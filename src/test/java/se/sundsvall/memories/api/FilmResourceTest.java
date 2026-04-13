@@ -10,8 +10,10 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import se.sundsvall.dept44.models.api.paging.PagingMetaData;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.Film;
+import se.sundsvall.memories.api.model.PagedFilmResponse;
 import se.sundsvall.memories.service.FilmService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,41 +41,50 @@ class FilmResourceTest {
 
 	@Test
 	void searchFilms() {
-		final var query = "sundsvall";
 		final var film = Film.create().withFilmId(1).withDoktitel("Sundsvall film");
+		final var pagedResponse = PagedFilmResponse.create()
+			.withFilms(List.of(film))
+			.withMetaData(PagingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
-		when(serviceMock.search(query)).thenReturn(List.of(film));
+		when(serviceMock.search(any())).thenReturn(pagedResponse);
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(SEARCH_PATH)
-				.queryParam("query", query)
+				.queryParam("query", "sundsvall")
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBodyList(Film.class)
+			.expectBody(PagedFilmResponse.class)
 			.returnResult()
 			.getResponseBody();
 
-		assertThat(response).hasSize(1);
-		assertThat(response.getFirst().getDoktitel()).isEqualTo("Sundsvall film");
-		verify(serviceMock).search(query);
+		assertThat(response).isNotNull();
+		assertThat(response.getFilms()).hasSize(1);
+		assertThat(response.getFilms().getFirst().getDoktitel()).isEqualTo("Sundsvall film");
+		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
+		verify(serviceMock).search(any());
 	}
 
 	@Test
 	void searchFilmsWithoutQuery() {
-		when(serviceMock.search(null)).thenReturn(List.of());
+		final var pagedResponse = PagedFilmResponse.create()
+			.withFilms(List.of())
+			.withMetaData(PagingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
+
+		when(serviceMock.search(any())).thenReturn(pagedResponse);
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(SEARCH_PATH)
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBodyList(Film.class)
+			.expectBody(PagedFilmResponse.class)
 			.returnResult()
 			.getResponseBody();
 
-		assertThat(response).isEmpty();
-		verify(serviceMock).search(null);
+		assertThat(response).isNotNull();
+		assertThat(response.getFilms()).isEmpty();
+		verify(serviceMock).search(any());
 	}
 
 	@Test

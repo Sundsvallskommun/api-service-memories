@@ -14,7 +14,9 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import se.sundsvall.dept44.models.api.paging.PagingMetaData;
 import se.sundsvall.memories.Application;
+import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
 import se.sundsvall.memories.service.PublicationService;
 import se.sundsvall.memories.service.PublicationService.FileVariant;
@@ -44,41 +46,50 @@ class PublicationResourceTest {
 
 	@Test
 	void searchPublications() {
-		final var query = "drunkning";
 		final var publication = Publication.create().withPublId(1).withDoktitel("Drunkningsolycka");
+		final var pagedResponse = PagedPublicationResponse.create()
+			.withPublications(List.of(publication))
+			.withMetaData(PagingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
-		when(serviceMock.search(query)).thenReturn(List.of(publication));
+		when(serviceMock.search(any())).thenReturn(pagedResponse);
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(SEARCH_PATH)
-				.queryParam("query", query)
+				.queryParam("query", "drunkning")
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBodyList(Publication.class)
+			.expectBody(PagedPublicationResponse.class)
 			.returnResult()
 			.getResponseBody();
 
-		assertThat(response).hasSize(1);
-		assertThat(response.getFirst().getDoktitel()).isEqualTo("Drunkningsolycka");
-		verify(serviceMock).search(query);
+		assertThat(response).isNotNull();
+		assertThat(response.getPublications()).hasSize(1);
+		assertThat(response.getPublications().getFirst().getDoktitel()).isEqualTo("Drunkningsolycka");
+		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
+		verify(serviceMock).search(any());
 	}
 
 	@Test
 	void searchPublicationsWithoutQuery() {
-		when(serviceMock.search(null)).thenReturn(List.of());
+		final var pagedResponse = PagedPublicationResponse.create()
+			.withPublications(List.of())
+			.withMetaData(PagingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
+
+		when(serviceMock.search(any())).thenReturn(pagedResponse);
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(SEARCH_PATH)
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBodyList(Publication.class)
+			.expectBody(PagedPublicationResponse.class)
 			.returnResult()
 			.getResponseBody();
 
-		assertThat(response).isEmpty();
-		verify(serviceMock).search(null);
+		assertThat(response).isNotNull();
+		assertThat(response.getPublications()).isEmpty();
+		verify(serviceMock).search(any());
 	}
 
 	@Test

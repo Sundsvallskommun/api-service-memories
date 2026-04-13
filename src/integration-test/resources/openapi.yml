@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "2.1"
+  version: "2.2"
 servers:
-  - url: http://localhost:50342
+  - url: http://localhost:62699
     description: Generated server url
 tags:
   - name: Films
@@ -21,8 +21,7 @@ paths:
         - Publications
       summary: Search publications
       description: "Fulltext search across title, comment and OCR text; only published\
-        \ (OPTIONS=4) publications are returned. XMLTEXT is excluded from the list\
-        \ response."
+        \ publications are returned. XMLTEXT is excluded from the list response."
       operationId: searchPublications
       parameters:
         - name: municipalityId
@@ -30,11 +29,11 @@ paths:
           required: true
           schema:
             type: string
-        - name: query
+        - name: parameters
           in: query
-          required: false
+          required: true
           schema:
-            type: string
+            $ref: "#/components/schemas/PublicationParameters"
       responses:
         "400":
           description: Bad request
@@ -55,9 +54,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Publication"
+                $ref: "#/components/schemas/PagedPublicationResponse"
   /{municipalityId}/publications/{id}:
     get:
       tags:
@@ -160,8 +157,8 @@ paths:
       tags:
         - Films
       summary: Search films
-      description: "Search films by free text query across title, filename, location,\
-        \ comment and date"
+      description: Search films by free text query across title and comment. Returns
+        paginated results.
       operationId: searchFilms
       parameters:
         - name: municipalityId
@@ -169,11 +166,11 @@ paths:
           required: true
           schema:
             type: string
-        - name: query
+        - name: parameters
           in: query
-          required: false
+          required: true
           schema:
-            type: string
+            $ref: "#/components/schemas/FilmParameters"
       responses:
         "400":
           description: Bad request
@@ -194,9 +191,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Film"
+                $ref: "#/components/schemas/PagedFilmResponse"
   /{municipalityId}/films/{id}:
     get:
       tags:
@@ -305,6 +300,31 @@ paths:
       x-wso2-mutual-ssl: Optional
 components:
   schemas:
+    PublicationParameters:
+      type: object
+      description: Publication search parameters
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+            - "1"
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+            - "15"
+          minimum: 1
+        query:
+          type: string
+          description: Free text search query
+          examples:
+            - Drunkningsolycka
     Problem:
       type: object
       properties:
@@ -367,6 +387,57 @@ components:
           type: string
         message:
           type: string
+    PagedPublicationResponse:
+      type: object
+      description: Paged publication response
+      properties:
+        publications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Publication"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingMetaData"
+          readOnly: true
+    PagingMetaData:
+      type: object
+      description: PagingMetaData model
+      properties:
+        page:
+          type: integer
+          format: int32
+          description: Current page
+          examples:
+            - "5"
+          readOnly: true
+        limit:
+          type: integer
+          format: int32
+          description: Displayed objects per page
+          examples:
+            - "20"
+          readOnly: true
+        count:
+          type: integer
+          format: int32
+          description: Displayed objects on current page
+          examples:
+            - "13"
+          readOnly: true
+        totalRecords:
+          type: integer
+          format: int64
+          description: Total amount of hits based on provided search parameters
+          examples:
+            - "98"
+          readOnly: true
+        totalPages:
+          type: integer
+          format: int32
+          description: Total amount of pages based on provided search parameters
+          examples:
+            - "23"
+          readOnly: true
     Publication:
       type: object
       description: Publication model
@@ -455,6 +526,31 @@ components:
         xmltext:
           type: string
           description: Full OCR/XML text (only returned on detail lookup)
+    FilmParameters:
+      type: object
+      description: Film search parameters
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+            - "1"
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+            - "15"
+          minimum: 1
+        query:
+          type: string
+          description: Free text search query
+          examples:
+            - midsommar
     Film:
       type: object
       description: Film model
@@ -547,4 +643,16 @@ components:
           description: Deleted date
           examples:
             - 2026-01-15
+    PagedFilmResponse:
+      type: object
+      description: Paged film response
+      properties:
+        films:
+          type: array
+          items:
+            $ref: "#/components/schemas/Film"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingMetaData"
+          readOnly: true
   securitySchemes: { }
