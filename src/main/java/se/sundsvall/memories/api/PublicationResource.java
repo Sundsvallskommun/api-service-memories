@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,9 @@ import se.sundsvall.dept44.common.validators.annotation.OneOf;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
+import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
+import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.service.PublicationService;
 import se.sundsvall.memories.service.PublicationService.FileVariant;
 
@@ -46,13 +48,13 @@ class PublicationResource {
 	}
 
 	@GetMapping(produces = APPLICATION_JSON_VALUE)
-	@Operation(summary = "Search publications", description = "Fulltext search across title, comment and OCR text; only published (OPTIONS=4) publications are returned. XMLTEXT is excluded from the list response.")
+	@Operation(summary = "Search publications", description = "Fulltext search across title, comment and OCR text; only published publications are returned. XMLTEXT is excluded from the list response.")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
-	ResponseEntity<List<Publication>> searchPublications(
+	ResponseEntity<PagedPublicationResponse> searchPublications(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@RequestParam(required = false) final String query) {
+		@Valid final PublicationParameters parameters) {
 
-		return ok(publicationService.search(query));
+		return ok(publicationService.search(parameters));
 	}
 
 	@GetMapping(path = "/{id}", produces = APPLICATION_JSON_VALUE)

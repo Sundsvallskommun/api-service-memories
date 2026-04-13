@@ -14,7 +14,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
+import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.PublRepository;
 import se.sundsvall.memories.integration.db.model.PublEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
@@ -78,47 +81,53 @@ class PublicationServiceTest {
 
 	@Test
 	void searchWithQueryUsesFulltextRepository() {
-		when(publRepositoryMock.searchPublished("Drunkningsolycka*")).thenReturn(List.of(entity()));
+		final var pageable = PageRequest.of(0, 100);
+		when(publRepositoryMock.searchPublished("Drunkningsolycka*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
-		final var result = service.search("Drunkningsolycka");
+		final var result = service.search(PublicationParameters.create().withQuery("Drunkningsolycka"));
 
-		assertThat(result).hasSize(1);
-		assertThat(result.getFirst().getPubliktyp()).isEqualTo("Broschyrer");
-		assertThat(result.getFirst().getXmltext()).isNull();
-		verify(publRepositoryMock).searchPublished("Drunkningsolycka*");
+		assertThat(result.getPublications()).hasSize(1);
+		assertThat(result.getPublications().getFirst().getPubliktyp()).isEqualTo("Broschyrer");
+		assertThat(result.getPublications().getFirst().getXmltext()).isNull();
+		assertThat(result.getMetaData().getPage()).isEqualTo(1);
+		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
+		verify(publRepositoryMock).searchPublished("Drunkningsolycka*", pageable);
 		verifyNoMoreInteractions(publRepositoryMock);
 	}
 
 	@Test
 	void searchWithNullQueryUsesFindAllPublished() {
-		when(publRepositoryMock.findAllPublished()).thenReturn(List.of(entity()));
+		final var pageable = PageRequest.of(0, 100);
+		when(publRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
-		final var result = service.search(null);
+		final var result = service.search(PublicationParameters.create());
 
-		assertThat(result).hasSize(1);
-		verify(publRepositoryMock).findAllPublished();
+		assertThat(result.getPublications()).hasSize(1);
+		verify(publRepositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(publRepositoryMock);
 	}
 
 	@Test
 	void searchWithBlankQueryUsesFindAllPublished() {
-		when(publRepositoryMock.findAllPublished()).thenReturn(List.of());
+		final var pageable = PageRequest.of(0, 100);
+		when(publRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
-		final var result = service.search("   ");
+		final var result = service.search(PublicationParameters.create().withQuery("   "));
 
-		assertThat(result).isEmpty();
-		verify(publRepositoryMock).findAllPublished();
+		assertThat(result.getPublications()).isEmpty();
+		verify(publRepositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(publRepositoryMock);
 	}
 
 	@Test
 	void searchWithOperatorOnlyQueryFallsBackToFindAll() {
-		when(publRepositoryMock.findAllPublished()).thenReturn(List.of());
+		final var pageable = PageRequest.of(0, 100);
+		when(publRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
-		final var result = service.search("+-*");
+		final var result = service.search(PublicationParameters.create().withQuery("+-*"));
 
-		assertThat(result).isEmpty();
-		verify(publRepositoryMock).findAllPublished();
+		assertThat(result.getPublications()).isEmpty();
+		verify(publRepositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(publRepositoryMock);
 	}
 

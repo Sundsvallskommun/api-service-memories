@@ -1,16 +1,13 @@
 package se.sundsvall.memories.integration.db;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.integration.db.model.PublEntity;
 
-/**
- * Repository interface for managing PublEntity objects interacting with the database. It includes methods for
- * retrieving and searching published records.
- */
 @CircuitBreaker(name = "publRepository")
 public interface PublRepository extends JpaRepository<PublEntity, Integer> {
 
@@ -18,13 +15,13 @@ public interface PublRepository extends JpaRepository<PublEntity, Integer> {
 	 * Retrieves all published records from the PUBL table where the `OPTIONS` field equals 4.Option 4 means the record is
 	 * published.
 	 *
-	 * @return a list of PublEntity objects representing published records
+	 * @param  pageable the pagination and sorting criteria
+	 * @return          a list of PublEntity objects representing published records
 	 */
-	@Query(value = """
-		SELECT * FROM PUBL
-		WHERE `OPTIONS` = 4
-		""", nativeQuery = true)
-	List<PublEntity> findAllPublished();
+	@Query(value = "SELECT * FROM PUBL WHERE `OPTIONS` = 4",
+		countQuery = "SELECT COUNT(*) FROM PUBL WHERE `OPTIONS` = 4",
+		nativeQuery = true)
+	Page<PublEntity> findAllPublished(Pageable pageable);
 
 	/**
 	 * Searches the published records in the database using a full-text search query. The search is conducted against the
@@ -32,13 +29,12 @@ public interface PublRepository extends JpaRepository<PublEntity, Integer> {
 	 * Option 4 means
 	 * the record is published.
 	 *
-	 * @param  query the full-text search query to match against the specified fields
-	 * @return       a list of PublEntity objects that match the search criteria
+	 * @param  query    the full-text search query to match against the specified fields
+	 * @param  pageable the pagination and sorting criteria
+	 * @return          a list of PublEntity objects that match the search criteria
 	 */
-	@Query(value = """
-		SELECT * FROM PUBL
-		WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE)
-		  AND `OPTIONS` = 4
-		""", nativeQuery = true)
-	List<PublEntity> searchPublished(@Param("query") String query);
+	@Query(value = "SELECT * FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND `OPTIONS` = 4",
+		countQuery = "SELECT COUNT(*) FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND `OPTIONS` = 4",
+		nativeQuery = true)
+	Page<PublEntity> searchPublished(@Param("query") String query, Pageable pageable);
 }

@@ -7,18 +7,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
 import se.sundsvall.memories.api.model.Film;
+import se.sundsvall.memories.api.model.FilmParameters;
+import se.sundsvall.memories.api.model.PagedFilmResponse;
 import se.sundsvall.memories.service.FilmService;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -44,13 +45,13 @@ class FilmResource {
 	}
 
 	@GetMapping(produces = APPLICATION_JSON_VALUE)
-	@Operation(summary = "Search films", description = "Search films by free text query across title, filename, location, comment and date")
+	@Operation(summary = "Search films", description = "Search films by free text query across title and comment. Returns paginated results.")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
-	ResponseEntity<List<Film>> searchFilms(
+	ResponseEntity<PagedFilmResponse> searchFilms(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@RequestParam(required = false) final String query) {
+		@Valid final FilmParameters parameters) {
 
-		return ok(filmService.search(query));
+		return ok(filmService.search(parameters));
 	}
 
 	@GetMapping(path = "/{id}", produces = APPLICATION_JSON_VALUE)

@@ -2,11 +2,14 @@ package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 import java.util.function.Function;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
+import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
+import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PublRepository;
 import se.sundsvall.memories.integration.db.model.PublEntity;
@@ -35,17 +38,20 @@ public class PublicationService {
 		this.sambaProperties = sambaProperties;
 	}
 
-	public List<Publication> search(final String query) {
-		final var sanitized = FulltextQuery.sanitize(query);
-		final var entities = sanitized == null
-			? publRepository.findAllPublished()
-			: publRepository.searchPublished(sanitized);
+	public PagedPublicationResponse search(final PublicationParameters parameters) {
+		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
+		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
-		return PublicationMapper.toPublicationList(entities);
+		final var page = sanitized == null
+			? publRepository.findAllPublished(pageable)
+			: publRepository.searchPublished(sanitized, pageable);
+
+		return PagedPublicationResponse.create()
+			.withPublications(PublicationMapper.toPublicationList(page.getContent()))
+			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
 	public Publication getById(final Integer id) {
-
 		return publRepository.findById(id)
 			.map(PublicationMapper::toPublication)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));

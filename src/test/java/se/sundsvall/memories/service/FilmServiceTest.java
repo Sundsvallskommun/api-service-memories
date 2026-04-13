@@ -10,7 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
+import se.sundsvall.memories.api.model.FilmParameters;
 import se.sundsvall.memories.integration.db.FilmRepository;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
@@ -48,66 +51,73 @@ class FilmServiceTest {
 
 	@Test
 	void searchWithQuery() {
-		final var query = "sundsvall";
+		final var pageable = PageRequest.of(0, 100);
 		final var entity = FilmEntity.create().withFilmId(1).withDoktitel("Sundsvall film");
 
-		when(repositoryMock.searchPublished("sundsvall*")).thenReturn(List.of(entity));
+		when(repositoryMock.searchPublished("sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
-		final var result = service.search(query);
+		final var result = service.search(FilmParameters.create().withQuery("sundsvall"));
 
-		assertThat(result).hasSize(1);
-		assertThat(result.getFirst().getDoktitel()).isEqualTo("Sundsvall film");
-		verify(repositoryMock).searchPublished("sundsvall*");
+		assertThat(result.getFilms()).hasSize(1);
+		assertThat(result.getFilms().getFirst().getDoktitel()).isEqualTo("Sundsvall film");
+		assertThat(result.getMetaData().getPage()).isEqualTo(1);
+		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
+		verify(repositoryMock).searchPublished("sundsvall*", pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
 	@Test
 	void searchSanitizesOperatorsInQuery() {
+		final var pageable = PageRequest.of(0, 100);
 		final var entity = FilmEntity.create().withFilmId(1).withDoktitel("Midsommar");
 
-		when(repositoryMock.searchPublished("midsommar* 1985*")).thenReturn(List.of(entity));
+		when(repositoryMock.searchPublished("midsommar* 1985*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
-		final var result = service.search("+midsommar -1985");
+		final var result = service.search(FilmParameters.create().withQuery("+midsommar -1985"));
 
-		assertThat(result).hasSize(1);
-		verify(repositoryMock).searchPublished("midsommar* 1985*");
+		assertThat(result.getFilms()).hasSize(1);
+		verify(repositoryMock).searchPublished("midsommar* 1985*", pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
 	@Test
 	void searchWithNullQuery() {
+		final var pageable = PageRequest.of(0, 100);
 		final var entity = FilmEntity.create().withFilmId(1);
 
-		when(repositoryMock.findAllPublished()).thenReturn(List.of(entity));
+		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
-		final var result = service.search(null);
+		final var result = service.search(FilmParameters.create());
 
-		assertThat(result).hasSize(1);
-		verify(repositoryMock).findAllPublished();
+		assertThat(result.getFilms()).hasSize(1);
+		verify(repositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
 	@Test
 	void searchWithBlankQuery() {
+		final var pageable = PageRequest.of(0, 100);
 		final var entity = FilmEntity.create().withFilmId(1);
 
-		when(repositoryMock.findAllPublished()).thenReturn(List.of(entity));
+		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
-		final var result = service.search("   ");
+		final var result = service.search(FilmParameters.create().withQuery("   "));
 
-		assertThat(result).hasSize(1);
-		verify(repositoryMock).findAllPublished();
+		assertThat(result.getFilms()).hasSize(1);
+		verify(repositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
 	@Test
 	void searchWithOperatorOnlyQueryFallsBackToFindAllPublished() {
-		when(repositoryMock.findAllPublished()).thenReturn(List.of());
+		final var pageable = PageRequest.of(0, 100);
 
-		final var result = service.search("+-*");
+		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
-		assertThat(result).isEmpty();
-		verify(repositoryMock).findAllPublished();
+		final var result = service.search(FilmParameters.create().withQuery("+-*"));
+
+		assertThat(result.getFilms()).isEmpty();
+		verify(repositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
