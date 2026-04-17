@@ -69,14 +69,14 @@ class FotoResource {
 	}
 
 	@GetMapping(path = "/{id}/file")
-	@Operation(summary = "Get photo file", description = "Download a file associated with a photo by specifying the variant (liten, stor, original)")
+	@Operation(summary = "Get photo file", description = "Download a file associated with a photo by specifying the variant (liten = thumbnail preview, stor = large image)")
 	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void getPhotoFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
 		@PathVariable final Integer id,
 		@RequestParam @OneOf({
-			"liten", "stor", "original"
+			"liten", "stor"
 		}) final String variant,
 		final HttpServletResponse response) {
 

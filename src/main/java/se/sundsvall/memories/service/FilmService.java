@@ -22,7 +22,6 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
-import static se.sundsvall.memories.service.mapper.FilmMapper.toFilmList;
 
 @Service
 public class FilmService {
@@ -30,11 +29,14 @@ public class FilmService {
 	private final FilmRepository filmRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
+	private final TopografiLookup topografiLookup;
 
-	public FilmService(final FilmRepository filmRepository, final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties) {
+	public FilmService(final FilmRepository filmRepository, final SambaIntegration sambaIntegration,
+		final SambaIntegrationProperties sambaProperties, final TopografiLookup topografiLookup) {
 		this.filmRepository = filmRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
+		this.topografiLookup = topografiLookup;
 	}
 
 	private static String deriveFilename(final FilmEntity entity) {
@@ -55,13 +57,13 @@ public class FilmService {
 			: filmRepository.searchPublished(sanitized, pageable);
 
 		return PagedFilmResponse.create()
-			.withFilms(toFilmList(page.getContent()))
+			.withFilms(FilmMapper.toFilmList(page.getContent(), topografiLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
 	public Film getById(final Integer id) {
 		return filmRepository.findById(id)
-			.map(FilmMapper::toFilm)
+			.map(entity -> FilmMapper.toFilm(entity, topografiLookup.resolve(entity.getFilmTId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
 	}
 

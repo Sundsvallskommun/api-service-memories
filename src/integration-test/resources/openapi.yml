@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "2.3"
 servers:
-- url: http://localhost:62113
+- url: http://localhost:50509
   description: Generated server url
 tags:
 - name: Films
@@ -110,7 +110,7 @@ paths:
       - Publications
       summary: Get publication file
       description: "Download a file associated with a publication by specifying the\
-        \ variant (liten, stor, original, txt, xtra)"
+        \ variant (liten = thumbnail preview, stor = large image, txt = OCR/text)"
       operationId: getPublicationFile
       parameters:
       - name: municipalityId
@@ -246,7 +246,7 @@ paths:
       - Photos
       summary: Get photo file
       description: "Download a file associated with a photo by specifying the variant\
-        \ (liten, stor, original)"
+        \ (liten = thumbnail preview, stor = large image)"
       operationId: getPhotoFile
       parameters:
       - name: municipalityId
@@ -658,7 +658,13 @@ components:
           - Sida 3 Alfwar och Skämt nr 8 1841
         pubOplats:
           type: string
-          description: Publication location
+          description: Publication location (free-text fallback from P_OPLATS)
+          examples:
+          - Sundsvall
+        plats:
+          type: string
+          description: Resolved place name from TOPOGRAFI (preferred over pubOplats
+            when set)
           examples:
           - Sundsvall
         kommentPubl:
@@ -676,21 +682,11 @@ components:
           description: Large image file name
           examples:
           - PUBL.id_207_fil_stor.jpeg
-        filOriginal:
-          type: string
-          description: Original file name
-          examples:
-          - PUBL.id_207_fil_original.jpeg
         filTxt:
           type: string
           description: OCR/text file name
           examples:
           - PUBL.id_207_fil_txt.xml
-        filXtra:
-          type: string
-          description: Extra file name
-          examples:
-          - PUBL.id_207_fil_xtra.jpeg
         xmltext:
           type: string
           description: Full OCR/XML text (only returned on detail lookup)
@@ -731,6 +727,12 @@ components:
           description: Free text search query
           examples:
           - Sundsvall
+        objtyp:
+          type: string
+          description: Filter by OBJTYP. Use 'Foto' for photographs or 'Föremål' for
+            physical objects. Omit to return both.
+          examples:
+          - Foto
     Foto:
       type: object
       description: Photo / Foto model
@@ -780,7 +782,11 @@ components:
           description: Observation date
         fotoOplats:
           type: string
-          description: Indeterminable place
+          description: Indeterminable place (free-text fallback from F_OPLATS)
+        plats:
+          type: string
+          description: Resolved place name from TOPOGRAFI (preferred over fotoOplats
+            when set)
         forplats:
           type: string
           description: Storage location
@@ -858,9 +864,6 @@ components:
         filStor:
           type: string
           description: Large image file name
-        filOriginal:
-          type: string
-          description: Original file name
     PagedFotoResponse:
       type: object
       description: Paged photo response
@@ -953,7 +956,13 @@ components:
           - "1"
         filmOplats:
           type: string
-          description: Film location
+          description: Film location (free-text fallback from FILM_OPLATS)
+          examples:
+          - Sundsvall
+        plats:
+          type: string
+          description: Resolved place name from TOPOGRAFI (preferred over filmOplats
+            when set)
           examples:
           - Sundsvall
         filmOId:

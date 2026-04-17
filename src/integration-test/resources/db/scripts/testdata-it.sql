@@ -7,6 +7,17 @@ DELETE
 FROM FILM;
 DELETE
 FROM FOTO;
+DELETE
+FROM TOPOGRAFI;
+
+--
+-- TOPOGRAFI (place lookup)
+--
+INSERT INTO TOPOGRAFI (T_ID, TOPNAMN, TOPKOD, PLATS, LAND)
+VALUES (1, 'Sundsvall', 'SUN', 'Sundsvalls kommun', 'Sverige'),
+       (2, 'Timrå', 'TIM', 'Timrå kommun', 'Sverige'),
+       (4, 'Sundsvalls kommun', 'SUNK', 'Sundsvalls kommun', 'Sverige'),
+       (16, 'Sundsvall stad', 'SUNS', 'Sundsvalls kommun', 'Sverige');
 
 --
 -- FILM
@@ -90,9 +101,9 @@ VALUES (1002, 'Hamnen i Sundsvall 1950', 'Sundsvalls hamn på 1950-talet med bå
         'Sundsvall', 'Foto', 'Färg', 'FOTO.id_1002_fil_liten.jpg', 'FOTO.id_1002_fil_stor.jpg',
         'FOTO.id_1002_fil_original.jpg', 19001, 4);
 
-INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, SENAST, F_OPLATS, OBJTYP, FIL_LITEN, FIL_STOR, FIL_ORIGINAL,
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, SENAST, F_OPLATS, OBJTYP, F_T_ID, FIL_LITEN, FIL_STOR, FIL_ORIGINAL,
                   NODEID, `OPTIONS`)
-VALUES (1003, 'Industribild från Timrå', 'Sågverk i Timrå', '1960', '1962', 'Timrå', 'Foto',
+VALUES (1003, 'Industribild från Timrå', 'Sågverk i Timrå', '1960', '1962', 'Timrå', 'Foto', 2,
         'FOTO.id_1003_fil_liten.jpg', 'FOTO.id_1003_fil_stor.jpg', 'FOTO.id_1003_fil_original.jpg', 19002, 4);
 
 -- Unpublished photo that must never appear in any response

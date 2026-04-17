@@ -42,8 +42,11 @@ public class Foto {
 	@Schema(description = "Observation date")
 	private String obsdatum;
 
-	@Schema(description = "Indeterminable place")
+	@Schema(description = "Indeterminable place (free-text fallback from F_OPLATS)")
 	private String fotoOplats;
+
+	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over fotoOplats when set)")
+	private String plats;
 
 	@Schema(description = "Storage location")
 	private String forplats;
@@ -119,9 +122,6 @@ public class Foto {
 
 	@Schema(description = "Large image file name")
 	private String filStor;
-
-	@Schema(description = "Original file name")
-	private String filOriginal;
 
 	public static Foto create() {
 		return new Foto();
@@ -293,6 +293,19 @@ public class Foto {
 
 	public Foto withFotoOplats(final String fotoOplats) {
 		this.fotoOplats = fotoOplats;
+		return this;
+	}
+
+	public String getPlats() {
+		return plats;
+	}
+
+	public void setPlats(final String plats) {
+		this.plats = plats;
+	}
+
+	public Foto withPlats(final String plats) {
+		this.plats = plats;
 		return this;
 	}
 
@@ -621,19 +634,6 @@ public class Foto {
 		return this;
 	}
 
-	public String getFilOriginal() {
-		return filOriginal;
-	}
-
-	public void setFilOriginal(final String filOriginal) {
-		this.filOriginal = filOriginal;
-	}
-
-	public Foto withFilOriginal(final String filOriginal) {
-		this.filOriginal = filOriginal;
-		return this;
-	}
-
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -648,14 +648,14 @@ public class Foto {
 			&& Objects.equals(diam, that.diam) && Objects.equals(ram, that.ram) && Objects.equals(tillSkat, that.tillSkat) && Objects.equals(tillstand, that.tillstand)
 			&& Objects.equals(obsnamn, that.obsnamn) && Objects.equals(atgard, that.atgard) && Objects.equals(atdDatum, that.atdDatum) && Objects.equals(sign, that.sign)
 			&& Objects.equals(givRattigh, that.givRattigh) && Objects.equals(givForbeh, that.givForbeh) && Objects.equals(anvando, that.anvando) && Objects.equals(kommentUpph, that.kommentUpph)
-			&& Objects.equals(filLiten, that.filLiten) && Objects.equals(filStor, that.filStor) && Objects.equals(filOriginal, that.filOriginal);
+			&& Objects.equals(filLiten, that.filLiten) && Objects.equals(filStor, that.filStor) && Objects.equals(plats, that.plats);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(fotoId, filnamn, accNr, refKod, inventNr, tidigNr, doktitel, sakord, kommentFf, tidig, senast, obsdatum, fotoOplats, forplats, objtyp, svvitfarg,
 			negPos, genPas, bildbar, material, teknik, funktion, hojd, bredd, diam, ram, tillSkat, tillstand, obsnamn, atgard, atdDatum, sign,
-			givRattigh, givForbeh, anvando, kommentUpph, filLiten, filStor, filOriginal);
+			givRattigh, givForbeh, anvando, kommentUpph, filLiten, filStor, plats);
 	}
 
 	@Override
@@ -699,7 +699,7 @@ public class Foto {
 			", kommentUpph='" + kommentUpph + '\'' +
 			", filLiten='" + filLiten + '\'' +
 			", filStor='" + filStor + '\'' +
-			", filOriginal='" + filOriginal + '\'' +
+			", plats='" + plats + '\'' +
 			'}';
 	}
 }

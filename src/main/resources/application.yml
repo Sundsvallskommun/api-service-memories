@@ -18,3 +18,33 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
   flyway:
     enabled: false
+#========================================
+# Logbook — disable the servlet filter entirely.
+#
+# Why this is the only workable option:
+#
+# Zalando Logbook's servlet filter (`LogbookFilter`) wraps every response
+# with `LocalResponse`. Its `getOutputStream()` ALWAYS calls `buffer()` on
+# first access — the underlying `State` machine transitions from
+# `Unbuffered` to `Buffered` and from then on every byte written to the
+# response is also captured into an in-memory byte array.
+#
+# This buffering is unconditional. Path exclusions, predicate excludes, and
+# strategy choices (default / status-at-least / body-only-if-status-at-least
+# / without-body) only control what gets WRITTEN to the log — none of them
+# stop the wrapper from accumulating bytes. So a 41 MB film download = a
+# 41 MB byte array on the heap = OOM.
+#
+# Decompiled bytecode confirms: `LocalResponse.getOutputStream` invokes
+# `buffer()` before returning, no condition checked.
+#
+# Trade-off: we lose Zalando-style request/response payload logging on this
+# service. dept44's RequestIdFilter and SLF4J access logs (Tomcat) still
+# cover correlation IDs and request lines. For an archive search service
+# that just streams binary blobs, the trade-off is correct.
+#========================================
+logbook:
+  filter:
+    enabled: false
+  secure-filter:
+    enabled: false

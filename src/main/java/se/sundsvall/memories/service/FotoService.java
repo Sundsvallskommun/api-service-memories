@@ -3,7 +3,9 @@ package se.sundsvall.memories.service;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.function.Function;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
@@ -30,30 +32,52 @@ public class FotoService {
 	private final FotoRepository fotoRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
+	private final TopografiLookup topografiLookup;
 
 	public FotoService(final FotoRepository fotoRepository,
-		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties) {
+		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
+		final TopografiLookup topografiLookup) {
 		this.fotoRepository = fotoRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
+		this.topografiLookup = topografiLookup;
 	}
 
 	public PagedFotoResponse search(final FotoParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
+		final var objtyp = trimToNull(parameters.getObjtyp());
 
-		final var page = sanitized == null
-			? fotoRepository.findAllPublished(pageable)
-			: fotoRepository.searchPublished(sanitized, pageable);
+		final var page = fetchPage(sanitized, objtyp, pageable);
 
 		return PagedFotoResponse.create()
-			.withPhotos(FotoMapper.toFotoList(page.getContent()))
+			.withPhotos(FotoMapper.toFotoList(page.getContent(), topografiLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
+	}
+
+	private Page<FotoEntity> fetchPage(final String sanitizedQuery, final String objtyp, final Pageable pageable) {
+		if (objtyp != null && sanitizedQuery != null) {
+			return fotoRepository.searchPublishedByObjtyp(sanitizedQuery, objtyp, pageable);
+		}
+		if (objtyp != null) {
+			return fotoRepository.findAllPublishedByObjtyp(objtyp, pageable);
+		}
+		if (sanitizedQuery != null) {
+			return fotoRepository.searchPublished(sanitizedQuery, pageable);
+		}
+		return fotoRepository.findAllPublished(pageable);
+	}
+
+	private static String trimToNull(final String value) {
+		return ofNullable(value)
+			.map(String::trim)
+			.filter(s -> !s.isEmpty())
+			.orElse(null);
 	}
 
 	public Foto getById(final Integer id) {
 		return fotoRepository.findById(id)
-			.map(FotoMapper::toFoto)
+			.map(entity -> FotoMapper.toFoto(entity, topografiLookup.resolve(entity.getFotoTId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
 	}
 
@@ -84,8 +108,7 @@ public class FotoService {
 
 	public enum FileVariant {
 		LITEN("fil_liten", FotoEntity::getFilLiten),
-		STOR("fil_stor", FotoEntity::getFilStor),
-		ORIGINAL("fil_original", FotoEntity::getFilOriginal);
+		STOR("fil_stor", FotoEntity::getFilStor);
 
 		private final String subfolder;
 		private final Function<FotoEntity, String> fileNameExtractor;

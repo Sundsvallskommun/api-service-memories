@@ -48,6 +48,9 @@ class PublicationServiceTest {
 	@Mock
 	private SambaIntegration sambaIntegrationMock;
 
+	@Mock
+	private TopografiLookup topografiLookupMock;
+
 	private PublicationService service;
 
 	private static PublEntity entity() {
@@ -58,9 +61,7 @@ class PublicationServiceTest {
 			.withPubliktyp("Broschyrer")
 			.withFilLiten("PUBL.id_207_fil_liten.jpeg")
 			.withFilStor("PUBL.id_207_fil_stor.jpeg")
-			.withFilOriginal("PUBL.id_207_fil_original.jpeg")
 			.withFilTxt("PUBL.id_207_fil_txt.xml")
-			.withFilXtra("PUBL.id_207_fil_xtra.jpeg")
 			.withXmltext("<text>content</text>")
 			.withOptions(4);
 	}
@@ -69,25 +70,25 @@ class PublicationServiceTest {
 		return Stream.of(
 			Arguments.of(FileVariant.LITEN, "PUBL.id_207_fil_liten.jpeg", "fil_liten"),
 			Arguments.of(FileVariant.STOR, "PUBL.id_207_fil_stor.jpeg", "fil_stor"),
-			Arguments.of(FileVariant.ORIGINAL, "PUBL.id_207_fil_original.jpeg", "fil_original"),
-			Arguments.of(FileVariant.TXT, "PUBL.id_207_fil_txt.xml", "fil_txt"),
-			Arguments.of(FileVariant.XTRA, "PUBL.id_207_fil_xtra.jpeg", "fil_xtra"));
+			Arguments.of(FileVariant.TXT, "PUBL.id_207_fil_txt.xml", "fil_txt"));
 	}
 
 	@BeforeEach
 	void setUp() {
-		service = new PublicationService(publRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES);
+		service = new PublicationService(publRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topografiLookupMock);
 	}
 
 	@Test
 	void searchWithQueryUsesFulltextRepository() {
 		final var pageable = PageRequest.of(0, 100);
 		when(publRepositoryMock.searchPublished("Drunkningsolycka*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(topografiLookupMock.resolve(4)).thenReturn("Sundsvall");
 
 		final var result = service.search(PublicationParameters.create().withQuery("Drunkningsolycka"));
 
 		assertThat(result.getPublications()).hasSize(1);
 		assertThat(result.getPublications().getFirst().getPubliktyp()).isEqualTo("Broschyrer");
+		assertThat(result.getPublications().getFirst().getPlats()).isEqualTo("Sundsvall");
 		assertThat(result.getPublications().getFirst().getXmltext()).isNull();
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
@@ -132,8 +133,9 @@ class PublicationServiceTest {
 	}
 
 	@Test
-	void getByIdIncludesXmltext() {
+	void getByIdIncludesXmltextAndPlats() {
 		when(publRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
+		when(topografiLookupMock.resolve(4)).thenReturn("Sundsvall");
 
 		final var result = service.getById(207);
 
@@ -141,6 +143,7 @@ class PublicationServiceTest {
 		assertThat(result.getPublId()).isEqualTo(207);
 		assertThat(result.getXmltext()).isEqualTo("<text>content</text>");
 		assertThat(result.getPubliktyp()).isEqualTo("Broschyrer");
+		assertThat(result.getPlats()).isEqualTo("Sundsvall");
 	}
 
 	@Test
@@ -186,22 +189,7 @@ class PublicationServiceTest {
 	@Test
 	void streamFileWhenVariantIsBlank() {
 		final var responseMock = mock(HttpServletResponse.class);
-		final var entityMissingFile = entity().withFilXtra("   ");
-
-		when(publRepositoryMock.findById(207)).thenReturn(Optional.of(entityMissingFile));
-
-		final var exception = assertThrows(ThrowableProblem.class,
-			() -> service.streamFile(207, FileVariant.XTRA, responseMock));
-
-		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
-		assertThat(exception.getMessage()).contains("no file for variant 'xtra'");
-		verifyNoInteractions(sambaIntegrationMock);
-	}
-
-	@Test
-	void streamFileWhenVariantIsNull() {
-		final var responseMock = mock(HttpServletResponse.class);
-		final var entityMissingFile = entity().withFilTxt(null);
+		final var entityMissingFile = entity().withFilTxt("   ");
 
 		when(publRepositoryMock.findById(207)).thenReturn(Optional.of(entityMissingFile));
 
@@ -210,6 +198,21 @@ class PublicationServiceTest {
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("no file for variant 'txt'");
+		verifyNoInteractions(sambaIntegrationMock);
+	}
+
+	@Test
+	void streamFileWhenVariantIsNull() {
+		final var responseMock = mock(HttpServletResponse.class);
+		final var entityMissingFile = entity().withFilLiten(null);
+
+		when(publRepositoryMock.findById(207)).thenReturn(Optional.of(entityMissingFile));
+
+		final var exception = assertThrows(ThrowableProblem.class,
+			() -> service.streamFile(207, FileVariant.LITEN, responseMock));
+
+		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
+		assertThat(exception.getMessage()).contains("no file for variant 'liten'");
 	}
 
 	@Test

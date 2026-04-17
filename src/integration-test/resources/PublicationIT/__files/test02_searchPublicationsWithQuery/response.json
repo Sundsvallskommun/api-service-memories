@@ -18,12 +18,11 @@
 			"forlagOplats": "Sundsvall",
 			"doktitel": "Sida 3 Alfwar och Skämt nr 8 1841",
 			"pubOplats": "Sundsvall",
+			"plats": "Sundsvall stad",
 			"kommentPubl": "Tidningsnummer från 1841",
 			"filLiten": "PUBL.id_207_fil_liten.jpeg",
 			"filStor": "PUBL.id_207_fil_stor.jpeg",
-			"filOriginal": "PUBL.id_207_fil_original.jpeg",
-			"filTxt": "PUBL.id_207_fil_txt.xml",
-			"filXtra": "PUBL.id_207_fil_xtra.jpeg"
+			"filTxt": "PUBL.id_207_fil_txt.xml"
 		}
 	]
 }

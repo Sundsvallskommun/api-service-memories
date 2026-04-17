@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
+import java.util.function.Function;
 import se.sundsvall.memories.api.model.Foto;
 import se.sundsvall.memories.integration.db.model.FotoEntity;
 
@@ -11,7 +12,14 @@ public final class FotoMapper {
 
 	private FotoMapper() {}
 
-	public static Foto toFoto(final FotoEntity entity) {
+	/**
+	 * Map a single FotoEntity to a Foto API model with the resolved place name {@code plats}.
+	 *
+	 * @param  entity the source entity
+	 * @param  plats  the topografi-resolved place name (nullable)
+	 * @return        the mapped {@link Foto}, or {@code null} if {@code entity} is null
+	 */
+	public static Foto toFoto(final FotoEntity entity, final String plats) {
 		return ofNullable(entity)
 			.map(e -> Foto.create()
 				.withFotoId(e.getFotoId())
@@ -27,6 +35,7 @@ public final class FotoMapper {
 				.withSenast(e.getSenast())
 				.withObsdatum(e.getObsdatum())
 				.withFotoOplats(e.getFotoOplats())
+				.withPlats(plats)
 				.withForplats(e.getForplats())
 				.withObjtyp(e.getObjtyp())
 				.withSvvitfarg(e.getSvvitfarg())
@@ -51,15 +60,21 @@ public final class FotoMapper {
 				.withAnvando(e.getAnvando())
 				.withKommentUpph(e.getKommentUpph())
 				.withFilLiten(e.getFilLiten())
-				.withFilStor(e.getFilStor())
-				.withFilOriginal(e.getFilOriginal()))
+				.withFilStor(e.getFilStor()))
 			.orElse(null);
 	}
 
-	public static List<Foto> toFotoList(final List<FotoEntity> entities) {
+	/**
+	 * Map a list of FotoEntities, resolving each entity's plats via the provided lookup.
+	 *
+	 * @param  entities    source entities
+	 * @param  platsLookup function from fotoTId → resolved plats string (nullable)
+	 * @return             list of mapped {@link Foto}, empty if entities is null
+	 */
+	public static List<Foto> toFotoList(final List<FotoEntity> entities, final Function<Integer, String> platsLookup) {
 		return ofNullable(entities)
 			.map(list -> list.stream()
-				.map(FotoMapper::toFoto)
+				.map(e -> toFoto(e, platsLookup.apply(e.getFotoTId())))
 				.toList())
 			.orElse(emptyList());
 	}

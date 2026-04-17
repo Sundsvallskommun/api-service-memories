@@ -48,6 +48,9 @@ class FotoServiceTest {
 	@Mock
 	private SambaIntegration sambaIntegrationMock;
 
+	@Mock
+	private TopografiLookup topografiLookupMock;
+
 	private FotoService service;
 
 	private static FotoEntity entity() {
@@ -56,20 +59,18 @@ class FotoServiceTest {
 			.withDoktitel("Stadsvy")
 			.withFilLiten("FOTO.id_1234_fil_liten.jpg")
 			.withFilStor("FOTO.id_1234_fil_stor.jpg")
-			.withFilOriginal("FOTO.id_1234_fil_original.jpg")
 			.withOptions(4);
 	}
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
 			Arguments.of(FileVariant.LITEN, "FOTO.id_1234_fil_liten.jpg", "fil_liten"),
-			Arguments.of(FileVariant.STOR, "FOTO.id_1234_fil_stor.jpg", "fil_stor"),
-			Arguments.of(FileVariant.ORIGINAL, "FOTO.id_1234_fil_original.jpg", "fil_original"));
+			Arguments.of(FileVariant.STOR, "FOTO.id_1234_fil_stor.jpg", "fil_stor"));
 	}
 
 	@BeforeEach
 	void setUp() {
-		service = new FotoService(fotoRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES);
+		service = new FotoService(fotoRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topografiLookupMock);
 	}
 
 	@Test

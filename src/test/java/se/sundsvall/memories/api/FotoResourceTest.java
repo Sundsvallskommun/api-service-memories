@@ -116,8 +116,7 @@ class FotoResourceTest {
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
 			Arguments.of("liten", FileVariant.LITEN),
-			Arguments.of("stor", FileVariant.STOR),
-			Arguments.of("original", FileVariant.ORIGINAL));
+			Arguments.of("stor", FileVariant.STOR));
 	}
 
 	@ParameterizedTest

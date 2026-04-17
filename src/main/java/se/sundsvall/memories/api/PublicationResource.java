@@ -69,14 +69,14 @@ class PublicationResource {
 	}
 
 	@GetMapping(path = "/{id}/file")
-	@Operation(summary = "Get publication file", description = "Download a file associated with a publication by specifying the variant (liten, stor, original, txt, xtra)")
+	@Operation(summary = "Get publication file", description = "Download a file associated with a publication by specifying the variant (liten = thumbnail preview, stor = large image, txt = OCR/text)")
 	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void getPublicationFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
 		@PathVariable final Integer id,
 		@RequestParam @OneOf({
-			"liten", "stor", "original", "txt", "xtra"
+			"liten", "stor", "txt"
 		}) final String variant,
 		final HttpServletResponse response) {
 
