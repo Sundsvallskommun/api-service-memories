@@ -24,6 +24,8 @@ class SambaIntegrationPropertiesTest {
 		assertThat(properties.username()).isEqualTo("user");
 		assertThat(properties.password()).isEqualTo("password");
 		assertThat(properties.share()).isEqualTo("/share/");
+		assertThat(properties.filmFolder()).isEqualTo("/film/");
 		assertThat(properties.publFolder()).isEqualTo("/publ/");
+		assertThat(properties.fotoFolder()).isEqualTo("/foto/");
 	}
 }

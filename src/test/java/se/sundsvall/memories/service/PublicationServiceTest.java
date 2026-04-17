@@ -40,7 +40,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class PublicationServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film", "/publ/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/");
 
 	@Mock
 	private PublRepository publRepositoryMock;

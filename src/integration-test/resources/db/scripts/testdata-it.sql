@@ -5,6 +5,8 @@ DELETE
 FROM PUBL;
 DELETE
 FROM FILM;
+DELETE
+FROM FOTO;
 
 --
 -- FILM
@@ -72,3 +74,27 @@ INSERT INTO PUBL (P_ID, FILNAMN, PUBLIKTYP, DATUM, TIDTITEL, TIDNR, TIDSIDA, BF_
 VALUES (500, 'draft.xml', '', '2024-01-01', null, null, null, 1, 1, 'Sundsvall', '2024-01-01',
         'Draft unpublished publication', 0, 0, 1, 0, 4, 'Sundsvall', 1, 'Not yet published', null, null, null, null,
         'Drunkningsolycka draft not published', null, 18700, 0, 'text', null);
+
+--
+-- FOTO
+--
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, SENAST, F_OPLATS, OBJTYP, SVVITFARG, MATERIAL, TEKNIK,
+                  TILLSKAT, TILLSTAND, FIL_LITEN, FIL_STOR, FIL_ORIGINAL, NODEID, `OPTIONS`)
+VALUES (1001, 'Stadsvy från Norra berget', 'Panorama över Sundsvall från Norra berget', '1920', '1925',
+        'Sundsvall', 'Foto', 'Svartvit', 'Glas', 'Negativ', 'Bra', 'Inga skador', 'FOTO.id_1001_fil_liten.jpg',
+        'FOTO.id_1001_fil_stor.jpg', 'FOTO.id_1001_fil_original.jpg', 19000, 4);
+
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, SENAST, F_OPLATS, OBJTYP, SVVITFARG, FIL_LITEN, FIL_STOR,
+                  FIL_ORIGINAL, NODEID, `OPTIONS`)
+VALUES (1002, 'Hamnen i Sundsvall 1950', 'Sundsvalls hamn på 1950-talet med båtar', '1950', '1955',
+        'Sundsvall', 'Foto', 'Färg', 'FOTO.id_1002_fil_liten.jpg', 'FOTO.id_1002_fil_stor.jpg',
+        'FOTO.id_1002_fil_original.jpg', 19001, 4);
+
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, SENAST, F_OPLATS, OBJTYP, FIL_LITEN, FIL_STOR, FIL_ORIGINAL,
+                  NODEID, `OPTIONS`)
+VALUES (1003, 'Industribild från Timrå', 'Sågverk i Timrå', '1960', '1962', 'Timrå', 'Foto',
+        'FOTO.id_1003_fil_liten.jpg', 'FOTO.id_1003_fil_stor.jpg', 'FOTO.id_1003_fil_original.jpg', 19002, 4);
+
+-- Unpublished photo that must never appear in any response
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, FIL_LITEN, NODEID, `OPTIONS`)
+VALUES (1099, 'Draft unpublished photo', 'Stadsvy not yet published', '2024', null, 19099, 0);
