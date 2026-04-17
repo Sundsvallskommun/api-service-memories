@@ -30,12 +30,15 @@ public class PublicationService {
 	private final PublRepository publRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
+	private final TopografiLookup topografiLookup;
 
 	public PublicationService(final PublRepository publRepository,
-		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties) {
+		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
+		final TopografiLookup topografiLookup) {
 		this.publRepository = publRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
+		this.topografiLookup = topografiLookup;
 	}
 
 	public PagedPublicationResponse search(final PublicationParameters parameters) {
@@ -47,13 +50,13 @@ public class PublicationService {
 			: publRepository.searchPublished(sanitized, pageable);
 
 		return PagedPublicationResponse.create()
-			.withPublications(PublicationMapper.toPublicationList(page.getContent()))
+			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topografiLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
 	public Publication getById(final Integer id) {
 		return publRepository.findById(id)
-			.map(PublicationMapper::toPublication)
+			.map(entity -> PublicationMapper.toPublication(entity, topografiLookup.resolve(entity.getPtId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));
 	}
 
@@ -85,9 +88,7 @@ public class PublicationService {
 	public enum FileVariant {
 		LITEN("fil_liten", PublEntity::getFilLiten),
 		STOR("fil_stor", PublEntity::getFilStor),
-		ORIGINAL("fil_original", PublEntity::getFilOriginal),
-		TXT("fil_txt", PublEntity::getFilTxt),
-		XTRA("fil_xtra", PublEntity::getFilXtra);
+		TXT("fil_txt", PublEntity::getFilTxt);
 
 		private final String subfolder;
 		private final Function<PublEntity, String> fileNameExtractor;

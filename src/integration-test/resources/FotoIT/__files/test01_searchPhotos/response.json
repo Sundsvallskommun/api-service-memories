@@ -14,6 +14,7 @@
 			"tidig": "1920",
 			"senast": "1925",
 			"fotoOplats": "Sundsvall",
+			"plats": "Sundsvall",
 			"objtyp": "Foto",
 			"svvitfarg": "Svartvit",
 			"material": "Glas",
@@ -21,8 +22,7 @@
 			"tillSkat": "Bra",
 			"tillstand": "Inga skador",
 			"filLiten": "FOTO.id_1001_fil_liten.jpg",
-			"filStor": "FOTO.id_1001_fil_stor.jpg",
-			"filOriginal": "FOTO.id_1001_fil_original.jpg"
+			"filStor": "FOTO.id_1001_fil_stor.jpg"
 		},
 		{
 			"fotoId": 1002,
@@ -31,11 +31,11 @@
 			"tidig": "1950",
 			"senast": "1955",
 			"fotoOplats": "Sundsvall",
+			"plats": "Sundsvall",
 			"objtyp": "Foto",
 			"svvitfarg": "Färg",
 			"filLiten": "FOTO.id_1002_fil_liten.jpg",
-			"filStor": "FOTO.id_1002_fil_stor.jpg",
-			"filOriginal": "FOTO.id_1002_fil_original.jpg"
+			"filStor": "FOTO.id_1002_fil_stor.jpg"
 		},
 		{
 			"fotoId": 1003,
@@ -44,10 +44,10 @@
 			"tidig": "1960",
 			"senast": "1962",
 			"fotoOplats": "Timrå",
+			"plats": "Timrå",
 			"objtyp": "Foto",
 			"filLiten": "FOTO.id_1003_fil_liten.jpg",
-			"filStor": "FOTO.id_1003_fil_stor.jpg",
-			"filOriginal": "FOTO.id_1003_fil_original.jpg"
+			"filStor": "FOTO.id_1003_fil_stor.jpg"
 		}
 	]
 }

@@ -35,12 +35,11 @@ class PublicationTest {
 		final var forlagOplats = "Sundsvall";
 		final var doktitel = "Sida 3 Alfwar och Skämt nr 8 1841";
 		final var pubOplats = "Sundsvall";
+		final var plats = "Sundsvalls kommun";
 		final var kommentPubl = "Archive comment";
 		final var filLiten = "PUBL.id_207_fil_liten.jpeg";
 		final var filStor = "PUBL.id_207_fil_stor.jpeg";
-		final var filOriginal = "PUBL.id_207_fil_original.jpeg";
 		final var filTxt = "PUBL.id_207_fil_txt.xml";
-		final var filXtra = "PUBL.id_207_fil_xtra.jpeg";
 		final var xmltext = "<text>OCR content</text>";
 
 		final var result = Publication.create()
@@ -54,12 +53,11 @@ class PublicationTest {
 			.withForlagOplats(forlagOplats)
 			.withDoktitel(doktitel)
 			.withPubOplats(pubOplats)
+			.withPlats(plats)
 			.withKommentPubl(kommentPubl)
 			.withFilLiten(filLiten)
 			.withFilStor(filStor)
-			.withFilOriginal(filOriginal)
 			.withFilTxt(filTxt)
-			.withFilXtra(filXtra)
 			.withXmltext(xmltext);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
@@ -73,12 +71,11 @@ class PublicationTest {
 		assertThat(result.getForlagOplats()).isEqualTo(forlagOplats);
 		assertThat(result.getDoktitel()).isEqualTo(doktitel);
 		assertThat(result.getPubOplats()).isEqualTo(pubOplats);
+		assertThat(result.getPlats()).isEqualTo(plats);
 		assertThat(result.getKommentPubl()).isEqualTo(kommentPubl);
 		assertThat(result.getFilLiten()).isEqualTo(filLiten);
 		assertThat(result.getFilStor()).isEqualTo(filStor);
-		assertThat(result.getFilOriginal()).isEqualTo(filOriginal);
 		assertThat(result.getFilTxt()).isEqualTo(filTxt);
-		assertThat(result.getFilXtra()).isEqualTo(filXtra);
 		assertThat(result.getXmltext()).isEqualTo(xmltext);
 	}
 

@@ -15,6 +15,9 @@ public class FotoEntity {
 	@Column(name = "F_ID")
 	private Integer fotoId;
 
+	@Column(name = "F_T_ID")
+	private Integer fotoTId;
+
 	@Column(name = "FILNAMN", length = 256)
 	private String filnamn;
 
@@ -152,6 +155,19 @@ public class FotoEntity {
 
 	public FotoEntity withFotoId(final Integer fotoId) {
 		this.fotoId = fotoId;
+		return this;
+	}
+
+	public Integer getFotoTId() {
+		return fotoTId;
+	}
+
+	public void setFotoTId(final Integer fotoTId) {
+		this.fotoTId = fotoTId;
+	}
+
+	public FotoEntity withFotoTId(final Integer fotoTId) {
+		this.fotoTId = fotoTId;
 		return this;
 	}
 
@@ -693,7 +709,7 @@ public class FotoEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final FotoEntity that = (FotoEntity) o;
-		return Objects.equals(fotoId, that.fotoId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(accNr, that.accNr) && Objects.equals(refKod, that.refKod)
+		return Objects.equals(fotoId, that.fotoId) && Objects.equals(fotoTId, that.fotoTId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(accNr, that.accNr) && Objects.equals(refKod, that.refKod)
 			&& Objects.equals(inventNr, that.inventNr) && Objects.equals(tidigNr, that.tidigNr) && Objects.equals(doktitel, that.doktitel) && Objects.equals(sakord, that.sakord)
 			&& Objects.equals(kommentFf, that.kommentFf) && Objects.equals(tidig, that.tidig) && Objects.equals(senast, that.senast) && Objects.equals(obsdatum, that.obsdatum)
 			&& Objects.equals(fotoOplats, that.fotoOplats) && Objects.equals(forplats, that.forplats) && Objects.equals(objtyp, that.objtyp) && Objects.equals(svvitfarg, that.svvitfarg)
@@ -708,7 +724,7 @@ public class FotoEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(fotoId, filnamn, accNr, refKod, inventNr, tidigNr, doktitel, sakord, kommentFf, tidig, senast, obsdatum, fotoOplats, forplats, objtyp, svvitfarg, negPos, genPas,
+		return Objects.hash(fotoId, fotoTId, filnamn, accNr, refKod, inventNr, tidigNr, doktitel, sakord, kommentFf, tidig, senast, obsdatum, fotoOplats, forplats, objtyp, svvitfarg, negPos, genPas,
 			bildbar, material, teknik, funktion, hojd, bredd, diam, ram, tillSkat, tillstand, obsnamn, atgard, atdDatum, sign, givRattigh, givForbeh, anvando, kommentUpph,
 			filLiten, filStor, filOriginal, nodeId, options, deletedDate);
 	}
@@ -717,6 +733,7 @@ public class FotoEntity {
 	public String toString() {
 		return "FotoEntity{" +
 			"fotoId=" + fotoId +
+			", fotoTId=" + fotoTId +
 			", filnamn='" + filnamn + '\'' +
 			", accNr='" + accNr + '\'' +
 			", refKod='" + refKod + '\'' +

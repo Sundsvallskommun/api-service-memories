@@ -18,3 +18,27 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
   flyway:
     enabled: false
+#========================================
+# Logbook — exclude binary file-streaming endpoints.
+#
+# IMPORTANT: there are two similar-looking properties and only ONE of them
+# actually prevents the OOM:
+#
+#   - `logbook.excluded.paths` (dept44-custom) — only suppresses WRITING the
+#     log. The servlet filter still wraps the response in a caching wrapper
+#     → entire body buffered in memory → OOM on large films.
+#
+#   - `logbook.predicate.exclude` (Zalando native) — evaluated BEFORE
+#     wrapping. The filter skips these paths entirely, so the response
+#     streams straight through. This is the one we need for OOM prevention.
+#
+# Samba integration itself uses `InputStream.transferTo(OutputStream)` which
+# streams in 8 KiB chunks, so once Logbook is out of the way the 41 MB AVIs
+# flow through with near-constant memory.
+#========================================
+logbook:
+  predicate:
+    exclude:
+      - path: /**/films/*/file
+      - path: /**/photos/*/file
+      - path: /**/publications/*/file

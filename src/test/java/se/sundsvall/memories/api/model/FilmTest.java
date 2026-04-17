@@ -44,6 +44,7 @@ class FilmTest {
 		final var doktitel = "Midsommarfirande i Sundsvall";
 		final var filmTId = 2;
 		final var filmOplats = "Sundsvall";
+		final var plats = "Sundsvall";
 		final var filmOId = 3;
 		final var filmUEId = 4;
 		final var filmUId = 5;
@@ -62,6 +63,7 @@ class FilmTest {
 			.withDoktitel(doktitel)
 			.withFilmTId(filmTId)
 			.withFilmOplats(filmOplats)
+			.withPlats(plats)
 			.withFilmOId(filmOId)
 			.withFilmUEId(filmUEId)
 			.withFilmUId(filmUId)
@@ -80,6 +82,7 @@ class FilmTest {
 		assertThat(result.getDoktitel()).isEqualTo(doktitel);
 		assertThat(result.getFilmTId()).isEqualTo(filmTId);
 		assertThat(result.getFilmOplats()).isEqualTo(filmOplats);
+		assertThat(result.getPlats()).isEqualTo(plats);
 		assertThat(result.getFilmOId()).isEqualTo(filmOId);
 		assertThat(result.getFilmUEId()).isEqualTo(filmUEId);
 		assertThat(result.getFilmUId()).isEqualTo(filmUId);

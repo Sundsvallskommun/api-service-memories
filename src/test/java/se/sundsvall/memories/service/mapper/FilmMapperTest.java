@@ -2,6 +2,7 @@ package se.sundsvall.memories.service.mapper;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,6 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 class FilmMapperTest {
+
+	private static final Function<Integer, String> NULL_LOOKUP = id -> null;
 
 	private static Stream<Arguments> toFilmArguments() {
 		return Stream.of(
@@ -45,6 +48,7 @@ class FilmMapperTest {
 					.withDoktitel("Test film")
 					.withFilmTId(2)
 					.withFilmOplats("Sundsvall")
+					.withPlats("Sundsvall kommun")
 					.withFilmOId(3)
 					.withFilmUEId(4)
 					.withFilmUId(5)
@@ -58,7 +62,7 @@ class FilmMapperTest {
 	@ParameterizedTest
 	@MethodSource("toFilmArguments")
 	void toFilm(final FilmEntity input, final Film expected) {
-		final var result = FilmMapper.toFilm(input);
+		final var result = FilmMapper.toFilm(input, "Sundsvall kommun");
 
 		if (expected == null) {
 			assertThat(result).isNull();
@@ -72,19 +76,20 @@ class FilmMapperTest {
 	@Test
 	void toFilmList() {
 		final var entities = List.of(
-			FilmEntity.create().withFilmId(1).withDoktitel("Film A"),
-			FilmEntity.create().withFilmId(2).withDoktitel("Film B"));
+			FilmEntity.create().withFilmId(1).withFilmTId(10).withDoktitel("Film A"),
+			FilmEntity.create().withFilmId(2).withFilmTId(20).withDoktitel("Film B"));
+		final Function<Integer, String> lookup = id -> id == 10 ? "Sundsvall" : "Timrå";
 
-		final var result = FilmMapper.toFilmList(entities);
+		final var result = FilmMapper.toFilmList(entities, lookup);
 
 		assertThat(result)
-			.extracting(Film::getFilmId, Film::getDoktitel)
-			.containsExactly(tuple(1, "Film A"), tuple(2, "Film B"));
+			.extracting(Film::getFilmId, Film::getDoktitel, Film::getPlats)
+			.containsExactly(tuple(1, "Film A", "Sundsvall"), tuple(2, "Film B", "Timrå"));
 	}
 
 	@Test
 	void toFilmListWithNull() {
-		assertThat(FilmMapper.toFilmList(null)).isEmpty();
+		assertThat(FilmMapper.toFilmList(null, NULL_LOOKUP)).isEmpty();
 	}
 
 }

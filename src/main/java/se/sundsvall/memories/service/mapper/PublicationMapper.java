@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
+import java.util.function.Function;
 import se.sundsvall.memories.api.model.Publication;
 import se.sundsvall.memories.integration.db.model.PublEntity;
 
@@ -11,25 +12,34 @@ public final class PublicationMapper {
 
 	private PublicationMapper() {}
 
-	public static Publication toPublicationSummary(final PublEntity entity) {
-		return toBase(entity);
+	/** Summary mapping (no XMLTEXT) used for list responses. */
+	public static Publication toPublicationSummary(final PublEntity entity, final String plats) {
+		return toBase(entity, plats);
 	}
 
-	public static Publication toPublication(final PublEntity entity) {
-		return ofNullable(toBase(entity))
+	/** Detail mapping including XMLTEXT, used for get-by-id. */
+	public static Publication toPublication(final PublEntity entity, final String plats) {
+		return ofNullable(toBase(entity, plats))
 			.map(publication -> publication.withXmltext(entity.getXmltext()))
 			.orElse(null);
 	}
 
-	public static List<Publication> toPublicationList(final List<PublEntity> entities) {
+	/**
+	 * Map a list of {@link PublEntity} to summary {@link Publication}s, resolving each entity's plats via the lookup.
+	 *
+	 * @param  entities    source entities
+	 * @param  platsLookup function from ptId → resolved plats string (nullable)
+	 * @return             list of mapped publications (empty if entities is null)
+	 */
+	public static List<Publication> toPublicationList(final List<PublEntity> entities, final Function<Integer, String> platsLookup) {
 		return ofNullable(entities)
 			.map(list -> list.stream()
-				.map(PublicationMapper::toPublicationSummary)
+				.map(e -> toPublicationSummary(e, platsLookup.apply(e.getPtId())))
 				.toList())
 			.orElse(emptyList());
 	}
 
-	private static Publication toBase(final PublEntity entity) {
+	private static Publication toBase(final PublEntity entity, final String plats) {
 		return ofNullable(entity)
 			.map(e -> Publication.create()
 				.withPublId(e.getPublId())
@@ -42,12 +52,11 @@ public final class PublicationMapper {
 				.withForlagOplats(e.getForlagOplats())
 				.withDoktitel(e.getDoktitel())
 				.withPubOplats(e.getPubOplats())
+				.withPlats(plats)
 				.withKommentPubl(e.getKommentPubl())
 				.withFilLiten(e.getFilLiten())
 				.withFilStor(e.getFilStor())
-				.withFilOriginal(e.getFilOriginal())
-				.withFilTxt(e.getFilTxt())
-				.withFilXtra(e.getFilXtra()))
+				.withFilTxt(e.getFilTxt()))
 			.orElse(null);
 	}
 }

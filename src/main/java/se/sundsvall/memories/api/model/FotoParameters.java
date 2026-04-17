@@ -10,6 +10,9 @@ public class FotoParameters extends AbstractParameterPagingAndSortingBase {
 	@Schema(description = "Free text search query", examples = "Sundsvall")
 	private String query;
 
+	@Schema(description = "Filter by OBJTYP. Use 'Foto' for photographs or 'Föremål' for physical objects. Omit to return both.", examples = "Foto")
+	private String objtyp;
+
 	public static FotoParameters create() {
 		return new FotoParameters();
 	}
@@ -24,6 +27,19 @@ public class FotoParameters extends AbstractParameterPagingAndSortingBase {
 
 	public FotoParameters withQuery(final String query) {
 		this.query = query;
+		return this;
+	}
+
+	public String getObjtyp() {
+		return objtyp;
+	}
+
+	public void setObjtyp(final String objtyp) {
+		this.objtyp = objtyp;
+	}
+
+	public FotoParameters withObjtyp(final String objtyp) {
+		this.objtyp = objtyp;
 		return this;
 	}
 
@@ -44,18 +60,19 @@ public class FotoParameters extends AbstractParameterPagingAndSortingBase {
 		if (!super.equals(o))
 			return false;
 		final FotoParameters that = (FotoParameters) o;
-		return Objects.equals(query, that.query);
+		return Objects.equals(query, that.query) && Objects.equals(objtyp, that.objtyp);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query);
+		return Objects.hash(super.hashCode(), query, objtyp);
 	}
 
 	@Override
 	public String toString() {
 		return "FotoParameters{" +
 			"query='" + query + '\'' +
+			", objtyp='" + objtyp + '\'' +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

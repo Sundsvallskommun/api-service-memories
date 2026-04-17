@@ -38,6 +38,7 @@ class FotoEntityTest {
 
 		final var result = FotoEntity.create()
 			.withFotoId(1234)
+			.withFotoTId(42)
 			.withFilnamn("original.jpg")
 			.withAccNr("ACC-1")
 			.withRefKod("REF-1")
@@ -82,6 +83,7 @@ class FotoEntityTest {
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getFotoId()).isEqualTo(1234);
+		assertThat(result.getFotoTId()).isEqualTo(42);
 		assertThat(result.getFilnamn()).isEqualTo("original.jpg");
 		assertThat(result.getAccNr()).isEqualTo("ACC-1");
 		assertThat(result.getRefKod()).isEqualTo("REF-1");

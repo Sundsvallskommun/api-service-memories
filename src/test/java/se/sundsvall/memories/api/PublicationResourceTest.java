@@ -117,9 +117,7 @@ class PublicationResourceTest {
 		return Stream.of(
 			Arguments.of("liten", FileVariant.LITEN),
 			Arguments.of("stor", FileVariant.STOR),
-			Arguments.of("original", FileVariant.ORIGINAL),
-			Arguments.of("txt", FileVariant.TXT),
-			Arguments.of("xtra", FileVariant.XTRA));
+			Arguments.of("txt", FileVariant.TXT));
 	}
 
 	@ParameterizedTest

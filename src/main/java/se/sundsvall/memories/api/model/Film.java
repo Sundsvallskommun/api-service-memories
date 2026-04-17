@@ -28,8 +28,11 @@ public class Film {
 	@Schema(description = "Film type ID", examples = "1")
 	private Integer filmTId;
 
-	@Schema(description = "Film location", examples = "Sundsvall")
+	@Schema(description = "Film location (free-text fallback from FILM_OPLATS)", examples = "Sundsvall")
 	private String filmOplats;
+
+	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over filmOplats when set)", examples = "Sundsvall")
+	private String plats;
 
 	@Schema(description = "Film organization ID", examples = "1")
 	private Integer filmOId;
@@ -163,6 +166,19 @@ public class Film {
 		return this;
 	}
 
+	public String getPlats() {
+		return plats;
+	}
+
+	public void setPlats(final String plats) {
+		this.plats = plats;
+	}
+
+	public Film withPlats(final String plats) {
+		this.plats = plats;
+		return this;
+	}
+
 	public Integer getFilmOId() {
 		return filmOId;
 	}
@@ -273,14 +289,14 @@ public class Film {
 			return false;
 		final Film film = (Film) o;
 		return Objects.equals(filmId, film.filmId) && Objects.equals(filnamn, film.filnamn) && Objects.equals(filmObjFil, film.filmObjFil) && Objects.equals(objtyp, film.objtyp) && Objects.equals(datum,
-			film.datum) && Objects.equals(doktitel, film.doktitel) && Objects.equals(filmTId, film.filmTId) && Objects.equals(filmOplats, film.filmOplats) && Objects.equals(filmOId, film.filmOId)
+			film.datum) && Objects.equals(doktitel, film.doktitel) && Objects.equals(filmTId, film.filmTId) && Objects.equals(filmOplats, film.filmOplats) && Objects.equals(plats, film.plats) && Objects.equals(filmOId, film.filmOId)
 			&& Objects.equals(filmUEId, film.filmUEId) && Objects.equals(filmUId, film.filmUId) && Objects.equals(kommentFilm, film.kommentFilm) && Objects.equals(filmMimeType, film.filmMimeType)
 			&& Objects.equals(nodeId, film.nodeId) && Objects.equals(options, film.options) && Objects.equals(deletedDate, film.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(filmId, filnamn, filmObjFil, objtyp, datum, doktitel, filmTId, filmOplats, filmOId, filmUEId, filmUId, kommentFilm, filmMimeType, nodeId, options, deletedDate);
+		return Objects.hash(filmId, filnamn, filmObjFil, objtyp, datum, doktitel, filmTId, filmOplats, plats, filmOId, filmUEId, filmUId, kommentFilm, filmMimeType, nodeId, options, deletedDate);
 	}
 
 	@Override
@@ -294,6 +310,7 @@ public class Film {
 			", doktitel='" + doktitel + '\'' +
 			", filmTId=" + filmTId +
 			", filmOplats='" + filmOplats + '\'' +
+			", plats='" + plats + '\'' +
 			", filmOId=" + filmOId +
 			", filmUEId=" + filmUEId +
 			", filmUId=" + filmUId +

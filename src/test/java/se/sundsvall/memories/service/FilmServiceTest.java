@@ -42,11 +42,14 @@ class FilmServiceTest {
 	@Mock
 	private SambaIntegration sambaIntegrationMock;
 
+	@Mock
+	private TopografiLookup topografiLookupMock;
+
 	private FilmService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new FilmService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES);
+		service = new FilmService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topografiLookupMock);
 	}
 
 	@Test

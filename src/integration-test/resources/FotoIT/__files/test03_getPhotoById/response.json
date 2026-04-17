@@ -5,6 +5,7 @@
 	"tidig": "1920",
 	"senast": "1925",
 	"fotoOplats": "Sundsvall",
+	"plats": "Sundsvall",
 	"objtyp": "Foto",
 	"svvitfarg": "Svartvit",
 	"material": "Glas",
@@ -12,6 +13,5 @@
 	"tillSkat": "Bra",
 	"tillstand": "Inga skador",
 	"filLiten": "FOTO.id_1001_fil_liten.jpg",
-	"filStor": "FOTO.id_1001_fil_stor.jpg",
-	"filOriginal": "FOTO.id_1001_fil_original.jpg"
+	"filStor": "FOTO.id_1001_fil_stor.jpg"
 }
