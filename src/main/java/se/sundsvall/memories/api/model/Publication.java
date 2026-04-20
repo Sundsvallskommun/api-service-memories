@@ -33,8 +33,11 @@ public class Publication {
 	@Schema(description = "Document title", examples = "Sida 3 Alfwar och Skämt nr 8 1841")
 	private String doktitel;
 
-	@Schema(description = "Publication location", examples = "Sundsvall")
+	@Schema(description = "Publication location (free-text fallback from P_OPLATS)", examples = "Sundsvall")
 	private String pubOplats;
+
+	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over pubOplats when set)", examples = "Sundsvall")
+	private String plats;
 
 	@Schema(description = "Comment / description", examples = "Tidningsnummer från 1841")
 	private String kommentPubl;
@@ -45,14 +48,8 @@ public class Publication {
 	@Schema(description = "Large image file name", examples = "PUBL.id_207_fil_stor.jpeg")
 	private String filStor;
 
-	@Schema(description = "Original file name", examples = "PUBL.id_207_fil_original.jpeg")
-	private String filOriginal;
-
 	@Schema(description = "OCR/text file name", examples = "PUBL.id_207_fil_txt.xml")
 	private String filTxt;
-
-	@Schema(description = "Extra file name", examples = "PUBL.id_207_fil_xtra.jpeg")
-	private String filXtra;
 
 	@Schema(description = "Full OCR/XML text (only returned on detail lookup)")
 	private String xmltext;
@@ -191,6 +188,19 @@ public class Publication {
 		return this;
 	}
 
+	public String getPlats() {
+		return plats;
+	}
+
+	public void setPlats(final String plats) {
+		this.plats = plats;
+	}
+
+	public Publication withPlats(final String plats) {
+		this.plats = plats;
+		return this;
+	}
+
 	public String getKommentPubl() {
 		return kommentPubl;
 	}
@@ -230,19 +240,6 @@ public class Publication {
 		return this;
 	}
 
-	public String getFilOriginal() {
-		return filOriginal;
-	}
-
-	public void setFilOriginal(final String filOriginal) {
-		this.filOriginal = filOriginal;
-	}
-
-	public Publication withFilOriginal(final String filOriginal) {
-		this.filOriginal = filOriginal;
-		return this;
-	}
-
 	public String getFilTxt() {
 		return filTxt;
 	}
@@ -253,19 +250,6 @@ public class Publication {
 
 	public Publication withFilTxt(final String filTxt) {
 		this.filTxt = filTxt;
-		return this;
-	}
-
-	public String getFilXtra() {
-		return filXtra;
-	}
-
-	public void setFilXtra(final String filXtra) {
-		this.filXtra = filXtra;
-	}
-
-	public Publication withFilXtra(final String filXtra) {
-		this.filXtra = filXtra;
 		return this;
 	}
 
@@ -289,15 +273,14 @@ public class Publication {
 		final Publication that = (Publication) o;
 		return Objects.equals(publId, that.publId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(publiktyp, that.publiktyp)
 			&& Objects.equals(datum, that.datum) && Objects.equals(tidtitel, that.tidtitel) && Objects.equals(tidnr, that.tidnr) && Objects.equals(tidsida, that.tidsida)
-			&& Objects.equals(forlagOplats, that.forlagOplats) && Objects.equals(doktitel, that.doktitel) && Objects.equals(pubOplats, that.pubOplats) && Objects.equals(kommentPubl, that.kommentPubl)
-			&& Objects.equals(filLiten, that.filLiten) && Objects.equals(filStor, that.filStor) && Objects.equals(filOriginal, that.filOriginal) && Objects.equals(filTxt, that.filTxt)
-			&& Objects.equals(filXtra, that.filXtra) && Objects.equals(xmltext, that.xmltext);
+			&& Objects.equals(forlagOplats, that.forlagOplats) && Objects.equals(doktitel, that.doktitel) && Objects.equals(pubOplats, that.pubOplats) && Objects.equals(plats, that.plats)
+			&& Objects.equals(kommentPubl, that.kommentPubl) && Objects.equals(filLiten, that.filLiten) && Objects.equals(filStor, that.filStor)
+			&& Objects.equals(filTxt, that.filTxt) && Objects.equals(xmltext, that.xmltext);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(publId, filnamn, publiktyp, datum, tidtitel, tidnr, tidsida, forlagOplats, doktitel, pubOplats, kommentPubl, filLiten, filStor, filOriginal, filTxt,
-			filXtra, xmltext);
+		return Objects.hash(publId, filnamn, publiktyp, datum, tidtitel, tidnr, tidsida, forlagOplats, doktitel, pubOplats, plats, kommentPubl, filLiten, filStor, filTxt, xmltext);
 	}
 
 	@Override
@@ -313,12 +296,11 @@ public class Publication {
 			", forlagOplats='" + forlagOplats + '\'' +
 			", doktitel='" + doktitel + '\'' +
 			", pubOplats='" + pubOplats + '\'' +
+			", plats='" + plats + '\'' +
 			", kommentPubl='" + kommentPubl + '\'' +
 			", filLiten='" + filLiten + '\'' +
 			", filStor='" + filStor + '\'' +
-			", filOriginal='" + filOriginal + '\'' +
 			", filTxt='" + filTxt + '\'' +
-			", filXtra='" + filXtra + '\'' +
 			", xmltext='" + xmltext + '\'' +
 			'}';
 	}

@@ -16,10 +16,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.memories.Application;
-import se.sundsvall.memories.api.model.PagedPublicationResponse;
-import se.sundsvall.memories.api.model.Publication;
-import se.sundsvall.memories.service.PublicationService;
-import se.sundsvall.memories.service.PublicationService.FileVariant;
+import se.sundsvall.memories.api.model.Foto;
+import se.sundsvall.memories.api.model.PagedFotoResponse;
+import se.sundsvall.memories.service.FotoService;
+import se.sundsvall.memories.service.FotoService.FileVariant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,49 +31,49 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(classes = Application.class, webEnvironment = RANDOM_PORT)
 @AutoConfigureWebTestClient
 @ActiveProfiles("junit")
-class PublicationResourceTest {
+class FotoResourceTest {
 
 	private static final String MUNICIPALITY_ID = "2281";
-	private static final String SEARCH_PATH = "/{municipalityId}/publications";
-	private static final String GET_PATH = "/{municipalityId}/publications/{id}";
-	private static final String FILE_PATH = "/{municipalityId}/publications/{id}/file";
+	private static final String SEARCH_PATH = "/{municipalityId}/photos";
+	private static final String GET_PATH = "/{municipalityId}/photos/{id}";
+	private static final String FILE_PATH = "/{municipalityId}/photos/{id}/file";
 
 	@MockitoBean
-	private PublicationService serviceMock;
+	private FotoService serviceMock;
 
 	@Autowired
 	private WebTestClient webTestClient;
 
 	@Test
-	void searchPublications() {
-		final var publication = Publication.create().withPublId(1).withDoktitel("Drunkningsolycka");
-		final var pagedResponse = PagedPublicationResponse.create()
-			.withPublications(List.of(publication))
+	void searchPhotos() {
+		final var foto = Foto.create().withFotoId(1).withDoktitel("Stadsvy");
+		final var pagedResponse = PagedFotoResponse.create()
+			.withPhotos(List.of(foto))
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(SEARCH_PATH)
-				.queryParam("query", "drunkning")
+				.queryParam("query", "Sundsvall")
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBody(PagedPublicationResponse.class)
+			.expectBody(PagedFotoResponse.class)
 			.returnResult()
 			.getResponseBody();
 
 		assertThat(response).isNotNull();
-		assertThat(response.getPublications()).hasSize(1);
-		assertThat(response.getPublications().getFirst().getDoktitel()).isEqualTo("Drunkningsolycka");
+		assertThat(response.getPhotos()).hasSize(1);
+		assertThat(response.getPhotos().getFirst().getDoktitel()).isEqualTo("Stadsvy");
 		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(serviceMock).search(any());
 	}
 
 	@Test
-	void searchPublicationsWithoutQuery() {
-		final var pagedResponse = PagedPublicationResponse.create()
-			.withPublications(List.of())
+	void searchPhotosWithoutQuery() {
+		final var pagedResponse = PagedFotoResponse.create()
+			.withPhotos(List.of())
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
@@ -83,55 +83,54 @@ class PublicationResourceTest {
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBody(PagedPublicationResponse.class)
+			.expectBody(PagedFotoResponse.class)
 			.returnResult()
 			.getResponseBody();
 
 		assertThat(response).isNotNull();
-		assertThat(response.getPublications()).isEmpty();
+		assertThat(response.getPhotos()).isEmpty();
 		verify(serviceMock).search(any());
 	}
 
 	@Test
-	void getPublicationById() {
-		final var publicationId = 207;
-		final var publication = Publication.create().withPublId(publicationId).withDoktitel("Alfwar och Skämt");
+	void getPhotoById() {
+		final var fotoId = 1234;
+		final var foto = Foto.create().withFotoId(fotoId).withDoktitel("Stadsvy");
 
-		when(serviceMock.getById(publicationId)).thenReturn(publication);
+		when(serviceMock.getById(fotoId)).thenReturn(foto);
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(GET_PATH)
-				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", publicationId)))
+				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", fotoId)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBody(Publication.class)
+			.expectBody(Foto.class)
 			.returnResult()
 			.getResponseBody();
 
 		assertThat(response).isNotNull();
-		assertThat(response.getPublId()).isEqualTo(publicationId);
-		verify(serviceMock).getById(publicationId);
+		assertThat(response.getFotoId()).isEqualTo(fotoId);
+		verify(serviceMock).getById(fotoId);
 	}
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
 			Arguments.of("liten", FileVariant.LITEN),
-			Arguments.of("stor", FileVariant.STOR),
-			Arguments.of("txt", FileVariant.TXT));
+			Arguments.of("stor", FileVariant.STOR));
 	}
 
 	@ParameterizedTest
 	@MethodSource("fileVariants")
-	void getPublicationFile(final String pathSegment, final FileVariant expectedVariant) {
-		final var publicationId = 207;
+	void getPhotoFile(final String pathSegment, final FileVariant expectedVariant) {
+		final var fotoId = 1234;
 
 		webTestClient.get()
 			.uri(builder -> builder.path(FILE_PATH)
 				.queryParam("variant", pathSegment)
-				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", publicationId)))
+				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", fotoId)))
 			.exchange()
 			.expectStatus().isOk();
 
-		verify(serviceMock).streamFile(eq(publicationId), eq(expectedVariant), any(HttpServletResponse.class));
+		verify(serviceMock).streamFile(eq(fotoId), eq(expectedVariant), any(HttpServletResponse.class));
 	}
 }

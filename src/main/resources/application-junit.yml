@@ -24,4 +24,6 @@ integration:
     username: user
     password: password
     share: /share/
+    film-folder: /film/
     publ-folder: /publ/
+    foto-folder: /foto/

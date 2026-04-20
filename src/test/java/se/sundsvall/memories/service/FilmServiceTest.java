@@ -34,7 +34,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class FilmServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/");
 
 	@Mock
 	private FilmRepository repositoryMock;
@@ -42,11 +42,14 @@ class FilmServiceTest {
 	@Mock
 	private SambaIntegration sambaIntegrationMock;
 
+	@Mock
+	private TopografiLookup topografiLookupMock;
+
 	private FilmService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new FilmService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES);
+		service = new FilmService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topografiLookupMock);
 	}
 
 	@Test
