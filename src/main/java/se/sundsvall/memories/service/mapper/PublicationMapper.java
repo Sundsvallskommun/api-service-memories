@@ -31,6 +31,7 @@ public final class PublicationMapper {
 	 * @param  platsLookup function from ptId → resolved plats string (nullable)
 	 * @return             list of mapped publications (empty if entities is null)
 	 */
+	@SuppressWarnings("java:S4276") // IntFunction<String> would require unboxing ptId; the field is a nullable Integer.
 	public static List<Publication> toPublicationList(final List<PublEntity> entities, final Function<Integer, String> platsLookup) {
 		return ofNullable(entities)
 			.map(list -> list.stream()

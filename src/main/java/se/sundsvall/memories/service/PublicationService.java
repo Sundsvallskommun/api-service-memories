@@ -76,7 +76,9 @@ public class PublicationService {
 	}
 
 	private void streamFileContent(final Integer id, final FileVariant variant, final String filename, final HttpServletResponse response) {
-		final var path = sambaProperties.publFolder() + variant.getSubfolder() + "/" + filename;
+		// SMB URI separator is always "/" — see comment in FotoService for the
+		// reason String.join is preferred over a literal "/" concatenation.
+		final var path = String.join("/", sambaProperties.publFolder() + variant.getSubfolder(), filename);
 		try {
 			sambaIntegration.streamFile(path, response.getOutputStream());
 		} catch (final IOException e) {

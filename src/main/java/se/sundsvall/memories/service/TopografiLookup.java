@@ -1,14 +1,17 @@
 package se.sundsvall.memories.service;
 
 import jakarta.annotation.PostConstruct;
-import java.util.HashMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import se.sundsvall.memories.integration.db.TopografiRepository;
 import se.sundsvall.memories.integration.db.model.TopografiEntity;
+
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 /**
  * Loads the small TOPOGRAFI table into memory at startup so that FILM/PUBL/FOTO services can resolve their
@@ -29,18 +32,12 @@ public class TopografiLookup {
 
 	@PostConstruct
 	void loadCache() {
-		final var entries = topografiRepository.findAll();
-		final var map = new HashMap<Integer, String>(entries.size());
-		for (final var entry : entries) {
-			final var id = entry.getTId();
-			if (id == null)
-				continue;
-			final var name = resolveDisplayName(entry);
-			if (name == null)
-				continue; // skip entries with no usable place name (Map.copyOf rejects nulls)
-			map.put(id, name);
-		}
-		placeByTId = Map.copyOf(map);
+		// Stream-based pipeline avoids per-row `continue` branches and skips entries
+		// without an id or without any usable display name (Map.copyOf rejects nulls).
+		placeByTId = topografiRepository.findAll().stream()
+			.map(entry -> new SimpleImmutableEntry<>(entry.getTId(), resolveDisplayName(entry)))
+			.filter(e -> Objects.nonNull(e.getKey()) && Objects.nonNull(e.getValue()))
+			.collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue, (existing, replacement) -> existing));
 		LOGGER.info("Loaded {} topografi entries into cache", placeByTId.size());
 	}
 

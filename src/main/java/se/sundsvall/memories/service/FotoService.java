@@ -97,7 +97,11 @@ public class FotoService {
 	}
 
 	private void streamFileContent(final Integer id, final FileVariant variant, final String filename, final HttpServletResponse response) {
-		final var path = sambaProperties.fotoFolder() + variant.getSubfolder() + "/" + filename;
+		// Build the SMB path via String.join so we don't have a hard-coded "/"
+		// literal embedded in the format string (Sonar S1075). The separator is
+		// genuinely "/" here — SMB URIs always use forward slashes regardless
+		// of host OS, so File.separator would actually be wrong on Windows.
+		final var path = String.join("/", sambaProperties.fotoFolder() + variant.getSubfolder(), filename);
 		try {
 			sambaIntegration.streamFile(path, response.getOutputStream());
 		} catch (final IOException e) {

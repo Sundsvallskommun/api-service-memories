@@ -49,6 +49,7 @@ public final class FilmMapper {
 	 * @param  platsLookup function from filmTId → resolved plats string (nullable)
 	 * @return             list of mapped {@link Film} objects (empty if entities is null)
 	 */
+	@SuppressWarnings("java:S4276") // IntFunction<String> would require unboxing filmTId; the field is a nullable Integer.
 	public static List<Film> toFilmList(final List<FilmEntity> entities, final Function<Integer, String> platsLookup) {
 		return ofNullable(entities)
 			.map(list -> list.stream()
