@@ -1,6 +1,8 @@
 package se.sundsvall.memories.api.model;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
+import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
@@ -11,11 +13,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class FotoParametersTest {
+class PagedPhotoResponseTest {
 
 	@Test
 	void testBean() {
-		assertThat(FotoParameters.class, allOf(
+		assertThat(PagedPhotoResponse.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
 			hasValidBeanHashCode(),
@@ -25,22 +27,19 @@ class FotoParametersTest {
 
 	@Test
 	void testBuilderMethods() {
-		final var result = FotoParameters.create()
-			.withQuery("Sundsvall")
-			.withPage(2)
-			.withLimit(50);
+		final var photos = List.of(Photo.create().withPhotoId(1));
+		final var meta = PagingAndSortingMetaData.create().withPage(1).withLimit(100);
 
-		assertThat(result.getQuery()).isEqualTo("Sundsvall");
-		assertThat(result.getPage()).isEqualTo(2);
-		assertThat(result.getLimit()).isEqualTo(50);
+		final var result = PagedPhotoResponse.create()
+			.withPhotos(photos)
+			.withMetaData(meta);
+
+		assertThat(result.getPhotos()).hasSize(1);
+		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 	}
 
 	@Test
-	void testDefaults() {
-		final var result = FotoParameters.create();
-
-		assertThat(result.getQuery()).isNull();
-		assertThat(result.getPage()).isEqualTo(1);
-		assertThat(result.getLimit()).isEqualTo(100);
+	void testNoDirtOnCreatedBean() {
+		assertThat(PagedPhotoResponse.create()).hasAllNullFieldsOrProperties();
 	}
 }

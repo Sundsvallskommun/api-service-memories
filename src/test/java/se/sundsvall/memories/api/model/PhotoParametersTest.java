@@ -1,4 +1,4 @@
-package se.sundsvall.memories.integration.db.model;
+package se.sundsvall.memories.api.model;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,11 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class TopografiEntityTest {
+class PhotoParametersTest {
 
 	@Test
 	void testBean() {
-		assertThat(TopografiEntity.class, allOf(
+		assertThat(PhotoParameters.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
 			hasValidBeanHashCode(),
@@ -25,24 +25,22 @@ class TopografiEntityTest {
 
 	@Test
 	void testBuilderMethods() {
-		final var result = TopografiEntity.create()
-			.withTId(42)
-			.withTopNamn("Sundsvall")
-			.withTopKod("2281")
-			.withPlats("Sundsvalls kommun")
-			.withLand("Sverige");
+		final var result = PhotoParameters.create()
+			.withQuery("Sundsvall")
+			.withPage(2)
+			.withLimit(50);
 
-		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getTId()).isEqualTo(42);
-		assertThat(result.getTopNamn()).isEqualTo("Sundsvall");
-		assertThat(result.getTopKod()).isEqualTo("2281");
-		assertThat(result.getPlats()).isEqualTo("Sundsvalls kommun");
-		assertThat(result.getLand()).isEqualTo("Sverige");
+		assertThat(result.getQuery()).isEqualTo("Sundsvall");
+		assertThat(result.getPage()).isEqualTo(2);
+		assertThat(result.getLimit()).isEqualTo(50);
 	}
 
 	@Test
-	void testNoDirtOnCreatedBean() {
-		assertThat(TopografiEntity.create()).hasAllNullFieldsOrProperties();
-		assertThat(new TopografiEntity()).hasAllNullFieldsOrProperties();
+	void testDefaults() {
+		final var result = PhotoParameters.create();
+
+		assertThat(result.getQuery()).isNull();
+		assertThat(result.getPage()).isEqualTo(1);
+		assertThat(result.getLimit()).isEqualTo(100);
 	}
 }

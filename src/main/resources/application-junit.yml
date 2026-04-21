@@ -25,5 +25,5 @@ integration:
     password: password
     share: /share/
     film-folder: /film/
-    publ-folder: /publ/
-    foto-folder: /foto/
+    publication-folder: /publ/
+    photo-folder: /foto/

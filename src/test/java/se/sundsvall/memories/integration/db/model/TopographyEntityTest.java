@@ -1,8 +1,6 @@
-package se.sundsvall.memories.api.model;
+package se.sundsvall.memories.integration.db.model;
 
-import java.util.List;
 import org.junit.jupiter.api.Test;
-import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
@@ -13,11 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class PagedFotoResponseTest {
+class TopographyEntityTest {
 
 	@Test
 	void testBean() {
-		assertThat(PagedFotoResponse.class, allOf(
+		assertThat(TopographyEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
 			hasValidBeanHashCode(),
@@ -27,19 +25,24 @@ class PagedFotoResponseTest {
 
 	@Test
 	void testBuilderMethods() {
-		final var photos = List.of(Foto.create().withFotoId(1));
-		final var meta = PagingAndSortingMetaData.create().withPage(1).withLimit(100);
+		final var result = TopographyEntity.create()
+			.withTId(42)
+			.withName("Sundsvall")
+			.withCode("2281")
+			.withPlace("Sundsvalls kommun")
+			.withCountry("Sverige");
 
-		final var result = PagedFotoResponse.create()
-			.withPhotos(photos)
-			.withMetaData(meta);
-
-		assertThat(result.getPhotos()).hasSize(1);
-		assertThat(result.getMetaData().getPage()).isEqualTo(1);
+		assertThat(result).hasNoNullFieldsOrProperties();
+		assertThat(result.getTId()).isEqualTo(42);
+		assertThat(result.getName()).isEqualTo("Sundsvall");
+		assertThat(result.getCode()).isEqualTo("2281");
+		assertThat(result.getPlace()).isEqualTo("Sundsvalls kommun");
+		assertThat(result.getCountry()).isEqualTo("Sverige");
 	}
 
 	@Test
 	void testNoDirtOnCreatedBean() {
-		assertThat(PagedFotoResponse.create()).hasAllNullFieldsOrProperties();
+		assertThat(TopographyEntity.create()).hasAllNullFieldsOrProperties();
+		assertThat(new TopographyEntity()).hasAllNullFieldsOrProperties();
 	}
 }

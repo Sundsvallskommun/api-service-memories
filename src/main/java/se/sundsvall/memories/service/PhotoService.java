@@ -9,15 +9,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
-import se.sundsvall.memories.api.model.Foto;
-import se.sundsvall.memories.api.model.FotoParameters;
-import se.sundsvall.memories.api.model.PagedFotoResponse;
-import se.sundsvall.memories.integration.db.FotoRepository;
+import se.sundsvall.memories.api.model.PagedPhotoResponse;
+import se.sundsvall.memories.api.model.Photo;
+import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.integration.db.FulltextQuery;
-import se.sundsvall.memories.integration.db.model.FotoEntity;
+import se.sundsvall.memories.integration.db.PhotoRepository;
+import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
-import se.sundsvall.memories.service.mapper.FotoMapper;
+import se.sundsvall.memories.service.mapper.PhotoMapper;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
@@ -27,45 +27,45 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 @Service
-public class FotoService {
+public class PhotoService {
 
-	private final FotoRepository fotoRepository;
+	private final PhotoRepository photoRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
-	private final TopografiLookup topografiLookup;
+	private final TopographyLookup topographyLookup;
 
-	public FotoService(final FotoRepository fotoRepository,
+	public PhotoService(final PhotoRepository photoRepository,
 		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
-		final TopografiLookup topografiLookup) {
-		this.fotoRepository = fotoRepository;
+		final TopographyLookup topographyLookup) {
+		this.photoRepository = photoRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
-		this.topografiLookup = topografiLookup;
+		this.topographyLookup = topographyLookup;
 	}
 
-	public PagedFotoResponse search(final FotoParameters parameters) {
+	public PagedPhotoResponse search(final PhotoParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
-		final var objtyp = trimToNull(parameters.getObjtyp());
+		final var objectType = trimToNull(parameters.getObjectType());
 
-		final var page = fetchPage(sanitized, objtyp, pageable);
+		final var page = fetchPage(sanitized, objectType, pageable);
 
-		return PagedFotoResponse.create()
-			.withPhotos(FotoMapper.toFotoList(page.getContent(), topografiLookup::resolve))
+		return PagedPhotoResponse.create()
+			.withPhotos(PhotoMapper.toPhotoList(page.getContent(), topographyLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
-	private Page<FotoEntity> fetchPage(final String sanitizedQuery, final String objtyp, final Pageable pageable) {
-		if (objtyp != null && sanitizedQuery != null) {
-			return fotoRepository.searchPublishedByObjtyp(sanitizedQuery, objtyp, pageable);
+	private Page<PhotoEntity> fetchPage(final String sanitizedQuery, final String objectType, final Pageable pageable) {
+		if (objectType != null && sanitizedQuery != null) {
+			return photoRepository.searchPublishedByObjectType(sanitizedQuery, objectType, pageable);
 		}
-		if (objtyp != null) {
-			return fotoRepository.findAllPublishedByObjtyp(objtyp, pageable);
+		if (objectType != null) {
+			return photoRepository.findAllPublishedByObjectType(objectType, pageable);
 		}
 		if (sanitizedQuery != null) {
-			return fotoRepository.searchPublished(sanitizedQuery, pageable);
+			return photoRepository.searchPublished(sanitizedQuery, pageable);
 		}
-		return fotoRepository.findAllPublished(pageable);
+		return photoRepository.findAllPublished(pageable);
 	}
 
 	private static String trimToNull(final String value) {
@@ -75,14 +75,14 @@ public class FotoService {
 			.orElse(null);
 	}
 
-	public Foto getById(final Integer id) {
-		return fotoRepository.findById(id)
-			.map(entity -> FotoMapper.toFoto(entity, topografiLookup.resolve(entity.getFotoTId())))
+	public Photo getById(final Integer id) {
+		return photoRepository.findById(id)
+			.map(entity -> PhotoMapper.toPhoto(entity, topographyLookup.resolve(entity.getTopographyId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {
-		final var entity = fotoRepository.findById(id)
+		final var entity = photoRepository.findById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
 
 		final var filename = ofNullable(variant.extract(entity))
@@ -97,11 +97,9 @@ public class FotoService {
 	}
 
 	private void streamFileContent(final Integer id, final FileVariant variant, final String filename, final HttpServletResponse response) {
-		// Build the SMB path via String.join so we don't have a hard-coded "/"
-		// literal embedded in the format string (Sonar S1075). The separator is
-		// genuinely "/" here — SMB URIs always use forward slashes regardless
-		// of host OS, so File.separator would actually be wrong on Windows.
-		final var path = String.join("/", sambaProperties.fotoFolder() + variant.getSubfolder(), filename);
+		// SMB URI separator is always "/" — see comment in PublicationService for the
+		// reason String.join is preferred over a literal "/" concatenation.
+		final var path = String.join("/", sambaProperties.photoFolder() + variant.getSubfolder(), filename);
 		try {
 			sambaIntegration.streamFile(path, response.getOutputStream());
 		} catch (final IOException e) {
@@ -111,18 +109,18 @@ public class FotoService {
 	}
 
 	public enum FileVariant {
-		LITEN("fil_liten", FotoEntity::getFilLiten),
-		STOR("fil_stor", FotoEntity::getFilStor);
+		THUMBNAIL("fil_liten", PhotoEntity::getThumbnailFilename),
+		LARGE("fil_stor", PhotoEntity::getLargeImageFilename);
 
 		private final String subfolder;
-		private final Function<FotoEntity, String> fileNameExtractor;
+		private final Function<PhotoEntity, String> fileNameExtractor;
 
-		FileVariant(final String subfolder, final Function<FotoEntity, String> fileNameExtractor) {
+		FileVariant(final String subfolder, final Function<PhotoEntity, String> fileNameExtractor) {
 			this.subfolder = subfolder;
 			this.fileNameExtractor = fileNameExtractor;
 		}
 
-		String extract(final FotoEntity entity) {
+		String extract(final PhotoEntity entity) {
 			return fileNameExtractor.apply(entity);
 		}
 

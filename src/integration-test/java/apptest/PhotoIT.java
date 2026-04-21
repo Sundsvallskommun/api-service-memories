@@ -10,9 +10,9 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
-@WireMockAppTestSuite(files = "classpath:/FotoIT/", classes = Application.class)
+@WireMockAppTestSuite(files = "classpath:/PhotoIT/", classes = Application.class)
 @Sql(scripts = "/db/scripts/testdata-it.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-class FotoIT extends AbstractAppTest {
+class PhotoIT extends AbstractAppTest {
 
 	private static final String MUNICIPALITY_ID = "2281";
 	private static final String RESPONSE_FILE = "response.json";

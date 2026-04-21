@@ -10,28 +10,28 @@ import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 @Schema(description = "Paged photo response")
-public class PagedFotoResponse {
+public class PagedPhotoResponse {
 
-	@ArraySchema(schema = @Schema(implementation = Foto.class, accessMode = READ_ONLY))
-	private List<Foto> photos;
+	@ArraySchema(schema = @Schema(implementation = Photo.class, accessMode = READ_ONLY))
+	private List<Photo> photos;
 
 	@JsonProperty("_meta")
 	@Schema(implementation = PagingAndSortingMetaData.class, accessMode = READ_ONLY)
 	private PagingAndSortingMetaData metaData;
 
-	public static PagedFotoResponse create() {
-		return new PagedFotoResponse();
+	public static PagedPhotoResponse create() {
+		return new PagedPhotoResponse();
 	}
 
-	public List<Foto> getPhotos() {
+	public List<Photo> getPhotos() {
 		return photos;
 	}
 
-	public void setPhotos(final List<Foto> photos) {
+	public void setPhotos(final List<Photo> photos) {
 		this.photos = photos;
 	}
 
-	public PagedFotoResponse withPhotos(final List<Foto> photos) {
+	public PagedPhotoResponse withPhotos(final List<Photo> photos) {
 		this.photos = photos;
 		return this;
 	}
@@ -44,7 +44,7 @@ public class PagedFotoResponse {
 		this.metaData = metaData;
 	}
 
-	public PagedFotoResponse withMetaData(final PagingAndSortingMetaData metaData) {
+	public PagedPhotoResponse withMetaData(final PagingAndSortingMetaData metaData) {
 		this.metaData = metaData;
 		return this;
 	}
@@ -53,7 +53,7 @@ public class PagedFotoResponse {
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
 			return false;
-		final PagedFotoResponse that = (PagedFotoResponse) o;
+		final PagedPhotoResponse that = (PagedPhotoResponse) o;
 		return Objects.equals(photos, that.photos) && Objects.equals(metaData, that.metaData);
 	}
 
@@ -64,7 +64,7 @@ public class PagedFotoResponse {
 
 	@Override
 	public String toString() {
-		return "PagedFotoResponse{" +
+		return "PagedPhotoResponse{" +
 			"photos=" + photos +
 			", metaData=" + metaData +
 			'}';

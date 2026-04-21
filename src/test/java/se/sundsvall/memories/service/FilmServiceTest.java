@@ -43,26 +43,26 @@ class FilmServiceTest {
 	private SambaIntegration sambaIntegrationMock;
 
 	@Mock
-	private TopografiLookup topografiLookupMock;
+	private TopographyLookup topographyLookupMock;
 
 	private FilmService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new FilmService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topografiLookupMock);
+		service = new FilmService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock);
 	}
 
 	@Test
 	void searchWithQuery() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = FilmEntity.create().withFilmId(1).withDoktitel("Sundsvall film");
+		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Sundsvall film");
 
 		when(repositoryMock.searchPublished("sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
 		final var result = service.search(FilmParameters.create().withQuery("sundsvall"));
 
 		assertThat(result.getFilms()).hasSize(1);
-		assertThat(result.getFilms().getFirst().getDoktitel()).isEqualTo("Sundsvall film");
+		assertThat(result.getFilms().getFirst().getDocumentTitle()).isEqualTo("Sundsvall film");
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(repositoryMock).searchPublished("sundsvall*", pageable);
@@ -72,7 +72,7 @@ class FilmServiceTest {
 	@Test
 	void searchSanitizesOperatorsInQuery() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = FilmEntity.create().withFilmId(1).withDoktitel("Midsommar");
+		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Midsommar");
 
 		when(repositoryMock.searchPublished("midsommar* 1985*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
@@ -127,7 +127,7 @@ class FilmServiceTest {
 	@Test
 	void getById() {
 		final var id = 1;
-		final var entity = FilmEntity.create().withFilmId(id).withDoktitel("Test");
+		final var entity = FilmEntity.create().withFilmId(id).withDocumentTitle("Test");
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
 
@@ -135,7 +135,7 @@ class FilmServiceTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getFilmId()).isEqualTo(id);
-		assertThat(result.getDoktitel()).isEqualTo("Test");
+		assertThat(result.getDocumentTitle()).isEqualTo("Test");
 		verify(repositoryMock).findById(id);
 	}
 
@@ -158,7 +158,7 @@ class FilmServiceTest {
 		final var filePath = "/films/test.mp4";
 		final var entity = FilmEntity.create()
 			.withFilmId(id)
-			.withFilmObjFil(filePath)
+			.withObjectFilePath(filePath)
 			.withFilmMimeType("video/mp4");
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
@@ -180,7 +180,7 @@ class FilmServiceTest {
 		final var filePath = "\\\\server\\share\\films\\midsommar1985.avi";
 		final var entity = FilmEntity.create()
 			.withFilmId(id)
-			.withFilmObjFil(filePath)
+			.withObjectFilePath(filePath)
 			.withFilmMimeType("video/avi");
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
@@ -200,7 +200,7 @@ class FilmServiceTest {
 		final var id = 3;
 		final var entity = FilmEntity.create()
 			.withFilmId(id)
-			.withFilmObjFil("   ");
+			.withObjectFilePath("   ");
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
 

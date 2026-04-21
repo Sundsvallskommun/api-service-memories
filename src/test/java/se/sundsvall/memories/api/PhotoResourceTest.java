@@ -16,10 +16,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.memories.Application;
-import se.sundsvall.memories.api.model.Foto;
-import se.sundsvall.memories.api.model.PagedFotoResponse;
-import se.sundsvall.memories.service.FotoService;
-import se.sundsvall.memories.service.FotoService.FileVariant;
+import se.sundsvall.memories.api.model.PagedPhotoResponse;
+import se.sundsvall.memories.api.model.Photo;
+import se.sundsvall.memories.service.PhotoService;
+import se.sundsvall.memories.service.PhotoService.FileVariant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,7 +31,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(classes = Application.class, webEnvironment = RANDOM_PORT)
 @AutoConfigureWebTestClient
 @ActiveProfiles("junit")
-class FotoResourceTest {
+class PhotoResourceTest {
 
 	private static final String MUNICIPALITY_ID = "2281";
 	private static final String SEARCH_PATH = "/{municipalityId}/photos";
@@ -39,16 +39,16 @@ class FotoResourceTest {
 	private static final String FILE_PATH = "/{municipalityId}/photos/{id}/file";
 
 	@MockitoBean
-	private FotoService serviceMock;
+	private PhotoService serviceMock;
 
 	@Autowired
 	private WebTestClient webTestClient;
 
 	@Test
 	void searchPhotos() {
-		final var foto = Foto.create().withFotoId(1).withDoktitel("Stadsvy");
-		final var pagedResponse = PagedFotoResponse.create()
-			.withPhotos(List.of(foto))
+		final var photo = Photo.create().withPhotoId(1).withDocumentTitle("Stadsvy");
+		final var pagedResponse = PagedPhotoResponse.create()
+			.withPhotos(List.of(photo))
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
@@ -59,20 +59,20 @@ class FotoResourceTest {
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBody(PagedFotoResponse.class)
+			.expectBody(PagedPhotoResponse.class)
 			.returnResult()
 			.getResponseBody();
 
 		assertThat(response).isNotNull();
 		assertThat(response.getPhotos()).hasSize(1);
-		assertThat(response.getPhotos().getFirst().getDoktitel()).isEqualTo("Stadsvy");
+		assertThat(response.getPhotos().getFirst().getDocumentTitle()).isEqualTo("Stadsvy");
 		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(serviceMock).search(any());
 	}
 
 	@Test
 	void searchPhotosWithoutQuery() {
-		final var pagedResponse = PagedFotoResponse.create()
+		final var pagedResponse = PagedPhotoResponse.create()
 			.withPhotos(List.of())
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
 
@@ -83,7 +83,7 @@ class FotoResourceTest {
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBody(PagedFotoResponse.class)
+			.expectBody(PagedPhotoResponse.class)
 			.returnResult()
 			.getResponseBody();
 
@@ -94,43 +94,43 @@ class FotoResourceTest {
 
 	@Test
 	void getPhotoById() {
-		final var fotoId = 1234;
-		final var foto = Foto.create().withFotoId(fotoId).withDoktitel("Stadsvy");
+		final var photoId = 1234;
+		final var photo = Photo.create().withPhotoId(photoId).withDocumentTitle("Stadsvy");
 
-		when(serviceMock.getById(fotoId)).thenReturn(foto);
+		when(serviceMock.getById(photoId)).thenReturn(photo);
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(GET_PATH)
-				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", fotoId)))
+				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", photoId)))
 			.exchange()
 			.expectStatus().isOk()
-			.expectBody(Foto.class)
+			.expectBody(Photo.class)
 			.returnResult()
 			.getResponseBody();
 
 		assertThat(response).isNotNull();
-		assertThat(response.getFotoId()).isEqualTo(fotoId);
-		verify(serviceMock).getById(fotoId);
+		assertThat(response.getPhotoId()).isEqualTo(photoId);
+		verify(serviceMock).getById(photoId);
 	}
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of("liten", FileVariant.LITEN),
-			Arguments.of("stor", FileVariant.STOR));
+			Arguments.of("thumbnail", FileVariant.THUMBNAIL),
+			Arguments.of("large", FileVariant.LARGE));
 	}
 
 	@ParameterizedTest
 	@MethodSource("fileVariants")
-	void getPhotoFile(final String pathSegment, final FileVariant expectedVariant) {
-		final var fotoId = 1234;
+	void getPhotoFile(final String variant, final FileVariant expectedVariant) {
+		final var photoId = 1234;
 
 		webTestClient.get()
 			.uri(builder -> builder.path(FILE_PATH)
-				.queryParam("variant", pathSegment)
-				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", fotoId)))
+				.queryParam("variant", variant)
+				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", photoId)))
 			.exchange()
 			.expectStatus().isOk();
 
-		verify(serviceMock).streamFile(eq(fotoId), eq(expectedVariant), any(HttpServletResponse.class));
+		verify(serviceMock).streamFile(eq(photoId), eq(expectedVariant), any(HttpServletResponse.class));
 	}
 }

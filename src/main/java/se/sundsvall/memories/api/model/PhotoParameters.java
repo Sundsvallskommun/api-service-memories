@@ -5,16 +5,16 @@ import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Photo search parameters")
-public class FotoParameters extends AbstractParameterPagingAndSortingBase {
+public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Free text search query", examples = "Sundsvall")
 	private String query;
 
-	@Schema(description = "Filter by OBJTYP. Use 'Foto' for photographs or 'Föremål' for physical objects. Omit to return both.", examples = "Foto")
-	private String objtyp;
+	@Schema(description = "Filter by object type. Use 'Foto' for photographs or 'Föremål' for physical objects. Omit to return both.", examples = "Foto")
+	private String objectType;
 
-	public static FotoParameters create() {
-		return new FotoParameters();
+	public static PhotoParameters create() {
+		return new PhotoParameters();
 	}
 
 	public String getQuery() {
@@ -25,30 +25,30 @@ public class FotoParameters extends AbstractParameterPagingAndSortingBase {
 		this.query = query;
 	}
 
-	public FotoParameters withQuery(final String query) {
+	public PhotoParameters withQuery(final String query) {
 		this.query = query;
 		return this;
 	}
 
-	public String getObjtyp() {
-		return objtyp;
+	public String getObjectType() {
+		return objectType;
 	}
 
-	public void setObjtyp(final String objtyp) {
-		this.objtyp = objtyp;
+	public void setObjectType(final String objectType) {
+		this.objectType = objectType;
 	}
 
-	public FotoParameters withObjtyp(final String objtyp) {
-		this.objtyp = objtyp;
+	public PhotoParameters withObjectType(final String objectType) {
+		this.objectType = objectType;
 		return this;
 	}
 
-	public FotoParameters withPage(final int page) {
+	public PhotoParameters withPage(final int page) {
 		super.setPage(page);
 		return this;
 	}
 
-	public FotoParameters withLimit(final int limit) {
+	public PhotoParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
 	}
@@ -59,20 +59,20 @@ public class FotoParameters extends AbstractParameterPagingAndSortingBase {
 			return false;
 		if (!super.equals(o))
 			return false;
-		final FotoParameters that = (FotoParameters) o;
-		return Objects.equals(query, that.query) && Objects.equals(objtyp, that.objtyp);
+		final PhotoParameters that = (PhotoParameters) o;
+		return Objects.equals(query, that.query) && Objects.equals(objectType, that.objectType);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, objtyp);
+		return Objects.hash(super.hashCode(), query, objectType);
 	}
 
 	@Override
 	public String toString() {
-		return "FotoParameters{" +
+		return "PhotoParameters{" +
 			"query='" + query + '\'' +
-			", objtyp='" + objtyp + '\'' +
+			", objectType='" + objectType + '\'' +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

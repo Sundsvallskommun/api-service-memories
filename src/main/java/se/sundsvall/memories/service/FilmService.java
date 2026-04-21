@@ -29,18 +29,18 @@ public class FilmService {
 	private final FilmRepository filmRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
-	private final TopografiLookup topografiLookup;
+	private final TopographyLookup topographyLookup;
 
 	public FilmService(final FilmRepository filmRepository, final SambaIntegration sambaIntegration,
-		final SambaIntegrationProperties sambaProperties, final TopografiLookup topografiLookup) {
+		final SambaIntegrationProperties sambaProperties, final TopographyLookup topographyLookup) {
 		this.filmRepository = filmRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
-		this.topografiLookup = topografiLookup;
+		this.topographyLookup = topographyLookup;
 	}
 
 	private static String deriveFilename(final FilmEntity entity) {
-		return ofNullable(entity.getFilmObjFil())
+		return ofNullable(entity.getObjectFilePath())
 			.filter(path -> !path.isBlank())
 			.map(path -> path.replace('\\', '/'))
 			.map(path -> path.substring(path.lastIndexOf('/') + 1))
@@ -57,13 +57,13 @@ public class FilmService {
 			: filmRepository.searchPublished(sanitized, pageable);
 
 		return PagedFilmResponse.create()
-			.withFilms(FilmMapper.toFilmList(page.getContent(), topografiLookup::resolve))
+			.withFilms(FilmMapper.toFilmList(page.getContent(), topographyLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
 	public Film getById(final Integer id) {
 		return filmRepository.findById(id)
-			.map(entity -> FilmMapper.toFilm(entity, topografiLookup.resolve(entity.getFilmTId())))
+			.map(entity -> FilmMapper.toFilm(entity, topographyLookup.resolve(entity.getTopographyId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
 	}
 
@@ -80,7 +80,7 @@ public class FilmService {
 
 	private void streamFileContent(final FilmEntity entity, final HttpServletResponse response) {
 		try {
-			sambaIntegration.streamFile(sambaProperties.filmFolder() + entity.getFilmObjFil(), response.getOutputStream());
+			sambaIntegration.streamFile(sambaProperties.filmFolder() + entity.getObjectFilePath(), response.getOutputStream());
 		} catch (final IOException e) {
 			throw Problem.valueOf(INTERNAL_SERVER_ERROR,
 				"IOException occurred when streaming file for film with id '%s': %s".formatted(entity.getFilmId(), e.getMessage()));

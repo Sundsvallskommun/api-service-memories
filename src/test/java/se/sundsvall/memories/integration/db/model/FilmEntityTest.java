@@ -34,17 +34,17 @@ class FilmEntityTest {
 	@Test
 	void testBuilderMethods() {
 		final var filmId = 1;
-		final var filnamn = "film001.mp4";
-		final var filmObjFil = "/path/to/file.mp4";
-		final var objtyp = "VIDEO";
-		final var datum = "1985-06-15";
-		final var doktitel = "Midsommarfirande i Sundsvall";
-		final var filmTId = 2;
-		final var filmOplats = "Sundsvall";
-		final var filmOId = 3;
-		final var filmUEId = 4;
-		final var filmUId = 5;
-		final var kommentFilm = "En film om midsommarfirande";
+		final var filename = "film001.mp4";
+		final var objectFilePath = "/path/to/file.mp4";
+		final var objectType = "VIDEO";
+		final var date = "1985-06-15";
+		final var documentTitle = "Midsummer celebration in Sundsvall";
+		final var topographyId = 2;
+		final var locationText = "Sundsvall";
+		final var organizationId = 3;
+		final var subEntityId = 4;
+		final var unitId = 5;
+		final var comment = "A film about midsummer celebrations";
 		final var filmMimeType = "video/mp4";
 		final var nodeId = 6;
 		final var options = 0;
@@ -52,17 +52,17 @@ class FilmEntityTest {
 
 		final var result = FilmEntity.create()
 			.withFilmId(filmId)
-			.withFilnamn(filnamn)
-			.withFilmObjFil(filmObjFil)
-			.withObjtyp(objtyp)
-			.withDatum(datum)
-			.withDoktitel(doktitel)
-			.withFilmTId(filmTId)
-			.withFilmOplats(filmOplats)
-			.withFilmOId(filmOId)
-			.withFilmUEId(filmUEId)
-			.withFilmUId(filmUId)
-			.withKommentFilm(kommentFilm)
+			.withFilename(filename)
+			.withObjectFilePath(objectFilePath)
+			.withObjectType(objectType)
+			.withDate(date)
+			.withDocumentTitle(documentTitle)
+			.withTopographyId(topographyId)
+			.withLocationText(locationText)
+			.withOrganizationId(organizationId)
+			.withSubEntityId(subEntityId)
+			.withUnitId(unitId)
+			.withComment(comment)
 			.withFilmMimeType(filmMimeType)
 			.withNodeId(nodeId)
 			.withOptions(options)
@@ -70,17 +70,17 @@ class FilmEntityTest {
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getFilmId()).isEqualTo(filmId);
-		assertThat(result.getFilnamn()).isEqualTo(filnamn);
-		assertThat(result.getFilmObjFil()).isEqualTo(filmObjFil);
-		assertThat(result.getObjtyp()).isEqualTo(objtyp);
-		assertThat(result.getDatum()).isEqualTo(datum);
-		assertThat(result.getDoktitel()).isEqualTo(doktitel);
-		assertThat(result.getFilmTId()).isEqualTo(filmTId);
-		assertThat(result.getFilmOplats()).isEqualTo(filmOplats);
-		assertThat(result.getFilmOId()).isEqualTo(filmOId);
-		assertThat(result.getFilmUEId()).isEqualTo(filmUEId);
-		assertThat(result.getFilmUId()).isEqualTo(filmUId);
-		assertThat(result.getKommentFilm()).isEqualTo(kommentFilm);
+		assertThat(result.getFilename()).isEqualTo(filename);
+		assertThat(result.getObjectFilePath()).isEqualTo(objectFilePath);
+		assertThat(result.getObjectType()).isEqualTo(objectType);
+		assertThat(result.getDate()).isEqualTo(date);
+		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
+		assertThat(result.getTopographyId()).isEqualTo(topographyId);
+		assertThat(result.getLocationText()).isEqualTo(locationText);
+		assertThat(result.getOrganizationId()).isEqualTo(organizationId);
+		assertThat(result.getSubEntityId()).isEqualTo(subEntityId);
+		assertThat(result.getUnitId()).isEqualTo(unitId);
+		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getFilmMimeType()).isEqualTo(filmMimeType);
 		assertThat(result.getNodeId()).isEqualTo(nodeId);
 		assertThat(result.getOptions()).isEqualTo(options);

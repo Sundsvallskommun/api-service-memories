@@ -11,7 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
 import se.sundsvall.dept44.problem.violations.Violation;
 import se.sundsvall.memories.Application;
-import se.sundsvall.memories.service.FotoService;
+import se.sundsvall.memories.service.PhotoService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -22,7 +22,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @SpringBootTest(classes = Application.class, webEnvironment = RANDOM_PORT)
 @AutoConfigureWebTestClient
 @ActiveProfiles("junit")
-class FotoResourceFailureTest {
+class PhotoResourceFailureTest {
 
 	private static final String INVALID_MUNICIPALITY_ID = "bad-municipality-id";
 	private static final String SEARCH_PATH = "/{municipalityId}/photos";
@@ -30,7 +30,7 @@ class FotoResourceFailureTest {
 	private static final String FILE_PATH = "/{municipalityId}/photos/{id}/file";
 
 	@MockitoBean
-	private FotoService serviceMock;
+	private PhotoService serviceMock;
 
 	@Autowired
 	private WebTestClient webTestClient;
@@ -81,7 +81,7 @@ class FotoResourceFailureTest {
 	void getPhotoFileWithInvalidMunicipalityId() {
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(FILE_PATH)
-				.queryParam("variant", "liten")
+				.queryParam("variant", "thumbnail")
 				.build(Map.of("municipalityId", INVALID_MUNICIPALITY_ID, "id", 1)))
 			.exchange()
 			.expectStatus().isBadRequest()
