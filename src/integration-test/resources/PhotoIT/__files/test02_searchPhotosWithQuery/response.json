@@ -1,0 +1,24 @@
+{
+	"_meta": {
+		"page": 1,
+		"limit": 100,
+		"count": 1,
+		"totalRecords": 1,
+		"totalPages": 1
+	},
+	"photos": [
+		{
+			"photoId": 1002,
+			"documentTitle": "Hamnen i Sundsvall 1950",
+			"comment": "Sundsvalls hamn på 1950-talet med båtar",
+			"earliest": "1950",
+			"latest": "1955",
+			"locationText": "Sundsvall",
+			"location": "Sundsvall",
+			"objectType": "Foto",
+			"colorMode": "Färg",
+			"thumbnailFilename": "FOTO.id_1002_fil_liten.jpg",
+			"largeImageFilename": "FOTO.id_1002_fil_stor.jpg"
+		}
+	]
+}

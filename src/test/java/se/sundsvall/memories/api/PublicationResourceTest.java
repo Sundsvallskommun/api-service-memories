@@ -46,7 +46,7 @@ class PublicationResourceTest {
 
 	@Test
 	void searchPublications() {
-		final var publication = Publication.create().withPublId(1).withDoktitel("Drunkningsolycka");
+		final var publication = Publication.create().withPublicationId(1).withDocumentTitle("Drowning accident");
 		final var pagedResponse = PagedPublicationResponse.create()
 			.withPublications(List.of(publication))
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
@@ -65,7 +65,7 @@ class PublicationResourceTest {
 
 		assertThat(response).isNotNull();
 		assertThat(response.getPublications()).hasSize(1);
-		assertThat(response.getPublications().getFirst().getDoktitel()).isEqualTo("Drunkningsolycka");
+		assertThat(response.getPublications().getFirst().getDocumentTitle()).isEqualTo("Drowning accident");
 		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(serviceMock).search(any());
 	}
@@ -95,7 +95,7 @@ class PublicationResourceTest {
 	@Test
 	void getPublicationById() {
 		final var publicationId = 207;
-		final var publication = Publication.create().withPublId(publicationId).withDoktitel("Alfwar och Skämt");
+		final var publication = Publication.create().withPublicationId(publicationId).withDocumentTitle("Alfwar och Skämt");
 
 		when(serviceMock.getById(publicationId)).thenReturn(publication);
 
@@ -109,15 +109,15 @@ class PublicationResourceTest {
 			.getResponseBody();
 
 		assertThat(response).isNotNull();
-		assertThat(response.getPublId()).isEqualTo(publicationId);
+		assertThat(response.getPublicationId()).isEqualTo(publicationId);
 		verify(serviceMock).getById(publicationId);
 	}
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of("liten", FileVariant.LITEN),
-			Arguments.of("stor", FileVariant.STOR),
-			Arguments.of("txt", FileVariant.TXT));
+			Arguments.of("thumbnail", FileVariant.THUMBNAIL),
+			Arguments.of("large", FileVariant.LARGE),
+			Arguments.of("text", FileVariant.TEXT));
 	}
 
 	@ParameterizedTest

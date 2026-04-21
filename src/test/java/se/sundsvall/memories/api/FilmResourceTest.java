@@ -41,7 +41,7 @@ class FilmResourceTest {
 
 	@Test
 	void searchFilms() {
-		final var film = Film.create().withFilmId(1).withDoktitel("Sundsvall film");
+		final var film = Film.create().withFilmId(1).withDocumentTitle("Sundsvall film");
 		final var pagedResponse = PagedFilmResponse.create()
 			.withFilms(List.of(film))
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
@@ -60,7 +60,7 @@ class FilmResourceTest {
 
 		assertThat(response).isNotNull();
 		assertThat(response.getFilms()).hasSize(1);
-		assertThat(response.getFilms().getFirst().getDoktitel()).isEqualTo("Sundsvall film");
+		assertThat(response.getFilms().getFirst().getDocumentTitle()).isEqualTo("Sundsvall film");
 		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(serviceMock).search(any());
 	}
@@ -90,7 +90,7 @@ class FilmResourceTest {
 	@Test
 	void getFilmById() {
 		final var filmId = 1;
-		final var film = Film.create().withFilmId(filmId).withDoktitel("Test");
+		final var film = Film.create().withFilmId(filmId).withDocumentTitle("Test");
 
 		when(serviceMock.getById(filmId)).thenReturn(film);
 

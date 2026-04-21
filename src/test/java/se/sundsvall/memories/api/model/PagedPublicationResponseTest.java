@@ -27,7 +27,7 @@ class PagedPublicationResponseTest {
 
 	@Test
 	void testBuilderMethods() {
-		final var publications = List.of(Publication.create().withPublId(1));
+		final var publications = List.of(Publication.create().withPublicationId(1));
 		final var meta = PagingAndSortingMetaData.create().withPage(1).withLimit(100);
 
 		final var result = PagedPublicationResponse.create()

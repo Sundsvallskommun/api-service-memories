@@ -24,35 +24,35 @@ class FilmMapperTest {
 			Arguments.of(
 				FilmEntity.create()
 					.withFilmId(1)
-					.withFilnamn("test.mp4")
-					.withFilmObjFil("/path/test.mp4")
-					.withObjtyp("VIDEO")
-					.withDatum("2020-01-01")
-					.withDoktitel("Test film")
-					.withFilmTId(2)
-					.withFilmOplats("Sundsvall")
-					.withFilmOId(3)
-					.withFilmUEId(4)
-					.withFilmUId(5)
-					.withKommentFilm("A comment")
+					.withFilename("test.mp4")
+					.withObjectFilePath("/path/test.mp4")
+					.withObjectType("VIDEO")
+					.withDate("2020-01-01")
+					.withDocumentTitle("Test film")
+					.withTopographyId(2)
+					.withLocationText("Sundsvall")
+					.withOrganizationId(3)
+					.withSubEntityId(4)
+					.withUnitId(5)
+					.withComment("A comment")
 					.withFilmMimeType("video/mp4")
 					.withNodeId(6)
 					.withOptions(0)
 					.withDeletedDate(LocalDate.of(2026, 1, 15)),
 				Film.create()
 					.withFilmId(1)
-					.withFilnamn("test.mp4")
-					.withFilmObjFil("/path/test.mp4")
-					.withObjtyp("VIDEO")
-					.withDatum("2020-01-01")
-					.withDoktitel("Test film")
-					.withFilmTId(2)
-					.withFilmOplats("Sundsvall")
-					.withPlats("Sundsvall kommun")
-					.withFilmOId(3)
-					.withFilmUEId(4)
-					.withFilmUId(5)
-					.withKommentFilm("A comment")
+					.withFilename("test.mp4")
+					.withObjectFilePath("/path/test.mp4")
+					.withObjectType("VIDEO")
+					.withDate("2020-01-01")
+					.withDocumentTitle("Test film")
+					.withTopographyId(2)
+					.withLocationText("Sundsvall")
+					.withLocation("Sundsvall kommun")
+					.withOrganizationId(3)
+					.withSubEntityId(4)
+					.withUnitId(5)
+					.withComment("A comment")
 					.withFilmMimeType("video/mp4")
 					.withNodeId(6)
 					.withOptions(0)
@@ -76,14 +76,14 @@ class FilmMapperTest {
 	@Test
 	void toFilmList() {
 		final var entities = List.of(
-			FilmEntity.create().withFilmId(1).withFilmTId(10).withDoktitel("Film A"),
-			FilmEntity.create().withFilmId(2).withFilmTId(20).withDoktitel("Film B"));
+			FilmEntity.create().withFilmId(1).withTopographyId(10).withDocumentTitle("Film A"),
+			FilmEntity.create().withFilmId(2).withTopographyId(20).withDocumentTitle("Film B"));
 		final Function<Integer, String> lookup = id -> id == 10 ? "Sundsvall" : "Timrå";
 
 		final var result = FilmMapper.toFilmList(entities, lookup);
 
 		assertThat(result)
-			.extracting(Film::getFilmId, Film::getDoktitel, Film::getPlats)
+			.extracting(Film::getFilmId, Film::getDocumentTitle, Film::getLocation)
 			.containsExactly(tuple(1, "Film A", "Sundsvall"), tuple(2, "Film B", "Timrå"));
 	}
 

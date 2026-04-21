@@ -16,37 +16,37 @@ public class FilmEntity {
 	private Integer filmId;
 
 	@Column(name = "FILNAMN", length = 256)
-	private String filnamn;
+	private String filename;
 
 	@Column(name = "FILM_OBJ_FIL", length = 256)
-	private String filmObjFil;
+	private String objectFilePath;
 
 	@Column(name = "OBJTYP", length = 8)
-	private String objtyp;
+	private String objectType;
 
 	@Column(name = "DATUM", length = 256)
-	private String datum;
+	private String date;
 
 	@Column(name = "DOKTITEL", length = 2256)
-	private String doktitel;
+	private String documentTitle;
 
 	@Column(name = "FILM_T_ID")
-	private Integer filmTId;
+	private Integer topographyId;
 
 	@Column(name = "FILM_OPLATS", length = 64)
-	private String filmOplats;
+	private String locationText;
 
 	@Column(name = "FILM_O_ID")
-	private Integer filmOId;
+	private Integer organizationId;
 
 	@Column(name = "FILM_U_E_ID")
-	private Integer filmUEId;
+	private Integer subEntityId;
 
 	@Column(name = "FILM_U_J_ID")
-	private Integer filmUId;
+	private Integer unitId;
 
 	@Column(name = "KOMMENT_FILM", length = 4000)
-	private String kommentFilm;
+	private String comment;
 
 	@Column(name = "FILM_MIME_TYPE", length = 50)
 	private String filmMimeType;
@@ -77,146 +77,146 @@ public class FilmEntity {
 		return this;
 	}
 
-	public String getFilnamn() {
-		return filnamn;
+	public String getFilename() {
+		return filename;
 	}
 
-	public void setFilnamn(final String filnamn) {
-		this.filnamn = filnamn;
+	public void setFilename(final String filename) {
+		this.filename = filename;
 	}
 
-	public FilmEntity withFilnamn(final String filnamn) {
-		this.filnamn = filnamn;
+	public FilmEntity withFilename(final String filename) {
+		this.filename = filename;
 		return this;
 	}
 
-	public String getFilmObjFil() {
-		return filmObjFil;
+	public String getObjectFilePath() {
+		return objectFilePath;
 	}
 
-	public void setFilmObjFil(final String filmObjFil) {
-		this.filmObjFil = filmObjFil;
+	public void setObjectFilePath(final String objectFilePath) {
+		this.objectFilePath = objectFilePath;
 	}
 
-	public FilmEntity withFilmObjFil(final String filmObjFil) {
-		this.filmObjFil = filmObjFil;
+	public FilmEntity withObjectFilePath(final String objectFilePath) {
+		this.objectFilePath = objectFilePath;
 		return this;
 	}
 
-	public String getObjtyp() {
-		return objtyp;
+	public String getObjectType() {
+		return objectType;
 	}
 
-	public void setObjtyp(final String objtyp) {
-		this.objtyp = objtyp;
+	public void setObjectType(final String objectType) {
+		this.objectType = objectType;
 	}
 
-	public FilmEntity withObjtyp(final String objtyp) {
-		this.objtyp = objtyp;
+	public FilmEntity withObjectType(final String objectType) {
+		this.objectType = objectType;
 		return this;
 	}
 
-	public String getDatum() {
-		return datum;
+	public String getDate() {
+		return date;
 	}
 
-	public void setDatum(final String datum) {
-		this.datum = datum;
+	public void setDate(final String date) {
+		this.date = date;
 	}
 
-	public FilmEntity withDatum(final String datum) {
-		this.datum = datum;
+	public FilmEntity withDate(final String date) {
+		this.date = date;
 		return this;
 	}
 
-	public String getDoktitel() {
-		return doktitel;
+	public String getDocumentTitle() {
+		return documentTitle;
 	}
 
-	public void setDoktitel(final String doktitel) {
-		this.doktitel = doktitel;
+	public void setDocumentTitle(final String documentTitle) {
+		this.documentTitle = documentTitle;
 	}
 
-	public FilmEntity withDoktitel(final String doktitel) {
-		this.doktitel = doktitel;
+	public FilmEntity withDocumentTitle(final String documentTitle) {
+		this.documentTitle = documentTitle;
 		return this;
 	}
 
-	public Integer getFilmTId() {
-		return filmTId;
+	public Integer getTopographyId() {
+		return topographyId;
 	}
 
-	public void setFilmTId(final Integer filmTId) {
-		this.filmTId = filmTId;
+	public void setTopographyId(final Integer topographyId) {
+		this.topographyId = topographyId;
 	}
 
-	public FilmEntity withFilmTId(final Integer filmTId) {
-		this.filmTId = filmTId;
+	public FilmEntity withTopographyId(final Integer topographyId) {
+		this.topographyId = topographyId;
 		return this;
 	}
 
-	public String getFilmOplats() {
-		return filmOplats;
+	public String getLocationText() {
+		return locationText;
 	}
 
-	public void setFilmOplats(final String filmOplats) {
-		this.filmOplats = filmOplats;
+	public void setLocationText(final String locationText) {
+		this.locationText = locationText;
 	}
 
-	public FilmEntity withFilmOplats(final String filmOplats) {
-		this.filmOplats = filmOplats;
+	public FilmEntity withLocationText(final String locationText) {
+		this.locationText = locationText;
 		return this;
 	}
 
-	public Integer getFilmOId() {
-		return filmOId;
+	public Integer getOrganizationId() {
+		return organizationId;
 	}
 
-	public void setFilmOId(final Integer filmOId) {
-		this.filmOId = filmOId;
+	public void setOrganizationId(final Integer organizationId) {
+		this.organizationId = organizationId;
 	}
 
-	public FilmEntity withFilmOId(final Integer filmOId) {
-		this.filmOId = filmOId;
+	public FilmEntity withOrganizationId(final Integer organizationId) {
+		this.organizationId = organizationId;
 		return this;
 	}
 
-	public Integer getFilmUEId() {
-		return filmUEId;
+	public Integer getSubEntityId() {
+		return subEntityId;
 	}
 
-	public void setFilmUEId(final Integer filmUEId) {
-		this.filmUEId = filmUEId;
+	public void setSubEntityId(final Integer subEntityId) {
+		this.subEntityId = subEntityId;
 	}
 
-	public FilmEntity withFilmUEId(final Integer filmUEId) {
-		this.filmUEId = filmUEId;
+	public FilmEntity withSubEntityId(final Integer subEntityId) {
+		this.subEntityId = subEntityId;
 		return this;
 	}
 
-	public Integer getFilmUId() {
-		return filmUId;
+	public Integer getUnitId() {
+		return unitId;
 	}
 
-	public void setFilmUId(final Integer filmUId) {
-		this.filmUId = filmUId;
+	public void setUnitId(final Integer unitId) {
+		this.unitId = unitId;
 	}
 
-	public FilmEntity withFilmUId(final Integer filmUId) {
-		this.filmUId = filmUId;
+	public FilmEntity withUnitId(final Integer unitId) {
+		this.unitId = unitId;
 		return this;
 	}
 
-	public String getKommentFilm() {
-		return kommentFilm;
+	public String getComment() {
+		return comment;
 	}
 
-	public void setKommentFilm(final String kommentFilm) {
-		this.kommentFilm = kommentFilm;
+	public void setComment(final String comment) {
+		this.comment = comment;
 	}
 
-	public FilmEntity withKommentFilm(final String kommentFilm) {
-		this.kommentFilm = kommentFilm;
+	public FilmEntity withComment(final String comment) {
+		this.comment = comment;
 		return this;
 	}
 
@@ -277,32 +277,34 @@ public class FilmEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final FilmEntity that = (FilmEntity) o;
-		return Objects.equals(filmId, that.filmId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(filmObjFil, that.filmObjFil) && Objects.equals(objtyp, that.objtyp) && Objects.equals(datum,
-			that.datum) && Objects.equals(doktitel, that.doktitel) && Objects.equals(filmTId, that.filmTId) && Objects.equals(filmOplats, that.filmOplats) && Objects.equals(filmOId, that.filmOId)
-			&& Objects.equals(filmUEId, that.filmUEId) && Objects.equals(filmUId, that.filmUId) && Objects.equals(kommentFilm, that.kommentFilm) && Objects.equals(filmMimeType, that.filmMimeType)
-			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
+		return Objects.equals(filmId, that.filmId) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
+			&& Objects.equals(objectType, that.objectType) && Objects.equals(date, that.date) && Objects.equals(documentTitle, that.documentTitle)
+			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(organizationId, that.organizationId)
+			&& Objects.equals(subEntityId, that.subEntityId) && Objects.equals(unitId, that.unitId) && Objects.equals(comment, that.comment)
+			&& Objects.equals(filmMimeType, that.filmMimeType) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(filmId, filnamn, filmObjFil, objtyp, datum, doktitel, filmTId, filmOplats, filmOId, filmUEId, filmUId, kommentFilm, filmMimeType, nodeId, options, deletedDate);
+		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, organizationId, subEntityId, unitId, comment, filmMimeType, nodeId, options,
+			deletedDate);
 	}
 
 	@Override
 	public String toString() {
 		return "FilmEntity{" +
 			"filmId=" + filmId +
-			", filnamn='" + filnamn + '\'' +
-			", filmObjFil='" + filmObjFil + '\'' +
-			", objtyp='" + objtyp + '\'' +
-			", datum='" + datum + '\'' +
-			", doktitel='" + doktitel + '\'' +
-			", filmTId=" + filmTId +
-			", filmOplats='" + filmOplats + '\'' +
-			", filmOId=" + filmOId +
-			", filmUEId=" + filmUEId +
-			", filmUId=" + filmUId +
-			", kommentFilm='" + kommentFilm + '\'' +
+			", filename='" + filename + '\'' +
+			", objectFilePath='" + objectFilePath + '\'' +
+			", objectType='" + objectType + '\'' +
+			", date='" + date + '\'' +
+			", documentTitle='" + documentTitle + '\'' +
+			", topographyId=" + topographyId +
+			", locationText='" + locationText + '\'' +
+			", organizationId=" + organizationId +
+			", subEntityId=" + subEntityId +
+			", unitId=" + unitId +
+			", comment='" + comment + '\'' +
 			", filmMimeType='" + filmMimeType + '\'' +
 			", nodeId=" + nodeId +
 			", options=" + options +

@@ -7,49 +7,49 @@ import java.util.Objects;
 public class Publication {
 
 	@Schema(description = "Publication ID", examples = "207")
-	private Integer publId;
+	private Integer publicationId;
 
 	@Schema(description = "Original filename from archive", examples = "F21051/1841-02-18_Alfwar och Skämt nr 8.xml")
-	private String filnamn;
+	private String filename;
 
 	@Schema(description = "Publication type (free text)", examples = "")
-	private String publiktyp;
+	private String publicationType;
 
 	@Schema(description = "Publication date", examples = "1841-02-18")
-	private String datum;
+	private String date;
 
 	@Schema(description = "Periodical title (newspaper/magazine name)", examples = "Alfwar och Skämt")
-	private String tidtitel;
+	private String periodicalTitle;
 
 	@Schema(description = "Periodical issue number", examples = "8")
-	private String tidnr;
+	private String issueNumber;
 
 	@Schema(description = "Periodical page number", examples = "3")
-	private String tidsida;
+	private String pageNumber;
 
 	@Schema(description = "Publisher location", examples = "Sundsvall")
-	private String forlagOplats;
+	private String publisherLocation;
 
-	@Schema(description = "Document title", examples = "Sida 3 Alfwar och Skämt nr 8 1841")
-	private String doktitel;
+	@Schema(description = "Document title", examples = "Page 3 Alfwar och Skämt nr 8 1841")
+	private String documentTitle;
 
 	@Schema(description = "Publication location (free-text fallback from P_OPLATS)", examples = "Sundsvall")
-	private String pubOplats;
+	private String locationText;
 
-	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over pubOplats when set)", examples = "Sundsvall")
-	private String plats;
+	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
+	private String location;
 
-	@Schema(description = "Comment / description", examples = "Tidningsnummer från 1841")
-	private String kommentPubl;
+	@Schema(description = "Comment / description", examples = "Newspaper issue from 1841")
+	private String comment;
 
 	@Schema(description = "Thumbnail file name", examples = "PUBL.id_207_fil_liten.jpeg")
-	private String filLiten;
+	private String thumbnailFilename;
 
 	@Schema(description = "Large image file name", examples = "PUBL.id_207_fil_stor.jpeg")
-	private String filStor;
+	private String largeImageFilename;
 
 	@Schema(description = "OCR/text file name", examples = "PUBL.id_207_fil_txt.xml")
-	private String filTxt;
+	private String ocrFilename;
 
 	@Schema(description = "Full OCR/XML text (only returned on detail lookup)")
 	private String xmltext;
@@ -58,198 +58,198 @@ public class Publication {
 		return new Publication();
 	}
 
-	public Integer getPublId() {
-		return publId;
+	public Integer getPublicationId() {
+		return publicationId;
 	}
 
-	public void setPublId(final Integer publId) {
-		this.publId = publId;
+	public void setPublicationId(final Integer publicationId) {
+		this.publicationId = publicationId;
 	}
 
-	public Publication withPublId(final Integer publId) {
-		this.publId = publId;
+	public Publication withPublicationId(final Integer publicationId) {
+		this.publicationId = publicationId;
 		return this;
 	}
 
-	public String getFilnamn() {
-		return filnamn;
+	public String getFilename() {
+		return filename;
 	}
 
-	public void setFilnamn(final String filnamn) {
-		this.filnamn = filnamn;
+	public void setFilename(final String filename) {
+		this.filename = filename;
 	}
 
-	public Publication withFilnamn(final String filnamn) {
-		this.filnamn = filnamn;
+	public Publication withFilename(final String filename) {
+		this.filename = filename;
 		return this;
 	}
 
-	public String getPubliktyp() {
-		return publiktyp;
+	public String getPublicationType() {
+		return publicationType;
 	}
 
-	public void setPubliktyp(final String publiktyp) {
-		this.publiktyp = publiktyp;
+	public void setPublicationType(final String publicationType) {
+		this.publicationType = publicationType;
 	}
 
-	public Publication withPubliktyp(final String publiktyp) {
-		this.publiktyp = publiktyp;
+	public Publication withPublicationType(final String publicationType) {
+		this.publicationType = publicationType;
 		return this;
 	}
 
-	public String getDatum() {
-		return datum;
+	public String getDate() {
+		return date;
 	}
 
-	public void setDatum(final String datum) {
-		this.datum = datum;
+	public void setDate(final String date) {
+		this.date = date;
 	}
 
-	public Publication withDatum(final String datum) {
-		this.datum = datum;
+	public Publication withDate(final String date) {
+		this.date = date;
 		return this;
 	}
 
-	public String getTidtitel() {
-		return tidtitel;
+	public String getPeriodicalTitle() {
+		return periodicalTitle;
 	}
 
-	public void setTidtitel(final String tidtitel) {
-		this.tidtitel = tidtitel;
+	public void setPeriodicalTitle(final String periodicalTitle) {
+		this.periodicalTitle = periodicalTitle;
 	}
 
-	public Publication withTidtitel(final String tidtitel) {
-		this.tidtitel = tidtitel;
+	public Publication withPeriodicalTitle(final String periodicalTitle) {
+		this.periodicalTitle = periodicalTitle;
 		return this;
 	}
 
-	public String getTidnr() {
-		return tidnr;
+	public String getIssueNumber() {
+		return issueNumber;
 	}
 
-	public void setTidnr(final String tidnr) {
-		this.tidnr = tidnr;
+	public void setIssueNumber(final String issueNumber) {
+		this.issueNumber = issueNumber;
 	}
 
-	public Publication withTidnr(final String tidnr) {
-		this.tidnr = tidnr;
+	public Publication withIssueNumber(final String issueNumber) {
+		this.issueNumber = issueNumber;
 		return this;
 	}
 
-	public String getTidsida() {
-		return tidsida;
+	public String getPageNumber() {
+		return pageNumber;
 	}
 
-	public void setTidsida(final String tidsida) {
-		this.tidsida = tidsida;
+	public void setPageNumber(final String pageNumber) {
+		this.pageNumber = pageNumber;
 	}
 
-	public Publication withTidsida(final String tidsida) {
-		this.tidsida = tidsida;
+	public Publication withPageNumber(final String pageNumber) {
+		this.pageNumber = pageNumber;
 		return this;
 	}
 
-	public String getForlagOplats() {
-		return forlagOplats;
+	public String getPublisherLocation() {
+		return publisherLocation;
 	}
 
-	public void setForlagOplats(final String forlagOplats) {
-		this.forlagOplats = forlagOplats;
+	public void setPublisherLocation(final String publisherLocation) {
+		this.publisherLocation = publisherLocation;
 	}
 
-	public Publication withForlagOplats(final String forlagOplats) {
-		this.forlagOplats = forlagOplats;
+	public Publication withPublisherLocation(final String publisherLocation) {
+		this.publisherLocation = publisherLocation;
 		return this;
 	}
 
-	public String getDoktitel() {
-		return doktitel;
+	public String getDocumentTitle() {
+		return documentTitle;
 	}
 
-	public void setDoktitel(final String doktitel) {
-		this.doktitel = doktitel;
+	public void setDocumentTitle(final String documentTitle) {
+		this.documentTitle = documentTitle;
 	}
 
-	public Publication withDoktitel(final String doktitel) {
-		this.doktitel = doktitel;
+	public Publication withDocumentTitle(final String documentTitle) {
+		this.documentTitle = documentTitle;
 		return this;
 	}
 
-	public String getPubOplats() {
-		return pubOplats;
+	public String getLocationText() {
+		return locationText;
 	}
 
-	public void setPubOplats(final String pubOplats) {
-		this.pubOplats = pubOplats;
+	public void setLocationText(final String locationText) {
+		this.locationText = locationText;
 	}
 
-	public Publication withPubOplats(final String pubOplats) {
-		this.pubOplats = pubOplats;
+	public Publication withLocationText(final String locationText) {
+		this.locationText = locationText;
 		return this;
 	}
 
-	public String getPlats() {
-		return plats;
+	public String getLocation() {
+		return location;
 	}
 
-	public void setPlats(final String plats) {
-		this.plats = plats;
+	public void setLocation(final String location) {
+		this.location = location;
 	}
 
-	public Publication withPlats(final String plats) {
-		this.plats = plats;
+	public Publication withLocation(final String location) {
+		this.location = location;
 		return this;
 	}
 
-	public String getKommentPubl() {
-		return kommentPubl;
+	public String getComment() {
+		return comment;
 	}
 
-	public void setKommentPubl(final String kommentPubl) {
-		this.kommentPubl = kommentPubl;
+	public void setComment(final String comment) {
+		this.comment = comment;
 	}
 
-	public Publication withKommentPubl(final String kommentPubl) {
-		this.kommentPubl = kommentPubl;
+	public Publication withComment(final String comment) {
+		this.comment = comment;
 		return this;
 	}
 
-	public String getFilLiten() {
-		return filLiten;
+	public String getThumbnailFilename() {
+		return thumbnailFilename;
 	}
 
-	public void setFilLiten(final String filLiten) {
-		this.filLiten = filLiten;
+	public void setThumbnailFilename(final String thumbnailFilename) {
+		this.thumbnailFilename = thumbnailFilename;
 	}
 
-	public Publication withFilLiten(final String filLiten) {
-		this.filLiten = filLiten;
+	public Publication withThumbnailFilename(final String thumbnailFilename) {
+		this.thumbnailFilename = thumbnailFilename;
 		return this;
 	}
 
-	public String getFilStor() {
-		return filStor;
+	public String getLargeImageFilename() {
+		return largeImageFilename;
 	}
 
-	public void setFilStor(final String filStor) {
-		this.filStor = filStor;
+	public void setLargeImageFilename(final String largeImageFilename) {
+		this.largeImageFilename = largeImageFilename;
 	}
 
-	public Publication withFilStor(final String filStor) {
-		this.filStor = filStor;
+	public Publication withLargeImageFilename(final String largeImageFilename) {
+		this.largeImageFilename = largeImageFilename;
 		return this;
 	}
 
-	public String getFilTxt() {
-		return filTxt;
+	public String getOcrFilename() {
+		return ocrFilename;
 	}
 
-	public void setFilTxt(final String filTxt) {
-		this.filTxt = filTxt;
+	public void setOcrFilename(final String ocrFilename) {
+		this.ocrFilename = ocrFilename;
 	}
 
-	public Publication withFilTxt(final String filTxt) {
-		this.filTxt = filTxt;
+	public Publication withOcrFilename(final String ocrFilename) {
+		this.ocrFilename = ocrFilename;
 		return this;
 	}
 
@@ -271,36 +271,38 @@ public class Publication {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final Publication that = (Publication) o;
-		return Objects.equals(publId, that.publId) && Objects.equals(filnamn, that.filnamn) && Objects.equals(publiktyp, that.publiktyp)
-			&& Objects.equals(datum, that.datum) && Objects.equals(tidtitel, that.tidtitel) && Objects.equals(tidnr, that.tidnr) && Objects.equals(tidsida, that.tidsida)
-			&& Objects.equals(forlagOplats, that.forlagOplats) && Objects.equals(doktitel, that.doktitel) && Objects.equals(pubOplats, that.pubOplats) && Objects.equals(plats, that.plats)
-			&& Objects.equals(kommentPubl, that.kommentPubl) && Objects.equals(filLiten, that.filLiten) && Objects.equals(filStor, that.filStor)
-			&& Objects.equals(filTxt, that.filTxt) && Objects.equals(xmltext, that.xmltext);
+		return Objects.equals(publicationId, that.publicationId) && Objects.equals(filename, that.filename) && Objects.equals(publicationType, that.publicationType)
+			&& Objects.equals(date, that.date) && Objects.equals(periodicalTitle, that.periodicalTitle) && Objects.equals(issueNumber, that.issueNumber)
+			&& Objects.equals(pageNumber, that.pageNumber) && Objects.equals(publisherLocation, that.publisherLocation) && Objects.equals(documentTitle, that.documentTitle)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location) && Objects.equals(comment, that.comment)
+			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
+			&& Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(publId, filnamn, publiktyp, datum, tidtitel, tidnr, tidsida, forlagOplats, doktitel, pubOplats, plats, kommentPubl, filLiten, filStor, filTxt, xmltext);
+		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, publisherLocation, documentTitle,
+			locationText, location, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext);
 	}
 
 	@Override
 	public String toString() {
 		return "Publication{" +
-			"publId=" + publId +
-			", filnamn='" + filnamn + '\'' +
-			", publiktyp='" + publiktyp + '\'' +
-			", datum='" + datum + '\'' +
-			", tidtitel='" + tidtitel + '\'' +
-			", tidnr='" + tidnr + '\'' +
-			", tidsida='" + tidsida + '\'' +
-			", forlagOplats='" + forlagOplats + '\'' +
-			", doktitel='" + doktitel + '\'' +
-			", pubOplats='" + pubOplats + '\'' +
-			", plats='" + plats + '\'' +
-			", kommentPubl='" + kommentPubl + '\'' +
-			", filLiten='" + filLiten + '\'' +
-			", filStor='" + filStor + '\'' +
-			", filTxt='" + filTxt + '\'' +
+			"publicationId=" + publicationId +
+			", filename='" + filename + '\'' +
+			", publicationType='" + publicationType + '\'' +
+			", date='" + date + '\'' +
+			", periodicalTitle='" + periodicalTitle + '\'' +
+			", issueNumber='" + issueNumber + '\'' +
+			", pageNumber='" + pageNumber + '\'' +
+			", publisherLocation='" + publisherLocation + '\'' +
+			", documentTitle='" + documentTitle + '\'' +
+			", locationText='" + locationText + '\'' +
+			", location='" + location + '\'' +
+			", comment='" + comment + '\'' +
+			", thumbnailFilename='" + thumbnailFilename + '\'' +
+			", largeImageFilename='" + largeImageFilename + '\'' +
+			", ocrFilename='" + ocrFilename + '\'' +
 			", xmltext='" + xmltext + '\'' +
 			'}';
 	}

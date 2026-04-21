@@ -11,8 +11,8 @@ import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
 import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.FulltextQuery;
-import se.sundsvall.memories.integration.db.PublRepository;
-import se.sundsvall.memories.integration.db.model.PublEntity;
+import se.sundsvall.memories.integration.db.PublicationRepository;
+import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PublicationMapper;
@@ -27,18 +27,18 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 @Service
 public class PublicationService {
 
-	private final PublRepository publRepository;
+	private final PublicationRepository publicationRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
-	private final TopografiLookup topografiLookup;
+	private final TopographyLookup topographyLookup;
 
-	public PublicationService(final PublRepository publRepository,
+	public PublicationService(final PublicationRepository publicationRepository,
 		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
-		final TopografiLookup topografiLookup) {
-		this.publRepository = publRepository;
+		final TopographyLookup topographyLookup) {
+		this.publicationRepository = publicationRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
-		this.topografiLookup = topografiLookup;
+		this.topographyLookup = topographyLookup;
 	}
 
 	public PagedPublicationResponse search(final PublicationParameters parameters) {
@@ -46,22 +46,22 @@ public class PublicationService {
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
 		final var page = sanitized == null
-			? publRepository.findAllPublished(pageable)
-			: publRepository.searchPublished(sanitized, pageable);
+			? publicationRepository.findAllPublished(pageable)
+			: publicationRepository.searchPublished(sanitized, pageable);
 
 		return PagedPublicationResponse.create()
-			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topografiLookup::resolve))
+			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topographyLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
 	public Publication getById(final Integer id) {
-		return publRepository.findById(id)
-			.map(entity -> PublicationMapper.toPublication(entity, topografiLookup.resolve(entity.getPtId())))
+		return publicationRepository.findById(id)
+			.map(entity -> PublicationMapper.toPublication(entity, topographyLookup.resolve(entity.getTopographyId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {
-		final var entity = publRepository.findById(id)
+		final var entity = publicationRepository.findById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));
 
 		final var filename = ofNullable(variant.extract(entity))
@@ -76,8 +76,10 @@ public class PublicationService {
 	}
 
 	private void streamFileContent(final Integer id, final FileVariant variant, final String filename, final HttpServletResponse response) {
-		// SMB URI separator is always "/" — see comment in FotoService for the
-		// reason String.join is preferred over a literal "/" concatenation.
+		// Build the SMB path via String.join so we don't have a hard-coded "/"
+		// literal embedded in the format string (Sonar S1075). The separator is
+		// genuinely "/" here — SMB URIs always use forward slashes regardless
+		// of host OS, so File.separator would actually be wrong on Windows.
 		final var path = String.join("/", sambaProperties.publFolder() + variant.getSubfolder(), filename);
 		try {
 			sambaIntegration.streamFile(path, response.getOutputStream());
@@ -88,19 +90,19 @@ public class PublicationService {
 	}
 
 	public enum FileVariant {
-		LITEN("fil_liten", PublEntity::getFilLiten),
-		STOR("fil_stor", PublEntity::getFilStor),
-		TXT("fil_txt", PublEntity::getFilTxt);
+		THUMBNAIL("fil_liten", PublicationEntity::getThumbnailFilename),
+		LARGE("fil_stor", PublicationEntity::getLargeImageFilename),
+		TEXT("fil_txt", PublicationEntity::getOcrFilename);
 
 		private final String subfolder;
-		private final Function<PublEntity, String> fileNameExtractor;
+		private final Function<PublicationEntity, String> fileNameExtractor;
 
-		FileVariant(final String subfolder, final Function<PublEntity, String> fileNameExtractor) {
+		FileVariant(final String subfolder, final Function<PublicationEntity, String> fileNameExtractor) {
 			this.subfolder = subfolder;
 			this.fileNameExtractor = fileNameExtractor;
 		}
 
-		String extract(final PublEntity entity) {
+		String extract(final PublicationEntity entity) {
 			return fileNameExtractor.apply(entity);
 		}
 

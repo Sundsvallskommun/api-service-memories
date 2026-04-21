@@ -7,7 +7,7 @@ import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBa
 @Schema(description = "Publication search parameters")
 public class PublicationParameters extends AbstractParameterPagingAndSortingBase {
 
-	@Schema(description = "Free text search query", examples = "Drunkningsolycka")
+	@Schema(description = "Free text search query", examples = "Drowning accident")
 	private String query;
 
 	public static PublicationParameters create() {

@@ -19,11 +19,11 @@ import se.sundsvall.dept44.common.validators.annotation.OneOf;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
-import se.sundsvall.memories.api.model.Foto;
-import se.sundsvall.memories.api.model.FotoParameters;
-import se.sundsvall.memories.api.model.PagedFotoResponse;
-import se.sundsvall.memories.service.FotoService;
-import se.sundsvall.memories.service.FotoService.FileVariant;
+import se.sundsvall.memories.api.model.PagedPhotoResponse;
+import se.sundsvall.memories.api.model.Photo;
+import se.sundsvall.memories.api.model.PhotoParameters;
+import se.sundsvall.memories.service.PhotoService;
+import se.sundsvall.memories.service.PhotoService.FileVariant;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
@@ -39,47 +39,47 @@ import static org.springframework.http.ResponseEntity.ok;
 	}))),
 	@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 })
-class FotoResource {
+class PhotoResource {
 
-	private final FotoService fotoService;
+	private final PhotoService photoService;
 
-	FotoResource(final FotoService fotoService) {
-		this.fotoService = fotoService;
+	PhotoResource(final PhotoService photoService) {
+		this.photoService = photoService;
 	}
 
 	@GetMapping(produces = APPLICATION_JSON_VALUE)
 	@Operation(summary = "Search photos", description = "Fulltext search across title and comment; only published photos are returned.")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
-	ResponseEntity<PagedFotoResponse> searchPhotos(
+	ResponseEntity<PagedPhotoResponse> searchPhotos(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@Valid final FotoParameters parameters) {
+		@Valid final PhotoParameters parameters) {
 
-		return ok(fotoService.search(parameters));
+		return ok(photoService.search(parameters));
 	}
 
 	@GetMapping(path = "/{id}", produces = APPLICATION_JSON_VALUE)
 	@Operation(summary = "Get photo by ID", description = "Get a specific photo by its ID")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
-	ResponseEntity<Foto> getPhoto(
+	ResponseEntity<Photo> getPhoto(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
 		@PathVariable final Integer id) {
 
-		return ok(fotoService.getById(id));
+		return ok(photoService.getById(id));
 	}
 
 	@GetMapping(path = "/{id}/file")
-	@Operation(summary = "Get photo file", description = "Download a file associated with a photo by specifying the variant (liten = thumbnail preview, stor = large image)")
+	@Operation(summary = "Get photo file", description = "Download a file associated with a photo by specifying the variant (thumbnail = thumbnail preview, large = large image)")
 	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void getPhotoFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
 		@PathVariable final Integer id,
 		@RequestParam @OneOf({
-			"liten", "stor"
+			"thumbnail", "large"
 		}) final String variant,
 		final HttpServletResponse response) {
 
-		fotoService.streamFile(id, FileVariant.valueOf(variant.toUpperCase()), response);
+		photoService.streamFile(id, FileVariant.valueOf(variant.toUpperCase()), response);
 	}
 }

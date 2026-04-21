@@ -7,7 +7,7 @@ import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBa
 @Schema(description = "Film search parameters")
 public class FilmParameters extends AbstractParameterPagingAndSortingBase {
 
-	@Schema(description = "Free text search query", examples = "midsommar")
+	@Schema(description = "Free text search query", examples = "midsummer")
 	private String query;
 
 	public static FilmParameters create() {

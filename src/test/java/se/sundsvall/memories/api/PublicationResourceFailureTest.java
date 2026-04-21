@@ -81,7 +81,7 @@ class PublicationResourceFailureTest {
 	void getPublicationFileWithInvalidMunicipalityId() {
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(FILE_PATH)
-				.queryParam("variant", "liten")
+				.queryParam("variant", "thumbnail")
 				.build(Map.of("municipalityId", INVALID_MUNICIPALITY_ID, "id", 1)))
 			.exchange()
 			.expectStatus().isBadRequest()
