@@ -80,7 +80,7 @@ public class PublicationService {
 		// literal embedded in the format string (Sonar S1075). The separator is
 		// genuinely "/" here — SMB URIs always use forward slashes regardless
 		// of host OS, so File.separator would actually be wrong on Windows.
-		final var path = String.join("/", sambaProperties.publFolder() + variant.getSubfolder(), filename);
+		final var path = String.join("/", sambaProperties.publicationFolder() + variant.getSubfolder(), filename);
 		try {
 			sambaIntegration.streamFile(path, response.getOutputStream());
 		} catch (final IOException e) {

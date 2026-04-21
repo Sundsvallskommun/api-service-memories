@@ -13,6 +13,6 @@ public record SambaIntegrationProperties(
 	@NotBlank String password,
 	@NotBlank String share,
 	@NotBlank String filmFolder,
-	@NotBlank String publFolder,
-	@NotBlank String fotoFolder) {
+	@NotBlank String publicationFolder,
+	@NotBlank String photoFolder) {
 }
