@@ -1,0 +1,68 @@
+{
+	"_meta": {
+		"count": 3,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 3
+	},
+	"audios": [
+		{
+			"audioId": 1,
+			"filename": "intervju_borgmastare_1980.mp3",
+			"objectFilePath": "/media/ljud/intervju_borgmastare_1980.mp3",
+			"objectType": "LJUD",
+			"date": "1980-04-12",
+			"documentTitle": "Intervju med borgmästaren 1980",
+			"topographyId": 1,
+			"locationText": "Sundsvall",
+			"location": "Sundsvall",
+			"subjectId": 10,
+			"subject": "Intervju",
+			"authorPersonId": 0,
+			"authorEntityId": 1,
+			"comment": "Ljudupptagning av intervju med dåvarande borgmästaren",
+			"audioMimeType": "audio/mpeg",
+			"nodeId": 200,
+			"options": 4
+		},
+		{
+			"audioId": 2,
+			"filename": "stadskorens_konsert_1985.mp3",
+			"objectFilePath": "/media/ljud/stadskorens_konsert_1985.mp3",
+			"objectType": "LJUD",
+			"date": "1985-06-21",
+			"documentTitle": "Stadskörens midsommarkonsert 1985",
+			"topographyId": 1,
+			"locationText": "Sundsvall",
+			"location": "Sundsvall",
+			"subjectId": 20,
+			"subject": "Musik",
+			"authorPersonId": 0,
+			"authorEntityId": 1,
+			"comment": "Inspelning av stadskörens midsommarkonsert",
+			"audioMimeType": "audio/mpeg",
+			"nodeId": 201,
+			"options": 4
+		},
+		{
+			"audioId": 3,
+			"filename": "timra_folkmusik.mp3",
+			"objectFilePath": "/media/ljud/timra_folkmusik.mp3",
+			"objectType": "LJUD",
+			"date": "1975-09-10",
+			"documentTitle": "Folkmusik från Timrå 1975",
+			"topographyId": 2,
+			"locationText": "Timrå",
+			"location": "Timrå",
+			"subjectId": 20,
+			"subject": "Musik",
+			"authorPersonId": 0,
+			"authorEntityId": 1,
+			"comment": "Folkmusikinspelning från Timrå",
+			"audioMimeType": "audio/mpeg",
+			"nodeId": 202,
+			"options": 4
+		}
+	]
+}

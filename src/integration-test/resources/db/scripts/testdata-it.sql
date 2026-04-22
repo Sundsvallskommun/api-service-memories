@@ -1,16 +1,4 @@
 --
--- Reset state between IT classes (Testcontainers shares a single MariaDB instance across IT classes)
---
-DELETE
-FROM PUBL;
-DELETE
-FROM FILM;
-DELETE
-FROM FOTO;
-DELETE
-FROM TOPOGRAFI;
-
---
 -- TOPOGRAFI (place lookup)
 --
 INSERT INTO TOPOGRAFI (T_ID, TOPNAMN, TOPKOD, PLATS, LAND)
@@ -109,3 +97,38 @@ VALUES (1003, 'Industribild från Timrå', 'Sågverk i Timrå', '1960', '1962', 
 -- Unpublished photo that must never appear in any response
 INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, FIL_LITEN, NODEID, `OPTIONS`)
 VALUES (1099, 'Draft unpublished photo', 'Stadsvy not yet published', '2024', null, 19099, 0);
+
+--
+-- OCM (subject / ämne lookup)
+--
+INSERT INTO OCM (O_ID, OCMTEXT, OCMKOD, OCMDESC)
+VALUES (1, 'Allmänt', 'ALM', 'Allmänt ämne'),
+       (10, 'Intervju', 'INT', 'Ljudupptagning av intervju'),
+       (20, 'Musik', 'MUS', 'Musikinspelning');
+
+--
+-- LJUD
+--
+INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_T_ID, LJUD_OPLATS, LJUD_O_ID,
+                  LJUD_U_E_ID, LJUD_U_J_ID, KOMMENT_LJUD, LJUD_MIME_TYPE, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (1, 'intervju_borgmastare_1980.mp3', '/media/ljud/intervju_borgmastare_1980.mp3', 'LJUD', '1980-04-12',
+        'Intervju med borgmästaren 1980', 1, 'Sundsvall', 10, 0, 1,
+        'Ljudupptagning av intervju med dåvarande borgmästaren',
+        'audio/mpeg', 200, 4, null);
+
+INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_T_ID, LJUD_OPLATS, LJUD_O_ID,
+                  LJUD_U_E_ID, LJUD_U_J_ID, KOMMENT_LJUD, LJUD_MIME_TYPE, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (2, 'stadskorens_konsert_1985.mp3', '/media/ljud/stadskorens_konsert_1985.mp3', 'LJUD', '1985-06-21',
+        'Stadskörens midsommarkonsert 1985', 1, 'Sundsvall', 20, 0, 1,
+        'Inspelning av stadskörens midsommarkonsert', 'audio/mpeg', 201, 4, null);
+
+INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_T_ID, LJUD_OPLATS, LJUD_O_ID,
+                  LJUD_U_E_ID, LJUD_U_J_ID, KOMMENT_LJUD, LJUD_MIME_TYPE, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (3, 'timra_folkmusik.mp3', '/media/ljud/timra_folkmusik.mp3', 'LJUD', '1975-09-10', 'Folkmusik från Timrå 1975',
+        2, 'Timrå', 20, 0, 1, 'Folkmusikinspelning från Timrå', 'audio/mpeg', 202, 4, null);
+
+-- Unpublished audio that should never be returned by search or list endpoints
+INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_T_ID, LJUD_OPLATS, LJUD_O_ID,
+                  LJUD_U_E_ID, LJUD_U_J_ID, KOMMENT_LJUD, LJUD_MIME_TYPE, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (4, 'unpublished.mp3', '/media/ljud/unpublished.mp3', 'LJUD', '2000-01-01', 'Unpublished audio', 1, 'Sundsvall',
+        1, 0, 1, 'This audio is not published', 'audio/mpeg', 203, 0, null);

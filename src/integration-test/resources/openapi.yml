@@ -5,11 +5,13 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.0"
+  version: "3.1"
 servers:
   - url: http://localhost:50509
     description: Generated server url
 tags:
+  - name: Audio
+    description: Audio search and file operations
   - name: Films
     description: Film search operations
   - name: Photos
@@ -383,6 +385,136 @@ paths:
       summary: Get film file
       description: Download the file associated with a film
       operationId: getFilmFile
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: { }
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/audios:
+    get:
+      tags:
+        - Audio
+      summary: Search audio
+      description: Search audio by free text query across title and comment. Returns
+        paginated results.
+      operationId: searchAudios
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: parameters
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/AudioParameters"
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedAudioResponse"
+  /{municipalityId}/audios/{id}:
+    get:
+      tags:
+        - Audio
+      summary: Get audio by ID
+      description: Get a specific audio record by its ID
+      operationId: getAudio
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Audio"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/audios/{id}/file:
+    get:
+      tags:
+        - Audio
+      summary: Get audio file
+      description: Download the file associated with an audio record
+      operationId: getAudioFile
       parameters:
         - name: municipalityId
           in: path
@@ -1019,6 +1151,158 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Film"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+          readOnly: true
+    AudioParameters:
+      type: object
+      description: Audio search parameters
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+            - "1"
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+            - "15"
+          minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+              - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+            - ASC
+        query:
+          type: string
+          description: Free text search query
+          examples:
+            - interview
+    Audio:
+      type: object
+      description: Audio model
+      properties:
+        audioId:
+          type: integer
+          format: int32
+          description: Audio ID
+          examples:
+            - "123"
+        filename:
+          type: string
+          description: Filename
+          examples:
+            - interview1980.mp3
+        objectFilePath:
+          type: string
+          description: Audio object file path
+          examples:
+            - /path/to/file.mp3
+        objectType:
+          type: string
+          description: Object type
+          examples:
+            - LJUD
+        date:
+          type: string
+          description: Date
+          examples:
+            - 1980-04-12
+        documentTitle:
+          type: string
+          description: Document title
+          examples:
+            - Interview with the mayor
+        topographyId:
+          type: integer
+          format: int32
+          description: Topography ID
+          examples:
+            - "1"
+        locationText:
+          type: string
+          description: Audio location (free-text fallback from LJUD_OPLATS)
+          examples:
+            - Sundsvall
+        location:
+          type: string
+          description: Resolved place name from TOPOGRAFI (preferred over locationText
+            when set)
+          examples:
+            - Sundsvall
+        subjectId:
+          type: integer
+          format: int32
+          description: OCM subject ID
+          examples:
+            - "1"
+        subject:
+          type: string
+          description: Resolved subject label from OCM (Ämne)
+          examples:
+            - Intervju
+        authorPersonId:
+          type: integer
+          format: int32
+          description: Author (individual person) ID
+          examples:
+            - "0"
+        authorEntityId:
+          type: integer
+          format: int32
+          description: Author (legal entity) ID
+          examples:
+            - "1"
+        comment:
+          type: string
+          description: Comment
+          examples:
+            - Audio recording of an interview
+        audioMimeType:
+          type: string
+          description: MIME type
+          examples:
+            - audio/mpeg
+        nodeId:
+          type: integer
+          format: int32
+          description: Node ID
+          examples:
+            - "456"
+        options:
+          type: integer
+          format: int32
+          description: Options
+          examples:
+            - "0"
+        deletedDate:
+          type: string
+          format: date
+          description: Deleted date
+          examples:
+            - 2026-01-15
+    PagedAudioResponse:
+      type: object
+      description: Paged audio response
+      properties:
+        audios:
+          type: array
+          items:
+            $ref: "#/components/schemas/Audio"
             readOnly: true
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"

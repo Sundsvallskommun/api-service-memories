@@ -1,0 +1,30 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"audios": [
+		{
+			"audioId": 1,
+			"filename": "intervju_borgmastare_1980.mp3",
+			"objectFilePath": "/media/ljud/intervju_borgmastare_1980.mp3",
+			"objectType": "LJUD",
+			"date": "1980-04-12",
+			"documentTitle": "Intervju med borgmästaren 1980",
+			"topographyId": 1,
+			"locationText": "Sundsvall",
+			"location": "Sundsvall",
+			"subjectId": 10,
+			"subject": "Intervju",
+			"authorPersonId": 0,
+			"authorEntityId": 1,
+			"comment": "Ljudupptagning av intervju med dåvarande borgmästaren",
+			"audioMimeType": "audio/mpeg",
+			"nodeId": 200,
+			"options": 4
+		}
+	]
+}

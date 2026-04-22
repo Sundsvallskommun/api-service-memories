@@ -27,3 +27,4 @@ integration:
     film-folder: /film/
     publication-folder: /publ/
     photo-folder: /foto/
+    audio-folder: /ljud/
