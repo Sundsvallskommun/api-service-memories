@@ -2,6 +2,7 @@ package se.sundsvall.memories.integration.samba;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import org.springframework.core.io.AbstractResource;
 
 /**
@@ -56,6 +57,16 @@ class SmbResource extends AbstractResource {
 	@Override
 	public String getDescription() {
 		return "SMB resource [" + filePath + "]";
+	}
+
+	@Override
+	public boolean equals(final Object other) {
+		return other instanceof SmbResource that && Objects.equals(filePath, that.filePath);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(filePath);
 	}
 
 	@FunctionalInterface

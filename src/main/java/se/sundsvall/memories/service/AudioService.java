@@ -27,6 +27,8 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 @Service
 public class AudioService {
 
+	private static final String AUDIO_NOT_FOUND = "Audio with id '%s' not found";
+
 	private final AudioRepository audioRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
@@ -67,7 +69,7 @@ public class AudioService {
 	public Audio getById(final Integer id) {
 		return audioRepository.findById(id)
 			.map(entity -> AudioMapper.toAudio(entity, topographyLookup.resolve(entity.getTopographyId()), ocmLookup.resolve(entity.getSubjectId())))
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Audio with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
 	}
 
 	/**
@@ -80,7 +82,7 @@ public class AudioService {
 	 */
 	public StreamPayload openForPlayback(final Integer id) {
 		final var entity = audioRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Audio with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
 
 		final var mimeType = ofNullable(entity.getAudioMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
 		final var resource = sambaIntegration.openResource(sambaProperties.audioFolder() + entity.getObjectFilePath());
@@ -89,7 +91,7 @@ public class AudioService {
 
 	public void streamFile(final Integer id, final HttpServletResponse response) {
 		final var entity = audioRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Audio with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
 
 		final var mimeType = ofNullable(entity.getAudioMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
 		response.addHeader(CONTENT_TYPE, mimeType);

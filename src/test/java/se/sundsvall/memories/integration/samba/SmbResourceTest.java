@@ -1,7 +1,6 @@
 package se.sundsvall.memories.integration.samba;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.integration.samba.SmbResource.LengthSupplier;
@@ -51,10 +50,10 @@ class SmbResourceTest {
 		};
 		final var resource = new SmbResource("/a.mp3", opener, FIXED_LENGTH);
 
-		try (final InputStream _ = resource.getInputStream()) {
+		try (final var _ = resource.getInputStream()) {
 			// first
 		}
-		try (final InputStream _ = resource.getInputStream()) {
+		try (final var _ = resource.getInputStream()) {
 			// second — each call goes to opener, no caching
 		}
 

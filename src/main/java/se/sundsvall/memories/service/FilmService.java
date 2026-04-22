@@ -27,6 +27,8 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 @Service
 public class FilmService {
 
+	private static final String FILM_NOT_FOUND = "Film with id '%s' not found";
+
 	private final FilmRepository filmRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
@@ -65,7 +67,7 @@ public class FilmService {
 	public Film getById(final Integer id) {
 		return filmRepository.findById(id)
 			.map(entity -> FilmMapper.toFilm(entity, topographyLookup.resolve(entity.getTopographyId())))
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, FILM_NOT_FOUND.formatted(id)));
 	}
 
 	/**
@@ -74,7 +76,7 @@ public class FilmService {
 	 */
 	public StreamPayload openForPlayback(final Integer id) {
 		final var entity = filmRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, FILM_NOT_FOUND.formatted(id)));
 
 		final var mimeType = ofNullable(entity.getFilmMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
 		final var resource = sambaIntegration.openResource(sambaProperties.filmFolder() + entity.getObjectFilePath());
@@ -83,7 +85,7 @@ public class FilmService {
 
 	public void streamFile(final Integer id, final HttpServletResponse response) {
 		final var entity = filmRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, FILM_NOT_FOUND.formatted(id)));
 
 		final var mimeType = ofNullable(entity.getFilmMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
 		response.addHeader(CONTENT_TYPE, mimeType);
