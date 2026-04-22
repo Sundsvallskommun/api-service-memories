@@ -13,9 +13,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
-import se.sundsvall.memories.api.model.FilmParameters;
-import se.sundsvall.memories.integration.db.FilmRepository;
-import se.sundsvall.memories.integration.db.model.FilmEntity;
+import se.sundsvall.memories.api.model.AudioParameters;
+import se.sundsvall.memories.integration.db.AudioRepository;
+import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 
@@ -31,13 +31,13 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ExtendWith(MockitoExtension.class)
-class FilmServiceTest {
+class AudioServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
 		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/");
 
 	@Mock
-	private FilmRepository repositoryMock;
+	private AudioRepository repositoryMock;
 
 	@Mock
 	private SambaIntegration sambaIntegrationMock;
@@ -45,24 +45,27 @@ class FilmServiceTest {
 	@Mock
 	private TopographyLookup topographyLookupMock;
 
-	private FilmService service;
+	@Mock
+	private OcmLookup ocmLookupMock;
+
+	private AudioService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new FilmService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock);
+		service = new AudioService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock);
 	}
 
 	@Test
 	void searchWithQuery() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Sundsvall film");
+		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Sundsvall intervju");
 
 		when(repositoryMock.searchPublished("sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
-		final var result = service.search(FilmParameters.create().withQuery("sundsvall"));
+		final var result = service.search(AudioParameters.create().withQuery("sundsvall"));
 
-		assertThat(result.getFilms()).hasSize(1);
-		assertThat(result.getFilms().getFirst().getDocumentTitle()).isEqualTo("Sundsvall film");
+		assertThat(result.getAudios()).hasSize(1);
+		assertThat(result.getAudios().getFirst().getDocumentTitle()).isEqualTo("Sundsvall intervju");
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(repositoryMock).searchPublished("sundsvall*", pageable);
@@ -72,13 +75,13 @@ class FilmServiceTest {
 	@Test
 	void searchSanitizesOperatorsInQuery() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Midsommar");
+		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Midsommar");
 
 		when(repositoryMock.searchPublished("midsommar* 1985*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
-		final var result = service.search(FilmParameters.create().withQuery("+midsommar -1985"));
+		final var result = service.search(AudioParameters.create().withQuery("+midsommar -1985"));
 
-		assertThat(result.getFilms()).hasSize(1);
+		assertThat(result.getAudios()).hasSize(1);
 		verify(repositoryMock).searchPublished("midsommar* 1985*", pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
@@ -86,13 +89,13 @@ class FilmServiceTest {
 	@Test
 	void searchWithNullQuery() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = FilmEntity.create().withFilmId(1);
+		final var entity = AudioEntity.create().withAudioId(1);
 
 		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
-		final var result = service.search(FilmParameters.create());
+		final var result = service.search(AudioParameters.create());
 
-		assertThat(result.getFilms()).hasSize(1);
+		assertThat(result.getAudios()).hasSize(1);
 		verify(repositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
@@ -100,13 +103,13 @@ class FilmServiceTest {
 	@Test
 	void searchWithBlankQuery() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = FilmEntity.create().withFilmId(1);
+		final var entity = AudioEntity.create().withAudioId(1);
 
 		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
-		final var result = service.search(FilmParameters.create().withQuery("   "));
+		final var result = service.search(AudioParameters.create().withQuery("   "));
 
-		assertThat(result.getFilms()).hasSize(1);
+		assertThat(result.getAudios()).hasSize(1);
 		verify(repositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
@@ -117,9 +120,9 @@ class FilmServiceTest {
 
 		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
-		final var result = service.search(FilmParameters.create().withQuery("+-*"));
+		final var result = service.search(AudioParameters.create().withQuery("+-*"));
 
-		assertThat(result.getFilms()).isEmpty();
+		assertThat(result.getAudios()).isEmpty();
 		verify(repositoryMock).findAllPublished(pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
@@ -127,14 +130,14 @@ class FilmServiceTest {
 	@Test
 	void getById() {
 		final var id = 1;
-		final var entity = FilmEntity.create().withFilmId(id).withDocumentTitle("Test");
+		final var entity = AudioEntity.create().withAudioId(id).withDocumentTitle("Test");
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
 
 		final var result = service.getById(id);
 
 		assertThat(result).isNotNull();
-		assertThat(result.getFilmId()).isEqualTo(id);
+		assertThat(result.getAudioId()).isEqualTo(id);
 		assertThat(result.getDocumentTitle()).isEqualTo("Test");
 		verify(repositoryMock).findById(id);
 	}
@@ -148,18 +151,18 @@ class FilmServiceTest {
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.getById(id));
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
-		assertThat(exception.getMessage()).contains("Film with id '999' not found");
+		assertThat(exception.getMessage()).contains("Audio with id '999' not found");
 		verify(repositoryMock).findById(id);
 	}
 
 	@Test
 	void streamFile() throws IOException {
 		final var id = 1;
-		final var filePath = "/films/test.mp4";
-		final var entity = FilmEntity.create()
-			.withFilmId(id)
+		final var filePath = "/ljud/test.mp3";
+		final var entity = AudioEntity.create()
+			.withAudioId(id)
 			.withObjectFilePath(filePath)
-			.withFilmMimeType("video/mp4");
+			.withAudioMimeType("audio/mpeg");
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
 
@@ -168,20 +171,20 @@ class FilmServiceTest {
 
 		service.streamFile(id, responseMock);
 
-		verify(responseMock).addHeader(CONTENT_TYPE, "video/mp4");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"test.mp4\"");
+		verify(responseMock).addHeader(CONTENT_TYPE, "audio/mpeg");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"test.mp3\"");
 		verify(repositoryMock).findById(id);
-		verify(sambaIntegrationMock).streamFile("/film/" + filePath, outputStreamMock);
+		verify(sambaIntegrationMock).streamFile("/ljud/" + filePath, outputStreamMock);
 	}
 
 	@Test
 	void streamFileDerivesFilenameFromBackslashPath() throws IOException {
 		final var id = 2;
-		final var filePath = "\\\\server\\share\\films\\midsommar1985.avi";
-		final var entity = FilmEntity.create()
-			.withFilmId(id)
+		final var filePath = "\\\\server\\share\\ljud\\intervju1980.mp3";
+		final var entity = AudioEntity.create()
+			.withAudioId(id)
 			.withObjectFilePath(filePath)
-			.withFilmMimeType("video/avi");
+			.withAudioMimeType("audio/mpeg");
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
 
@@ -190,16 +193,16 @@ class FilmServiceTest {
 
 		service.streamFile(id, responseMock);
 
-		verify(responseMock).addHeader(CONTENT_TYPE, "video/avi");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"midsommar1985.avi\"");
-		verify(sambaIntegrationMock).streamFile("/film/" + filePath, outputStreamMock);
+		verify(responseMock).addHeader(CONTENT_TYPE, "audio/mpeg");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"intervju1980.mp3\"");
+		verify(sambaIntegrationMock).streamFile("/ljud/" + filePath, outputStreamMock);
 	}
 
 	@Test
-	void streamFileFallsBackWhenFilmObjFilIsBlank() throws IOException {
+	void streamFileFallsBackWhenObjFilIsBlank() throws IOException {
 		final var id = 3;
-		final var entity = FilmEntity.create()
-			.withFilmId(id)
+		final var entity = AudioEntity.create()
+			.withAudioId(id)
 			.withObjectFilePath("   ");
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
@@ -210,8 +213,8 @@ class FilmServiceTest {
 		service.streamFile(id, responseMock);
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"film-3\"");
-		verify(sambaIntegrationMock).streamFile("/film/" + "   ", outputStreamMock);
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"audio-3\"");
+		verify(sambaIntegrationMock).streamFile("/ljud/" + "   ", outputStreamMock);
 	}
 
 	@Test
@@ -224,7 +227,7 @@ class FilmServiceTest {
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.streamFile(id, responseMock));
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
-		assertThat(exception.getMessage()).contains("Film with id '999' not found");
+		assertThat(exception.getMessage()).contains("Audio with id '999' not found");
 		verify(repositoryMock).findById(id);
 		verifyNoInteractions(sambaIntegrationMock);
 	}

@@ -11,7 +11,10 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 @WireMockAppTestSuite(files = "classpath:/PhotoIT/", classes = Application.class)
-@Sql(scripts = "/db/scripts/testdata-it.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = {
+	"/db/scripts/truncate.sql",
+	"/db/scripts/testdata-it.sql"
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class PhotoIT extends AbstractAppTest {
 
 	private static final String MUNICIPALITY_ID = "2281";

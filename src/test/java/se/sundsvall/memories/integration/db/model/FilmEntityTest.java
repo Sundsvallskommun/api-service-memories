@@ -2,6 +2,7 @@ package se.sundsvall.memories.integration.db.model;
 
 import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
+import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ class FilmEntityTest {
 
 	@BeforeAll
 	static void setup() {
-		BeanMatchers.registerValueGenerator(() -> LocalDate.now().plusDays((long) (Math.random() * 10000)), LocalDate.class);
+		BeanMatchers.registerValueGenerator(() -> LocalDate.now().plusDays(new Random().nextInt()), LocalDate.class);
 	}
 
 	@Test

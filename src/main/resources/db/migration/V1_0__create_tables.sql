@@ -125,3 +125,32 @@ CREATE TABLE TOPOGRAFI
     PLATS   varchar(64),
     LAND    varchar(64)
 ) ENGINE = InnoDB;
+
+CREATE TABLE OCM
+(
+    O_ID    bigint NOT NULL PRIMARY KEY,
+    OCMTEXT varchar(200),
+    OCMKOD  varchar(20),
+    OCMDESC varchar(500)
+) ENGINE = InnoDB;
+
+CREATE TABLE LJUD
+(
+    LJUD_ID        bigint NOT NULL PRIMARY KEY,
+    FILNAMN        varchar(256),
+    LJUD_OBJ_FIL   varchar(256),
+    OBJTYP         varchar(9),
+    DATUM          varchar(10),
+    DOKTITEL       varchar(256),
+    LJUD_T_ID      bigint DEFAULT 1,
+    LJUD_OPLATS    varchar(64),
+    LJUD_O_ID      bigint DEFAULT 1,
+    LJUD_U_E_ID    bigint DEFAULT 0,
+    LJUD_U_J_ID    bigint DEFAULT 1,
+    KOMMENT_LJUD   varchar(4000),
+    LJUD_MIME_TYPE varchar(50),
+    NODEID         bigint,
+    `OPTIONS`      bigint DEFAULT 0,
+    DELETEDDATE    date,
+    FULLTEXT INDEX ft_ljud_doktitel_komment (DOKTITEL, KOMMENT_LJUD)
+) ENGINE = InnoDB;

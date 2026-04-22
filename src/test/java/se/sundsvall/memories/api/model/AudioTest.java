@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class FilmTest {
+class AudioTest {
 
 	@BeforeAll
 	static void setup() {
@@ -24,7 +24,7 @@ class FilmTest {
 
 	@Test
 	void testBean() {
-		assertThat(Film.class, allOf(
+		assertThat(Audio.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
 			hasValidBeanHashCode(),
@@ -34,26 +34,27 @@ class FilmTest {
 
 	@Test
 	void testBuilderMethods() {
-		final var filmId = 1;
-		final var filename = "film001.mp4";
-		final var objectFilePath = "/path/to/file.mp4";
-		final var objectType = "VIDEO";
-		final var date = "1985-06-15";
-		final var documentTitle = "Midsummer celebration in Sundsvall";
+		final var audioId = 1;
+		final var filename = "interview1980.mp3";
+		final var objectFilePath = "/path/to/interview.mp3";
+		final var objectType = "LJUD";
+		final var date = "1980-04-12";
+		final var documentTitle = "Interview with mayor";
 		final var topographyId = 2;
 		final var locationText = "Sundsvall";
 		final var location = "Sundsvall";
-		final var organizationId = 3;
-		final var subEntityId = 4;
-		final var unitId = 5;
-		final var comment = "A film about midsummer celebrations";
-		final var filmMimeType = "video/mp4";
+		final var subjectId = 3;
+		final var subject = "Intervju";
+		final var authorPersonId = 4;
+		final var authorEntityId = 5;
+		final var comment = "Audio recording";
+		final var audioMimeType = "audio/mpeg";
 		final var nodeId = 6;
-		final var options = 0;
+		final var options = 4;
 		final var deletedDate = LocalDate.of(2026, 1, 15);
 
-		final var result = Film.create()
-			.withFilmId(filmId)
+		final var result = Audio.create()
+			.withAudioId(audioId)
 			.withFilename(filename)
 			.withObjectFilePath(objectFilePath)
 			.withObjectType(objectType)
@@ -62,17 +63,18 @@ class FilmTest {
 			.withTopographyId(topographyId)
 			.withLocationText(locationText)
 			.withLocation(location)
-			.withOrganizationId(organizationId)
-			.withSubEntityId(subEntityId)
-			.withUnitId(unitId)
+			.withSubjectId(subjectId)
+			.withSubject(subject)
+			.withAuthorPersonId(authorPersonId)
+			.withAuthorEntityId(authorEntityId)
 			.withComment(comment)
-			.withFilmMimeType(filmMimeType)
+			.withAudioMimeType(audioMimeType)
 			.withNodeId(nodeId)
 			.withOptions(options)
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getFilmId()).isEqualTo(filmId);
+		assertThat(result.getAudioId()).isEqualTo(audioId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getObjectFilePath()).isEqualTo(objectFilePath);
 		assertThat(result.getObjectType()).isEqualTo(objectType);
@@ -81,11 +83,12 @@ class FilmTest {
 		assertThat(result.getTopographyId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getLocation()).isEqualTo(location);
-		assertThat(result.getOrganizationId()).isEqualTo(organizationId);
-		assertThat(result.getSubEntityId()).isEqualTo(subEntityId);
-		assertThat(result.getUnitId()).isEqualTo(unitId);
+		assertThat(result.getSubjectId()).isEqualTo(subjectId);
+		assertThat(result.getSubject()).isEqualTo(subject);
+		assertThat(result.getAuthorPersonId()).isEqualTo(authorPersonId);
+		assertThat(result.getAuthorEntityId()).isEqualTo(authorEntityId);
 		assertThat(result.getComment()).isEqualTo(comment);
-		assertThat(result.getFilmMimeType()).isEqualTo(filmMimeType);
+		assertThat(result.getAudioMimeType()).isEqualTo(audioMimeType);
 		assertThat(result.getNodeId()).isEqualTo(nodeId);
 		assertThat(result.getOptions()).isEqualTo(options);
 		assertThat(result.getDeletedDate()).isEqualTo(deletedDate);
@@ -93,6 +96,6 @@ class FilmTest {
 
 	@Test
 	void testNoDirtOnCreatedBean() {
-		assertThat(Film.create()).hasAllNullFieldsOrProperties();
+		assertThat(Audio.create()).hasAllNullFieldsOrProperties();
 	}
 }
