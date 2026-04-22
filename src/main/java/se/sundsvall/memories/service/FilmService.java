@@ -15,6 +15,7 @@ import se.sundsvall.memories.integration.db.model.FilmEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.FilmMapper;
+import se.sundsvall.memories.service.model.StreamPayload;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
@@ -65,6 +66,19 @@ public class FilmService {
 		return filmRepository.findById(id)
 			.map(entity -> FilmMapper.toFilm(entity, topographyLookup.resolve(entity.getTopographyId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
+	}
+
+	/**
+	 * Opens a film file as a Range-aware {@link StreamPayload} for inline playback. See
+	 * {@link AudioService#openForPlayback(Integer)} for details on the streaming contract.
+	 */
+	public StreamPayload openForPlayback(final Integer id) {
+		final var entity = filmRepository.findById(id)
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Film with id '%s' not found".formatted(id)));
+
+		final var mimeType = ofNullable(entity.getFilmMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
+		final var resource = sambaIntegration.openResource(sambaProperties.filmFolder() + entity.getObjectFilePath());
+		return new StreamPayload(resource, mimeType, deriveFilename(entity));
 	}
 
 	public void streamFile(final Integer id, final HttpServletResponse response) {

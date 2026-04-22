@@ -5,7 +5,7 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.1"
+  version: "3.2"
 servers:
   - url: http://localhost:50509
     description: Generated server url
@@ -378,6 +378,68 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/films/{id}/stream:
+    get:
+      tags:
+        - Films
+      summary: Stream film for inline playback
+      description: "Serves the film file with Content-Disposition: inline and Accept-Ranges:\
+        \ bytes. Honours the Range request header to return 206 Partial Content for\
+        \ browser seek support. Multi-range requests fall back to a 200 full-body\
+        \ response."
+      operationId: streamFilm
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: Range
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: { }
+        "206":
+          description: Partial content
+          content:
+            application/octet-stream: { }
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "416":
+          description: Range not satisfiable
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/films/{id}/file:
     get:
       tags:
@@ -490,6 +552,68 @@ paths:
                 $ref: "#/components/schemas/Audio"
         "404":
           description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/audios/{id}/stream:
+    get:
+      tags:
+        - Audio
+      summary: Stream audio for inline playback
+      description: "Serves the audio file with Content-Disposition: inline and Accept-Ranges:\
+        \ bytes. Honours the Range request header to return 206 Partial Content for\
+        \ browser seek support. Multi-range requests fall back to a 200 full-body\
+        \ response."
+      operationId: streamAudio
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: Range
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/octet-stream: { }
+        "206":
+          description: Partial content
+          content:
+            application/octet-stream: { }
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "416":
+          description: Range not satisfiable
           content:
             application/problem+json:
               schema:

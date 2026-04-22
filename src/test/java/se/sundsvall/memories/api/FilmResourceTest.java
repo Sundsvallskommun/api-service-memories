@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -15,6 +18,7 @@ import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.api.model.PagedFilmResponse;
 import se.sundsvall.memories.service.FilmService;
+import se.sundsvall.memories.service.model.StreamPayload;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -119,5 +123,52 @@ class FilmResourceTest {
 			.expectStatus().isOk();
 
 		verify(serviceMock).streamFile(eq(filmId), any(HttpServletResponse.class));
+	}
+
+	private static final String STREAM_PATH = "/{municipalityId}/films/{id}/stream";
+
+	@Test
+	void streamFilmWithoutRangeReturnsFullBody() {
+		final var body = "abcdefghij".getBytes();
+		final Resource resource = new ByteArrayResource(body);
+		when(serviceMock.openForPlayback(1)).thenReturn(new StreamPayload(resource, "video/mp4", "midsommar.mp4"));
+
+		webTestClient.get()
+			.uri(builder -> builder.path(STREAM_PATH).build(Map.of("municipalityId", MUNICIPALITY_ID, "id", 1)))
+			.exchange()
+			.expectStatus().isOk()
+			.expectHeader().valueEquals(HttpHeaders.ACCEPT_RANGES, "bytes")
+			.expectHeader().contentType("video/mp4")
+			.expectHeader().valueEquals(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"midsommar.mp4\"")
+			.expectHeader().contentLength(body.length)
+			.expectBody().consumeWith(res -> assertThat(res.getResponseBody()).isEqualTo(body));
+	}
+
+	@Test
+	void streamFilmWithRangeReturnsPartialContent() {
+		final var body = "abcdefghij".getBytes();
+		final Resource resource = new ByteArrayResource(body);
+		when(serviceMock.openForPlayback(1)).thenReturn(new StreamPayload(resource, "video/mp4", "midsommar.mp4"));
+
+		webTestClient.get()
+			.uri(builder -> builder.path(STREAM_PATH).build(Map.of("municipalityId", MUNICIPALITY_ID, "id", 1)))
+			.header(HttpHeaders.RANGE, "bytes=2-5")
+			.exchange()
+			.expectStatus().isEqualTo(206)
+			.expectHeader().valueEquals(HttpHeaders.CONTENT_RANGE, "bytes 2-5/10")
+			.expectBody().consumeWith(res -> assertThat(res.getResponseBody()).isEqualTo("cdef".getBytes()));
+	}
+
+	@Test
+	void streamFilmWithUnsatisfiableRangeReturns416() {
+		final var body = "abcdefghij".getBytes();
+		final Resource resource = new ByteArrayResource(body);
+		when(serviceMock.openForPlayback(1)).thenReturn(new StreamPayload(resource, "video/mp4", "midsommar.mp4"));
+
+		webTestClient.get()
+			.uri(builder -> builder.path(STREAM_PATH).build(Map.of("municipalityId", MUNICIPALITY_ID, "id", 1)))
+			.header(HttpHeaders.RANGE, "bytes=999-9999")
+			.exchange()
+			.expectStatus().isEqualTo(416);
 	}
 }

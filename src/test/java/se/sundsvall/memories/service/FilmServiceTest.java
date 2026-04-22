@@ -215,6 +215,54 @@ class FilmServiceTest {
 	}
 
 	@Test
+	void openForPlaybackReturnsPayload() {
+		final var id = 1;
+		final var entity = FilmEntity.create()
+			.withFilmId(id)
+			.withObjectFilePath("/a/midsommar.mp4")
+			.withFilmMimeType("video/mp4");
+		final var resourceMock = mock(org.springframework.core.io.Resource.class);
+
+		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(sambaIntegrationMock.openResource("/film//a/midsommar.mp4")).thenReturn(resourceMock);
+
+		final var payload = service.openForPlayback(id);
+
+		assertThat(payload.resource()).isSameAs(resourceMock);
+		assertThat(payload.mimeType()).isEqualTo("video/mp4");
+		assertThat(payload.filename()).isEqualTo("midsommar.mp4");
+	}
+
+	@Test
+	void openForPlaybackFallsBackToOctetStreamWhenMimeMissing() {
+		final var id = 2;
+		final var entity = FilmEntity.create()
+			.withFilmId(id)
+			.withObjectFilePath("   ");
+		final var resourceMock = mock(org.springframework.core.io.Resource.class);
+
+		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(sambaIntegrationMock.openResource("/film/   ")).thenReturn(resourceMock);
+
+		final var payload = service.openForPlayback(id);
+
+		assertThat(payload.mimeType()).isEqualTo("application/octet-stream");
+		assertThat(payload.filename()).isEqualTo("film-2");
+	}
+
+	@Test
+	void openForPlaybackNotFound() {
+		final var id = 999;
+		when(repositoryMock.findById(id)).thenReturn(Optional.empty());
+
+		final var exception = assertThrows(ThrowableProblem.class, () -> service.openForPlayback(id));
+
+		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
+		assertThat(exception.getMessage()).contains("Film with id '999' not found");
+		verifyNoInteractions(sambaIntegrationMock);
+	}
+
+	@Test
 	void streamFileNotFound() {
 		final var id = 999;
 		final var responseMock = mock(HttpServletResponse.class);

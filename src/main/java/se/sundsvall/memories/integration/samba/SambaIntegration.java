@@ -2,7 +2,11 @@ package se.sundsvall.memories.integration.samba;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import jcifs.CIFSContext;
 import jcifs.context.SingletonContext;
 import jcifs.smb.NtlmPasswordAuthenticator;
@@ -11,6 +15,7 @@ import jcifs.smb.SmbFileInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import se.sundsvall.dept44.problem.Problem;
 
@@ -24,8 +29,11 @@ public class SambaIntegration {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SambaIntegration.class);
 
+	private static final Duration LENGTH_CACHE_TTL = Duration.ofSeconds(60);
+
 	private final CIFSContext context;
 	private final String shareUrl;
+	private final ConcurrentMap<String, CachedLength> lengthCache = new ConcurrentHashMap<>();
 
 	public SambaIntegration(final SambaIntegrationProperties properties) {
 		context = SingletonContext.getInstance()
@@ -35,7 +43,7 @@ public class SambaIntegration {
 	}
 
 	public void streamFile(final String filePath, final OutputStream outputStream) {
-		final var fullPath = shareUrl + filePath;
+		final var fullPath = fullPath(filePath);
 		LOGGER.info("Streaming file from SMB share: {}", fullPath);
 
 		try (final var file = new SmbFile(fullPath, context);
@@ -43,12 +51,61 @@ public class SambaIntegration {
 
 			inputStream.transferTo(outputStream);
 		} catch (final IOException e) {
-			if (e.getMessage() != null && e.getMessage().contains("The system cannot find the file specified")) {
-				LOGGER.error("File not found at path: {}", fullPath);
-				throw Problem.valueOf(NOT_FOUND, "File not found at path '%s'".formatted(filePath));
-			}
-			LOGGER.error("Failed to read file from SMB share at path: {}", fullPath, e);
-			throw Problem.valueOf(INTERNAL_SERVER_ERROR, "Failed to read file from SMB share");
+			throw mapSmbError(e, filePath, fullPath);
 		}
 	}
+
+	/**
+	 * Opens a {@link Resource} view of an SMB-backed file, suitable for use with Spring's {@code ResourceRegion} /
+	 * {@code ResourceHttpMessageConverter} for Range-aware streaming. Content length is cached briefly
+	 * ({@value #LENGTH_CACHE_TTL}) so repeated Range requests from a single playback session don't each incur a metadata
+	 * round-trip.
+	 *
+	 * @param  filePath the path relative to the SMB share (e.g. {@code "/ljud/interview.mp3"})
+	 * @return          a {@link Resource} whose {@code getInputStream()} opens a fresh {@code SmbFileInputStream} per
+	 *                  call
+	 */
+	public Resource openResource(final String filePath) {
+		return new SmbResource(filePath, this::openInputStream, this::resolveLength);
+	}
+
+	InputStream openInputStream(final String filePath) {
+		final var fullPath = fullPath(filePath);
+		try {
+			final var file = new SmbFile(fullPath, context);
+			return new SmbFileInputStream(file);
+		} catch (final IOException e) {
+			throw mapSmbError(e, filePath, fullPath);
+		}
+	}
+
+	long resolveLength(final String filePath) {
+		final var cached = lengthCache.get(filePath);
+		if (cached != null && cached.expiresAtNanos > System.nanoTime()) {
+			return cached.length;
+		}
+		final var fullPath = fullPath(filePath);
+		try (final var file = new SmbFile(fullPath, context)) {
+			final var length = file.length();
+			lengthCache.put(filePath, new CachedLength(length, System.nanoTime() + LENGTH_CACHE_TTL.toNanos()));
+			return length;
+		} catch (final IOException e) {
+			throw mapSmbError(e, filePath, fullPath);
+		}
+	}
+
+	private String fullPath(final String filePath) {
+		return shareUrl + filePath;
+	}
+
+	private RuntimeException mapSmbError(final IOException e, final String filePath, final String fullPath) {
+		if (e.getMessage() != null && e.getMessage().contains("The system cannot find the file specified")) {
+			LOGGER.error("File not found at path: {}", fullPath);
+			return Problem.valueOf(NOT_FOUND, "File not found at path '%s'".formatted(filePath));
+		}
+		LOGGER.error("Failed to read file from SMB share at path: {}", fullPath, e);
+		return Problem.valueOf(INTERNAL_SERVER_ERROR, "Failed to read file from SMB share");
+	}
+
+	private record CachedLength(long length, long expiresAtNanos) {}
 }

@@ -218,6 +218,55 @@ class AudioServiceTest {
 	}
 
 	@Test
+	void openForPlaybackReturnsPayload() {
+		final var id = 1;
+		final var entity = AudioEntity.create()
+			.withAudioId(id)
+			.withObjectFilePath("/a/interview.mp3")
+			.withAudioMimeType("audio/mpeg");
+		final var resourceMock = org.mockito.Mockito.mock(org.springframework.core.io.Resource.class);
+
+		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(sambaIntegrationMock.openResource("/ljud//a/interview.mp3")).thenReturn(resourceMock);
+
+		final var payload = service.openForPlayback(id);
+
+		assertThat(payload.resource()).isSameAs(resourceMock);
+		assertThat(payload.mimeType()).isEqualTo("audio/mpeg");
+		assertThat(payload.filename()).isEqualTo("interview.mp3");
+		verify(sambaIntegrationMock).openResource("/ljud//a/interview.mp3");
+	}
+
+	@Test
+	void openForPlaybackFallsBackToOctetStreamWhenMimeMissing() {
+		final var id = 2;
+		final var entity = AudioEntity.create()
+			.withAudioId(id)
+			.withObjectFilePath("   ");
+		final var resourceMock = org.mockito.Mockito.mock(org.springframework.core.io.Resource.class);
+
+		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(sambaIntegrationMock.openResource("/ljud/   ")).thenReturn(resourceMock);
+
+		final var payload = service.openForPlayback(id);
+
+		assertThat(payload.mimeType()).isEqualTo("application/octet-stream");
+		assertThat(payload.filename()).isEqualTo("audio-2");
+	}
+
+	@Test
+	void openForPlaybackNotFound() {
+		final var id = 999;
+		when(repositoryMock.findById(id)).thenReturn(Optional.empty());
+
+		final var exception = assertThrows(ThrowableProblem.class, () -> service.openForPlayback(id));
+
+		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
+		assertThat(exception.getMessage()).contains("Audio with id '999' not found");
+		verifyNoInteractions(sambaIntegrationMock);
+	}
+
+	@Test
 	void streamFileNotFound() {
 		final var id = 999;
 		final var responseMock = mock(HttpServletResponse.class);
