@@ -42,6 +42,24 @@ class SmbResourceTest {
 	}
 
 	@Test
+	void equalsAndHashCodeKeyedOnFilePath() {
+		final var a = new SmbResource("/a.mp3", EMPTY_OPENER, FIXED_LENGTH);
+		final var sameA = new SmbResource("/a.mp3", _ -> new ByteArrayInputStream(new byte[] {
+			1
+		}), _ -> 9L);
+		final var b = new SmbResource("/b.mp3", EMPTY_OPENER, FIXED_LENGTH);
+
+		assertThat(a)
+			.isEqualTo(a)
+			.isEqualTo(sameA)
+			.isNotEqualTo(b)
+			.isNotEqualTo("/a.mp3")
+			.isNotEqualTo(null)
+			.hasSameHashCodeAs(sameA);
+		assertThat(a.hashCode()).isNotEqualTo(b.hashCode());
+	}
+
+	@Test
 	void getInputStreamDelegatesToOpener() throws Exception {
 		final var calls = new AtomicInteger();
 		final StreamOpener opener = path -> {
