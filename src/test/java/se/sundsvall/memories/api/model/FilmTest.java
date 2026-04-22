@@ -17,11 +17,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 class FilmTest {
 
-	private static final Random random = new Random();
-
 	@BeforeAll
 	static void setup() {
-		BeanMatchers.registerValueGenerator(() -> LocalDate.now().plusDays(random.nextInt()), LocalDate.class);
+		BeanMatchers.registerValueGenerator(() -> LocalDate.now().plusDays(new Random().nextInt()), LocalDate.class);
 	}
 
 	@Test
