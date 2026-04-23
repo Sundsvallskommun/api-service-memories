@@ -27,6 +27,7 @@ import se.sundsvall.memories.api.util.PlaybackResponses;
 import se.sundsvall.memories.service.FilmService;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -71,7 +72,7 @@ class FilmResource {
 
 	@GetMapping(path = "/{id}/file")
 	@Operation(summary = "Get film file", description = "Download the file associated with a film")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = APPLICATION_OCTET_STREAM_VALUE))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void getFilmFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
@@ -83,11 +84,12 @@ class FilmResource {
 
 	@GetMapping(path = "/{id}/stream")
 	@Operation(summary = "Stream film for inline playback",
-		description = "Serves the film file with Content-Disposition: inline and Accept-Ranges: bytes. Honours the "
-			+ "Range request header to return 206 Partial Content for browser seek support. Multi-range requests fall "
-			+ "back to a 200 full-body response.")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
-	@ApiResponse(responseCode = "206", description = "Partial content", content = @Content(mediaType = "application/octet-stream"))
+		description = """
+			Serves the film file with Content-Disposition: inline and Accept-Ranges: bytes. Honours the \
+			Range request header to return 206 Partial Content for browser seek support. Multi-range requests fall \
+			back to a 200 full-body response.""")
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = APPLICATION_OCTET_STREAM_VALUE))
+	@ApiResponse(responseCode = "206", description = "Partial content", content = @Content(mediaType = APPLICATION_OCTET_STREAM_VALUE))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	@ApiResponse(responseCode = "416", description = "Range not satisfiable", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void streamFilm(
