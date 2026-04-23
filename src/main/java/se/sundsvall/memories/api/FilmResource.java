@@ -8,10 +8,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
@@ -20,9 +23,11 @@ import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
 import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.api.model.FilmParameters;
 import se.sundsvall.memories.api.model.PagedFilmResponse;
+import se.sundsvall.memories.api.util.PlaybackResponses;
 import se.sundsvall.memories.service.FilmService;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -67,7 +72,7 @@ class FilmResource {
 
 	@GetMapping(path = "/{id}/file")
 	@Operation(summary = "Get film file", description = "Download the file associated with a film")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = APPLICATION_OCTET_STREAM_VALUE))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void getFilmFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
@@ -75,5 +80,24 @@ class FilmResource {
 		final HttpServletResponse response) {
 
 		filmService.streamFile(id, response);
+	}
+
+	@GetMapping(path = "/{id}/stream")
+	@Operation(summary = "Stream film for inline playback",
+		description = """
+			Serves the film file with Content-Disposition: inline and Accept-Ranges: bytes. Honours the \
+			Range request header to return 206 Partial Content for browser seek support. Multi-range requests fall \
+			back to a 200 full-body response.""")
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = APPLICATION_OCTET_STREAM_VALUE))
+	@ApiResponse(responseCode = "206", description = "Partial content", content = @Content(mediaType = APPLICATION_OCTET_STREAM_VALUE))
+	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	@ApiResponse(responseCode = "416", description = "Range not satisfiable", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	void streamFilm(
+		@PathVariable @ValidMunicipalityId final String municipalityId,
+		@PathVariable final Integer id,
+		@RequestHeader(value = HttpHeaders.RANGE, required = false) final String rangeHeader,
+		final HttpServletResponse response) throws IOException {
+
+		PlaybackResponses.write(filmService.openForPlayback(id), rangeHeader, response);
 	}
 }

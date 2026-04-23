@@ -15,6 +15,7 @@ import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.AudioMapper;
+import se.sundsvall.memories.service.model.StreamPayload;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
@@ -25,6 +26,8 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 @Service
 public class AudioService {
+
+	private static final String AUDIO_NOT_FOUND = "Audio with id '%s' not found";
 
 	private final AudioRepository audioRepository;
 	private final SambaIntegration sambaIntegration;
@@ -66,12 +69,29 @@ public class AudioService {
 	public Audio getById(final Integer id) {
 		return audioRepository.findById(id)
 			.map(entity -> AudioMapper.toAudio(entity, topographyLookup.resolve(entity.getTopographyId()), ocmLookup.resolve(entity.getSubjectId())))
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Audio with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
+	}
+
+	/**
+	 * Opens an audio file as a Range-aware {@link StreamPayload} for inline playback. The returned resource looks up its
+	 * own length on demand (cached in SambaIntegration) and opens a fresh SMB stream per read, which is what
+	 * Spring's {@code ResourceRegionHttpMessageConverter} requires to serve {@code 206 Partial Content} responses.
+	 *
+	 * @param  id the audio id
+	 * @return    the payload (resource, mime type, filename)
+	 */
+	public StreamPayload openForPlayback(final Integer id) {
+		final var entity = audioRepository.findById(id)
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
+
+		final var mimeType = ofNullable(entity.getAudioMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
+		final var resource = sambaIntegration.openResource(sambaProperties.audioFolder() + entity.getObjectFilePath());
+		return new StreamPayload(resource, mimeType, deriveFilename(entity));
 	}
 
 	public void streamFile(final Integer id, final HttpServletResponse response) {
 		final var entity = audioRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Audio with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
 
 		final var mimeType = ofNullable(entity.getAudioMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
 		response.addHeader(CONTENT_TYPE, mimeType);

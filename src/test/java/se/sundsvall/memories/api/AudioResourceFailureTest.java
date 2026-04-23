@@ -28,6 +28,7 @@ class AudioResourceFailureTest {
 	private static final String SEARCH_PATH = "/{municipalityId}/audios";
 	private static final String GET_PATH = "/{municipalityId}/audios/{id}";
 	private static final String FILE_PATH = "/{municipalityId}/audios/{id}/file";
+	private static final String STREAM_PATH = "/{municipalityId}/audios/{id}/stream";
 
 	@MockitoBean
 	private AudioService serviceMock;
@@ -94,6 +95,27 @@ class AudioResourceFailureTest {
 		assertThat(response.getViolations())
 			.extracting(Violation::field, Violation::message)
 			.containsExactlyInAnyOrder(tuple("getAudioFile.municipalityId", "not a valid municipality ID"));
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	@Test
+	void streamAudioWithInvalidMunicipalityId() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(STREAM_PATH)
+				.build(Map.of("municipalityId", INVALID_MUNICIPALITY_ID, "id", 1)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getTitle()).isEqualTo("Constraint Violation");
+		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
+		assertThat(response.getViolations())
+			.extracting(Violation::field, Violation::message)
+			.containsExactlyInAnyOrder(tuple("streamAudio.municipalityId", "not a valid municipality ID"));
 
 		verifyNoInteractions(serviceMock);
 	}
