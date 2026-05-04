@@ -12,28 +12,29 @@ import se.sundsvall.memories.integration.db.model.PublicationEntity;
 public interface PublicationRepository extends JpaRepository<PublicationEntity, Integer> {
 
 	/**
-	 * Retrieves all published records from the PUBL table where the `OPTIONS` field equals 4. Option 4 means the record is
-	 * published.
+	 * Retrieves all published records from the {@code PUBL} table. A record is considered published when bit {@code 4} of
+	 * the {@code OPTIONS} bitmask is set, i.e. {@code (OPTIONS & 4) = 4}. Other status bits may be set simultaneously.
 	 *
 	 * @param  pageable the pagination and sorting criteria
 	 * @return          a list of PublicationEntity objects representing published records
 	 */
-	@Query(value = "SELECT * FROM PUBL WHERE `OPTIONS` = 4",
-		countQuery = "SELECT COUNT(*) FROM PUBL WHERE `OPTIONS` = 4",
+	@Query(value = "SELECT * FROM PUBL WHERE (`OPTIONS` & 4) = 4",
+		countQuery = "SELECT COUNT(*) FROM PUBL WHERE (`OPTIONS` & 4) = 4",
 		nativeQuery = true)
 	Page<PublicationEntity> findAllPublished(Pageable pageable);
 
 	/**
 	 * Searches the published records in the database using a full-text search query. The search is conducted against the
-	 * specified fields: DOKTITEL, KOMMENT_PUBL, and XMLTEXT. Only records with the field `OPTIONS` equal to 4 are returned.
-	 * Option 4 means the record is published.
+	 * specified fields: {@code DOKTITEL}, {@code KOMMENT_PUBL}, and {@code XMLTEXT}. Only records where bit {@code 4} of
+	 * the {@code OPTIONS} bitmask is set ({@code (OPTIONS & 4) = 4}) are returned; other status bits may be set
+	 * simultaneously.
 	 *
 	 * @param  query    the full-text search query to match against the specified fields
 	 * @param  pageable the pagination and sorting criteria
 	 * @return          a list of PublicationEntity objects that match the search criteria
 	 */
-	@Query(value = "SELECT * FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND `OPTIONS` = 4",
-		countQuery = "SELECT COUNT(*) FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND `OPTIONS` = 4",
+	@Query(value = "SELECT * FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
+		countQuery = "SELECT COUNT(*) FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
 		nativeQuery = true)
 	Page<PublicationEntity> searchPublished(@Param("query") String query, Pageable pageable);
 }

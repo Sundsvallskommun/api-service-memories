@@ -12,13 +12,14 @@ import se.sundsvall.memories.integration.db.model.PhotoEntity;
 public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer> {
 
 	/**
-	 * Retrieves a paginated list of all published photos. A photo is considered published if its `OPTIONS` column equals 4.
+	 * Retrieves a paginated list of all published photos. A photo is considered published when bit {@code 4} of the
+	 * {@code OPTIONS} bitmask is set, i.e. {@code (OPTIONS & 4) = 4}. Other status bits may be set simultaneously.
 	 *
 	 * @param  pageable the pagination and sorting criteria
 	 * @return          a page of published photo entities
 	 */
-	@Query(value = "SELECT * FROM FOTO WHERE `OPTIONS` = 4",
-		countQuery = "SELECT COUNT(*) FROM FOTO WHERE `OPTIONS` = 4",
+	@Query(value = "SELECT * FROM FOTO WHERE (`OPTIONS` & 4) = 4",
+		countQuery = "SELECT COUNT(*) FROM FOTO WHERE (`OPTIONS` & 4) = 4",
 		nativeQuery = true)
 	Page<PhotoEntity> findAllPublished(Pageable pageable);
 
@@ -29,8 +30,8 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer> {
 	 * @param  pageable the pagination and sorting criteria
 	 * @return          a page of matching published photo entities
 	 */
-	@Query(value = "SELECT * FROM FOTO WHERE MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE) AND `OPTIONS` = 4",
-		countQuery = "SELECT COUNT(*) FROM FOTO WHERE MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE) AND `OPTIONS` = 4",
+	@Query(value = "SELECT * FROM FOTO WHERE MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
+		countQuery = "SELECT COUNT(*) FROM FOTO WHERE MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
 		nativeQuery = true)
 	Page<PhotoEntity> searchPublished(@Param("query") String query, Pageable pageable);
 
@@ -41,8 +42,8 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer> {
 	 * @param  pageable   the pagination and sorting criteria
 	 * @return            a page of matching published photo entities
 	 */
-	@Query(value = "SELECT * FROM FOTO WHERE `OPTIONS` = 4 AND OBJTYP = :objectType",
-		countQuery = "SELECT COUNT(*) FROM FOTO WHERE `OPTIONS` = 4 AND OBJTYP = :objectType",
+	@Query(value = "SELECT * FROM FOTO WHERE (`OPTIONS` & 4) = 4 AND OBJTYP = :objectType",
+		countQuery = "SELECT COUNT(*) FROM FOTO WHERE (`OPTIONS` & 4) = 4 AND OBJTYP = :objectType",
 		nativeQuery = true)
 	Page<PhotoEntity> findAllPublishedByObjectType(@Param("objectType") String objectType, Pageable pageable);
 
@@ -54,8 +55,8 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer> {
 	 * @param  pageable   the pagination and sorting criteria
 	 * @return            a page of matching published photo entities
 	 */
-	@Query(value = "SELECT * FROM FOTO WHERE MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE) AND `OPTIONS` = 4 AND OBJTYP = :objectType",
-		countQuery = "SELECT COUNT(*) FROM FOTO WHERE MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE) AND `OPTIONS` = 4 AND OBJTYP = :objectType",
+	@Query(value = "SELECT * FROM FOTO WHERE MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4 AND OBJTYP = :objectType",
+		countQuery = "SELECT COUNT(*) FROM FOTO WHERE MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4 AND OBJTYP = :objectType",
 		nativeQuery = true)
 	Page<PhotoEntity> searchPublishedByObjectType(@Param("query") String query, @Param("objectType") String objectType, Pageable pageable);
 }

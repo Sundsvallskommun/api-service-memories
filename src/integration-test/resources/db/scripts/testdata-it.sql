@@ -12,9 +12,10 @@ VALUES (1, 'Sundsvall', 'SUN', 'Sundsvalls kommun', 'Sverige'),
 --
 INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_T_ID, FILM_OPLATS, FILM_O_ID,
                   FILM_U_E_ID, FILM_U_J_ID, KOMMENT_FILM, FILM_MIME_TYPE, ASV, NODEID, `OPTIONS`, DELETEDDATE)
+-- OPTIONS = 6 (bit 4 published + bit 2 set) — exercises the bitwise check, must still match `(OPTIONS & 4) = 4`
 VALUES (1, 'midsommar1985.mp4', '/media/film/midsommar1985.mp4', 'VIDEO', '1985-06-21',
         'Midsommarfirande i Sundsvall 1985', 1, 'Sundsvall', 1, 0, 1, 'Film om midsommarfirande på Stora torget',
-        'video/mp4', 'ASV001', 100, 4, null);
+        'video/mp4', 'ASV001', 100, 6, null);
 
 INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_T_ID, FILM_OPLATS, FILM_O_ID,
                   FILM_U_E_ID, FILM_U_J_ID, KOMMENT_FILM, FILM_MIME_TYPE, ASV, NODEID, `OPTIONS`, DELETEDDATE)
@@ -43,7 +44,8 @@ VALUES (207, 'F21051/1841-02-18_Sida 3 Alfwar och Skämt nr 8 1841.xml', '', '18
         'Tidningsnummer från 1841', 'PUBL.id_207_fil_liten.jpeg', 'PUBL.id_207_fil_stor.jpeg',
         'PUBL.id_207_fil_original.jpeg', 'PUBL.id_207_fil_txt.xml',
         'Alfwar och Skämt No 8 Thorsdagen den 18 februarii 1841 Landsortspressens frihet och Drunkningsolycka i Sundsvall',
-        'PUBL.id_207_fil_xtra.jpeg', 18407, 4, 'text', null);
+        -- OPTIONS = 6 (bit 4 published + bit 2 set) — exercises the bitwise check
+        'PUBL.id_207_fil_xtra.jpeg', 18407, 6, 'text', null);
 
 INSERT INTO PUBL (P_ID, FILNAMN, PUBLIKTYP, DATUM, TIDTITEL, TIDNR, TIDSIDA, BF_J_ID, FORLAG_T_ID, FORLAG_OPLATS,
                   DOKDATUM, DOKTITEL, F_E_ID, R_E_ID, U_J_ID, U_E_ID, P_T_ID, P_OPLATS, ME_O_ID, KOMMENT_PUBL,
@@ -79,9 +81,10 @@ VALUES (500, 'draft.xml', '', '2024-01-01', null, null, null, 1, 1, 'Sundsvall',
 --
 INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, SENAST, F_OPLATS, OBJTYP, SVVITFARG, MATERIAL, TEKNIK,
                   TILLSKAT, TILLSTAND, FIL_LITEN, FIL_STOR, FIL_ORIGINAL, NODEID, `OPTIONS`)
+-- OPTIONS = 6 (bit 4 published + bit 2 set) — exercises the bitwise check
 VALUES (1001, 'Stadsvy från Norra berget', 'Panorama över Sundsvall från Norra berget', '1920', '1925',
         'Sundsvall', 'Foto', 'Svartvit', 'Glas', 'Negativ', 'Bra', 'Inga skador', 'FOTO.id_1001_fil_liten.jpg',
-        'FOTO.id_1001_fil_stor.jpg', 'FOTO.id_1001_fil_original.jpg', 19000, 4);
+        'FOTO.id_1001_fil_stor.jpg', 'FOTO.id_1001_fil_original.jpg', 19000, 6);
 
 INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, SENAST, F_OPLATS, OBJTYP, SVVITFARG, FIL_LITEN, FIL_STOR,
                   FIL_ORIGINAL, NODEID, `OPTIONS`)
@@ -111,10 +114,11 @@ VALUES (1, 'Allmänt', 'ALM', 'Allmänt ämne'),
 --
 INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_T_ID, LJUD_OPLATS, LJUD_O_ID,
                   LJUD_U_E_ID, LJUD_U_J_ID, KOMMENT_LJUD, LJUD_MIME_TYPE, NODEID, `OPTIONS`, DELETEDDATE)
+-- OPTIONS = 6 (bit 4 published + bit 2 set) — exercises the bitwise check
 VALUES (1, 'intervju_borgmastare_1980.mp3', '/media/ljud/intervju_borgmastare_1980.mp3', 'LJUD', '1980-04-12',
         'Intervju med borgmästaren 1980', 1, 'Sundsvall', 10, 0, 1,
         'Ljudupptagning av intervju med dåvarande borgmästaren',
-        'audio/mpeg', 200, 4, null);
+        'audio/mpeg', 200, 6, null);
 
 INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_T_ID, LJUD_OPLATS, LJUD_O_ID,
                   LJUD_U_E_ID, LJUD_U_J_ID, KOMMENT_LJUD, LJUD_MIME_TYPE, NODEID, `OPTIONS`, DELETEDDATE)
