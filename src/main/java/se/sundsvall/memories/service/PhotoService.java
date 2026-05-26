@@ -6,12 +6,14 @@ import java.util.function.Function;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedPhotoResponse;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.api.model.PhotoParameters;
+import se.sundsvall.memories.api.util.MediaTypes;
 import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
@@ -24,7 +26,6 @@ import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 @Service
 public class PhotoService {
@@ -90,8 +91,8 @@ public class PhotoService {
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Photo with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase())));
 
-		response.addHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE);
-		response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"%s\"".formatted(filename));
+		response.addHeader(CONTENT_TYPE, MediaTypes.resolve(filename).toString());
+		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(filename).build().toString());
 
 		streamFileContent(id, variant, filename, response);
 	}

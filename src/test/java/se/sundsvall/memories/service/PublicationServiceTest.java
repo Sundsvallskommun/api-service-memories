@@ -3,6 +3,8 @@ package se.sundsvall.memories.service;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -14,6 +16,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
@@ -26,6 +29,8 @@ import se.sundsvall.memories.service.PublicationService.FileVariant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -51,6 +56,9 @@ class PublicationServiceTest {
 	@Mock
 	private TopographyLookup topographyLookupMock;
 
+	@Mock
+	private XsltTransformer xsltTransformerMock;
+
 	private PublicationService service;
 
 	private static PublicationEntity entity() {
@@ -66,16 +74,15 @@ class PublicationServiceTest {
 			.withOptions(4);
 	}
 
-	static Stream<Arguments> fileVariants() {
+	static Stream<Arguments> binaryFileVariants() {
 		return Stream.of(
 			Arguments.of(FileVariant.THUMBNAIL, "PUBL.id_207_fil_liten.jpeg", "fil_liten"),
-			Arguments.of(FileVariant.LARGE, "PUBL.id_207_fil_stor.jpeg", "fil_stor"),
-			Arguments.of(FileVariant.TEXT, "PUBL.id_207_fil_txt.xml", "fil_txt"));
+			Arguments.of(FileVariant.LARGE, "PUBL.id_207_fil_stor.jpeg", "fil_stor"));
 	}
 
 	@BeforeEach
 	void setUp() {
-		service = new PublicationService(publicationRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock);
+		service = new PublicationService(publicationRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock, xsltTransformerMock);
 	}
 
 	@Test
@@ -157,8 +164,8 @@ class PublicationServiceTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("fileVariants")
-	void streamFileForVariant(final FileVariant variant, final String expectedFilename, final String expectedSubfolder) throws IOException {
+	@MethodSource("binaryFileVariants")
+	void streamFileForBinaryVariant(final FileVariant variant, final String expectedFilename, final String expectedSubfolder) throws IOException {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
 
@@ -167,9 +174,87 @@ class PublicationServiceTest {
 
 		service.streamFile(207, variant, responseMock);
 
-		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"%s\"".formatted(expectedFilename));
+		verify(responseMock).addHeader(CONTENT_TYPE, "image/jpeg");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"%s\"".formatted(expectedFilename));
 		verify(sambaIntegrationMock).streamFile("/publ/" + expectedSubfolder + "/" + expectedFilename, outputStreamMock);
+		verifyNoInteractions(xsltTransformerMock);
+	}
+
+	@Test
+	void streamFileForTextVariantTransformsXmlToHtml() throws IOException {
+		final var responseMock = mock(HttpServletResponse.class);
+		final var outputStreamMock = mock(ServletOutputStream.class);
+
+		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
+		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+		when(sambaIntegrationMock.openResource("/publ/fil_txt/PUBL.id_207_fil_txt.xml"))
+			.thenReturn(new ByteArrayResource("<Document><Title>Hi</Title></Document>".getBytes()));
+		doAnswer(invocation -> {
+			final InputStream in = invocation.getArgument(0);
+			final OutputStream out = invocation.getArgument(1);
+			out.write(("<html>" + new String(in.readAllBytes()) + "</html>").getBytes());
+			return null;
+		}).when(xsltTransformerMock).transform(any(InputStream.class), any(OutputStream.class));
+
+		service.streamFile(207, FileVariant.TEXT, responseMock);
+
+		verify(responseMock).addHeader(CONTENT_TYPE, "text/html;charset=UTF-8");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"PUBL.id_207_fil_txt.html\"");
+		verify(xsltTransformerMock).transform(any(InputStream.class), any(OutputStream.class));
+		verify(sambaIntegrationMock).openResource("/publ/fil_txt/PUBL.id_207_fil_txt.xml");
+	}
+
+	@Test
+	void streamFileForTextVariantWithPdfStreamsBinary() throws IOException {
+		final var responseMock = mock(HttpServletResponse.class);
+		final var outputStreamMock = mock(ServletOutputStream.class);
+		final var entityPdfText = entity().withOcrFilename("PUBL.id_207_fil_txt.pdf");
+
+		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entityPdfText));
+		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+
+		service.streamFile(207, FileVariant.TEXT, responseMock);
+
+		verify(responseMock).addHeader(CONTENT_TYPE, "application/pdf");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"PUBL.id_207_fil_txt.pdf\"");
+		verify(sambaIntegrationMock).streamFile("/publ/fil_txt/PUBL.id_207_fil_txt.pdf", outputStreamMock);
+		verifyNoInteractions(xsltTransformerMock);
+	}
+
+	@Test
+	void streamFileForTextVariantWithoutExtensionStreamsBinary() throws IOException {
+		final var responseMock = mock(HttpServletResponse.class);
+		final var outputStreamMock = mock(ServletOutputStream.class);
+		final var entityNoExt = entity().withOcrFilename("textfile-no-ext");
+
+		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entityNoExt));
+		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+
+		service.streamFile(207, FileVariant.TEXT, responseMock);
+
+		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"textfile-no-ext\"");
+		verifyNoInteractions(xsltTransformerMock);
+	}
+
+	@Test
+	void streamFileForTextVariantWrapsIOException() throws IOException {
+		final var responseMock = mock(HttpServletResponse.class);
+
+		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
+		when(sambaIntegrationMock.openResource("/publ/fil_txt/PUBL.id_207_fil_txt.xml"))
+			.thenReturn(new ByteArrayResource("<x/>".getBytes()) {
+				@Override
+				public InputStream getInputStream() throws IOException {
+					throw new IOException("smb-down");
+				}
+			});
+
+		final var exception = assertThrows(ThrowableProblem.class,
+			() -> service.streamFile(207, FileVariant.TEXT, responseMock));
+
+		assertThat(exception.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+		assertThat(exception.getMessage()).contains("smb-down");
 	}
 
 	@Test
@@ -184,10 +269,11 @@ class PublicationServiceTest {
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("Publication with id '999' not found");
 		verifyNoInteractions(sambaIntegrationMock);
+		verifyNoInteractions(xsltTransformerMock);
 	}
 
 	@Test
-	void streamFileWhenVariantIsBlank() {
+	void streamFileWhenTextVariantIsBlank() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withOcrFilename("   ");
 
@@ -199,10 +285,11 @@ class PublicationServiceTest {
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("no file for variant 'text'");
 		verifyNoInteractions(sambaIntegrationMock);
+		verifyNoInteractions(xsltTransformerMock);
 	}
 
 	@Test
-	void streamFileWhenVariantIsNull() {
+	void streamFileWhenThumbnailVariantIsNull() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withThumbnailFilename(null);
 

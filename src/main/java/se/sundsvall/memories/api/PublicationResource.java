@@ -69,8 +69,9 @@ class PublicationResource {
 	}
 
 	@GetMapping(path = "/{id}/file")
-	@Operation(summary = "Get publication file", description = "Download a file associated with a publication by specifying the variant (thumbnail = thumbnail preview, large = large image, text = OCR/text)")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
+	@Operation(summary = "Get publication file",
+		description = "Get a file associated with a publication by specifying the variant (thumbnail = thumbnail preview, large = large image, text = OCR/text content transformed to HTML for inline browser display). Returned inline so browsers render it directly; Content-Type is derived from the filename extension for thumbnail/large, and is always text/html for text.")
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "*/*"))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void getPublicationFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,

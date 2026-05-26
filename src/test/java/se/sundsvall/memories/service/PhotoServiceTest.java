@@ -113,6 +113,30 @@ class PhotoServiceTest {
 	}
 
 	@Test
+	void searchWithObjectTypeOnlyUsesByObjectTypeRepository() {
+		final var pageable = PageRequest.of(0, 100);
+		when(photoRepositoryMock.findAllPublishedByObjectType("Foto", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+
+		final var result = service.search(PhotoParameters.create().withObjectType("Foto"));
+
+		assertThat(result.getPhotos()).hasSize(1);
+		verify(photoRepositoryMock).findAllPublishedByObjectType("Foto", pageable);
+		verifyNoMoreInteractions(photoRepositoryMock);
+	}
+
+	@Test
+	void searchWithObjectTypeAndQueryUsesSearchByObjectType() {
+		final var pageable = PageRequest.of(0, 100);
+		when(photoRepositoryMock.searchPublishedByObjectType("Sundsvall*", "Foto", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+
+		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall").withObjectType("Foto"));
+
+		assertThat(result.getPhotos()).hasSize(1);
+		verify(photoRepositoryMock).searchPublishedByObjectType("Sundsvall*", "Foto", pageable);
+		verifyNoMoreInteractions(photoRepositoryMock);
+	}
+
+	@Test
 	void getById() {
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
 
@@ -143,9 +167,24 @@ class PhotoServiceTest {
 
 		service.streamFile(1234, variant, responseMock);
 
-		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"%s\"".formatted(expectedFilename));
+		verify(responseMock).addHeader(CONTENT_TYPE, "image/jpeg");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"%s\"".formatted(expectedFilename));
 		verify(sambaIntegrationMock).streamFile("/foto/" + expectedSubfolder + "/" + expectedFilename, outputStreamMock);
+	}
+
+	@Test
+	void streamFileSetsOctetStreamForUnknownExtension() throws IOException {
+		final var responseMock = mock(HttpServletResponse.class);
+		final var outputStreamMock = mock(ServletOutputStream.class);
+		final var entityWithOddName = entity().withThumbnailFilename("FOTO.id_1234_fil_liten.bin");
+
+		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entityWithOddName));
+		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+
+		service.streamFile(1234, FileVariant.THUMBNAIL, responseMock);
+
+		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"FOTO.id_1234_fil_liten.bin\"");
 	}
 
 	@Test

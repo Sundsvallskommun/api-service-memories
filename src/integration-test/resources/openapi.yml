@@ -1,43 +1,43 @@
 openapi: 3.1.0
 info:
   title: api-service-memories
-  contact: { }
+  contact: {}
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
   version: "3.2"
 servers:
-  - url: http://localhost:50509
-    description: Generated server url
+- url: http://localhost:63993
+  description: Generated server url
 tags:
-  - name: Audio
-    description: Audio search and file operations
-  - name: Films
-    description: Film search operations
-  - name: Photos
-    description: Photo search and file operations
-  - name: Publications
-    description: Publication search and file operations
+- name: Audio
+  description: Audio search and file operations
+- name: Films
+  description: Film search operations
+- name: Photos
+  description: Photo search and file operations
+- name: Publications
+  description: Publication search and file operations
 paths:
   /{municipalityId}/publications:
     get:
       tags:
-        - Publications
+      - Publications
       summary: Search publications
       description: "Fulltext search across title, comment and OCR text; only published\
         \ publications are returned. XMLTEXT is excluded from the list response."
       operationId: searchPublications
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: parameters
-          in: query
-          required: true
-          schema:
-            $ref: "#/components/schemas/PublicationParameters"
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/PublicationParameters"
       responses:
         "400":
           description: Bad request
@@ -45,8 +45,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -62,23 +62,23 @@ paths:
   /{municipalityId}/publications/{id}:
     get:
       tags:
-        - Publications
+      - Publications
       summary: Get publication by ID
       description: "Get a specific publication by its ID, including the full XMLTEXT\
         \ OCR content"
       operationId: getPublication
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: Successful operation
@@ -98,8 +98,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -109,33 +109,36 @@ paths:
   /{municipalityId}/publications/{id}/file:
     get:
       tags:
-        - Publications
+      - Publications
       summary: Get publication file
-      description: "Download a file associated with a publication by specifying the\
-        \ variant (thumbnail = thumbnail preview, large = large image, text = OCR/text)"
+      description: "Get a file associated with a publication by specifying the variant\
+        \ (thumbnail = thumbnail preview, large = large image, text = OCR/text content\
+        \ transformed to HTML for inline browser display). Returned inline so browsers\
+        \ render it directly; Content-Type is derived from the filename extension\
+        \ for thumbnail/large, and is always text/html for text."
       operationId: getPublicationFile
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: variant
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: variant
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: Successful operation
           content:
-            application/octet-stream: { }
+            '*/*': {}
         "404":
           description: Not found
           content:
@@ -148,8 +151,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -159,22 +162,22 @@ paths:
   /{municipalityId}/photos:
     get:
       tags:
-        - Photos
+      - Photos
       summary: Search photos
       description: Fulltext search across title and comment; only published photos
         are returned.
       operationId: searchPhotos
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: parameters
-          in: query
-          required: true
-          schema:
-            $ref: "#/components/schemas/PhotoParameters"
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/PhotoParameters"
       responses:
         "400":
           description: Bad request
@@ -182,8 +185,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -199,22 +202,22 @@ paths:
   /{municipalityId}/photos/{id}:
     get:
       tags:
-        - Photos
+      - Photos
       summary: Get photo by ID
       description: Get a specific photo by its ID
       operationId: getPhoto
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: Successful operation
@@ -234,8 +237,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -245,33 +248,34 @@ paths:
   /{municipalityId}/photos/{id}/file:
     get:
       tags:
-        - Photos
+      - Photos
       summary: Get photo file
-      description: "Download a file associated with a photo by specifying the variant\
-        \ (thumbnail = thumbnail preview, large = large image)"
+      description: "Get a file associated with a photo by specifying the variant (thumbnail\
+        \ = thumbnail preview, large = large image). Returned inline so browsers render\
+        \ it directly; Content-Type is derived from the filename extension."
       operationId: getPhotoFile
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: variant
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: variant
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: Successful operation
           content:
-            application/octet-stream: { }
+            '*/*': {}
         "404":
           description: Not found
           content:
@@ -284,8 +288,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -295,22 +299,22 @@ paths:
   /{municipalityId}/films:
     get:
       tags:
-        - Films
+      - Films
       summary: Search films
       description: Search films by free text query across title and comment. Returns
         paginated results.
       operationId: searchFilms
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: parameters
-          in: query
-          required: true
-          schema:
-            $ref: "#/components/schemas/FilmParameters"
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/FilmParameters"
       responses:
         "400":
           description: Bad request
@@ -318,8 +322,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -335,22 +339,22 @@ paths:
   /{municipalityId}/films/{id}:
     get:
       tags:
-        - Films
+      - Films
       summary: Get film by ID
       description: Get a specific film by its ID
       operationId: getFilm
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: Successful operation
@@ -370,8 +374,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -381,7 +385,7 @@ paths:
   /{municipalityId}/films/{id}/stream:
     get:
       tags:
-        - Films
+      - Films
       summary: Stream film for inline playback
       description: "Serves the film file with Content-Disposition: inline and Accept-Ranges:\
         \ bytes. Honours the Range request header to return 206 Partial Content for\
@@ -389,31 +393,31 @@ paths:
         \ response."
       operationId: streamFilm
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: Range
-          in: header
-          required: false
-          schema:
-            type: string
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: Range
+        in: header
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: Successful operation
           content:
-            application/octet-stream: { }
+            application/octet-stream: {}
         "206":
           description: Partial content
           content:
-            application/octet-stream: { }
+            application/octet-stream: {}
         "404":
           description: Not found
           content:
@@ -432,8 +436,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -443,27 +447,27 @@ paths:
   /{municipalityId}/films/{id}/file:
     get:
       tags:
-        - Films
+      - Films
       summary: Get film file
       description: Download the file associated with a film
       operationId: getFilmFile
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: Successful operation
           content:
-            application/octet-stream: { }
+            application/octet-stream: {}
         "404":
           description: Not found
           content:
@@ -476,8 +480,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -487,22 +491,22 @@ paths:
   /{municipalityId}/audios:
     get:
       tags:
-        - Audio
+      - Audio
       summary: Search audio
       description: Search audio by free text query across title and comment. Returns
         paginated results.
       operationId: searchAudios
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: parameters
-          in: query
-          required: true
-          schema:
-            $ref: "#/components/schemas/AudioParameters"
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/AudioParameters"
       responses:
         "400":
           description: Bad request
@@ -510,8 +514,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -527,22 +531,22 @@ paths:
   /{municipalityId}/audios/{id}:
     get:
       tags:
-        - Audio
+      - Audio
       summary: Get audio by ID
       description: Get a specific audio record by its ID
       operationId: getAudio
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: Successful operation
@@ -562,8 +566,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -573,7 +577,7 @@ paths:
   /{municipalityId}/audios/{id}/stream:
     get:
       tags:
-        - Audio
+      - Audio
       summary: Stream audio for inline playback
       description: "Serves the audio file with Content-Disposition: inline and Accept-Ranges:\
         \ bytes. Honours the Range request header to return 206 Partial Content for\
@@ -581,31 +585,31 @@ paths:
         \ response."
       operationId: streamAudio
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: Range
-          in: header
-          required: false
-          schema:
-            type: string
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: Range
+        in: header
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: Successful operation
           content:
-            application/octet-stream: { }
+            application/octet-stream: {}
         "206":
           description: Partial content
           content:
-            application/octet-stream: { }
+            application/octet-stream: {}
         "404":
           description: Not found
           content:
@@ -624,8 +628,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -635,27 +639,27 @@ paths:
   /{municipalityId}/audios/{id}/file:
     get:
       tags:
-        - Audio
+      - Audio
       summary: Get audio file
       description: Download the file associated with an audio record
       operationId: getAudioFile
       parameters:
-        - name: municipalityId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: Successful operation
           content:
-            application/octet-stream: { }
+            application/octet-stream: {}
         "404":
           description: Not found
           content:
@@ -668,8 +672,8 @@ paths:
             application/problem+json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
         "500":
           description: Internal server error
           content:
@@ -679,7 +683,7 @@ paths:
   /api-docs:
     get:
       tags:
-        - API
+      - API
       summary: OpenAPI
       operationId: getApiDocs
       responses:
@@ -697,8 +701,8 @@ components:
     Direction:
       type: string
       enum:
-        - ASC
-        - DESC
+      - ASC
+      - DESC
     PublicationParameters:
       type: object
       description: Publication search parameters
@@ -709,7 +713,7 @@ components:
           default: 1
           description: Page number
           examples:
-            - "1"
+          - "1"
           minimum: 1
         limit:
           type: integer
@@ -717,7 +721,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-            - "15"
+          - "15"
           minimum: 1
         sortBy:
           type: array
@@ -725,17 +729,17 @@ components:
             type: string
             description: The properties to sort on
             examples:
-              - propertyName
+            - propertyName
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
           examples:
-            - ASC
+          - ASC
         query:
           type: string
           description: Free text search query
           examples:
-            - Drowning accident
+          - Drowning accident
     Problem:
       type: object
       properties:
@@ -790,7 +794,7 @@ components:
         instance:
           type: string
           format: uri
-        causeAsProblem: { }
+        causeAsProblem: {}
     Violation:
       type: object
       properties:
@@ -819,35 +823,35 @@ components:
           format: int32
           description: Current page
           examples:
-            - "5"
+          - "5"
           readOnly: true
         limit:
           type: integer
           format: int32
           description: Displayed objects per page
           examples:
-            - "20"
+          - "20"
           readOnly: true
         count:
           type: integer
           format: int32
           description: Displayed objects on current page
           examples:
-            - "13"
+          - "13"
           readOnly: true
         totalRecords:
           type: integer
           format: int64
           description: Total amount of hits based on provided search parameters
           examples:
-            - "98"
+          - "98"
           readOnly: true
         totalPages:
           type: integer
           format: int32
           description: Total amount of pages based on provided search parameters
           examples:
-            - "23"
+          - "23"
           readOnly: true
         sortBy:
           type: array
@@ -855,13 +859,13 @@ components:
             type: string
             description: The properties to sort by
             examples:
-              - property
+            - property
             readOnly: true
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
           examples:
-            - ASC
+          - ASC
     Publication:
       type: object
       description: Publication model
@@ -871,78 +875,78 @@ components:
           format: int32
           description: Publication ID
           examples:
-            - "207"
+          - "207"
         filename:
           type: string
           description: Original filename from archive
           examples:
-            - F21051/1841-02-18_Alfwar och Skämt nr 8.xml
+          - F21051/1841-02-18_Alfwar och Skämt nr 8.xml
         publicationType:
           type: string
           description: Publication type (free text)
           examples:
-            - ""
+          - ""
         date:
           type: string
           description: Publication date
           examples:
-            - 1841-02-18
+          - 1841-02-18
         periodicalTitle:
           type: string
           description: Periodical title (newspaper/magazine name)
           examples:
-            - Alfwar och Skämt
+          - Alfwar och Skämt
         issueNumber:
           type: string
           description: Periodical issue number
           examples:
-            - "8"
+          - "8"
         pageNumber:
           type: string
           description: Periodical page number
           examples:
-            - "3"
+          - "3"
         publisherLocation:
           type: string
           description: Publisher location
           examples:
-            - Sundsvall
+          - Sundsvall
         documentTitle:
           type: string
           description: Document title
           examples:
-            - Page 3 Alfwar och Skämt nr 8 1841
+          - Page 3 Alfwar och Skämt nr 8 1841
         locationText:
           type: string
           description: Publication location (free-text fallback from P_OPLATS)
           examples:
-            - Sundsvall
+          - Sundsvall
         location:
           type: string
           description: Resolved place name from TOPOGRAFI (preferred over locationText
             when set)
           examples:
-            - Sundsvall
+          - Sundsvall
         comment:
           type: string
           description: Comment / description
           examples:
-            - Newspaper issue from 1841
+          - Newspaper issue from 1841
         thumbnailFilename:
           type: string
           description: Thumbnail file name
           examples:
-            - PUBL.id_207_fil_liten.jpeg
+          - PUBL.id_207_fil_liten.jpeg
         largeImageFilename:
           type: string
           description: Large image file name
           examples:
-            - PUBL.id_207_fil_stor.jpeg
+          - PUBL.id_207_fil_stor.jpeg
         ocrFilename:
           type: string
           description: OCR/text file name
           examples:
-            - PUBL.id_207_fil_txt.xml
+          - PUBL.id_207_fil_txt.xml
         xmltext:
           type: string
           description: Full OCR/XML text (only returned on detail lookup)
@@ -956,7 +960,7 @@ components:
           default: 1
           description: Page number
           examples:
-            - "1"
+          - "1"
           minimum: 1
         limit:
           type: integer
@@ -964,7 +968,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-            - "15"
+          - "15"
           minimum: 1
         sortBy:
           type: array
@@ -972,23 +976,35 @@ components:
             type: string
             description: The properties to sort on
             examples:
-              - propertyName
+            - propertyName
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
           examples:
-            - ASC
+          - ASC
         query:
           type: string
           description: Free text search query
           examples:
-            - Sundsvall
+          - Sundsvall
         objectType:
           type: string
-          description: "Filter by object type. Use 'Foto' for photographs or 'F\xF6\
-            rem\xE5l' for physical objects. Omit to return both."
+          description: Filter by object type. Use 'Foto' for photographs or 'Föremål'
+            for physical objects. Omit to return both.
           examples:
-            - Foto
+          - Foto
+    PagedPhotoResponse:
+      type: object
+      description: Paged photo response
+      properties:
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Photo"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+          readOnly: true
     Photo:
       type: object
       description: Photo model
@@ -998,7 +1014,7 @@ components:
           format: int32
           description: Photo ID
           examples:
-            - "1234"
+          - "1234"
         filename:
           type: string
           description: Original filename from archive
@@ -1027,12 +1043,12 @@ components:
           type: string
           description: Earliest date of time period
           examples:
-            - "1920"
+          - "1920"
         latest:
           type: string
           description: Latest date of time period
           examples:
-            - "1925"
+          - "1925"
         observationDate:
           type: string
           description: Observation date
@@ -1050,7 +1066,7 @@ components:
           type: string
           description: Object type
           examples:
-            - Foto
+          - Foto
         colorMode:
           type: string
           description: Black & white / colour
@@ -1120,18 +1136,6 @@ components:
         largeImageFilename:
           type: string
           description: Large image file name
-    PagedPhotoResponse:
-      type: object
-      description: Paged photo response
-      properties:
-        photos:
-          type: array
-          items:
-            $ref: "#/components/schemas/Photo"
-            readOnly: true
-        _meta:
-          $ref: "#/components/schemas/PagingAndSortingMetaData"
-          readOnly: true
     FilmParameters:
       type: object
       description: Film search parameters
@@ -1142,7 +1146,7 @@ components:
           default: 1
           description: Page number
           examples:
-            - "1"
+          - "1"
           minimum: 1
         limit:
           type: integer
@@ -1150,7 +1154,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-            - "15"
+          - "15"
           minimum: 1
         sortBy:
           type: array
@@ -1158,17 +1162,17 @@ components:
             type: string
             description: The properties to sort on
             examples:
-              - propertyName
+            - propertyName
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
           examples:
-            - ASC
+          - ASC
         query:
           type: string
           description: Free text search query
           examples:
-            - midsummer
+          - midsummer
     Film:
       type: object
       description: Film model
@@ -1178,95 +1182,95 @@ components:
           format: int32
           description: Film ID
           examples:
-            - "123"
+          - "123"
         filename:
           type: string
           description: Filename
           examples:
-            - film001.mp4
+          - film001.mp4
         objectFilePath:
           type: string
           description: Film object file path
           examples:
-            - /path/to/file.mp4
+          - /path/to/file.mp4
         objectType:
           type: string
           description: Object type
           examples:
-            - VIDEO
+          - VIDEO
         date:
           type: string
           description: Date
           examples:
-            - 1985-06-15
+          - 1985-06-15
         documentTitle:
           type: string
           description: Document title
           examples:
-            - Midsummer celebration in Sundsvall
+          - Midsummer celebration in Sundsvall
         topographyId:
           type: integer
           format: int32
           description: Topography ID
           examples:
-            - "1"
+          - "1"
         locationText:
           type: string
           description: Film location (free-text fallback from FILM_OPLATS)
           examples:
-            - Sundsvall
+          - Sundsvall
         location:
           type: string
           description: Resolved place name from TOPOGRAFI (preferred over locationText
             when set)
           examples:
-            - Sundsvall
+          - Sundsvall
         organizationId:
           type: integer
           format: int32
           description: Film organization ID
           examples:
-            - "1"
+          - "1"
         subEntityId:
           type: integer
           format: int32
           description: Film sub-entity ID
           examples:
-            - "0"
+          - "0"
         unitId:
           type: integer
           format: int32
           description: Film unit ID
           examples:
-            - "1"
+          - "1"
         comment:
           type: string
           description: Comment
           examples:
-            - A film about midsummer celebrations
+          - A film about midsummer celebrations
         filmMimeType:
           type: string
           description: MIME type
           examples:
-            - video/mp4
+          - video/mp4
         nodeId:
           type: integer
           format: int32
           description: Node ID
           examples:
-            - "456"
+          - "456"
         options:
           type: integer
           format: int32
           description: Options
           examples:
-            - "0"
+          - "0"
         deletedDate:
           type: string
           format: date
           description: Deleted date
           examples:
-            - 2026-01-15
+          - 2026-01-15
     PagedFilmResponse:
       type: object
       description: Paged film response
@@ -1289,7 +1293,7 @@ components:
           default: 1
           description: Page number
           examples:
-            - "1"
+          - "1"
           minimum: 1
         limit:
           type: integer
@@ -1297,7 +1301,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-            - "15"
+          - "15"
           minimum: 1
         sortBy:
           type: array
@@ -1305,17 +1309,17 @@ components:
             type: string
             description: The properties to sort on
             examples:
-              - propertyName
+            - propertyName
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
           examples:
-            - ASC
+          - ASC
         query:
           type: string
           description: Free text search query
           examples:
-            - interview
+          - interview
     Audio:
       type: object
       description: Audio model
@@ -1325,100 +1329,100 @@ components:
           format: int32
           description: Audio ID
           examples:
-            - "123"
+          - "123"
         filename:
           type: string
           description: Filename
           examples:
-            - interview1980.mp3
+          - interview1980.mp3
         objectFilePath:
           type: string
           description: Audio object file path
           examples:
-            - /path/to/file.mp3
+          - /path/to/file.mp3
         objectType:
           type: string
           description: Object type
           examples:
-            - LJUD
+          - LJUD
         date:
           type: string
           description: Date
           examples:
-            - 1980-04-12
+          - 1980-04-12
         documentTitle:
           type: string
           description: Document title
           examples:
-            - Interview with the mayor
+          - Interview with the mayor
         topographyId:
           type: integer
           format: int32
           description: Topography ID
           examples:
-            - "1"
+          - "1"
         locationText:
           type: string
           description: Audio location (free-text fallback from LJUD_OPLATS)
           examples:
-            - Sundsvall
+          - Sundsvall
         location:
           type: string
           description: Resolved place name from TOPOGRAFI (preferred over locationText
             when set)
           examples:
-            - Sundsvall
+          - Sundsvall
         subjectId:
           type: integer
           format: int32
           description: OCM subject ID
           examples:
-            - "1"
+          - "1"
         subject:
           type: string
           description: Resolved subject label from OCM (Ämne)
           examples:
-            - Intervju
+          - Intervju
         authorPersonId:
           type: integer
           format: int32
           description: Author (individual person) ID
           examples:
-            - "0"
+          - "0"
         authorEntityId:
           type: integer
           format: int32
           description: Author (legal entity) ID
           examples:
-            - "1"
+          - "1"
         comment:
           type: string
           description: Comment
           examples:
-            - Audio recording of an interview
+          - Audio recording of an interview
         audioMimeType:
           type: string
           description: MIME type
           examples:
-            - audio/mpeg
+          - audio/mpeg
         nodeId:
           type: integer
           format: int32
           description: Node ID
           examples:
-            - "456"
+          - "456"
         options:
           type: integer
           format: int32
           description: Options
           examples:
-            - "0"
+          - "0"
         deletedDate:
           type: string
           format: date
           description: Deleted date
           examples:
-            - 2026-01-15
+          - 2026-01-15
     PagedAudioResponse:
       type: object
       description: Paged audio response
@@ -1431,4 +1435,4 @@ components:
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true
-  securitySchemes: { }
+  securitySchemes: {}
