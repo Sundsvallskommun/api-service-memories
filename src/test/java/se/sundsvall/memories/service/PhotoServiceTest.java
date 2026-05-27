@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
@@ -41,6 +42,11 @@ class PhotoServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
 		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/");
+
+	// 2-byte JPEG SOI marker — Tika identifies it as image/jpeg regardless of filename
+	private static final byte[] JPEG_BYTES = new byte[] {
+		(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0
+	};
 
 	@Mock
 	private PhotoRepository photoRepositoryMock;
@@ -70,7 +76,7 @@ class PhotoServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new PhotoService(photoRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock);
+		service = new PhotoService(photoRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock, new FileTypeDetector());
 	}
 
 	@Test
@@ -164,27 +170,34 @@ class PhotoServiceTest {
 
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+		when(sambaIntegrationMock.openResource("/foto/" + expectedSubfolder + "/" + expectedFilename))
+			.thenReturn(new ByteArrayResource(JPEG_BYTES));
 
 		service.streamFile(1234, variant, responseMock);
 
+		// Tika identifies the JPEG SOI bytes as image/jpeg even though the test fixture is only 4 bytes
 		verify(responseMock).addHeader(CONTENT_TYPE, "image/jpeg");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"%s\"".formatted(expectedFilename));
-		verify(sambaIntegrationMock).streamFile("/foto/" + expectedSubfolder + "/" + expectedFilename, outputStreamMock);
 	}
 
 	@Test
-	void streamFileSetsOctetStreamForUnknownExtension() throws IOException {
+	void streamFileFallsBackToOctetStreamForUnknownBytes() throws IOException {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
-		final var entityWithOddName = entity().withThumbnailFilename("FOTO.id_1234_fil_liten.bin");
+		// Garbage bytes + filename with extension Tika cannot identify
+		final var entityWithOddName = entity().withThumbnailFilename("FOTO.id_1234_fil_liten.q9z");
 
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entityWithOddName));
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+		when(sambaIntegrationMock.openResource("/foto/fil_liten/FOTO.id_1234_fil_liten.q9z"))
+			.thenReturn(new ByteArrayResource(new byte[] {
+				0x00, 0x00, 0x00, 0x00
+			}));
 
 		service.streamFile(1234, FileVariant.THUMBNAIL, responseMock);
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"FOTO.id_1234_fil_liten.bin\"");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"FOTO.id_1234_fil_liten.q9z\"");
 	}
 
 	@Test
@@ -235,7 +248,13 @@ class PhotoServiceTest {
 		final var responseMock = mock(HttpServletResponse.class);
 
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
-		when(responseMock.getOutputStream()).thenThrow(new IOException("boom"));
+		when(sambaIntegrationMock.openResource("/foto/fil_liten/FOTO.id_1234_fil_liten.jpg"))
+			.thenReturn(new ByteArrayResource(JPEG_BYTES) {
+				@Override
+				public java.io.InputStream getInputStream() throws IOException {
+					throw new IOException("boom");
+				}
+			});
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(1234, FileVariant.THUMBNAIL, responseMock));

@@ -14,6 +14,7 @@
 	<name>api-service-memories</name>
 	<properties>
 		<jcifs-ng.version>2.1.10</jcifs-ng.version>
+		<tika-core.version>3.3.0</tika-core.version>
 	</properties>
 	<dependencies>
 		<!-- Framework -->
@@ -35,6 +36,12 @@
 			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>
 			<version>${jcifs-ng.version}</version>
+		</dependency>
+		<!-- MIME type detection from stream content (magic bytes + filename) -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>${tika-core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

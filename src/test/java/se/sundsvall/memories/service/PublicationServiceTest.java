@@ -47,6 +47,14 @@ class PublicationServiceTest {
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
 		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/");
 
+	// JPEG SOI marker — Tika identifies it as image/jpeg
+	private static final byte[] JPEG_BYTES = new byte[] {
+		(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0
+	};
+
+	// %PDF-1.4 — Tika identifies it as application/pdf
+	private static final byte[] PDF_BYTES = "%PDF-1.4\n%abc\n".getBytes();
+
 	@Mock
 	private PublicationRepository publicationRepositoryMock;
 
@@ -82,7 +90,7 @@ class PublicationServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new PublicationService(publicationRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock, xsltTransformerMock);
+		service = new PublicationService(publicationRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock, xsltTransformerMock, new FileTypeDetector());
 	}
 
 	@Test
@@ -171,12 +179,13 @@ class PublicationServiceTest {
 
 		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+		when(sambaIntegrationMock.openResource("/publ/" + expectedSubfolder + "/" + expectedFilename))
+			.thenReturn(new ByteArrayResource(JPEG_BYTES));
 
 		service.streamFile(207, variant, responseMock);
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "image/jpeg");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"%s\"".formatted(expectedFilename));
-		verify(sambaIntegrationMock).streamFile("/publ/" + expectedSubfolder + "/" + expectedFilename, outputStreamMock);
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -188,7 +197,7 @@ class PublicationServiceTest {
 		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
 		when(sambaIntegrationMock.openResource("/publ/fil_txt/PUBL.id_207_fil_txt.xml"))
-			.thenReturn(new ByteArrayResource("<Document><Title>Hi</Title></Document>".getBytes()));
+			.thenReturn(new ByteArrayResource("<?xml version=\"1.0\"?><Document><Title>Hi</Title></Document>".getBytes()));
 		doAnswer(invocation -> {
 			final InputStream in = invocation.getArgument(0);
 			final OutputStream out = invocation.getArgument(1);
@@ -212,28 +221,32 @@ class PublicationServiceTest {
 
 		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entityPdfText));
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+		when(sambaIntegrationMock.openResource("/publ/fil_txt/PUBL.id_207_fil_txt.pdf"))
+			.thenReturn(new ByteArrayResource(PDF_BYTES));
 
 		service.streamFile(207, FileVariant.TEXT, responseMock);
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/pdf");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"PUBL.id_207_fil_txt.pdf\"");
-		verify(sambaIntegrationMock).streamFile("/publ/fil_txt/PUBL.id_207_fil_txt.pdf", outputStreamMock);
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
 	@Test
-	void streamFileForTextVariantWithoutExtensionStreamsBinary() throws IOException {
+	void streamFileForTextVariantWithMislabelledPdfStreamsBinary() throws IOException {
+		// Filename says .xml but bytes are PDF — Tika detects PDF and we stream binary
+		// instead of trying (and failing) to transform with XSLT.
 		final var responseMock = mock(HttpServletResponse.class);
 		final var outputStreamMock = mock(ServletOutputStream.class);
-		final var entityNoExt = entity().withOcrFilename("textfile-no-ext");
 
-		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entityNoExt));
+		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+		when(sambaIntegrationMock.openResource("/publ/fil_txt/PUBL.id_207_fil_txt.xml"))
+			.thenReturn(new ByteArrayResource(PDF_BYTES));
 
 		service.streamFile(207, FileVariant.TEXT, responseMock);
 
-		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"textfile-no-ext\"");
+		verify(responseMock).addHeader(CONTENT_TYPE, "application/pdf");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"PUBL.id_207_fil_txt.xml\"");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -307,7 +320,13 @@ class PublicationServiceTest {
 		final var responseMock = mock(HttpServletResponse.class);
 
 		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
-		when(responseMock.getOutputStream()).thenThrow(new IOException("boom"));
+		when(sambaIntegrationMock.openResource("/publ/fil_liten/PUBL.id_207_fil_liten.jpeg"))
+			.thenReturn(new ByteArrayResource(JPEG_BYTES) {
+				@Override
+				public InputStream getInputStream() throws IOException {
+					throw new IOException("boom");
+				}
+			});
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(207, FileVariant.THUMBNAIL, responseMock));

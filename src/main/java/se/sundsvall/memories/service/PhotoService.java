@@ -13,7 +13,6 @@ import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedPhotoResponse;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.api.model.PhotoParameters;
-import se.sundsvall.memories.api.util.MediaTypes;
 import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
@@ -34,14 +33,16 @@ public class PhotoService {
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
 	private final TopographyLookup topographyLookup;
+	private final FileTypeDetector fileTypeDetector;
 
 	public PhotoService(final PhotoRepository photoRepository,
 		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup) {
+		final TopographyLookup topographyLookup, final FileTypeDetector fileTypeDetector) {
 		this.photoRepository = photoRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
 		this.topographyLookup = topographyLookup;
+		this.fileTypeDetector = fileTypeDetector;
 	}
 
 	public PagedPhotoResponse search(final PhotoParameters parameters) {
@@ -91,18 +92,16 @@ public class PhotoService {
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Photo with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase())));
 
-		response.addHeader(CONTENT_TYPE, MediaTypes.resolve(filename).toString());
-		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(filename).build().toString());
-
-		streamFileContent(id, variant, filename, response);
-	}
-
-	private void streamFileContent(final Integer id, final FileVariant variant, final String filename, final HttpServletResponse response) {
-		// SMB URI separator is always "/" — see comment in PublicationService for the
-		// reason String.join is preferred over a literal "/" concatenation.
+		// SMB URI separator is always "/" — see SambaIntegration for the reason String.join is
+		// preferred over a literal "/" concatenation.
 		final var path = String.join("/", sambaProperties.photoFolder() + variant.getSubfolder(), filename);
-		try {
-			sambaIntegration.streamFile(path, response.getOutputStream());
+
+		try (final var input = sambaIntegration.openResource(path).getInputStream()) {
+			final var detected = fileTypeDetector.detect(input, filename);
+
+			response.addHeader(CONTENT_TYPE, detected.mimeType());
+			response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(filename).build().toString());
+			detected.writeTo(response.getOutputStream());
 		} catch (final IOException e) {
 			throw Problem.valueOf(INTERNAL_SERVER_ERROR,
 				"IOException occurred when streaming file for photo with id '%s': %s".formatted(id, e.getMessage()));
