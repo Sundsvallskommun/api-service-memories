@@ -1,12 +1,8 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
@@ -16,38 +12,29 @@ import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PublicationRepository;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
-import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PublicationMapper;
+import se.sundsvall.memories.service.util.FileStreamer;
 
 import static java.util.Optional.ofNullable;
-import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 public class PublicationService {
 
 	private final PublicationRepository publicationRepository;
-	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
 	private final TopographyLookup topographyLookup;
 	private final PublicationTypeLookup publicationTypeLookup;
-	private final XsltTransformer xsltTransformer;
-	private final FileTypeDetector fileTypeDetector;
+	private final FileStreamer fileStreamer;
 
-	public PublicationService(final PublicationRepository publicationRepository,
-		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup, final PublicationTypeLookup publicationTypeLookup,
-		final XsltTransformer xsltTransformer, final FileTypeDetector fileTypeDetector) {
+	public PublicationService(final PublicationRepository publicationRepository, final SambaIntegrationProperties sambaProperties,
+		final TopographyLookup topographyLookup, final PublicationTypeLookup publicationTypeLookup, final FileStreamer fileStreamer) {
 		this.publicationRepository = publicationRepository;
-		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
 		this.topographyLookup = topographyLookup;
 		this.publicationTypeLookup = publicationTypeLookup;
-		this.xsltTransformer = xsltTransformer;
-		this.fileTypeDetector = fileTypeDetector;
+		this.fileStreamer = fileStreamer;
 	}
 
 	public PagedPublicationResponse search(final PublicationParameters parameters) {
@@ -84,41 +71,8 @@ public class PublicationService {
 		// preferred over a literal "/" concatenation.
 		final var path = String.join("/", sambaProperties.publicationFolder() + variant.getSubfolder(), filename);
 
-		try (final var input = sambaIntegration.openResource(path).getInputStream()) {
-			final var detected = fileTypeDetector.detect(input, filename);
-
-			if (variant == FileVariant.TEXT && isXmlMimeType(detected.mimeType())) {
-				streamTransformedXml(filename, detected, response);
-			} else {
-				streamBinary(filename, detected, response);
-			}
-		} catch (final IOException e) {
-			throw Problem.valueOf(INTERNAL_SERVER_ERROR,
-				"IOException occurred when streaming file for publication with id '%s': %s".formatted(id, e.getMessage()));
-		}
-	}
-
-	private void streamBinary(final String filename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
-		response.addHeader(CONTENT_TYPE, detected.mimeType());
-		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(filename).build().toString());
-		detected.writeTo(response.getOutputStream());
-	}
-
-	private void streamTransformedXml(final String filename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
-		final var htmlFilename = swapExtension(filename, "html");
-		response.addHeader(CONTENT_TYPE, new MediaType("text", "html", StandardCharsets.UTF_8).toString());
-		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(htmlFilename).build().toString());
-		xsltTransformer.transform(detected.fullStream(), response.getOutputStream());
-	}
-
-	private static boolean isXmlMimeType(final String mimeType) {
-		return mimeType != null && mimeType.contains("xml");
-	}
-
-	private static String swapExtension(final String filename, final String newExtension) {
-		final var dot = filename.lastIndexOf('.');
-		final var stem = dot > 0 ? filename.substring(0, dot) : filename;
-		return stem + "." + newExtension;
+		fileStreamer.streamInline(path, filename, variant == FileVariant.TEXT, response,
+			"IOException occurred when streaming file for publication with id '%s'".formatted(id));
 	}
 
 	public enum FileVariant {

@@ -1,8 +1,6 @@
 package se.sundsvall.memories.service;
 
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -14,7 +12,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
@@ -24,9 +21,9 @@ import se.sundsvall.memories.integration.db.FotoOcmRepository;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
-import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.PhotoService.FileVariant;
+import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,9 +32,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,10 +40,7 @@ class PhotoServiceTest {
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
 		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
 
-	// 2-byte JPEG SOI marker — Tika identifies it as image/jpeg regardless of filename
-	private static final byte[] JPEG_BYTES = new byte[] {
-		(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0
-	};
+	private static final String STREAM_ERROR_CONTEXT = "IOException occurred when streaming file for photo with id '1234'";
 
 	@Mock
 	private PhotoRepository photoRepositoryMock;
@@ -58,13 +49,13 @@ class PhotoServiceTest {
 	private FotoOcmRepository fotoOcmRepositoryMock;
 
 	@Mock
-	private SambaIntegration sambaIntegrationMock;
-
-	@Mock
 	private TopographyLookup topographyLookupMock;
 
 	@Mock
 	private OcmLookup ocmLookupMock;
+
+	@Mock
+	private FileStreamer fileStreamerMock;
 
 	private PhotoService service;
 
@@ -79,14 +70,13 @@ class PhotoServiceTest {
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of(FileVariant.THUMBNAIL, "FOTO.id_1234_fil_liten.jpg", "fil_liten"),
-			Arguments.of(FileVariant.LARGE, "FOTO.id_1234_fil_stor.jpg", "fil_stor"));
+			Arguments.of(FileVariant.THUMBNAIL, "/foto/fil_liten/FOTO.id_1234_fil_liten.jpg", "FOTO.id_1234_fil_liten.jpg"),
+			Arguments.of(FileVariant.LARGE, "/foto/fil_stor/FOTO.id_1234_fil_stor.jpg", "FOTO.id_1234_fil_stor.jpg"));
 	}
 
 	@BeforeEach
 	void setUp() {
-		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES,
-			topographyLookupMock, ocmLookupMock, new FileTypeDetector());
+		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock, fileStreamerMock);
 	}
 
 	@Test
@@ -183,46 +173,19 @@ class PhotoServiceTest {
 
 	@ParameterizedTest
 	@MethodSource("fileVariants")
-	void streamFileForVariant(final FileVariant variant, final String expectedFilename, final String expectedSubfolder) throws IOException {
+	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename) {
 		final var responseMock = mock(HttpServletResponse.class);
-		final var outputStreamMock = mock(ServletOutputStream.class);
-
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
-		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
-		when(sambaIntegrationMock.openResource("/foto/" + expectedSubfolder + "/" + expectedFilename))
-			.thenReturn(new ByteArrayResource(JPEG_BYTES));
 
 		service.streamFile(1234, variant, responseMock);
 
-		// Tika identifies the JPEG SOI bytes as image/jpeg even though the test fixture is only 4 bytes
-		verify(responseMock).addHeader(CONTENT_TYPE, "image/jpeg");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"%s\"".formatted(expectedFilename));
-	}
-
-	@Test
-	void streamFileFallsBackToOctetStreamForUnknownBytes() throws IOException {
-		final var responseMock = mock(HttpServletResponse.class);
-		final var outputStreamMock = mock(ServletOutputStream.class);
-		// Garbage bytes + filename with extension Tika cannot identify
-		final var entityWithOddName = entity().withThumbnailFilename("FOTO.id_1234_fil_liten.q9z");
-
-		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entityWithOddName));
-		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
-		when(sambaIntegrationMock.openResource("/foto/fil_liten/FOTO.id_1234_fil_liten.q9z"))
-			.thenReturn(new ByteArrayResource(new byte[] {
-				0x00, 0x00, 0x00, 0x00
-			}));
-
-		service.streamFile(1234, FileVariant.THUMBNAIL, responseMock);
-
-		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"FOTO.id_1234_fil_liten.q9z\"");
+		// Photos never transform to HTML, so the flag is always false.
+		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, false, responseMock, STREAM_ERROR_CONTEXT);
 	}
 
 	@Test
 	void streamFileNotFoundPhoto() {
 		final var responseMock = mock(HttpServletResponse.class);
-
 		when(photoRepositoryMock.findById(999)).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class,
@@ -230,14 +193,13 @@ class PhotoServiceTest {
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("Photo with id '999' not found");
-		verifyNoInteractions(sambaIntegrationMock);
+		verifyNoInteractions(fileStreamerMock);
 	}
 
 	@Test
 	void streamFileWhenVariantIsBlank() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withThumbnailFilename("   ");
-
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
@@ -245,14 +207,13 @@ class PhotoServiceTest {
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("no file for variant 'thumbnail'");
-		verifyNoInteractions(sambaIntegrationMock);
+		verifyNoInteractions(fileStreamerMock);
 	}
 
 	@Test
 	void streamFileWhenVariantIsNull() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withLargeImageFilename(null);
-
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
@@ -260,25 +221,6 @@ class PhotoServiceTest {
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("no file for variant 'large'");
-	}
-
-	@Test
-	void streamFileWrapsIOException() throws IOException {
-		final var responseMock = mock(HttpServletResponse.class);
-
-		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
-		when(sambaIntegrationMock.openResource("/foto/fil_liten/FOTO.id_1234_fil_liten.jpg"))
-			.thenReturn(new ByteArrayResource(JPEG_BYTES) {
-				@Override
-				public java.io.InputStream getInputStream() throws IOException {
-					throw new IOException("boom");
-				}
-			});
-
-		final var exception = assertThrows(ThrowableProblem.class,
-			() -> service.streamFile(1234, FileVariant.THUMBNAIL, responseMock));
-
-		assertThat(exception.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
-		assertThat(exception.getMessage()).contains("boom");
+		verifyNoInteractions(fileStreamerMock);
 	}
 }

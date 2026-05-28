@@ -1,13 +1,11 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Function;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
@@ -19,14 +17,11 @@ import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
-import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PhotoMapper;
+import se.sundsvall.memories.service.util.FileStreamer;
 
 import static java.util.Optional.ofNullable;
-import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
@@ -34,22 +29,20 @@ public class PhotoService {
 
 	private final PhotoRepository photoRepository;
 	private final FotoOcmRepository fotoOcmRepository;
-	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
 	private final TopographyLookup topographyLookup;
 	private final OcmLookup ocmLookup;
-	private final FileTypeDetector fileTypeDetector;
+	private final FileStreamer fileStreamer;
 
 	public PhotoService(final PhotoRepository photoRepository, final FotoOcmRepository fotoOcmRepository,
-		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup, final OcmLookup ocmLookup, final FileTypeDetector fileTypeDetector) {
+		final SambaIntegrationProperties sambaProperties, final TopographyLookup topographyLookup,
+		final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
 		this.photoRepository = photoRepository;
 		this.fotoOcmRepository = fotoOcmRepository;
-		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
 		this.topographyLookup = topographyLookup;
 		this.ocmLookup = ocmLookup;
-		this.fileTypeDetector = fileTypeDetector;
+		this.fileStreamer = fileStreamer;
 	}
 
 	public PagedPhotoResponse search(final PhotoParameters parameters) {
@@ -111,16 +104,8 @@ public class PhotoService {
 		// preferred over a literal "/" concatenation.
 		final var path = String.join("/", sambaProperties.photoFolder() + variant.getSubfolder(), filename);
 
-		try (final var input = sambaIntegration.openResource(path).getInputStream()) {
-			final var detected = fileTypeDetector.detect(input, filename);
-
-			response.addHeader(CONTENT_TYPE, detected.mimeType());
-			response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(filename).build().toString());
-			detected.writeTo(response.getOutputStream());
-		} catch (final IOException e) {
-			throw Problem.valueOf(INTERNAL_SERVER_ERROR,
-				"IOException occurred when streaming file for photo with id '%s': %s".formatted(id, e.getMessage()));
-		}
+		fileStreamer.streamInline(path, filename, false, response,
+			"IOException occurred when streaming file for photo with id '%s'".formatted(id));
 	}
 
 	public enum FileVariant {
