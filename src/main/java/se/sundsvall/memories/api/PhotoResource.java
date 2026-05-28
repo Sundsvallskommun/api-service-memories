@@ -69,8 +69,9 @@ class PhotoResource {
 	}
 
 	@GetMapping(path = "/{id}/file")
-	@Operation(summary = "Get photo file", description = "Download a file associated with a photo by specifying the variant (thumbnail = thumbnail preview, large = large image)")
-	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/octet-stream"))
+	@Operation(summary = "Get photo file",
+		description = "Get a file associated with a photo by specifying the variant (thumbnail = thumbnail preview, large = large image). Returned inline so browsers render it directly; Content-Type is derived from the filename extension.")
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "*/*"))
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	void getPhotoFile(
 		@PathVariable @ValidMunicipalityId final String municipalityId,

@@ -71,6 +71,7 @@ public class SambaIntegration {
 
 	InputStream openInputStream(final String filePath) {
 		final var fullPath = fullPath(filePath);
+		LOGGER.info("Streaming file from SMB share: {}", fullPath);
 		try {
 			final var file = new SmbFile(fullPath, context);
 			return new SmbFileInputStream(file);

@@ -2,8 +2,11 @@ package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
@@ -22,7 +25,6 @@ import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 @Service
 public class PublicationService {
@@ -31,14 +33,19 @@ public class PublicationService {
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
 	private final TopographyLookup topographyLookup;
+	private final XsltTransformer xsltTransformer;
+	private final FileTypeDetector fileTypeDetector;
 
 	public PublicationService(final PublicationRepository publicationRepository,
 		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup) {
+		final TopographyLookup topographyLookup, final XsltTransformer xsltTransformer,
+		final FileTypeDetector fileTypeDetector) {
 		this.publicationRepository = publicationRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
 		this.topographyLookup = topographyLookup;
+		this.xsltTransformer = xsltTransformer;
+		this.fileTypeDetector = fileTypeDetector;
 	}
 
 	public PagedPublicationResponse search(final PublicationParameters parameters) {
@@ -69,24 +76,45 @@ public class PublicationService {
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Publication with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase())));
 
-		response.addHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE);
-		response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"%s\"".formatted(filename));
-
-		streamFileContent(id, variant, filename, response);
-	}
-
-	private void streamFileContent(final Integer id, final FileVariant variant, final String filename, final HttpServletResponse response) {
-		// Build the SMB path via String.join so we don't have a hard-coded "/"
-		// literal embedded in the format string (Sonar S1075). The separator is
-		// genuinely "/" here — SMB URIs always use forward slashes regardless
-		// of host OS, so File.separator would actually be wrong on Windows.
+		// SMB URI separator is always "/" — see SambaIntegration for the reason String.join is
+		// preferred over a literal "/" concatenation.
 		final var path = String.join("/", sambaProperties.publicationFolder() + variant.getSubfolder(), filename);
-		try {
-			sambaIntegration.streamFile(path, response.getOutputStream());
+
+		try (final var input = sambaIntegration.openResource(path).getInputStream()) {
+			final var detected = fileTypeDetector.detect(input, filename);
+
+			if (variant == FileVariant.TEXT && isXmlMimeType(detected.mimeType())) {
+				streamTransformedXml(filename, detected, response);
+			} else {
+				streamBinary(filename, detected, response);
+			}
 		} catch (final IOException e) {
 			throw Problem.valueOf(INTERNAL_SERVER_ERROR,
 				"IOException occurred when streaming file for publication with id '%s': %s".formatted(id, e.getMessage()));
 		}
+	}
+
+	private void streamBinary(final String filename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
+		response.addHeader(CONTENT_TYPE, detected.mimeType());
+		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(filename).build().toString());
+		detected.writeTo(response.getOutputStream());
+	}
+
+	private void streamTransformedXml(final String filename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
+		final var htmlFilename = swapExtension(filename, "html");
+		response.addHeader(CONTENT_TYPE, new MediaType("text", "html", StandardCharsets.UTF_8).toString());
+		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(htmlFilename).build().toString());
+		xsltTransformer.transform(detected.fullStream(), response.getOutputStream());
+	}
+
+	private static boolean isXmlMimeType(final String mimeType) {
+		return mimeType != null && mimeType.contains("xml");
+	}
+
+	private static String swapExtension(final String filename, final String newExtension) {
+		final var dot = filename.lastIndexOf('.');
+		final var stem = dot > 0 ? filename.substring(0, dot) : filename;
+		return stem + "." + newExtension;
 	}
 
 	public enum FileVariant {
