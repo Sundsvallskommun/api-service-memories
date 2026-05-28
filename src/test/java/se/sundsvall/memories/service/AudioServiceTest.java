@@ -34,7 +34,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class AudioServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
 
 	@Mock
 	private AudioRepository repositoryMock;

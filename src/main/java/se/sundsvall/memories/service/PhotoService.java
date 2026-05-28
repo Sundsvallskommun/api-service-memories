@@ -2,6 +2,7 @@ package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Function;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,8 +14,10 @@ import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedPhotoResponse;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.api.model.PhotoParameters;
+import se.sundsvall.memories.integration.db.FotoOcmRepository;
 import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PhotoRepository;
+import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
@@ -30,18 +33,22 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class PhotoService {
 
 	private final PhotoRepository photoRepository;
+	private final FotoOcmRepository fotoOcmRepository;
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
 	private final TopographyLookup topographyLookup;
+	private final OcmLookup ocmLookup;
 	private final FileTypeDetector fileTypeDetector;
 
-	public PhotoService(final PhotoRepository photoRepository,
+	public PhotoService(final PhotoRepository photoRepository, final FotoOcmRepository fotoOcmRepository,
 		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup, final FileTypeDetector fileTypeDetector) {
+		final TopographyLookup topographyLookup, final OcmLookup ocmLookup, final FileTypeDetector fileTypeDetector) {
 		this.photoRepository = photoRepository;
+		this.fotoOcmRepository = fotoOcmRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
 		this.topographyLookup = topographyLookup;
+		this.ocmLookup = ocmLookup;
 		this.fileTypeDetector = fileTypeDetector;
 	}
 
@@ -78,9 +85,17 @@ public class PhotoService {
 	}
 
 	public Photo getById(final Integer id) {
-		return photoRepository.findById(id)
-			.map(entity -> PhotoMapper.toPhoto(entity, topographyLookup.resolve(entity.getTopographyId())))
+		final var entity = photoRepository.findById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
+
+		final var relatedPhotoIds = photoRepository.findRelatedPhotoIds(id);
+		final var subjects = fotoOcmRepository.findByPhotoIdOrderById(id).stream()
+			.map(FotoOcmEntity::getOcmId)
+			.map(ocmLookup::resolveSubject)
+			.filter(Objects::nonNull)
+			.toList();
+
+		return PhotoMapper.toPhoto(entity, topographyLookup.resolve(entity.getTopographyId()), relatedPhotoIds, subjects);
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {

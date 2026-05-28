@@ -2,7 +2,6 @@ package se.sundsvall.memories.service.mapper;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,7 +15,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 class AudioMapperTest {
 
-	private static final Function<Integer, String> NULL_LOOKUP = id -> null;
+	private static final ReferenceResolver NULL_LOOKUP = id -> null;
 
 	private static Stream<Arguments> toAudioArguments() {
 		return Stream.of(
@@ -79,8 +78,8 @@ class AudioMapperTest {
 		final var entities = List.of(
 			AudioEntity.create().withAudioId(1).withTopographyId(10).withSubjectId(100).withDocumentTitle("Audio A"),
 			AudioEntity.create().withAudioId(2).withTopographyId(20).withSubjectId(200).withDocumentTitle("Audio B"));
-		final Function<Integer, String> locationLookup = id -> id == 10 ? "Sundsvall" : "Timrå";
-		final Function<Integer, String> subjectLookup = id -> id == 100 ? "Intervju" : "Musik";
+		final ReferenceResolver locationLookup = id -> id == 10 ? "Sundsvall" : "Timrå";
+		final ReferenceResolver subjectLookup = id -> id == 100 ? "Intervju" : "Musik";
 
 		final var result = AudioMapper.toAudioList(entities, locationLookup, subjectLookup);
 

@@ -19,7 +19,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.PhotoParameters;
+import se.sundsvall.memories.api.model.Subject;
+import se.sundsvall.memories.integration.db.FotoOcmRepository;
 import se.sundsvall.memories.integration.db.PhotoRepository;
+import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
@@ -41,7 +44,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class PhotoServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
 
 	// 2-byte JPEG SOI marker — Tika identifies it as image/jpeg regardless of filename
 	private static final byte[] JPEG_BYTES = new byte[] {
@@ -52,10 +55,16 @@ class PhotoServiceTest {
 	private PhotoRepository photoRepositoryMock;
 
 	@Mock
+	private FotoOcmRepository fotoOcmRepositoryMock;
+
+	@Mock
 	private SambaIntegration sambaIntegrationMock;
 
 	@Mock
 	private TopographyLookup topographyLookupMock;
+
+	@Mock
+	private OcmLookup ocmLookupMock;
 
 	private PhotoService service;
 
@@ -76,7 +85,8 @@ class PhotoServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new PhotoService(photoRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock, new FileTypeDetector());
+		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES,
+			topographyLookupMock, ocmLookupMock, new FileTypeDetector());
 	}
 
 	@Test
@@ -143,13 +153,22 @@ class PhotoServiceTest {
 	}
 
 	@Test
-	void getById() {
+	void getByIdReturnsDetailWithRelatedPhotosAndSubjects() {
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
+		when(photoRepositoryMock.findRelatedPhotoIds(1234)).thenReturn(List.of(2001, 2002));
+		when(fotoOcmRepositoryMock.findByPhotoIdOrderById(1234)).thenReturn(List.of(
+			FotoOcmEntity.create().withPhotoId(1234).withOcmId(10),
+			FotoOcmEntity.create().withPhotoId(1234).withOcmId(20)));
+		when(ocmLookupMock.resolveSubject(10)).thenReturn(Subject.create().withCode("ALM").withText("Allmänt"));
+		when(ocmLookupMock.resolveSubject(20)).thenReturn(null);
 
 		final var result = service.getById(1234);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getPhotoId()).isEqualTo(1234);
+		assertThat(result.getRelatedPhotoIds()).containsExactly(2001, 2002);
+		assertThat(result.getSubjects()).hasSize(1);
+		assertThat(result.getSubjects().getFirst().getCode()).isEqualTo("ALM");
 	}
 
 	@Test

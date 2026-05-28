@@ -1,0 +1,24 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"texts": [
+		{
+			"textId": 1001,
+			"filename": "minne_1920.xml",
+			"documentDate": "1920-01-01",
+			"documentEndDate": "1925-12-31",
+			"documentTitle": "Minne från Sundsvall stadshus",
+			"locationText": "Sundsvall",
+			"location": "Sundsvall stad",
+			"comment": "Handskrivna minnen från stadshuset",
+			"thumbnailFilename": "TEXT.id_1001_fil_liten.jpeg",
+			"largeImageFilename": "TEXT.id_1001_fil_stor.jpeg",
+			"ocrFilename": "TEXT.id_1001_fil_txt.xml"
+		}
+	]
+}

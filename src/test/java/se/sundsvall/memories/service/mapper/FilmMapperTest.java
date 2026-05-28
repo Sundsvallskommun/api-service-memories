@@ -2,7 +2,6 @@ package se.sundsvall.memories.service.mapper;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,7 +15,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 class FilmMapperTest {
 
-	private static final Function<Integer, String> NULL_LOOKUP = id -> null;
+	private static final ReferenceResolver NULL_LOOKUP = id -> null;
 
 	private static Stream<Arguments> toFilmArguments() {
 		return Stream.of(
@@ -78,7 +77,7 @@ class FilmMapperTest {
 		final var entities = List.of(
 			FilmEntity.create().withFilmId(1).withTopographyId(10).withDocumentTitle("Film A"),
 			FilmEntity.create().withFilmId(2).withTopographyId(20).withDocumentTitle("Film B"));
-		final Function<Integer, String> lookup = id -> id == 10 ? "Sundsvall" : "Timrå";
+		final ReferenceResolver lookup = id -> id == 10 ? "Sundsvall" : "Timrå";
 
 		final var result = FilmMapper.toFilmList(entities, lookup);
 

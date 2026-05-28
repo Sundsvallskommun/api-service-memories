@@ -33,17 +33,19 @@ public class PublicationService {
 	private final SambaIntegration sambaIntegration;
 	private final SambaIntegrationProperties sambaProperties;
 	private final TopographyLookup topographyLookup;
+	private final PublicationTypeLookup publicationTypeLookup;
 	private final XsltTransformer xsltTransformer;
 	private final FileTypeDetector fileTypeDetector;
 
 	public PublicationService(final PublicationRepository publicationRepository,
 		final SambaIntegration sambaIntegration, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup, final XsltTransformer xsltTransformer,
-		final FileTypeDetector fileTypeDetector) {
+		final TopographyLookup topographyLookup, final PublicationTypeLookup publicationTypeLookup,
+		final XsltTransformer xsltTransformer, final FileTypeDetector fileTypeDetector) {
 		this.publicationRepository = publicationRepository;
 		this.sambaIntegration = sambaIntegration;
 		this.sambaProperties = sambaProperties;
 		this.topographyLookup = topographyLookup;
+		this.publicationTypeLookup = publicationTypeLookup;
 		this.xsltTransformer = xsltTransformer;
 		this.fileTypeDetector = fileTypeDetector;
 	}
@@ -57,13 +59,15 @@ public class PublicationService {
 			: publicationRepository.searchPublished(sanitized, pageable);
 
 		return PagedPublicationResponse.create()
-			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topographyLookup::resolve))
+			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topographyLookup::resolve, publicationTypeLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
 	public Publication getById(final Integer id) {
 		return publicationRepository.findById(id)
-			.map(entity -> PublicationMapper.toPublication(entity, topographyLookup.resolve(entity.getTopographyId())))
+			.map(entity -> PublicationMapper.toPublication(entity,
+				topographyLookup.resolve(entity.getPublisherTopographyId()),
+				publicationTypeLookup.resolve(entity.getPublicationTypeId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));
 	}
 

@@ -1,7 +1,6 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
-import java.util.function.Function;
 import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
 
@@ -46,14 +45,13 @@ public final class FilmMapper {
 	 * Map a list of FilmEntities, resolving each entity's location via the provided lookup.
 	 *
 	 * @param  entities       source entities
-	 * @param  locationLookup function from topographyId → resolved location string (nullable)
+	 * @param  locationLookup resolver from topographyId → location string (nullable)
 	 * @return                list of mapped {@link Film} objects (empty if entities is null)
 	 */
-	@SuppressWarnings("java:S4276") // IntFunction<String> would require unboxing topographyId; the field is a nullable Integer.
-	public static List<Film> toFilmList(final List<FilmEntity> entities, final Function<Integer, String> locationLookup) {
+	public static List<Film> toFilmList(final List<FilmEntity> entities, final ReferenceResolver locationLookup) {
 		return ofNullable(entities)
 			.map(list -> list.stream()
-				.map(e -> toFilm(e, locationLookup.apply(e.getTopographyId())))
+				.map(e -> toFilm(e, locationLookup.resolve(e.getTopographyId())))
 				.toList())
 			.orElse(emptyList());
 	}

@@ -1,6 +1,7 @@
 package se.sundsvall.memories.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import java.util.Objects;
 
 @Schema(description = "Photo model")
@@ -122,6 +123,12 @@ public class Photo {
 
 	@Schema(description = "Large image file name")
 	private String largeImageFilename;
+
+	@Schema(description = "IDs of related photos via FOTO_FOTO (only returned on detail lookup)")
+	private List<Integer> relatedPhotoIds;
+
+	@Schema(description = "Subjects / ämnesklassificering via FOTO_OCM (only returned on detail lookup)")
+	private List<Subject> subjects;
 
 	public static Photo create() {
 		return new Photo();
@@ -634,6 +641,32 @@ public class Photo {
 		return this;
 	}
 
+	public List<Integer> getRelatedPhotoIds() {
+		return relatedPhotoIds;
+	}
+
+	public void setRelatedPhotoIds(final List<Integer> relatedPhotoIds) {
+		this.relatedPhotoIds = relatedPhotoIds;
+	}
+
+	public Photo withRelatedPhotoIds(final List<Integer> relatedPhotoIds) {
+		this.relatedPhotoIds = relatedPhotoIds;
+		return this;
+	}
+
+	public List<Subject> getSubjects() {
+		return subjects;
+	}
+
+	public void setSubjects(final List<Subject> subjects) {
+		this.subjects = subjects;
+	}
+
+	public Photo withSubjects(final List<Subject> subjects) {
+		this.subjects = subjects;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -651,7 +684,8 @@ public class Photo {
 			&& Objects.equals(conditionAssessment, that.conditionAssessment) && Objects.equals(observerName, that.observerName) && Objects.equals(treatment, that.treatment)
 			&& Objects.equals(treatmentDate, that.treatmentDate) && Objects.equals(signature, that.signature) && Objects.equals(rights, that.rights)
 			&& Objects.equals(restricted, that.restricted) && Objects.equals(restrictionNote, that.restrictionNote) && Objects.equals(provenance, that.provenance)
-			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename);
+			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
+			&& Objects.equals(relatedPhotoIds, that.relatedPhotoIds) && Objects.equals(subjects, that.subjects);
 	}
 
 	@Override
@@ -660,7 +694,7 @@ public class Photo {
 			earliest, latest, observationDate, locationText, location, storageLocation, objectType, colorMode, negativePositive, transmissiveReflective,
 			imageCarrier, material, technique, function, height, width, diameter, framed, conditionCategory, conditionAssessment,
 			observerName, treatment, treatmentDate, signature, rights, restricted, restrictionNote, provenance,
-			thumbnailFilename, largeImageFilename);
+			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects);
 	}
 
 	@Override
@@ -705,6 +739,8 @@ public class Photo {
 			", provenance='" + provenance + '\'' +
 			", thumbnailFilename='" + thumbnailFilename + '\'' +
 			", largeImageFilename='" + largeImageFilename + '\'' +
+			", relatedPhotoIds=" + relatedPhotoIds +
+			", subjects=" + subjects +
 			'}';
 	}
 }

@@ -1,7 +1,6 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
-import java.util.function.Function;
 import se.sundsvall.memories.api.model.Audio;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 
@@ -48,16 +47,15 @@ public final class AudioMapper {
 	 * Map a list of AudioEntities, resolving each entity's location and subject via the provided lookups.
 	 *
 	 * @param  entities       source entities
-	 * @param  locationLookup function from topographyId → resolved location string (nullable)
-	 * @param  subjectLookup  function from subjectId → resolved OCM subject label (nullable)
+	 * @param  locationLookup resolver from topographyId → location string (nullable)
+	 * @param  subjectLookup  resolver from subjectId → OCM subject label (nullable)
 	 * @return                list of mapped {@link Audio} objects (empty if entities is null)
 	 */
-	@SuppressWarnings("java:S4276") // IntFunction<String> would require unboxing; the source fields are nullable Integers.
-	public static List<Audio> toAudioList(final List<AudioEntity> entities, final Function<Integer, String> locationLookup,
-		final Function<Integer, String> subjectLookup) {
+	public static List<Audio> toAudioList(final List<AudioEntity> entities, final ReferenceResolver locationLookup,
+		final ReferenceResolver subjectLookup) {
 		return ofNullable(entities)
 			.map(list -> list.stream()
-				.map(e -> toAudio(e, locationLookup.apply(e.getTopographyId()), subjectLookup.apply(e.getSubjectId())))
+				.map(e -> toAudio(e, locationLookup.resolve(e.getTopographyId()), subjectLookup.resolve(e.getSubjectId())))
 				.toList())
 			.orElse(emptyList());
 	}

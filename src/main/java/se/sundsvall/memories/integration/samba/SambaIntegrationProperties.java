@@ -15,5 +15,6 @@ public record SambaIntegrationProperties(
 	@NotBlank String filmFolder,
 	@NotBlank String publicationFolder,
 	@NotBlank String photoFolder,
-	@NotBlank String audioFolder) {
+	@NotBlank String audioFolder,
+	@NotBlank String textFolder) {
 }

@@ -45,7 +45,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class PublicationServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
 
 	// JPEG SOI marker — Tika identifies it as image/jpeg
 	private static final byte[] JPEG_BYTES = new byte[] {
@@ -65,6 +65,9 @@ class PublicationServiceTest {
 	private TopographyLookup topographyLookupMock;
 
 	@Mock
+	private PublicationTypeLookup publicationTypeLookupMock;
+
+	@Mock
 	private XsltTransformer xsltTransformerMock;
 
 	private PublicationService service;
@@ -73,7 +76,8 @@ class PublicationServiceTest {
 		return PublicationEntity.create()
 			.withPublicationId(207)
 			.withDocumentTitle("Alfwar och Skämt")
-			.withTopographyId(4)
+			.withPublisherTopographyId(1)
+			.withPublicationTypeId(4)
 			.withPublicationType("Broschyrer")
 			.withThumbnailFilename("PUBL.id_207_fil_liten.jpeg")
 			.withLargeImageFilename("PUBL.id_207_fil_stor.jpeg")
@@ -90,19 +94,21 @@ class PublicationServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new PublicationService(publicationRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock, xsltTransformerMock, new FileTypeDetector());
+		service = new PublicationService(publicationRepositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES,
+			topographyLookupMock, publicationTypeLookupMock, xsltTransformerMock, new FileTypeDetector());
 	}
 
 	@Test
 	void searchWithQueryUsesFulltextRepository() {
 		final var pageable = PageRequest.of(0, 100);
 		when(publicationRepositoryMock.searchPublished("Drowning*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
-		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvall");
+		when(topographyLookupMock.resolve(1)).thenReturn("Sundsvall");
+		when(publicationTypeLookupMock.resolve(4)).thenReturn("Tidning");
 
 		final var result = service.search(PublicationParameters.create().withQuery("Drowning"));
 
 		assertThat(result.getPublications()).hasSize(1);
-		assertThat(result.getPublications().getFirst().getPublicationType()).isEqualTo("Broschyrer");
+		assertThat(result.getPublications().getFirst().getPublicationType()).isEqualTo("Tidning");
 		assertThat(result.getPublications().getFirst().getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getPublications().getFirst().getXmltext()).isNull();
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
@@ -148,17 +154,28 @@ class PublicationServiceTest {
 	}
 
 	@Test
-	void getByIdIncludesXmltextAndLocation() {
+	void getByIdIncludesXmltextAndResolvedFields() {
 		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
-		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvall");
+		when(topographyLookupMock.resolve(1)).thenReturn("Sundsvall");
+		when(publicationTypeLookupMock.resolve(4)).thenReturn("Tidning");
 
 		final var result = service.getById(207);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getPublicationId()).isEqualTo(207);
 		assertThat(result.getXmltext()).isEqualTo("<text>content</text>");
-		assertThat(result.getPublicationType()).isEqualTo("Broschyrer");
+		assertThat(result.getPublicationType()).isEqualTo("Tidning");
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
+	}
+
+	@Test
+	void getByIdFallsBackToFritextPublicationTypeWhenLookupMisses() {
+		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
+		when(publicationTypeLookupMock.resolve(4)).thenReturn(null);
+
+		final var result = service.getById(207);
+
+		assertThat(result.getPublicationType()).isEqualTo("Broschyrer");
 	}
 
 	@Test
