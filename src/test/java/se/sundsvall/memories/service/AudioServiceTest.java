@@ -1,8 +1,6 @@
 package se.sundsvall.memories.service;
 
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,14 +8,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
-import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
+import se.sundsvall.memories.service.model.StreamPayload;
+import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,21 +26,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ExtendWith(MockitoExtension.class)
 class AudioServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
 
 	@Mock
 	private AudioRepository repositoryMock;
-
-	@Mock
-	private SambaIntegration sambaIntegrationMock;
 
 	@Mock
 	private TopographyLookup topographyLookupMock;
@@ -48,11 +43,14 @@ class AudioServiceTest {
 	@Mock
 	private OcmLookup ocmLookupMock;
 
+	@Mock
+	private FileStreamer fileStreamerMock;
+
 	private AudioService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new AudioService(repositoryMock, sambaIntegrationMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock);
+		service = new AudioService(repositoryMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock, fileStreamerMock);
 	}
 
 	@Test
@@ -156,102 +154,55 @@ class AudioServiceTest {
 	}
 
 	@Test
-	void streamFile() throws IOException {
+	void streamFileDelegatesToFileStreamer() {
 		final var id = 1;
-		final var filePath = "/ljud/test.mp3";
-		final var entity = AudioEntity.create()
-			.withAudioId(id)
-			.withObjectFilePath(filePath)
-			.withAudioMimeType("audio/mpeg");
+		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("/ljud/test.mp3").withAudioMimeType("audio/mpeg");
 		final var responseMock = mock(HttpServletResponse.class);
-		final var outputStreamMock = mock(ServletOutputStream.class);
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
-		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
 
 		service.streamFile(id, responseMock);
 
-		verify(responseMock).addHeader(CONTENT_TYPE, "audio/mpeg");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"test.mp3\"");
-		verify(repositoryMock).findById(id);
-		verify(sambaIntegrationMock).streamFile("/ljud/" + filePath, outputStreamMock);
+		verify(fileStreamerMock).streamAttachment("/ljud//ljud/test.mp3", "audio/mpeg", "test.mp3", responseMock,
+			"IOException occurred when streaming file for audio with id '1'");
 	}
 
 	@Test
-	void streamFileDerivesFilenameFromBackslashPath() throws IOException {
-		final var id = 2;
-		final var filePath = "\\\\server\\share\\ljud\\intervju1980.mp3";
-		final var entity = AudioEntity.create()
-			.withAudioId(id)
-			.withObjectFilePath(filePath)
-			.withAudioMimeType("audio/mpeg");
-		final var responseMock = mock(HttpServletResponse.class);
-		final var outputStreamMock = mock(ServletOutputStream.class);
-
-		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
-		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
-
-		service.streamFile(id, responseMock);
-
-		verify(responseMock).addHeader(CONTENT_TYPE, "audio/mpeg");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"intervju1980.mp3\"");
-		verify(sambaIntegrationMock).streamFile("/ljud/" + filePath, outputStreamMock);
-	}
-
-	@Test
-	void streamFileFallsBackWhenObjFilIsBlank() throws IOException {
+	void streamFileFallsBackToOctetStreamAndDerivedNameWhenObjectPathBlank() {
 		final var id = 3;
-		final var entity = AudioEntity.create()
-			.withAudioId(id)
-			.withObjectFilePath("   ");
+		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("   ");
 		final var responseMock = mock(HttpServletResponse.class);
-		final var outputStreamMock = mock(ServletOutputStream.class);
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
-		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
 
 		service.streamFile(id, responseMock);
 
-		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"audio-3\"");
-		verify(sambaIntegrationMock).streamFile("/ljud/" + "   ", outputStreamMock);
+		verify(fileStreamerMock).streamAttachment("/ljud/   ", "application/octet-stream", "audio-3", responseMock,
+			"IOException occurred when streaming file for audio with id '3'");
 	}
 
 	@Test
-	void openForPlaybackReturnsPayload() {
+	void openForPlaybackReturnsPayloadFromStreamer() {
 		final var id = 1;
-		final var entity = AudioEntity.create()
-			.withAudioId(id)
-			.withObjectFilePath("/a/interview.mp3")
-			.withAudioMimeType("audio/mpeg");
-		final var resourceMock = org.mockito.Mockito.mock(org.springframework.core.io.Resource.class);
+		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("/a/interview.mp3").withAudioMimeType("audio/mpeg");
+		final var expected = new StreamPayload(mock(Resource.class), "audio/mpeg", "interview.mp3");
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
-		when(sambaIntegrationMock.openResource("/ljud//a/interview.mp3")).thenReturn(resourceMock);
+		when(fileStreamerMock.openForPlayback("/ljud//a/interview.mp3", "audio/mpeg", "interview.mp3")).thenReturn(expected);
 
-		final var payload = service.openForPlayback(id);
-
-		assertThat(payload.resource()).isSameAs(resourceMock);
-		assertThat(payload.mimeType()).isEqualTo("audio/mpeg");
-		assertThat(payload.filename()).isEqualTo("interview.mp3");
-		verify(sambaIntegrationMock).openResource("/ljud//a/interview.mp3");
+		assertThat(service.openForPlayback(id)).isSameAs(expected);
 	}
 
 	@Test
 	void openForPlaybackFallsBackToOctetStreamWhenMimeMissing() {
 		final var id = 2;
-		final var entity = AudioEntity.create()
-			.withAudioId(id)
-			.withObjectFilePath("   ");
-		final var resourceMock = org.mockito.Mockito.mock(org.springframework.core.io.Resource.class);
+		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("   ");
+		final var expected = new StreamPayload(mock(Resource.class), "application/octet-stream", "audio-2");
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
-		when(sambaIntegrationMock.openResource("/ljud/   ")).thenReturn(resourceMock);
+		when(fileStreamerMock.openForPlayback("/ljud/   ", "application/octet-stream", "audio-2")).thenReturn(expected);
 
-		final var payload = service.openForPlayback(id);
-
-		assertThat(payload.mimeType()).isEqualTo("application/octet-stream");
-		assertThat(payload.filename()).isEqualTo("audio-2");
+		assertThat(service.openForPlayback(id)).isSameAs(expected);
 	}
 
 	@Test
@@ -263,7 +214,7 @@ class AudioServiceTest {
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("Audio with id '999' not found");
-		verifyNoInteractions(sambaIntegrationMock);
+		verifyNoInteractions(fileStreamerMock);
 	}
 
 	@Test
@@ -278,6 +229,6 @@ class AudioServiceTest {
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("Audio with id '999' not found");
 		verify(repositoryMock).findById(id);
-		verifyNoInteractions(sambaIntegrationMock);
+		verifyNoInteractions(fileStreamerMock);
 	}
 }

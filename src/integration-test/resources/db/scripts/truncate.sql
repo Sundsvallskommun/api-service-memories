@@ -1,8 +1,13 @@
 set foreign_key_checks = 0;
 truncate table FILM;
 truncate table FOTO;
+truncate table FOTO_FOTO;
+truncate table FOTO_OCM;
 truncate table LJUD;
 truncate table OCM;
 truncate table PUBL;
+truncate table PUBL_TYP;
+truncate table TEXT;
+truncate table TEXT_MULTI;
 truncate table TOPOGRAFI;
 set foreign_key_checks = 1;

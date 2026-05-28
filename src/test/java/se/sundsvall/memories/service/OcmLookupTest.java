@@ -73,4 +73,30 @@ class OcmLookupTest {
 
 		assertThat(lookup.resolve(5)).isEqualTo("With ID");
 	}
+
+	@Test
+	void resolveSubjectReturnsCodeTextDescription() {
+		when(ocmRepositoryMock.findAll()).thenReturn(List.of(
+			OcmEntity.create().withId(10).withCode("MID").withText("Midsommar").withDescription("Swedish midsummer")));
+		lookup.loadCache();
+
+		final var subject = lookup.resolveSubject(10);
+		assertThat(subject).isNotNull();
+		assertThat(subject.getCode()).isEqualTo("MID");
+		assertThat(subject.getText()).isEqualTo("Midsommar");
+		assertThat(subject.getDescription()).isEqualTo("Swedish midsummer");
+	}
+
+	@Test
+	void resolveSubjectReturnsNullForNullId() {
+		assertThat(lookup.resolveSubject(null)).isNull();
+	}
+
+	@Test
+	void resolveSubjectReturnsNullForUnknownId() {
+		when(ocmRepositoryMock.findAll()).thenReturn(List.of());
+		lookup.loadCache();
+
+		assertThat(lookup.resolveSubject(999)).isNull();
+	}
 }

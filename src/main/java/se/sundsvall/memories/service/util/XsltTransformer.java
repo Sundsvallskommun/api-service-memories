@@ -1,4 +1,4 @@
-package se.sundsvall.memories.service;
+package se.sundsvall.memories.service.util;
 
 import java.io.InputStream;
 import java.io.OutputStream;

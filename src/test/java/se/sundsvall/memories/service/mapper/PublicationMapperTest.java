@@ -2,7 +2,6 @@ package se.sundsvall.memories.service.mapper;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 
@@ -11,7 +10,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 class PublicationMapperTest {
 
-	private static final Function<Integer, String> NULL_LOOKUP = id -> null;
+	private static final ReferenceResolver NULL_LOOKUP = id -> null;
 
 	private static PublicationEntity sampleEntity() {
 		return PublicationEntity.create()
@@ -68,11 +67,11 @@ class PublicationMapperTest {
 	@Test
 	void toPublicationListMapsAllEntitiesWithoutXmltext() {
 		final var entities = List.of(
-			PublicationEntity.create().withPublicationId(1).withTopographyId(10).withDocumentTitle("A").withPublicationType("Broschyrer").withXmltext("hidden"),
-			PublicationEntity.create().withPublicationId(2).withTopographyId(20).withDocumentTitle("B").withPublicationType("Tidningar").withXmltext("hidden"));
-		final Function<Integer, String> lookup = id -> id == 10 ? "Sundsvall" : "Timrå";
+			PublicationEntity.create().withPublicationId(1).withTopographyId(10).withPublicationType("Broschyrer").withDocumentTitle("A").withXmltext("hidden"),
+			PublicationEntity.create().withPublicationId(2).withTopographyId(20).withPublicationType("Tidningar").withDocumentTitle("B").withXmltext("hidden"));
+		final ReferenceResolver locationLookup = id -> id == 10 ? "Sundsvall" : "Timrå";
 
-		final var result = PublicationMapper.toPublicationList(entities, lookup);
+		final var result = PublicationMapper.toPublicationList(entities, locationLookup);
 
 		assertThat(result)
 			.extracting("publicationId", "documentTitle", "publicationType", "location", "xmltext")

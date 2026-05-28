@@ -5,13 +5,15 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.2"
+  version: "3.3"
 servers:
-- url: http://localhost:63993
+- url: http://localhost:53606
   description: Generated server url
 tags:
 - name: Audio
   description: Audio search and file operations
+- name: Texts
+  description: Text search and file operations
 - name: Films
   description: Film search operations
 - name: Photos
@@ -19,6 +21,145 @@ tags:
 - name: Publications
   description: Publication search and file operations
 paths:
+  /{municipalityId}/texts:
+    get:
+      tags:
+      - Texts
+      summary: Search texts
+      description: "Fulltext search across title, comment and OCR text; only published\
+        \ texts are returned. XMLTEXT and mediaFiles are excluded from the list response."
+      operationId: searchTexts
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/TextParameters"
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedTextResponse"
+  /{municipalityId}/texts/{id}:
+    get:
+      tags:
+      - Texts
+      summary: Get text by ID
+      description: "Get a specific text by its ID, including the full XMLTEXT content\
+        \ and any extra media files (TEXT_MULTI)"
+      operationId: getText
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Text"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/texts/{id}/file:
+    get:
+      tags:
+      - Texts
+      summary: Get text file
+      description: "Get a file associated with a text by specifying the variant (thumbnail,\
+        \ large, text). Returned inline so browsers render it directly; Content-Type\
+        \ is derived from the filename extension for thumbnail/large, and is text/html\
+        \ for the text variant when the source is XML."
+      operationId: getTextFile
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: variant
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            '*/*': {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/publications:
     get:
       tags:
@@ -703,9 +844,9 @@ components:
       enum:
       - ASC
       - DESC
-    PublicationParameters:
+    TextParameters:
       type: object
-      description: Publication search parameters
+      description: Text search parameters
       properties:
         page:
           type: integer
@@ -739,7 +880,7 @@ components:
           type: string
           description: Free text search query
           examples:
-          - Drowning accident
+          - Stadshuset
     Problem:
       type: object
       properties:
@@ -802,14 +943,14 @@ components:
           type: string
         message:
           type: string
-    PagedPublicationResponse:
+    PagedTextResponse:
       type: object
-      description: Paged publication response
+      description: Paged text response
       properties:
-        publications:
+        texts:
           type: array
           items:
-            $ref: "#/components/schemas/Publication"
+            $ref: "#/components/schemas/Text"
             readOnly: true
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
@@ -866,6 +1007,155 @@ components:
           description: The sort order direction
           examples:
           - ASC
+    Text:
+      type: object
+      description: Text model
+      properties:
+        textId:
+          type: integer
+          format: int32
+          description: Text ID
+          examples:
+          - "1001"
+        filename:
+          type: string
+          description: Original filename from archive
+          examples:
+          - minne_1920.xml
+        documentDate:
+          type: string
+          description: Document start date
+          examples:
+          - 1920-01-01
+        documentEndDate:
+          type: string
+          description: Document end date (for date ranges)
+          examples:
+          - 1920-12-31
+        documentTitle:
+          type: string
+          description: Document title
+          examples:
+          - Minne från Sundsvall 1920
+        locationText:
+          type: string
+          description: Document location (free-text fallback from D_OPLATS)
+          examples:
+          - Sundsvall
+        location:
+          type: string
+          description: Resolved place name from TOPOGRAFI (preferred over locationText
+            when set)
+          examples:
+          - Sundsvall
+        subjectId:
+          type: integer
+          format: int32
+          description: OCM subject ID (D_O_ID)
+          examples:
+          - "20"
+        subject:
+          type: string
+          description: Resolved subject label from OCM (Ämne)
+          examples:
+          - Musik
+        comment:
+          type: string
+          description: Comment / description
+          examples:
+          - Memoir transcribed from handwritten notes
+        thumbnailFilename:
+          type: string
+          description: Thumbnail file name
+          examples:
+          - TEXT.id_1001_fil_liten.jpeg
+        largeImageFilename:
+          type: string
+          description: Large image file name
+          examples:
+          - TEXT.id_1001_fil_stor.jpeg
+        ocrFilename:
+          type: string
+          description: OCR/text file name
+          examples:
+          - TEXT.id_1001_fil_txt.xml
+        xmltext:
+          type: string
+          description: Full OCR/XML text (only returned on detail lookup)
+        mediaFiles:
+          type: array
+          description: Extra media files associated with this text (only returned
+            on detail lookup)
+          items:
+            $ref: "#/components/schemas/TextMediaFile"
+    TextMediaFile:
+      type: object
+      description: Extra media file attached to a text (TEXT_MULTI)
+      properties:
+        thumbnailFilename:
+          type: string
+          description: Thumbnail file name
+          examples:
+          - TEXT.id_1001.multi_1.fil_liten.jpeg
+        largeImageFilename:
+          type: string
+          description: Large image file name
+          examples:
+          - TEXT.id_1001.multi_1.fil_stor.jpeg
+        originalFilename:
+          type: string
+          description: Original file name
+          examples:
+          - TEXT.id_1001.multi_1.fil_original.jpeg
+    PublicationParameters:
+      type: object
+      description: Publication search parameters
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+          - "1"
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+          - "15"
+          minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+            - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+          - ASC
+        query:
+          type: string
+          description: Free text search query
+          examples:
+          - Drowning accident
+    PagedPublicationResponse:
+      type: object
+      description: Paged publication response
+      properties:
+        publications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Publication"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+          readOnly: true
     Publication:
       type: object
       description: Publication model
@@ -883,9 +1173,9 @@ components:
           - F21051/1841-02-18_Alfwar och Skämt nr 8.xml
         publicationType:
           type: string
-          description: Publication type (free text)
+          description: Publication type (denormalized PUBLIKTYP value)
           examples:
-          - ""
+          - Tidning
         date:
           type: string
           description: Publication date
@@ -923,8 +1213,8 @@ components:
           - Sundsvall
         location:
           type: string
-          description: Resolved place name from TOPOGRAFI (preferred over locationText
-            when set)
+          description: Resolved place name from TOPOGRAFI (via P_T_ID; preferred over
+            locationText when set)
           examples:
           - Sundsvall
         comment:
@@ -1136,6 +1426,38 @@ components:
         largeImageFilename:
           type: string
           description: Large image file name
+        relatedPhotoIds:
+          type: array
+          description: IDs of related photos via FOTO_FOTO (only returned on detail
+            lookup)
+          items:
+            type: integer
+            format: int32
+        subjects:
+          type: array
+          description: Subjects / ämnesklassificering via FOTO_OCM (only returned
+            on detail lookup)
+          items:
+            $ref: "#/components/schemas/Subject"
+    Subject:
+      type: object
+      description: Subject / Ämne (OCM)
+      properties:
+        code:
+          type: string
+          description: Subject code (OCMKOD)
+          examples:
+          - ALM
+        text:
+          type: string
+          description: Subject label (OCMTEXT)
+          examples:
+          - Allmänt
+        description:
+          type: string
+          description: Subject description (OCMDESC)
+          examples:
+          - Allmänt ämne
     FilmParameters:
       type: object
       description: Film search parameters

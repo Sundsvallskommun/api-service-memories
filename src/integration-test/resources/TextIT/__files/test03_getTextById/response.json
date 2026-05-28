@@ -1,0 +1,27 @@
+{
+	"textId": 1001,
+	"filename": "minne_1920.xml",
+	"documentDate": "1920-01-01",
+	"documentEndDate": "1925-12-31",
+	"documentTitle": "Minne från Sundsvall stadshus",
+	"locationText": "Sundsvall",
+	"location": "Sundsvall stad",
+	"subjectId": 20,
+	"subject": "Musik",
+	"comment": "Handskrivna minnen från stadshuset",
+	"thumbnailFilename": "TEXT.id_1001_fil_liten.jpeg",
+	"largeImageFilename": "TEXT.id_1001_fil_stor.jpeg",
+	"ocrFilename": "TEXT.id_1001_fil_txt.xml",
+	"xmltext": "Detta är ett minne från Sundsvalls stadshus från 1920-talet",
+	"mediaFiles": [
+		{
+			"thumbnailFilename": "TEXT.id_1001.multi_1_fil_liten.jpeg",
+			"largeImageFilename": "TEXT.id_1001.multi_1_fil_stor.jpeg",
+			"originalFilename": "TEXT.id_1001.multi_1_fil_original.jpeg"
+		},
+		{
+			"thumbnailFilename": "TEXT.id_1001.multi_2_fil_liten.jpeg",
+			"largeImageFilename": "TEXT.id_1001.multi_2_fil_stor.jpeg"
+		}
+	]
+}

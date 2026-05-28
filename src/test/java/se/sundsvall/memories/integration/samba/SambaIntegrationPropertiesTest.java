@@ -28,5 +28,6 @@ class SambaIntegrationPropertiesTest {
 		assertThat(properties.publicationFolder()).isEqualTo("/publ/");
 		assertThat(properties.photoFolder()).isEqualTo("/foto/");
 		assertThat(properties.audioFolder()).isEqualTo("/ljud/");
+		assertThat(properties.textFolder()).isEqualTo("/text/");
 	}
 }
