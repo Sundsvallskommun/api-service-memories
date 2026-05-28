@@ -83,6 +83,33 @@ class FileTypeDetectorTest {
 	}
 
 	@Test
+	void detectedEqualsHashCodeAndToString() {
+		final var remainder = new ByteArrayInputStream(new byte[0]);
+		final var a = new FileTypeDetector.Detected("application/pdf", new byte[] {
+			1, 2, 3
+		}, remainder);
+		final var b = new FileTypeDetector.Detected("application/pdf", new byte[] {
+			1, 2, 3
+		}, remainder);
+		final var differentMime = new FileTypeDetector.Detected("image/png", new byte[] {
+			1, 2, 3
+		}, remainder);
+		final var differentSniff = new FileTypeDetector.Detected("application/pdf", new byte[] {
+			9
+		}, remainder);
+
+		assertThat(a)
+			.isEqualTo(a)
+			.isEqualTo(b)
+			.hasSameHashCodeAs(b)
+			.isNotEqualTo(differentMime)
+			.isNotEqualTo(differentSniff)
+			.isNotEqualTo(null)
+			.isNotEqualTo("not-a-detected");
+		assertThat(a).hasToString("Detected{mimeType='application/pdf', sniff=[1, 2, 3], remainder=" + remainder + "}");
+	}
+
+	@Test
 	void detectHandlesIoExceptionGracefully() {
 		final var failingStream = new InputStream() {
 			@Override
