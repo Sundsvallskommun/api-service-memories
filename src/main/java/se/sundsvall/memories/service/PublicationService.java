@@ -25,15 +25,13 @@ public class PublicationService {
 	private final PublicationRepository publicationRepository;
 	private final SambaIntegrationProperties sambaProperties;
 	private final TopographyLookup topographyLookup;
-	private final PublicationTypeLookup publicationTypeLookup;
 	private final FileStreamer fileStreamer;
 
 	public PublicationService(final PublicationRepository publicationRepository, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup, final PublicationTypeLookup publicationTypeLookup, final FileStreamer fileStreamer) {
+		final TopographyLookup topographyLookup, final FileStreamer fileStreamer) {
 		this.publicationRepository = publicationRepository;
 		this.sambaProperties = sambaProperties;
 		this.topographyLookup = topographyLookup;
-		this.publicationTypeLookup = publicationTypeLookup;
 		this.fileStreamer = fileStreamer;
 	}
 
@@ -41,20 +39,18 @@ public class PublicationService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
-		final var page = sanitized == null
-			? publicationRepository.findAllPublished(pageable)
-			: publicationRepository.searchPublished(sanitized, pageable);
+		final var page = ofNullable(sanitized)
+			.map(query -> publicationRepository.searchPublished(query, pageable))
+			.orElseGet(() -> publicationRepository.findAllPublished(pageable));
 
 		return PagedPublicationResponse.create()
-			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topographyLookup::resolve, publicationTypeLookup::resolve))
+			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topographyLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
 	public Publication getById(final Integer id) {
 		return publicationRepository.findById(id)
-			.map(entity -> PublicationMapper.toPublication(entity,
-				topographyLookup.resolve(entity.getPublisherTopographyId()),
-				publicationTypeLookup.resolve(entity.getPublicationTypeId())))
+			.map(entity -> PublicationMapper.toPublication(entity, topographyLookup.resolve(entity.getTopographyId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));
 	}
 

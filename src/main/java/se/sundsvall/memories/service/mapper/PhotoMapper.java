@@ -33,11 +33,9 @@ public final class PhotoMapper {
 	 * @return                list of mapped {@link Photo}, empty if entities is null
 	 */
 	public static List<Photo> toPhotoList(final List<PhotoEntity> entities, final ReferenceResolver locationLookup) {
-		return ofNullable(entities)
-			.map(list -> list.stream()
-				.map(e -> toPhotoSummary(e, locationLookup.resolve(e.getTopographyId())))
-				.toList())
-			.orElse(emptyList());
+		return ofNullable(entities).orElse(emptyList()).stream()
+			.map(e -> toPhotoSummary(e, locationLookup.resolve(e.getTopographyId())))
+			.toList();
 	}
 
 	private static Photo toBase(final PhotoEntity entity, final String location) {

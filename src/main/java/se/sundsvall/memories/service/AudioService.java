@@ -44,9 +44,9 @@ public class AudioService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
-		final var page = sanitized == null
-			? audioRepository.findAllPublished(pageable)
-			: audioRepository.searchPublished(sanitized, pageable);
+		final var page = ofNullable(sanitized)
+			.map(query -> audioRepository.searchPublished(query, pageable))
+			.orElseGet(() -> audioRepository.findAllPublished(pageable));
 
 		return PagedAudioResponse.create()
 			.withAudios(AudioMapper.toAudioList(page.getContent(), topographyLookup::resolve, ocmLookup::resolve))

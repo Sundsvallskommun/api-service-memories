@@ -14,7 +14,7 @@ public class FotoOcmEntity {
 	@Column(name = "ID")
 	private Integer id;
 
-	@Column(name = "F_ID")
+	@Column(name = "F_ID1")
 	private Integer photoId;
 
 	@Column(name = "O_ID")

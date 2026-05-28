@@ -22,9 +22,8 @@ class PublicationMapperTest {
 			.withIssueNumber("8")
 			.withPageNumber("3")
 			.withPublisherLocation("Sundsvall")
-			.withPublisherTopographyId(1)
 			.withDocumentTitle("Page 3 Alfwar och Skämt nr 8 1841")
-			.withPublicationTypeId(4)
+			.withTopographyId(4)
 			.withLocationText("Sundsvall")
 			.withComment("Archive comment")
 			.withThumbnailFilename("PUBL.id_207_fil_liten.jpeg")
@@ -39,7 +38,7 @@ class PublicationMapperTest {
 
 	@Test
 	void toPublicationSummaryExcludesXmltext() {
-		final var result = PublicationMapper.toPublicationSummary(sampleEntity(), "Sundsvall", "Tidningar");
+		final var result = PublicationMapper.toPublicationSummary(sampleEntity(), "Sundsvall");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getPublicationId()).isEqualTo(207);
@@ -51,7 +50,7 @@ class PublicationMapperTest {
 
 	@Test
 	void toPublicationIncludesXmltext() {
-		final var result = PublicationMapper.toPublication(sampleEntity(), "Sundsvall", "Tidningar");
+		final var result = PublicationMapper.toPublication(sampleEntity(), "Sundsvall");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getXmltext()).isEqualTo("<text>OCR content</text>");
@@ -60,38 +59,19 @@ class PublicationMapperTest {
 	}
 
 	@Test
-	void publicationTypeFallsBackToFritextWhenLookupReturnsNull() {
-		final var entity = sampleEntity().withPublicationType("FritextTyp");
-
-		final var result = PublicationMapper.toPublication(entity, "Sundsvall", null);
-
-		assertThat(result.getPublicationType()).isEqualTo("FritextTyp");
-	}
-
-	@Test
-	void publicationTypeFallsBackToFritextWhenLookupReturnsBlank() {
-		final var entity = sampleEntity().withPublicationType("FritextTyp");
-
-		final var result = PublicationMapper.toPublication(entity, "Sundsvall", "   ");
-
-		assertThat(result.getPublicationType()).isEqualTo("FritextTyp");
-	}
-
-	@Test
 	void toPublicationWithNullEntityReturnsNull() {
-		assertThat(PublicationMapper.toPublicationSummary(null, "ignored", "ignored")).isNull();
-		assertThat(PublicationMapper.toPublication(null, "ignored", "ignored")).isNull();
+		assertThat(PublicationMapper.toPublicationSummary(null, "ignored")).isNull();
+		assertThat(PublicationMapper.toPublication(null, "ignored")).isNull();
 	}
 
 	@Test
 	void toPublicationListMapsAllEntitiesWithoutXmltext() {
 		final var entities = List.of(
-			PublicationEntity.create().withPublicationId(1).withPublisherTopographyId(10).withPublicationTypeId(100).withDocumentTitle("A").withXmltext("hidden"),
-			PublicationEntity.create().withPublicationId(2).withPublisherTopographyId(20).withPublicationTypeId(200).withDocumentTitle("B").withXmltext("hidden"));
+			PublicationEntity.create().withPublicationId(1).withTopographyId(10).withPublicationType("Broschyrer").withDocumentTitle("A").withXmltext("hidden"),
+			PublicationEntity.create().withPublicationId(2).withTopographyId(20).withPublicationType("Tidningar").withDocumentTitle("B").withXmltext("hidden"));
 		final ReferenceResolver locationLookup = id -> id == 10 ? "Sundsvall" : "Timrå";
-		final ReferenceResolver typeLookup = id -> id == 100 ? "Broschyrer" : "Tidningar";
 
-		final var result = PublicationMapper.toPublicationList(entities, locationLookup, typeLookup);
+		final var result = PublicationMapper.toPublicationList(entities, locationLookup);
 
 		assertThat(result)
 			.extracting("publicationId", "documentTitle", "publicationType", "location", "xmltext")
@@ -102,6 +82,6 @@ class PublicationMapperTest {
 
 	@Test
 	void toPublicationListWithNullReturnsEmpty() {
-		assertThat(PublicationMapper.toPublicationList(null, NULL_LOOKUP, NULL_LOOKUP)).isEmpty();
+		assertThat(PublicationMapper.toPublicationList(null, NULL_LOOKUP)).isEmpty();
 	}
 }

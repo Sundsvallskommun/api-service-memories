@@ -8,6 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 
+/**
+ * Repository for the {@code PUBL} table.
+ *
+ * <p>
+ * <strong>Sorting:</strong> the queries below are native, so a sort property supplied via {@link Pageable} must be a
+ * physical DB column name (e.g. {@code DOKTITEL}), not the camelCase API/entity field. The resolved {@code location}
+ * (from TOPOGRAFI) is not backed by a column and cannot be sorted on.
+ */
 @CircuitBreaker(name = "publicationRepository")
 public interface PublicationRepository extends JpaRepository<PublicationEntity, Integer> {
 

@@ -14,45 +14,43 @@ public final class TextMapper {
 	private TextMapper() {}
 
 	/** Summary mapping (no XMLTEXT, no media files) used for list responses. */
-	public static Text toTextSummary(final TextEntity entity, final String location) {
-		return toBase(entity, location);
+	public static Text toTextSummary(final TextEntity entity, final String location, final String subject) {
+		return toBase(entity, location, subject);
 	}
 
 	/** Detail mapping including XMLTEXT and extra media files, used for get-by-id. */
-	public static Text toText(final TextEntity entity, final String location, final List<TextMediaEntity> mediaEntities) {
-		return ofNullable(toBase(entity, location))
+	public static Text toText(final TextEntity entity, final String location, final String subject, final List<TextMediaEntity> mediaEntities) {
+		return ofNullable(toBase(entity, location, subject))
 			.map(text -> text.withXmltext(entity.getXmltext())
 				.withMediaFiles(toMediaFiles(mediaEntities)))
 			.orElse(null);
 	}
 
 	/**
-	 * Map a list of {@link TextEntity} to summary {@link Text}s, resolving each entity's location via the lookup.
+	 * Map a list of {@link TextEntity} to summary {@link Text}s, resolving each entity's location and subject via the
+	 * provided lookups.
 	 *
 	 * @param  entities       source entities
 	 * @param  locationLookup resolver from topographyId → location string (nullable)
+	 * @param  subjectLookup  resolver from subjectId → OCM subject label (nullable)
 	 * @return                list of mapped texts (empty if entities is null)
 	 */
-	public static List<Text> toTextList(final List<TextEntity> entities, final ReferenceResolver locationLookup) {
-		return ofNullable(entities)
-			.map(list -> list.stream()
-				.map(e -> toTextSummary(e, locationLookup.resolve(e.getTopographyId())))
-				.toList())
-			.orElse(emptyList());
+	public static List<Text> toTextList(final List<TextEntity> entities, final ReferenceResolver locationLookup, final ReferenceResolver subjectLookup) {
+		return ofNullable(entities).orElse(emptyList()).stream()
+			.map(e -> toTextSummary(e, locationLookup.resolve(e.getTopographyId()), subjectLookup.resolve(e.getSubjectId())))
+			.toList();
 	}
 
 	public static List<TextMediaFile> toMediaFiles(final List<TextMediaEntity> entities) {
-		return ofNullable(entities)
-			.map(list -> list.stream()
-				.map(e -> TextMediaFile.create()
-					.withThumbnailFilename(e.getThumbnailFilename())
-					.withLargeImageFilename(e.getLargeImageFilename())
-					.withOriginalFilename(e.getOriginalFilename()))
-				.toList())
-			.orElse(emptyList());
+		return ofNullable(entities).orElse(emptyList()).stream()
+			.map(e -> TextMediaFile.create()
+				.withThumbnailFilename(e.getThumbnailFilename())
+				.withLargeImageFilename(e.getLargeImageFilename())
+				.withOriginalFilename(e.getOriginalFilename()))
+			.toList();
 	}
 
-	private static Text toBase(final TextEntity entity, final String location) {
+	private static Text toBase(final TextEntity entity, final String location, final String subject) {
 		return ofNullable(entity)
 			.map(e -> Text.create()
 				.withTextId(e.getTextId())
@@ -62,6 +60,8 @@ public final class TextMapper {
 				.withDocumentTitle(e.getDocumentTitle())
 				.withLocationText(e.getLocationText())
 				.withLocation(location)
+				.withSubjectId(e.getSubjectId())
+				.withSubject(subject)
 				.withComment(e.getComment())
 				.withThumbnailFilename(e.getThumbnailFilename())
 				.withLargeImageFilename(e.getLargeImageFilename())

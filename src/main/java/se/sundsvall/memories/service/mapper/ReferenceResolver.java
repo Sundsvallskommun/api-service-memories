@@ -1,7 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 /**
- * Resolves a foreign-key id (e.g. a TOPOGRAFI, OCM or PUBL_TYP reference) to its display string.
+ * Resolves a foreign-key id (e.g. a TOPOGRAFI or OCM reference) to its display string.
  *
  * <p>
  * A dedicated functional interface is used instead of {@link java.util.function.Function Function&lt;Integer,

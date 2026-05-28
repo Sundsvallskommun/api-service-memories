@@ -8,6 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 
+/**
+ * Repository for the {@code LJUD} table.
+ *
+ * <p>
+ * <strong>Sorting:</strong> the queries below are native, so a sort property supplied via {@link Pageable} must be a
+ * physical DB column name (e.g. {@code DOKTITEL}), not the camelCase API/entity field. The resolved {@code location}
+ * (from TOPOGRAFI) and {@code subject} (from OCM) are not backed by columns and cannot be sorted on.
+ */
 @CircuitBreaker(name = "audioRepository")
 public interface AudioRepository extends JpaRepository<AudioEntity, Integer> {
 

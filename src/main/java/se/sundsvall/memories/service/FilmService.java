@@ -42,9 +42,9 @@ public class FilmService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
-		final var page = sanitized == null
-			? filmRepository.findAllPublished(pageable)
-			: filmRepository.searchPublished(sanitized, pageable);
+		final var page = ofNullable(sanitized)
+			.map(query -> filmRepository.searchPublished(query, pageable))
+			.orElseGet(() -> filmRepository.findAllPublished(pageable));
 
 		return PagedFilmResponse.create()
 			.withFilms(FilmMapper.toFilmList(page.getContent(), topographyLookup::resolve))

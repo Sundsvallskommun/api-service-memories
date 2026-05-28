@@ -33,6 +33,8 @@ class TextTest {
 		final var documentTitle = "Minne från Sundsvall";
 		final var locationText = "Sundsvall";
 		final var location = "Sundsvalls kommun";
+		final var subjectId = 20;
+		final var subject = "Musik";
 		final var comment = "Memoir";
 		final var thumbnailFilename = "liten.jpg";
 		final var largeImageFilename = "stor.jpg";
@@ -48,6 +50,8 @@ class TextTest {
 			.withDocumentTitle(documentTitle)
 			.withLocationText(locationText)
 			.withLocation(location)
+			.withSubjectId(subjectId)
+			.withSubject(subject)
 			.withComment(comment)
 			.withThumbnailFilename(thumbnailFilename)
 			.withLargeImageFilename(largeImageFilename)
@@ -63,6 +67,8 @@ class TextTest {
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getLocation()).isEqualTo(location);
+		assertThat(result.getSubjectId()).isEqualTo(subjectId);
+		assertThat(result.getSubject()).isEqualTo(subject);
 		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getThumbnailFilename()).isEqualTo(thumbnailFilename);
 		assertThat(result.getLargeImageFilename()).isEqualTo(largeImageFilename);

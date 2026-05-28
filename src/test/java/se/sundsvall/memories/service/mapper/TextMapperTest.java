@@ -22,6 +22,7 @@ class TextMapperTest {
 			.withDocumentTitle("Minne från Sundsvall")
 			.withTopographyId(4)
 			.withLocationText("Sundsvall")
+			.withSubjectId(20)
 			.withComment("Memoir")
 			.withThumbnailFilename("TEXT.id_1001_fil_liten.jpeg")
 			.withLargeImageFilename("TEXT.id_1001_fil_stor.jpeg")
@@ -32,11 +33,13 @@ class TextMapperTest {
 
 	@Test
 	void toTextSummaryExcludesXmltextAndMediaFiles() {
-		final var result = TextMapper.toTextSummary(sampleEntity(), "Sundsvall");
+		final var result = TextMapper.toTextSummary(sampleEntity(), "Sundsvall", "Musik");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getTextId()).isEqualTo(1001);
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
+		assertThat(result.getSubjectId()).isEqualTo(20);
+		assertThat(result.getSubject()).isEqualTo("Musik");
 		assertThat(result.getXmltext()).isNull();
 		assertThat(result.getMediaFiles()).isNull();
 	}
@@ -47,10 +50,11 @@ class TextMapperTest {
 			TextMediaEntity.create().withTextId(1001).withThumbnailFilename("a-liten.jpg").withLargeImageFilename("a-stor.jpg").withOriginalFilename("a-orig.jpg"),
 			TextMediaEntity.create().withTextId(1001).withThumbnailFilename("b-liten.jpg"));
 
-		final var result = TextMapper.toText(sampleEntity(), "Sundsvall", mediaEntities);
+		final var result = TextMapper.toText(sampleEntity(), "Sundsvall", "Musik", mediaEntities);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getXmltext()).isEqualTo("<text>OCR content</text>");
+		assertThat(result.getSubject()).isEqualTo("Musik");
 		assertThat(result.getMediaFiles()).hasSize(2);
 		assertThat(result.getMediaFiles())
 			.extracting("thumbnailFilename", "largeImageFilename", "originalFilename")
@@ -61,36 +65,37 @@ class TextMapperTest {
 
 	@Test
 	void toTextWithNullMediaListReturnsEmpty() {
-		final var result = TextMapper.toText(sampleEntity(), "Sundsvall", null);
+		final var result = TextMapper.toText(sampleEntity(), "Sundsvall", "Musik", null);
 
 		assertThat(result.getMediaFiles()).isEqualTo(emptyList());
 	}
 
 	@Test
 	void toTextWithNullEntityReturnsNull() {
-		assertThat(TextMapper.toTextSummary(null, "ignored")).isNull();
-		assertThat(TextMapper.toText(null, "ignored", List.of())).isNull();
+		assertThat(TextMapper.toTextSummary(null, "ignored", "ignored")).isNull();
+		assertThat(TextMapper.toText(null, "ignored", "ignored", List.of())).isNull();
 	}
 
 	@Test
 	void toTextListMapsAllEntities() {
 		final var entities = List.of(
-			TextEntity.create().withTextId(1).withTopographyId(10).withDocumentTitle("A").withXmltext("hidden"),
-			TextEntity.create().withTextId(2).withTopographyId(20).withDocumentTitle("B").withXmltext("hidden"));
-		final ReferenceResolver lookup = id -> id == 10 ? "Sundsvall" : "Timrå";
+			TextEntity.create().withTextId(1).withTopographyId(10).withSubjectId(100).withDocumentTitle("A").withXmltext("hidden"),
+			TextEntity.create().withTextId(2).withTopographyId(20).withSubjectId(200).withDocumentTitle("B").withXmltext("hidden"));
+		final ReferenceResolver locationLookup = id -> id == 10 ? "Sundsvall" : "Timrå";
+		final ReferenceResolver subjectLookup = id -> id == 100 ? "Intervju" : "Musik";
 
-		final var result = TextMapper.toTextList(entities, lookup);
+		final var result = TextMapper.toTextList(entities, locationLookup, subjectLookup);
 
 		assertThat(result)
-			.extracting("textId", "documentTitle", "location", "xmltext")
+			.extracting("textId", "documentTitle", "location", "subject", "xmltext")
 			.containsExactly(
-				tuple(1, "A", "Sundsvall", null),
-				tuple(2, "B", "Timrå", null));
+				tuple(1, "A", "Sundsvall", "Intervju", null),
+				tuple(2, "B", "Timrå", "Musik", null));
 	}
 
 	@Test
 	void toTextListWithNullReturnsEmpty() {
-		assertThat(TextMapper.toTextList(null, NULL_LOOKUP)).isEmpty();
+		assertThat(TextMapper.toTextList(null, NULL_LOOKUP, NULL_LOOKUP)).isEmpty();
 	}
 
 	@Test

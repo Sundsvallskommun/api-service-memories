@@ -1,13 +1,14 @@
 CREATE TABLE TEXT
 (
-    ID              bigint NOT NULL PRIMARY KEY,
+    ID_ID           bigint NOT NULL PRIMARY KEY,
     DOKDATUM        varchar(10),
     DOKDATUM_SLUT   varchar(10),
     DOKTITEL        varchar(256),
     U_E_ID          bigint     DEFAULT 0,
-    U_T_ID          bigint     DEFAULT 1,
+    U_J_ID          bigint     DEFAULT 1,
     D_T_ID          bigint     DEFAULT 1,
     D_OPLATS        varchar(64),
+    D_O_ID          bigint     DEFAULT 1,
     KOMMENT_DOC     varchar(4000),
     FILNAMN         varchar(256),
     FIL_LITEN       varchar(256),
@@ -34,23 +35,25 @@ CREATE TABLE FOTO_FOTO
 
 CREATE TABLE TEXT_MULTI
 (
-    ID           bigint NOT NULL PRIMARY KEY,
-    MED          bigint NOT NULL,
+    MIID         bigint NOT NULL PRIMARY KEY,
+    IID          bigint NOT NULL,
     FIL_LITEN    varchar(256),
     FIL_STOR     varchar(256),
     FIL_ORIGINAL varchar(256),
-    INDEX ix_text_multi_med (MED)
+    INDEX ix_text_multi_iid (IID)
 ) ENGINE = InnoDB;
 
 CREATE TABLE FOTO_OCM
 (
-    ID   bigint NOT NULL PRIMARY KEY,
-    F_ID bigint NOT NULL,
-    O_ID bigint NOT NULL,
-    INDEX ix_foto_ocm_f_id (F_ID),
+    ID    bigint NOT NULL PRIMARY KEY,
+    F_ID1 bigint NOT NULL,
+    O_ID  bigint NOT NULL,
+    INDEX ix_foto_ocm_f_id1 (F_ID1),
     INDEX ix_foto_ocm_o_id (O_ID)
 ) ENGINE = InnoDB;
 
+-- Reference table of publication types. PUBL.PUBLIKTYP holds a denormalized ("statisk") copy of the
+-- value, so the read API never joins this table — it is created only to mirror the source schema.
 CREATE TABLE PUBL_TYP
 (
     ID        bigint NOT NULL PRIMARY KEY,

@@ -27,14 +27,17 @@ public class TextService {
 	private final TextMediaRepository textMediaRepository;
 	private final SambaIntegrationProperties sambaProperties;
 	private final TopographyLookup topographyLookup;
+	private final OcmLookup ocmLookup;
 	private final FileStreamer fileStreamer;
 
 	public TextService(final TextRepository textRepository, final TextMediaRepository textMediaRepository,
-		final SambaIntegrationProperties sambaProperties, final TopographyLookup topographyLookup, final FileStreamer fileStreamer) {
+		final SambaIntegrationProperties sambaProperties, final TopographyLookup topographyLookup,
+		final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
 		this.textRepository = textRepository;
 		this.textMediaRepository = textMediaRepository;
 		this.sambaProperties = sambaProperties;
 		this.topographyLookup = topographyLookup;
+		this.ocmLookup = ocmLookup;
 		this.fileStreamer = fileStreamer;
 	}
 
@@ -42,12 +45,12 @@ public class TextService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
-		final var page = sanitized == null
-			? textRepository.findAllPublished(pageable)
-			: textRepository.searchPublished(sanitized, pageable);
+		final var page = ofNullable(sanitized)
+			.map(query -> textRepository.searchPublished(query, pageable))
+			.orElseGet(() -> textRepository.findAllPublished(pageable));
 
 		return PagedTextResponse.create()
-			.withTexts(TextMapper.toTextList(page.getContent(), topographyLookup::resolve))
+			.withTexts(TextMapper.toTextList(page.getContent(), topographyLookup::resolve, ocmLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
@@ -55,7 +58,7 @@ public class TextService {
 		final var entity = textRepository.findById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Text with id '%s' not found".formatted(id)));
 		final var mediaEntities = textMediaRepository.findByTextIdOrderById(id);
-		return TextMapper.toText(entity, topographyLookup.resolve(entity.getTopographyId()), mediaEntities);
+		return TextMapper.toText(entity, topographyLookup.resolve(entity.getTopographyId()), ocmLookup.resolve(entity.getSubjectId()), mediaEntities);
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {

@@ -8,6 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
 
+/**
+ * Repository for the {@code FILM} table.
+ *
+ * <p>
+ * <strong>Sorting:</strong> the queries below are native, so a sort property supplied via {@link Pageable} must be a
+ * physical DB column name (e.g. {@code DOKTITEL}), not the camelCase API/entity field. The resolved {@code location}
+ * (from TOPOGRAFI) is not backed by a column and cannot be sorted on.
+ */
 @CircuitBreaker(name = "filmRepository")
 public interface FilmRepository extends JpaRepository<FilmEntity, Integer> {
 

@@ -39,9 +39,10 @@ class TextEntityTest {
 		final var documentEndDate = "1920-12-31";
 		final var documentTitle = "Minne från Sundsvall";
 		final var ueId = 1;
-		final var ueTopographyId = 2;
+		final var ujId = 2;
 		final var topographyId = 3;
 		final var locationText = "Sundsvall";
+		final var subjectId = 7;
 		final var comment = "Memoir";
 		final var filename = "minne.xml";
 		final var thumbnailFilename = "TEXT.id_1001_fil_liten.jpeg";
@@ -61,9 +62,10 @@ class TextEntityTest {
 			.withDocumentEndDate(documentEndDate)
 			.withDocumentTitle(documentTitle)
 			.withUeId(ueId)
-			.withUeTopographyId(ueTopographyId)
+			.withUjId(ujId)
 			.withTopographyId(topographyId)
 			.withLocationText(locationText)
+			.withSubjectId(subjectId)
 			.withComment(comment)
 			.withFilename(filename)
 			.withThumbnailFilename(thumbnailFilename)
@@ -83,9 +85,10 @@ class TextEntityTest {
 		assertThat(result.getDocumentEndDate()).isEqualTo(documentEndDate);
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
 		assertThat(result.getUeId()).isEqualTo(ueId);
-		assertThat(result.getUeTopographyId()).isEqualTo(ueTopographyId);
+		assertThat(result.getUjId()).isEqualTo(ujId);
 		assertThat(result.getTopographyId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
+		assertThat(result.getSubjectId()).isEqualTo(subjectId);
 		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getThumbnailFilename()).isEqualTo(thumbnailFilename);

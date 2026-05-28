@@ -12,7 +12,7 @@ public class Publication {
 	@Schema(description = "Original filename from archive", examples = "F21051/1841-02-18_Alfwar och Skämt nr 8.xml")
 	private String filename;
 
-	@Schema(description = "Publication type, resolved from PUBL_TYP (via P_T_ID) with fallback to the free-text PUBLIKTYP field", examples = "Tidning")
+	@Schema(description = "Publication type (denormalized PUBLIKTYP value)", examples = "Tidning")
 	private String publicationType;
 
 	@Schema(description = "Publication date", examples = "1841-02-18")
@@ -36,7 +36,7 @@ public class Publication {
 	@Schema(description = "Publication location (free-text fallback from P_OPLATS)", examples = "Sundsvall")
 	private String locationText;
 
-	@Schema(description = "Resolved publisher place name from TOPOGRAFI (via FORLAG_T_ID)", examples = "Sundsvall")
+	@Schema(description = "Resolved place name from TOPOGRAFI (via P_T_ID; preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
 	@Schema(description = "Comment / description", examples = "Newspaper issue from 1841")

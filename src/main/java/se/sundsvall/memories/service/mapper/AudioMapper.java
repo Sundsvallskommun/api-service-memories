@@ -53,10 +53,8 @@ public final class AudioMapper {
 	 */
 	public static List<Audio> toAudioList(final List<AudioEntity> entities, final ReferenceResolver locationLookup,
 		final ReferenceResolver subjectLookup) {
-		return ofNullable(entities)
-			.map(list -> list.stream()
-				.map(e -> toAudio(e, locationLookup.resolve(e.getTopographyId()), subjectLookup.resolve(e.getSubjectId())))
-				.toList())
-			.orElse(emptyList());
+		return ofNullable(entities).orElse(emptyList()).stream()
+			.map(e -> toAudio(e, locationLookup.resolve(e.getTopographyId()), subjectLookup.resolve(e.getSubjectId())))
+			.toList();
 	}
 }

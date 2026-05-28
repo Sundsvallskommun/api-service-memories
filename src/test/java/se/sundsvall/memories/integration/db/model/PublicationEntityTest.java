@@ -50,7 +50,7 @@ class PublicationEntityTest {
 		final var reId = 0;
 		final var ujId = 1;
 		final var ueId = 0;
-		final var publicationTypeId = 4;
+		final var topographyId = 4;
 		final var locationText = "Sundsvall";
 		final var meOId = 1;
 		final var comment = "Archive comment";
@@ -82,7 +82,7 @@ class PublicationEntityTest {
 			.withReId(reId)
 			.withUjId(ujId)
 			.withUeId(ueId)
-			.withPublicationTypeId(publicationTypeId)
+			.withTopographyId(topographyId)
 			.withLocationText(locationText)
 			.withMeOId(meOId)
 			.withComment(comment)
@@ -114,7 +114,7 @@ class PublicationEntityTest {
 		assertThat(result.getReId()).isEqualTo(reId);
 		assertThat(result.getUjId()).isEqualTo(ujId);
 		assertThat(result.getUeId()).isEqualTo(ueId);
-		assertThat(result.getPublicationTypeId()).isEqualTo(publicationTypeId);
+		assertThat(result.getTopographyId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getMeOId()).isEqualTo(meOId);
 		assertThat(result.getComment()).isEqualTo(comment);

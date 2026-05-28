@@ -51,6 +51,9 @@ class TextServiceTest {
 	private TopographyLookup topographyLookupMock;
 
 	@Mock
+	private OcmLookup ocmLookupMock;
+
+	@Mock
 	private FileStreamer fileStreamerMock;
 
 	private TextService service;
@@ -60,6 +63,7 @@ class TextServiceTest {
 			.withTextId(1001)
 			.withDocumentTitle("Minne från Sundsvall")
 			.withTopographyId(4)
+			.withSubjectId(20)
 			.withThumbnailFilename("TEXT.id_1001_fil_liten.jpeg")
 			.withLargeImageFilename("TEXT.id_1001_fil_stor.jpeg")
 			.withOcrFilename("TEXT.id_1001_fil_txt.xml")
@@ -76,7 +80,7 @@ class TextServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new TextService(textRepositoryMock, textMediaRepositoryMock, SAMBA_PROPERTIES, topographyLookupMock, fileStreamerMock);
+		service = new TextService(textRepositoryMock, textMediaRepositoryMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock, fileStreamerMock);
 	}
 
 	@Test
@@ -135,6 +139,7 @@ class TextServiceTest {
 		when(textMediaRepositoryMock.findByTextIdOrderById(1001)).thenReturn(List.of(
 			TextMediaEntity.create().withTextId(1001).withThumbnailFilename("extra-liten.jpg")));
 		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvalls kommun");
+		when(ocmLookupMock.resolve(20)).thenReturn("Musik");
 
 		final var result = service.getById(1001);
 
@@ -142,6 +147,7 @@ class TextServiceTest {
 		assertThat(result.getTextId()).isEqualTo(1001);
 		assertThat(result.getXmltext()).isEqualTo("<text>content</text>");
 		assertThat(result.getLocation()).isEqualTo("Sundsvalls kommun");
+		assertThat(result.getSubject()).isEqualTo("Musik");
 		assertThat(result.getMediaFiles()).hasSize(1);
 		assertThat(result.getMediaFiles().getFirst().getThumbnailFilename()).isEqualTo("extra-liten.jpg");
 	}

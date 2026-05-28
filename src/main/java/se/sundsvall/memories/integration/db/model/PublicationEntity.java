@@ -63,7 +63,7 @@ public class PublicationEntity {
 	private Integer ueId;
 
 	@Column(name = "P_T_ID")
-	private Integer publicationTypeId;
+	private Integer topographyId;
 
 	@Column(name = "P_OPLATS", length = 64)
 	private String locationText;
@@ -317,16 +317,16 @@ public class PublicationEntity {
 		return this;
 	}
 
-	public Integer getPublicationTypeId() {
-		return publicationTypeId;
+	public Integer getTopographyId() {
+		return topographyId;
 	}
 
-	public void setPublicationTypeId(final Integer publicationTypeId) {
-		this.publicationTypeId = publicationTypeId;
+	public void setTopographyId(final Integer topographyId) {
+		this.topographyId = topographyId;
 	}
 
-	public PublicationEntity withPublicationTypeId(final Integer publicationTypeId) {
-		this.publicationTypeId = publicationTypeId;
+	public PublicationEntity withTopographyId(final Integer topographyId) {
+		this.topographyId = topographyId;
 		return this;
 	}
 
@@ -509,7 +509,7 @@ public class PublicationEntity {
 			&& Objects.equals(pageNumber, that.pageNumber) && Objects.equals(bfJId, that.bfJId) && Objects.equals(publisherTopographyId, that.publisherTopographyId)
 			&& Objects.equals(publisherLocation, that.publisherLocation) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(feId, that.feId) && Objects.equals(reId, that.reId) && Objects.equals(ujId, that.ujId) && Objects.equals(ueId, that.ueId)
-			&& Objects.equals(publicationTypeId, that.publicationTypeId) && Objects.equals(locationText, that.locationText) && Objects.equals(meOId, that.meOId)
+			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(meOId, that.meOId)
 			&& Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(originalFilename, that.originalFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(filXtra, that.filXtra) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options)
@@ -519,7 +519,7 @@ public class PublicationEntity {
 	@Override
 	public int hashCode() {
 		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, bfJId, publisherTopographyId, publisherLocation, documentDate,
-			documentTitle, feId, reId, ujId, ueId, publicationTypeId, locationText, meOId, comment, thumbnailFilename, largeImageFilename, originalFilename, ocrFilename,
+			documentTitle, feId, reId, ujId, ueId, topographyId, locationText, meOId, comment, thumbnailFilename, largeImageFilename, originalFilename, ocrFilename,
 			xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
 
@@ -542,7 +542,7 @@ public class PublicationEntity {
 			", reId=" + reId +
 			", ujId=" + ujId +
 			", ueId=" + ueId +
-			", publicationTypeId=" + publicationTypeId +
+			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", meOId=" + meOId +
 			", comment='" + comment + '\'' +

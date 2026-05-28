@@ -9,6 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 
+/**
+ * Repository for the {@code FOTO} table.
+ *
+ * <p>
+ * <strong>Sorting:</strong> the queries below are native, so a sort property supplied via {@link Pageable} must be a
+ * physical DB column name (e.g. {@code DOKTITEL}), not the camelCase API/entity field. The resolved {@code location}
+ * (from TOPOGRAFI) is not backed by a column and cannot be sorted on.
+ */
 @CircuitBreaker(name = "photoRepository")
 public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer> {
 

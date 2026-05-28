@@ -8,6 +8,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 
+/**
+ * Repository for the {@code TEXT} table.
+ *
+ * <p>
+ * <strong>Sorting:</strong> the queries below are native, so a sort property supplied via {@link Pageable} must be a
+ * physical DB <em>column</em> name (e.g. {@code DOKTITEL}, {@code DOKDATUM}) — not the camelCase API/entity field —
+ * because Spring Data cannot translate property names for native queries. Fields resolved in application code, such as
+ * {@code location} (from TOPOGRAFI) and {@code subject} (from OCM), are not backed by a column and therefore cannot be
+ * sorted on.
+ */
 @CircuitBreaker(name = "textRepository")
 public interface TextRepository extends JpaRepository<TextEntity, Integer> {
 

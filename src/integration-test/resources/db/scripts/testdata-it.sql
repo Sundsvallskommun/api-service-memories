@@ -138,42 +138,34 @@ VALUES (4, 'unpublished.mp3', '/media/ljud/unpublished.mp3', 'LJUD', '2000-01-01
         1, 0, 1, 'This audio is not published', 'audio/mpeg', 203, 0, null);
 
 --
--- PUBL_TYP (publication-type lookup, resolves PUBL.P_T_ID)
---
-INSERT INTO PUBL_TYP (ID, PUBLIKTYP)
-VALUES (1, 'Affisch'),
-       (4, 'Broschyr'),
-       (16, 'Tidning');
-
---
 -- TEXT (textarkiv — fjärde mediatypen)
 --
-INSERT INTO TEXT (ID, DOKDATUM, DOKDATUM_SLUT, DOKTITEL, U_E_ID, U_T_ID, D_T_ID, D_OPLATS, KOMMENT_DOC, FILNAMN,
+INSERT INTO TEXT (ID_ID, DOKDATUM, DOKDATUM_SLUT, DOKTITEL, U_E_ID, U_J_ID, D_T_ID, D_OPLATS, D_O_ID, KOMMENT_DOC, FILNAMN,
                   FIL_LITEN, FIL_STOR, FIL_ORIGINAL, FIL_TXT, XMLTEXT, FIL_XTRA, NODEID, `OPTIONS`, FIL_FORMAT,
                   DELETEDDATE)
 -- OPTIONS = 6 (bit 4 published + bit 2 set) — exercises the bitwise check
-VALUES (1001, '1920-01-01', '1925-12-31', 'Minne från Sundsvall stadshus', 0, 1, 16, 'Sundsvall',
+VALUES (1001, '1920-01-01', '1925-12-31', 'Minne från Sundsvall stadshus', 0, 1, 16, 'Sundsvall', 20,
         'Handskrivna minnen från stadshuset', 'minne_1920.xml', 'TEXT.id_1001_fil_liten.jpeg',
         'TEXT.id_1001_fil_stor.jpeg', 'TEXT.id_1001_fil_original.jpeg', 'TEXT.id_1001_fil_txt.xml',
         'Detta är ett minne från Sundsvalls stadshus från 1920-talet', 'TEXT.id_1001_fil_xtra.jpeg',
         20001, 6, 'text', null);
 
-INSERT INTO TEXT (ID, DOKDATUM, DOKDATUM_SLUT, DOKTITEL, U_E_ID, U_T_ID, D_T_ID, D_OPLATS, KOMMENT_DOC, FILNAMN,
+INSERT INTO TEXT (ID_ID, DOKDATUM, DOKDATUM_SLUT, DOKTITEL, U_E_ID, U_J_ID, D_T_ID, D_OPLATS, D_O_ID, KOMMENT_DOC, FILNAMN,
                   FIL_LITEN, FIL_STOR, FIL_ORIGINAL, FIL_TXT, XMLTEXT, FIL_XTRA, NODEID, `OPTIONS`, FIL_FORMAT,
                   DELETEDDATE)
-VALUES (1002, '1950-06-15', '1950-06-15', 'Brev från Timrå', 0, 1, 2, 'Timrå',
+VALUES (1002, '1950-06-15', '1950-06-15', 'Brev från Timrå', 0, 1, 2, 'Timrå', 10,
         'Brev från lokal invånare', 'brev_1950.xml', 'TEXT.id_1002_fil_liten.jpeg',
         'TEXT.id_1002_fil_stor.jpeg', null, 'TEXT.id_1002_fil_txt.xml',
         'Brevtext från 1950 om midsommarfirande', null, 20002, 4, 'text', null);
 
 -- Unpublished text that must never appear in any response
-INSERT INTO TEXT (ID, DOKTITEL, KOMMENT_DOC, NODEID, `OPTIONS`)
+INSERT INTO TEXT (ID_ID, DOKTITEL, KOMMENT_DOC, NODEID, `OPTIONS`)
 VALUES (1099, 'Draft unpublished text', 'Stadshuset ej publicerad', 20099, 0);
 
 --
 -- TEXT_MULTI (extra mediafiler kopplade till TEXT)
 --
-INSERT INTO TEXT_MULTI (ID, MED, FIL_LITEN, FIL_STOR, FIL_ORIGINAL)
+INSERT INTO TEXT_MULTI (MIID, IID, FIL_LITEN, FIL_STOR, FIL_ORIGINAL)
 VALUES (1, 1001, 'TEXT.id_1001.multi_1_fil_liten.jpeg', 'TEXT.id_1001.multi_1_fil_stor.jpeg',
         'TEXT.id_1001.multi_1_fil_original.jpeg'),
        (2, 1001, 'TEXT.id_1001.multi_2_fil_liten.jpeg', 'TEXT.id_1001.multi_2_fil_stor.jpeg', null);
@@ -188,6 +180,6 @@ VALUES (1, 1001, 1002),
 --
 -- FOTO_OCM (kopplar FOTO till OCM-ämne)
 --
-INSERT INTO FOTO_OCM (ID, F_ID, O_ID)
+INSERT INTO FOTO_OCM (ID, F_ID1, O_ID)
 VALUES (1, 1001, 1),
        (2, 1001, 20);

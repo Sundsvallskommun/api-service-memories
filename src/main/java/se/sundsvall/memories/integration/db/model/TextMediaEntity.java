@@ -11,10 +11,10 @@ import java.util.Objects;
 public class TextMediaEntity {
 
 	@Id
-	@Column(name = "ID")
+	@Column(name = "MIID")
 	private Integer id;
 
-	@Column(name = "MED")
+	@Column(name = "IID")
 	private Integer textId;
 
 	@Column(name = "FIL_LITEN", length = 256)

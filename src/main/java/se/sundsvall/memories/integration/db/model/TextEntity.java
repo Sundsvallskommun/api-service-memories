@@ -14,7 +14,7 @@ import java.util.Objects;
 public class TextEntity {
 
 	@Id
-	@Column(name = "ID")
+	@Column(name = "ID_ID")
 	private Integer textId;
 
 	@Column(name = "DOKDATUM", length = 10)
@@ -29,14 +29,17 @@ public class TextEntity {
 	@Column(name = "U_E_ID")
 	private Integer ueId;
 
-	@Column(name = "U_T_ID")
-	private Integer ueTopographyId;
+	@Column(name = "U_J_ID")
+	private Integer ujId;
 
 	@Column(name = "D_T_ID")
 	private Integer topographyId;
 
 	@Column(name = "D_OPLATS", length = 64)
 	private String locationText;
+
+	@Column(name = "D_O_ID")
+	private Integer subjectId;
 
 	@Column(name = "KOMMENT_DOC", length = 4000)
 	private String comment;
@@ -144,16 +147,16 @@ public class TextEntity {
 		return this;
 	}
 
-	public Integer getUeTopographyId() {
-		return ueTopographyId;
+	public Integer getUjId() {
+		return ujId;
 	}
 
-	public void setUeTopographyId(final Integer ueTopographyId) {
-		this.ueTopographyId = ueTopographyId;
+	public void setUjId(final Integer ujId) {
+		this.ujId = ujId;
 	}
 
-	public TextEntity withUeTopographyId(final Integer ueTopographyId) {
-		this.ueTopographyId = ueTopographyId;
+	public TextEntity withUjId(final Integer ujId) {
+		this.ujId = ujId;
 		return this;
 	}
 
@@ -180,6 +183,19 @@ public class TextEntity {
 
 	public TextEntity withLocationText(final String locationText) {
 		this.locationText = locationText;
+		return this;
+	}
+
+	public Integer getSubjectId() {
+		return subjectId;
+	}
+
+	public void setSubjectId(final Integer subjectId) {
+		this.subjectId = subjectId;
+	}
+
+	public TextEntity withSubjectId(final Integer subjectId) {
+		this.subjectId = subjectId;
 		return this;
 	}
 
@@ -345,8 +361,8 @@ public class TextEntity {
 			return false;
 		final TextEntity that = (TextEntity) o;
 		return Objects.equals(textId, that.textId) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentEndDate, that.documentEndDate)
-			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(ueId, that.ueId) && Objects.equals(ueTopographyId, that.ueTopographyId)
-			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(comment, that.comment)
+			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(ueId, that.ueId) && Objects.equals(ujId, that.ujId)
+			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(subjectId, that.subjectId) && Objects.equals(comment, that.comment)
 			&& Objects.equals(filename, that.filename) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(originalFilename, that.originalFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(filXtra, that.filXtra) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options)
@@ -355,7 +371,7 @@ public class TextEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(textId, documentDate, documentEndDate, documentTitle, ueId, ueTopographyId, topographyId, locationText, comment, filename,
+		return Objects.hash(textId, documentDate, documentEndDate, documentTitle, ueId, ujId, topographyId, locationText, subjectId, comment, filename,
 			thumbnailFilename, largeImageFilename, originalFilename, ocrFilename, xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
 
@@ -367,9 +383,10 @@ public class TextEntity {
 			", documentEndDate='" + documentEndDate + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
 			", ueId=" + ueId +
-			", ueTopographyId=" + ueTopographyId +
+			", ujId=" + ujId +
 			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
+			", subjectId=" + subjectId +
 			", comment='" + comment + '\'' +
 			", filename='" + filename + '\'' +
 			", thumbnailFilename='" + thumbnailFilename + '\'' +

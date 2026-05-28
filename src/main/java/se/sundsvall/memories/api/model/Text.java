@@ -28,6 +28,12 @@ public class Text {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
+	@Schema(description = "OCM subject ID (D_O_ID)", examples = "20")
+	private Integer subjectId;
+
+	@Schema(description = "Resolved subject label from OCM (Ämne)", examples = "Musik")
+	private String subject;
+
 	@Schema(description = "Comment / description", examples = "Memoir transcribed from handwritten notes")
 	private String comment;
 
@@ -141,6 +147,32 @@ public class Text {
 		return this;
 	}
 
+	public Integer getSubjectId() {
+		return subjectId;
+	}
+
+	public void setSubjectId(final Integer subjectId) {
+		this.subjectId = subjectId;
+	}
+
+	public Text withSubjectId(final Integer subjectId) {
+		this.subjectId = subjectId;
+		return this;
+	}
+
+	public String getSubject() {
+		return subject;
+	}
+
+	public void setSubject(final String subject) {
+		this.subject = subject;
+	}
+
+	public Text withSubject(final String subject) {
+		this.subject = subject;
+		return this;
+	}
+
 	public String getComment() {
 		return comment;
 	}
@@ -226,14 +258,15 @@ public class Text {
 		final Text that = (Text) o;
 		return Objects.equals(textId, that.textId) && Objects.equals(filename, that.filename) && Objects.equals(documentDate, that.documentDate)
 			&& Objects.equals(documentEndDate, that.documentEndDate) && Objects.equals(documentTitle, that.documentTitle) && Objects.equals(locationText, that.locationText)
-			&& Objects.equals(location, that.location) && Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename)
+			&& Objects.equals(location, that.location) && Objects.equals(subjectId, that.subjectId) && Objects.equals(subject, that.subject)
+			&& Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename)
 			&& Objects.equals(largeImageFilename, that.largeImageFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(mediaFiles, that.mediaFiles);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(textId, filename, documentDate, documentEndDate, documentTitle, locationText, location, comment,
+		return Objects.hash(textId, filename, documentDate, documentEndDate, documentTitle, locationText, location, subjectId, subject, comment,
 			thumbnailFilename, largeImageFilename, ocrFilename, xmltext, mediaFiles);
 	}
 
@@ -247,6 +280,8 @@ public class Text {
 			", documentTitle='" + documentTitle + '\'' +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", subjectId=" + subjectId +
+			", subject='" + subject + '\'' +
 			", comment='" + comment + '\'' +
 			", thumbnailFilename='" + thumbnailFilename + '\'' +
 			", largeImageFilename='" + largeImageFilename + '\'' +

@@ -49,10 +49,8 @@ public final class FilmMapper {
 	 * @return                list of mapped {@link Film} objects (empty if entities is null)
 	 */
 	public static List<Film> toFilmList(final List<FilmEntity> entities, final ReferenceResolver locationLookup) {
-		return ofNullable(entities)
-			.map(list -> list.stream()
-				.map(e -> toFilm(e, locationLookup.resolve(e.getTopographyId())))
-				.toList())
-			.orElse(emptyList());
+		return ofNullable(entities).orElse(emptyList()).stream()
+			.map(e -> toFilm(e, locationLookup.resolve(e.getTopographyId())))
+			.toList();
 	}
 }
