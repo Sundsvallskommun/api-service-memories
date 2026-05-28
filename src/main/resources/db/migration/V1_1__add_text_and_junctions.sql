@@ -35,21 +35,19 @@ CREATE TABLE FOTO_FOTO
 
 CREATE TABLE TEXT_MULTI
 (
-    MIID         bigint NOT NULL PRIMARY KEY,
     IID          bigint NOT NULL,
+    MIID         bigint NOT NULL,
     FIL_LITEN    varchar(256),
     FIL_STOR     varchar(256),
     FIL_ORIGINAL varchar(256),
-    INDEX ix_text_multi_iid (IID)
+    PRIMARY KEY (IID, MIID)
 ) ENGINE = InnoDB;
 
 CREATE TABLE FOTO_OCM
 (
-    ID    bigint NOT NULL PRIMARY KEY,
-    F_ID1 bigint NOT NULL,
-    O_ID  bigint NOT NULL,
-    INDEX ix_foto_ocm_f_id1 (F_ID1),
-    INDEX ix_foto_ocm_o_id (O_ID)
+    ID   bigint NOT NULL PRIMARY KEY,
+    F_ID bigint,
+    O_ID bigint
 ) ENGINE = InnoDB;
 
 -- Reference table of publication types. PUBL.PUBLIKTYP holds a denormalized ("statisk") copy of the
@@ -57,5 +55,5 @@ CREATE TABLE FOTO_OCM
 CREATE TABLE PUBL_TYP
 (
     ID        bigint NOT NULL PRIMARY KEY,
-    PUBLIKTYP varchar(40)
+    PUBLIKTYP varchar(256)
 ) ENGINE = InnoDB;

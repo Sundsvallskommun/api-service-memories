@@ -180,6 +180,6 @@ VALUES (1, 1001, 1002),
 --
 -- FOTO_OCM (kopplar FOTO till OCM-ämne)
 --
-INSERT INTO FOTO_OCM (ID, F_ID1, O_ID)
+INSERT INTO FOTO_OCM (ID, F_ID, O_ID)
 VALUES (1, 1001, 1),
        (2, 1001, 20);
