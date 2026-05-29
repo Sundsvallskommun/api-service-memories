@@ -15,11 +15,13 @@
 	"xmltext": "Detta är ett minne från Sundsvalls stadshus från 1920-talet",
 	"mediaFiles": [
 		{
+			"id": 1,
 			"thumbnailFilename": "TEXT.id_1001.multi_1_fil_liten.jpeg",
 			"largeImageFilename": "TEXT.id_1001.multi_1_fil_stor.jpeg",
 			"originalFilename": "TEXT.id_1001.multi_1_fil_original.jpeg"
 		},
 		{
+			"id": 2,
 			"thumbnailFilename": "TEXT.id_1001.multi_2_fil_liten.jpeg",
 			"largeImageFilename": "TEXT.id_1001.multi_2_fil_stor.jpeg"
 		}

@@ -13,6 +13,7 @@ import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.TextMediaRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.model.TextEntity;
+import se.sundsvall.memories.integration.db.model.TextMediaEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.TextMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -78,6 +79,25 @@ public class TextService {
 			"IOException occurred when streaming file for text with id '%s'".formatted(id));
 	}
 
+	public void streamMediaFile(final Integer textId, final Integer mediaId, final MediaFileVariant variant, final HttpServletResponse response) {
+		final var entity = textMediaRepository.findById(new TextMediaEntity.TextMediaId(textId, mediaId))
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
+				"Media file with id '%s' for text with id '%s' not found".formatted(mediaId, textId)));
+
+		final var filename = ofNullable(variant.extract(entity))
+			.filter(name -> !name.isBlank())
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
+				"Media file with id '%s' for text with id '%s' has no file for variant '%s'".formatted(mediaId, textId, variant.name().toLowerCase())));
+
+		// SMB URI separator is always "/" — see SambaIntegration for the reason String.join is
+		// preferred over a literal "/" concatenation.
+		final var path = String.join("/", sambaProperties.textFolder() + variant.getSubfolder(), filename);
+
+		// Media files are images, never XML — no XSLT transform.
+		fileStreamer.streamInline(path, filename, false, response,
+			"IOException occurred when streaming media file '%s' for text with id '%s'".formatted(mediaId, textId));
+	}
+
 	public enum FileVariant {
 		THUMBNAIL("fil_liten", TextEntity::getThumbnailFilename),
 		LARGE("fil_stor", TextEntity::getLargeImageFilename),
@@ -92,6 +112,28 @@ public class TextService {
 		}
 
 		String extract(final TextEntity entity) {
+			return fileNameExtractor.apply(entity);
+		}
+
+		String getSubfolder() {
+			return subfolder;
+		}
+	}
+
+	public enum MediaFileVariant {
+		THUMBNAIL("fil_liten", TextMediaEntity::getThumbnailFilename),
+		LARGE("fil_stor", TextMediaEntity::getLargeImageFilename),
+		ORIGINAL("fil_original", TextMediaEntity::getOriginalFilename);
+
+		private final String subfolder;
+		private final Function<TextMediaEntity, String> fileNameExtractor;
+
+		MediaFileVariant(final String subfolder, final Function<TextMediaEntity, String> fileNameExtractor) {
+			this.subfolder = subfolder;
+			this.fileNameExtractor = fileNameExtractor;
+		}
+
+		String extract(final TextMediaEntity entity) {
 			return fileNameExtractor.apply(entity);
 		}
 

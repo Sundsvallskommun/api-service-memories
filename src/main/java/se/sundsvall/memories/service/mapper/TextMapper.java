@@ -44,6 +44,7 @@ public final class TextMapper {
 	public static List<TextMediaFile> toMediaFiles(final List<TextMediaEntity> entities) {
 		return ofNullable(entities).orElse(emptyList()).stream()
 			.map(e -> TextMediaFile.create()
+				.withId(e.getId())
 				.withThumbnailFilename(e.getThumbnailFilename())
 				.withLargeImageFilename(e.getLargeImageFilename())
 				.withOriginalFilename(e.getOriginalFilename()))
