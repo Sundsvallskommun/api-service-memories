@@ -78,7 +78,7 @@ class PublicationServiceTest {
 	@Test
 	void searchWithQueryUsesFulltextRepository() {
 		final var pageable = PageRequest.of(0, 100);
-		when(publicationRepositoryMock.searchPublished("Drowning*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(publicationRepositoryMock.searchPublished("+Drowning*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvall");
 
 		final var result = service.search(PublicationParameters.create().withQuery("Drowning"));
@@ -89,7 +89,7 @@ class PublicationServiceTest {
 		assertThat(result.getPublications().getFirst().getXmltext()).isNull();
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(publicationRepositoryMock).searchPublished("Drowning*", pageable);
+		verify(publicationRepositoryMock).searchPublished("+Drowning*", pageable);
 		verifyNoMoreInteractions(publicationRepositoryMock);
 	}
 

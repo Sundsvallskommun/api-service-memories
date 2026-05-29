@@ -55,7 +55,7 @@ class FilmServiceTest {
 		final var pageable = PageRequest.of(0, 100);
 		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Sundsvall film");
 
-		when(repositoryMock.searchPublished("sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+		when(repositoryMock.searchPublished("+sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
 		final var result = service.search(FilmParameters.create().withQuery("sundsvall"));
 
@@ -63,7 +63,7 @@ class FilmServiceTest {
 		assertThat(result.getFilms().getFirst().getDocumentTitle()).isEqualTo("Sundsvall film");
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(repositoryMock).searchPublished("sundsvall*", pageable);
+		verify(repositoryMock).searchPublished("+sundsvall*", pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
@@ -72,12 +72,12 @@ class FilmServiceTest {
 		final var pageable = PageRequest.of(0, 100);
 		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Midsommar");
 
-		when(repositoryMock.searchPublished("midsommar* 1985*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+		when(repositoryMock.searchPublished("+midsommar* +1985*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
 		final var result = service.search(FilmParameters.create().withQuery("+midsommar -1985"));
 
 		assertThat(result.getFilms()).hasSize(1);
-		verify(repositoryMock).searchPublished("midsommar* 1985*", pageable);
+		verify(repositoryMock).searchPublished("+midsommar* +1985*", pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 

@@ -8,8 +8,11 @@ import java.util.regex.Pattern;
  * <p>
  * Fulltext operator characters ({@code + - " ( ) ~ < > * @ :}) are stripped so
  * the user cannot unintentionally (or intentionally) alter the query semantics
- * via injection. A trailing {@code *} wildcard is appended to each remaining
- * token so prefix matches work the same way as the archive's own search UI.
+ * via injection. Each remaining token is prefixed with {@code +} so that all
+ * terms are required (AND); without it, boolean mode treats space-separated
+ * tokens as optional (OR) and returns far too many results. A trailing {@code *}
+ * wildcard is appended to each token so prefix matches work the same way as the
+ * archive's own search UI.
  */
 public final class FulltextQuery {
 
@@ -42,7 +45,7 @@ public final class FulltextQuery {
 			if (!builder.isEmpty()) {
 				builder.append(' ');
 			}
-			builder.append(token).append('*');
+			builder.append('+').append(token).append('*');
 		}
 
 		return builder.isEmpty() ? null : builder.toString();

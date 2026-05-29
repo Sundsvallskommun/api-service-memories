@@ -20,13 +20,13 @@ class FulltextQueryTest {
 
 	@ParameterizedTest
 	@CsvSource(delimiter = '|', value = {
-		"Drunkningsolycka | Drunkningsolycka*",
-		"popul              | popul*",
-		"  trimmed          | trimmed*",
-		"hello world        | hello* world*",
-		"+foo -bar          | foo* bar*",
-		"\"quoted phrase\"    | quoted* phrase*",
-		"midsommar 1985     | midsommar* 1985*"
+		"Drunkningsolycka | +Drunkningsolycka*",
+		"popul              | +popul*",
+		"  trimmed          | +trimmed*",
+		"hello world        | +hello* +world*",
+		"+foo -bar          | +foo* +bar*",
+		"\"quoted phrase\"    | +quoted* +phrase*",
+		"midsommar 1985     | +midsommar* +1985*"
 	})
 	void sanitizeAppendsWildcardAndStripsOperators(final String input, final String expected) {
 		assertThat(FulltextQuery.sanitize(input)).isEqualTo(expected);

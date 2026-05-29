@@ -58,7 +58,7 @@ class AudioServiceTest {
 		final var pageable = PageRequest.of(0, 100);
 		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Sundsvall intervju");
 
-		when(repositoryMock.searchPublished("sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+		when(repositoryMock.searchPublished("+sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
 		final var result = service.search(AudioParameters.create().withQuery("sundsvall"));
 
@@ -66,7 +66,7 @@ class AudioServiceTest {
 		assertThat(result.getAudios().getFirst().getDocumentTitle()).isEqualTo("Sundsvall intervju");
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(repositoryMock).searchPublished("sundsvall*", pageable);
+		verify(repositoryMock).searchPublished("+sundsvall*", pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
@@ -75,12 +75,12 @@ class AudioServiceTest {
 		final var pageable = PageRequest.of(0, 100);
 		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Midsommar");
 
-		when(repositoryMock.searchPublished("midsommar* 1985*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+		when(repositoryMock.searchPublished("+midsommar* +1985*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
 		final var result = service.search(AudioParameters.create().withQuery("+midsommar -1985"));
 
 		assertThat(result.getAudios()).hasSize(1);
-		verify(repositoryMock).searchPublished("midsommar* 1985*", pageable);
+		verify(repositoryMock).searchPublished("+midsommar* +1985*", pageable);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
