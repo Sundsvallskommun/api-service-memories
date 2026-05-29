@@ -48,3 +48,13 @@ logbook:
     enabled: false
   secure-filter:
     enabled: false
+#========================================
+# Diagnostics
+#========================================
+# Temporary, read-only SMB share browser (GET /admin/samba?path=...). ENABLED for
+# this short-lived diagnostic branch so the layout can be inspected without extra
+# config; the endpoint is @Hidden (absent from the OpenAPI spec). Burn this branch
+# once the share layout is known, or set DEBUG_SAMBA_ENABLED=false to disable.
+debug:
+  samba:
+    enabled: ${DEBUG_SAMBA_ENABLED:true}

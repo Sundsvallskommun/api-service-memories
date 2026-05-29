@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import jcifs.CIFSContext;
@@ -77,6 +79,26 @@ public class SambaIntegration {
 			return new SmbFileInputStream(file);
 		} catch (final IOException e) {
 			throw mapSmbError(e, filePath, fullPath);
+		}
+	}
+
+	/**
+	 * Lists the entries of a directory on the share. Diagnostic helper for the (disabled-by-default) samba debug
+	 * endpoint. Directory entries come back with a trailing {@code /} (jcifs convention); a trailing {@code /} is added
+	 * to {@code dirPath} if missing so jcifs treats it as a directory. Sorted for stable output.
+	 *
+	 * @param  dirPath the directory path relative to the share (e.g. {@code "/MINNEN/MEDIA/TEXT/fil_stor/"})
+	 * @return         sorted entry names, never null
+	 */
+	public List<String> list(final String dirPath) {
+		final var normalized = dirPath.endsWith("/") ? dirPath : dirPath + "/";
+		final var fullPath = fullPath(normalized);
+		LOGGER.info("Listing SMB directory: {}", fullPath);
+		try (final var dir = new SmbFile(fullPath, context)) {
+			final var names = dir.list();
+			return names == null ? List.of() : Arrays.stream(names).sorted().toList();
+		} catch (final IOException e) {
+			throw mapSmbError(e, normalized, fullPath);
 		}
 	}
 

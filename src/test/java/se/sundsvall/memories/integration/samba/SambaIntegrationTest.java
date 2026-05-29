@@ -150,6 +150,51 @@ class SambaIntegrationTest {
 	}
 
 	@Test
+	void listReturnsSortedNames() {
+		try (final var smbFileConstruction = mockConstruction(SmbFile.class,
+			(mock, _) -> org.mockito.Mockito.when(mock.list()).thenReturn(new String[] {
+				"TEXT_MULTI.id_76_2286_fil_stor.jpeg", "TEXT_MULTI.id_76_2285_fil_stor.jpeg", "sub/"
+			}))) {
+
+			final var integration = new SambaIntegration(PROPERTIES);
+
+			final var names = integration.list("/MINNEN/MEDIA/TEXT/fil_stor");
+
+			assertThat(names).containsExactly(
+				"TEXT_MULTI.id_76_2285_fil_stor.jpeg", "TEXT_MULTI.id_76_2286_fil_stor.jpeg", "sub/");
+			assertThat(smbFileConstruction.constructed()).hasSize(1);
+		}
+	}
+
+	@Test
+	void listMapsFileNotFoundTo404() {
+		try (final var _ = mockConstruction(SmbFile.class,
+			(mock, _) -> org.mockito.Mockito.when(mock.list()).thenThrow(new SmbException("The system cannot find the file specified")))) {
+
+			final var integration = new SambaIntegration(PROPERTIES);
+
+			final var exception = assertThrows(ThrowableProblem.class, () -> integration.list("/MINNEN/MEDIA/TEXT/missing"));
+
+			assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
+			assertThat(exception.getMessage()).contains("File not found at path '/MINNEN/MEDIA/TEXT/missing/'");
+		}
+	}
+
+	@Test
+	void listMapsOtherErrorsTo500() {
+		try (final var _ = mockConstruction(SmbFile.class,
+			(mock, _) -> org.mockito.Mockito.when(mock.list()).thenThrow(new SmbException("Connection reset")))) {
+
+			final var integration = new SambaIntegration(PROPERTIES);
+
+			final var exception = assertThrows(ThrowableProblem.class, () -> integration.list("/MINNEN/MEDIA/TEXT/fil_stor/"));
+
+			assertThat(exception.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+			assertThat(exception.getMessage()).contains("Failed to read file from SMB share");
+		}
+	}
+
+	@Test
 	void streamFileIOExceptionWithNullMessage() {
 		final var outputStream = new ByteArrayOutputStream();
 
