@@ -82,7 +82,7 @@ class PhotoServiceTest {
 	@Test
 	void searchWithQueryUsesFulltextRepository() {
 		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.searchPublished("Sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(photoRepositoryMock.searchPublished("+Sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
 		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall"));
 
@@ -90,7 +90,7 @@ class PhotoServiceTest {
 		assertThat(result.getPhotos().getFirst().getDocumentTitle()).isEqualTo("Stadsvy");
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(photoRepositoryMock).searchPublished("Sundsvall*", pageable);
+		verify(photoRepositoryMock).searchPublished("+Sundsvall*", pageable);
 		verifyNoMoreInteractions(photoRepositoryMock);
 	}
 
@@ -133,12 +133,12 @@ class PhotoServiceTest {
 	@Test
 	void searchWithObjectTypeAndQueryUsesSearchByObjectType() {
 		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.searchPublishedByObjectType("Sundsvall*", "Foto", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(photoRepositoryMock.searchPublishedByObjectType("+Sundsvall*", "Foto", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
 		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall").withObjectType("Foto"));
 
 		assertThat(result.getPhotos()).hasSize(1);
-		verify(photoRepositoryMock).searchPublishedByObjectType("Sundsvall*", "Foto", pageable);
+		verify(photoRepositoryMock).searchPublishedByObjectType("+Sundsvall*", "Foto", pageable);
 		verifyNoMoreInteractions(photoRepositoryMock);
 	}
 

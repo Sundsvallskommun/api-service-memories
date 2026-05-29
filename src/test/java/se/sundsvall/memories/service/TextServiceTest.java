@@ -86,7 +86,7 @@ class TextServiceTest {
 	@Test
 	void searchWithQueryUsesFulltextRepository() {
 		final var pageable = PageRequest.of(0, 100);
-		when(textRepositoryMock.searchPublished("stadshuset*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(textRepositoryMock.searchPublished("+stadshuset*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
 		final var result = service.search(TextParameters.create().withQuery("stadshuset"));
 
@@ -94,7 +94,7 @@ class TextServiceTest {
 		assertThat(result.getTexts().getFirst().getDocumentTitle()).isEqualTo("Minne från Sundsvall");
 		assertThat(result.getTexts().getFirst().getXmltext()).isNull();
 		assertThat(result.getTexts().getFirst().getMediaFiles()).isNull();
-		verify(textRepositoryMock).searchPublished("stadshuset*", pageable);
+		verify(textRepositoryMock).searchPublished("+stadshuset*", pageable);
 		verifyNoMoreInteractions(textRepositoryMock);
 	}
 
