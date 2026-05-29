@@ -5,7 +5,7 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.3"
+  version: "3.4"
 servers:
 - url: http://localhost:53606
   description: Generated server url
@@ -125,6 +125,61 @@ paths:
         schema:
           type: string
       - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: variant
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            '*/*': {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/texts/{id}/media/{mediaId}/file:
+    get:
+      tags:
+      - Texts
+      summary: Get text media file
+      description: "Get an extra media file (TEXT_MULTI) attached to a text by specifying the media file id and the variant (thumbnail, large, original). Returned inline so browsers render it directly; Content-Type is derived from the filename extension."
+      operationId: getTextMediaFile
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: mediaId
         in: path
         required: true
         schema:
@@ -1092,6 +1147,12 @@ components:
       type: object
       description: Extra media file attached to a text (TEXT_MULTI)
       properties:
+        id:
+          type: integer
+          format: int32
+          description: Media file ID (per-text sequence number, MIID)
+          examples:
+          - "1"
         thumbnailFilename:
           type: string
           description: Thumbnail file name

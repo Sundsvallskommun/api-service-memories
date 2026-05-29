@@ -24,7 +24,9 @@ import se.sundsvall.memories.api.model.Text;
 import se.sundsvall.memories.api.model.TextParameters;
 import se.sundsvall.memories.service.TextService;
 import se.sundsvall.memories.service.TextService.FileVariant;
+import se.sundsvall.memories.service.TextService.MediaFileVariant;
 
+import static org.springframework.http.MediaType.ALL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 import static org.springframework.http.ResponseEntity.ok;
@@ -82,5 +84,22 @@ class TextResource {
 		final HttpServletResponse response) {
 
 		textService.streamFile(id, FileVariant.valueOf(variant.toUpperCase()), response);
+	}
+
+	@GetMapping(path = "/{id}/media/{mediaId}/file")
+	@Operation(summary = "Get text media file",
+		description = "Get an extra media file (TEXT_MULTI) attached to a text by specifying the media file id and the variant (thumbnail, large, original). Returned inline so browsers render it directly; Content-Type is derived from the filename extension.")
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = ALL_VALUE))
+	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	void getTextMediaFile(
+		@PathVariable @ValidMunicipalityId final String municipalityId,
+		@PathVariable final Integer id,
+		@PathVariable final Integer mediaId,
+		@RequestParam @OneOf({
+			"thumbnail", "large", "original"
+		}) final String variant,
+		final HttpServletResponse response) {
+
+		textService.streamMediaFile(id, mediaId, MediaFileVariant.valueOf(variant.toUpperCase()), response);
 	}
 }

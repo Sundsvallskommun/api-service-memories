@@ -20,6 +20,7 @@ import se.sundsvall.memories.api.model.PagedTextResponse;
 import se.sundsvall.memories.api.model.Text;
 import se.sundsvall.memories.service.TextService;
 import se.sundsvall.memories.service.TextService.FileVariant;
+import se.sundsvall.memories.service.TextService.MediaFileVariant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +38,7 @@ class TextResourceTest {
 	private static final String SEARCH_PATH = "/{municipalityId}/texts";
 	private static final String GET_PATH = "/{municipalityId}/texts/{id}";
 	private static final String FILE_PATH = "/{municipalityId}/texts/{id}/file";
+	private static final String MEDIA_FILE_PATH = "/{municipalityId}/texts/{id}/media/{mediaId}/file";
 
 	@MockitoBean
 	private TextService serviceMock;
@@ -132,5 +134,28 @@ class TextResourceTest {
 			.expectStatus().isOk();
 
 		verify(serviceMock).streamFile(eq(textId), eq(expectedVariant), any(HttpServletResponse.class));
+	}
+
+	static Stream<Arguments> mediaFileVariants() {
+		return Stream.of(
+			Arguments.of("thumbnail", MediaFileVariant.THUMBNAIL),
+			Arguments.of("large", MediaFileVariant.LARGE),
+			Arguments.of("original", MediaFileVariant.ORIGINAL));
+	}
+
+	@ParameterizedTest
+	@MethodSource("mediaFileVariants")
+	void getTextMediaFile(final String pathSegment, final MediaFileVariant expectedVariant) {
+		final var textId = 1001;
+		final var mediaId = 1;
+
+		webTestClient.get()
+			.uri(builder -> builder.path(MEDIA_FILE_PATH)
+				.queryParam("variant", pathSegment)
+				.build(Map.of("municipalityId", MUNICIPALITY_ID, "id", textId, "mediaId", mediaId)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock).streamMediaFile(eq(textId), eq(mediaId), eq(expectedVariant), any(HttpServletResponse.class));
 	}
 }

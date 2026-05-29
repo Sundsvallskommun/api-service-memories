@@ -6,6 +6,9 @@ import java.util.Objects;
 @Schema(description = "Extra media file attached to a text (TEXT_MULTI)")
 public class TextMediaFile {
 
+	@Schema(description = "Media file ID (per-text sequence number, MIID)", examples = "1")
+	private Integer id;
+
 	@Schema(description = "Thumbnail file name", examples = "TEXT.id_1001.multi_1.fil_liten.jpeg")
 	private String thumbnailFilename;
 
@@ -17,6 +20,19 @@ public class TextMediaFile {
 
 	public static TextMediaFile create() {
 		return new TextMediaFile();
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(final Integer id) {
+		this.id = id;
+	}
+
+	public TextMediaFile withId(final Integer id) {
+		this.id = id;
+		return this;
 	}
 
 	public String getThumbnailFilename() {
@@ -63,19 +79,20 @@ public class TextMediaFile {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final TextMediaFile that = (TextMediaFile) o;
-		return Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
+		return Objects.equals(id, that.id) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(originalFilename, that.originalFilename);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(thumbnailFilename, largeImageFilename, originalFilename);
+		return Objects.hash(id, thumbnailFilename, largeImageFilename, originalFilename);
 	}
 
 	@Override
 	public String toString() {
 		return "TextMediaFile{" +
-			"thumbnailFilename='" + thumbnailFilename + '\'' +
+			"id=" + id +
+			", thumbnailFilename='" + thumbnailFilename + '\'' +
 			", largeImageFilename='" + largeImageFilename + '\'' +
 			", originalFilename='" + originalFilename + '\'' +
 			'}';

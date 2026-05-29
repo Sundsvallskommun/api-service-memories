@@ -22,6 +22,7 @@ import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.TextService.FileVariant;
+import se.sundsvall.memories.service.TextService.MediaFileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +41,8 @@ class TextServiceTest {
 		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
 
 	private static final String STREAM_ERROR_CONTEXT = "IOException occurred when streaming file for text with id '1001'";
+
+	private static final String MEDIA_STREAM_ERROR_CONTEXT = "IOException occurred when streaming media file '1' for text with id '1001'";
 
 	@Mock
 	private TextRepository textRepositoryMock;
@@ -78,6 +81,22 @@ class TextServiceTest {
 			Arguments.of(FileVariant.TEXT, "/text/fil_txt/TEXT.id_1001_fil_txt.xml", "TEXT.id_1001_fil_txt.xml", true));
 	}
 
+	private static TextMediaEntity mediaEntity() {
+		return TextMediaEntity.create()
+			.withTextId(1001)
+			.withId(1)
+			.withThumbnailFilename("TEXT.id_1001.multi_1.fil_liten.jpeg")
+			.withLargeImageFilename("TEXT.id_1001.multi_1.fil_stor.jpeg")
+			.withOriginalFilename("TEXT.id_1001.multi_1.fil_original.jpeg");
+	}
+
+	static Stream<Arguments> mediaFileVariants() {
+		return Stream.of(
+			Arguments.of(MediaFileVariant.THUMBNAIL, "/text/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg"),
+			Arguments.of(MediaFileVariant.LARGE, "/text/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg"),
+			Arguments.of(MediaFileVariant.ORIGINAL, "/text/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg"));
+	}
+
 	@BeforeEach
 	void setUp() {
 		service = new TextService(textRepositoryMock, textMediaRepositoryMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock, fileStreamerMock);
@@ -86,7 +105,7 @@ class TextServiceTest {
 	@Test
 	void searchWithQueryUsesFulltextRepository() {
 		final var pageable = PageRequest.of(0, 100);
-		when(textRepositoryMock.searchPublished("stadshuset*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(textRepositoryMock.searchPublished("+stadshuset*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
 		final var result = service.search(TextParameters.create().withQuery("stadshuset"));
 
@@ -94,7 +113,7 @@ class TextServiceTest {
 		assertThat(result.getTexts().getFirst().getDocumentTitle()).isEqualTo("Minne från Sundsvall");
 		assertThat(result.getTexts().getFirst().getXmltext()).isNull();
 		assertThat(result.getTexts().getFirst().getMediaFiles()).isNull();
-		verify(textRepositoryMock).searchPublished("stadshuset*", pageable);
+		verify(textRepositoryMock).searchPublished("+stadshuset*", pageable);
 		verifyNoMoreInteractions(textRepositoryMock);
 	}
 
@@ -211,6 +230,44 @@ class TextServiceTest {
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("no file for variant 'thumbnail'");
+		verifyNoInteractions(fileStreamerMock);
+	}
+
+	@ParameterizedTest
+	@MethodSource("mediaFileVariants")
+	void streamMediaFileDelegatesToFileStreamer(final MediaFileVariant variant, final String expectedPath, final String expectedFilename) {
+		final var responseMock = mock(HttpServletResponse.class);
+		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 1))).thenReturn(Optional.of(mediaEntity()));
+
+		service.streamMediaFile(1001, 1, variant, responseMock);
+
+		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, false, responseMock, MEDIA_STREAM_ERROR_CONTEXT);
+	}
+
+	@Test
+	void streamMediaFileNotFound() {
+		final var responseMock = mock(HttpServletResponse.class);
+		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 99))).thenReturn(Optional.empty());
+
+		final var exception = assertThrows(ThrowableProblem.class,
+			() -> service.streamMediaFile(1001, 99, MediaFileVariant.THUMBNAIL, responseMock));
+
+		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
+		assertThat(exception.getMessage()).contains("Media file with id '99' for text with id '1001' not found");
+		verifyNoInteractions(fileStreamerMock);
+	}
+
+	@Test
+	void streamMediaFileWhenVariantIsBlank() {
+		final var responseMock = mock(HttpServletResponse.class);
+		final var mediaMissingFile = mediaEntity().withOriginalFilename("   ");
+		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 1))).thenReturn(Optional.of(mediaMissingFile));
+
+		final var exception = assertThrows(ThrowableProblem.class,
+			() -> service.streamMediaFile(1001, 1, MediaFileVariant.ORIGINAL, responseMock));
+
+		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
+		assertThat(exception.getMessage()).contains("has no file for variant 'original'");
 		verifyNoInteractions(fileStreamerMock);
 	}
 }

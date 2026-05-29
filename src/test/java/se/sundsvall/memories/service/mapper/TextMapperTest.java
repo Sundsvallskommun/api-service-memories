@@ -47,8 +47,8 @@ class TextMapperTest {
 	@Test
 	void toTextIncludesXmltextAndMediaFiles() {
 		final var mediaEntities = List.of(
-			TextMediaEntity.create().withTextId(1001).withThumbnailFilename("a-liten.jpg").withLargeImageFilename("a-stor.jpg").withOriginalFilename("a-orig.jpg"),
-			TextMediaEntity.create().withTextId(1001).withThumbnailFilename("b-liten.jpg"));
+			TextMediaEntity.create().withTextId(1001).withId(1).withThumbnailFilename("a-liten.jpg").withLargeImageFilename("a-stor.jpg").withOriginalFilename("a-orig.jpg"),
+			TextMediaEntity.create().withTextId(1001).withId(2).withThumbnailFilename("b-liten.jpg"));
 
 		final var result = TextMapper.toText(sampleEntity(), "Sundsvall", "Musik", mediaEntities);
 
@@ -57,10 +57,10 @@ class TextMapperTest {
 		assertThat(result.getSubject()).isEqualTo("Musik");
 		assertThat(result.getMediaFiles()).hasSize(2);
 		assertThat(result.getMediaFiles())
-			.extracting("thumbnailFilename", "largeImageFilename", "originalFilename")
+			.extracting("id", "thumbnailFilename", "largeImageFilename", "originalFilename")
 			.containsExactly(
-				tuple("a-liten.jpg", "a-stor.jpg", "a-orig.jpg"),
-				tuple("b-liten.jpg", null, null));
+				tuple(1, "a-liten.jpg", "a-stor.jpg", "a-orig.jpg"),
+				tuple(2, "b-liten.jpg", null, null));
 	}
 
 	@Test
