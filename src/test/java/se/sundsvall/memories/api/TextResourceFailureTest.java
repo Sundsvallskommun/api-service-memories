@@ -28,6 +28,7 @@ class TextResourceFailureTest {
 	private static final String SEARCH_PATH = "/{municipalityId}/texts";
 	private static final String GET_PATH = "/{municipalityId}/texts/{id}";
 	private static final String FILE_PATH = "/{municipalityId}/texts/{id}/file";
+	private static final String MEDIA_FILE_PATH = "/{municipalityId}/texts/{id}/media/{mediaId}/file";
 
 	@MockitoBean
 	private TextService serviceMock;
@@ -105,6 +106,46 @@ class TextResourceFailureTest {
 			.uri(builder -> builder.path(FILE_PATH)
 				.queryParam("variant", "bogus")
 				.build(Map.of("municipalityId", "2281", "id", 1)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	@Test
+	void getTextMediaFileWithInvalidMunicipalityId() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(MEDIA_FILE_PATH)
+				.queryParam("variant", "thumbnail")
+				.build(Map.of("municipalityId", INVALID_MUNICIPALITY_ID, "id", 1, "mediaId", 1)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getTitle()).isEqualTo("Constraint Violation");
+		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
+		assertThat(response.getViolations())
+			.extracting(Violation::field, Violation::message)
+			.containsExactlyInAnyOrder(tuple("getTextMediaFile.municipalityId", "not a valid municipality ID"));
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	@Test
+	void getTextMediaFileWithInvalidVariant() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(MEDIA_FILE_PATH)
+				.queryParam("variant", "bogus")
+				.build(Map.of("municipalityId", "2281", "id", 1, "mediaId", 1)))
 			.exchange()
 			.expectStatus().isBadRequest()
 			.expectBody(ConstraintViolationProblem.class)

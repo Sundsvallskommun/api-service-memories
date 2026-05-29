@@ -26,11 +26,13 @@ class TextMediaFileTest {
 	@Test
 	void testBuilderMethods() {
 		final var result = TextMediaFile.create()
+			.withId(1)
 			.withThumbnailFilename("liten.jpg")
 			.withLargeImageFilename("stor.jpg")
 			.withOriginalFilename("orig.jpg");
 
 		assertThat(result).hasNoNullFieldsOrProperties();
+		assertThat(result.getId()).isEqualTo(1);
 		assertThat(result.getThumbnailFilename()).isEqualTo("liten.jpg");
 		assertThat(result.getLargeImageFilename()).isEqualTo("stor.jpg");
 		assertThat(result.getOriginalFilename()).isEqualTo("orig.jpg");
