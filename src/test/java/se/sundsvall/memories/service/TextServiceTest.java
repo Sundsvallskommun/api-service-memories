@@ -20,7 +20,6 @@ import se.sundsvall.memories.integration.db.TextMediaRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
-import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.TextService.FileVariant;
 import se.sundsvall.memories.service.TextService.MediaFileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -33,12 +32,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.integration.samba.SambaTestProperties.SAMBA_PROPERTIES;
 
 @ExtendWith(MockitoExtension.class)
 class TextServiceTest {
-
-	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/", "/text_multi/");
 
 	private static final String STREAM_ERROR_CONTEXT = "IOException occurred when streaming file for text with id '1001'";
 

@@ -20,12 +20,10 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockConstruction;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.integration.samba.SambaTestProperties.SAMBA_PROPERTIES;
 
 @ExtendWith(MockitoExtension.class)
 class SambaIntegrationTest {
-
-	private static final SambaIntegrationProperties PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/", "/text_multi/");
 
 	@Test
 	void streamFile() {
@@ -39,7 +37,7 @@ class SambaIntegrationTest {
 					return null;
 				}).when(mock).transferTo(any()))) {
 
-			final var integration = new SambaIntegration(PROPERTIES);
+			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 			integration.streamFile("/films/test.mp4", outputStream);
 
 			assertThat(outputStream.toByteArray()).isEqualTo(fileContent);
@@ -56,7 +54,7 @@ class SambaIntegrationTest {
 				(mock, _) -> doThrow(new IOException("The system cannot find the file specified"))
 					.when(mock).transferTo(any()))) {
 
-			final var integration = new SambaIntegration(PROPERTIES);
+			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 
 			final var exception = assertThrows(ThrowableProblem.class,
 				() -> integration.streamFile("/films/missing.mp4", outputStream));
@@ -76,7 +74,7 @@ class SambaIntegrationTest {
 				(mock, _) -> doThrow(new IOException("Connection reset"))
 					.when(mock).transferTo(any()))) {
 
-			final var integration = new SambaIntegration(PROPERTIES);
+			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 
 			final var exception = assertThrows(ThrowableProblem.class,
 				() -> integration.streamFile("/films/error.mp4", outputStream));
@@ -92,7 +90,7 @@ class SambaIntegrationTest {
 		try (final var smbFileConstruction = mockConstruction(SmbFile.class,
 			(mock, _) -> org.mockito.Mockito.when(mock.length()).thenReturn(4711L))) {
 
-			final var integration = new SambaIntegration(PROPERTIES);
+			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 			final var resource = integration.openResource("/ljud/intervju.mp3");
 
 			assertThat(resource.contentLength()).isEqualTo(4711L);
@@ -107,7 +105,7 @@ class SambaIntegrationTest {
 		try (final var _ = mockConstruction(SmbFile.class);
 			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class)) {
 
-			final var integration = new SambaIntegration(PROPERTIES);
+			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 			final var resource = integration.openResource("/ljud/intervju.mp3");
 
 			try (final var _ = resource.getInputStream()) {
@@ -126,7 +124,7 @@ class SambaIntegrationTest {
 		try (final var _ = mockConstruction(SmbFile.class,
 			(mock, _) -> org.mockito.Mockito.when(mock.length()).thenThrow(new SmbException("The system cannot find the file specified")))) {
 
-			final var integration = new SambaIntegration(PROPERTIES);
+			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 			final var resource = integration.openResource("/ljud/missing.mp3");
 
 			final var exception = assertThrows(ThrowableProblem.class, resource::contentLength);
@@ -140,7 +138,7 @@ class SambaIntegrationTest {
 		try (final var _ = mockConstruction(SmbFile.class);
 			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class)) {
 
-			final var integration = new SambaIntegration(PROPERTIES);
+			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 
 			final var stream = integration.openInputStream("/ljud/intervju.mp3");
 
@@ -158,7 +156,7 @@ class SambaIntegrationTest {
 				(mock, _) -> doThrow(new IOException((String) null))
 					.when(mock).transferTo(any()))) {
 
-			final var integration = new SambaIntegration(PROPERTIES);
+			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 
 			final var exception = assertThrows(ThrowableProblem.class,
 				() -> integration.streamFile("/films/error.mp4", outputStream));
