@@ -92,9 +92,9 @@ class TextServiceTest {
 
 	static Stream<Arguments> mediaFileVariants() {
 		return Stream.of(
-			Arguments.of(MediaFileVariant.THUMBNAIL, "/text/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg"),
-			Arguments.of(MediaFileVariant.LARGE, "/text/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg"),
-			Arguments.of(MediaFileVariant.ORIGINAL, "/text/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg"));
+			Arguments.of(MediaFileVariant.THUMBNAIL, "/text_MULTI/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg"),
+			Arguments.of(MediaFileVariant.LARGE, "/text_MULTI/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg"),
+			Arguments.of(MediaFileVariant.ORIGINAL, "/text_MULTI/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg"));
 	}
 
 	@BeforeEach

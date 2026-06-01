@@ -89,9 +89,12 @@ public class TextService {
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Media file with id '%s' for text with id '%s' has no file for variant '%s'".formatted(mediaId, textId, variant.name().toLowerCase())));
 
-		// SMB URI separator is always "/" — see SambaIntegration for the reason String.join is
-		// preferred over a literal "/" concatenation.
-		final var path = String.join("/", sambaProperties.textFolder() + variant.getSubfolder(), filename);
+		// TEXT_MULTI media files live in a sibling "<text-folder>_MULTI" folder on the share
+		// (e.g. .../MEDIA/TEXT_MULTI/fil_stor/...), not under the primary text folder. The
+		// fil_liten/fil_stor/fil_original subfolders mirror the primary layout.
+		final var multiFolder = sambaProperties.textFolder().replaceAll("/+$", "") + "_MULTI/";
+		// SMB URI separator is always "/" — see SambaIntegration for why String.join is used.
+		final var path = String.join("/", multiFolder + variant.getSubfolder(), filename);
 
 		// Media files are images, never XML — no XSLT transform.
 		fileStreamer.streamInline(path, filename, false, response,
