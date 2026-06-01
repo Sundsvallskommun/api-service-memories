@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.4"
 servers:
-- url: http://localhost:53606
+- url: http://localhost:65503
   description: Generated server url
 tags:
 - name: Audio
@@ -108,16 +108,16 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-  /{municipalityId}/texts/{id}/file:
+  /{municipalityId}/texts/{id}/media/{mediaId}/file:
     get:
       tags:
       - Texts
-      summary: Get text file
-      description: "Get a file associated with a text by specifying the variant (thumbnail,\
-        \ large, text). Returned inline so browsers render it directly; Content-Type\
-        \ is derived from the filename extension for thumbnail/large, and is text/html\
-        \ for the text variant when the source is XML."
-      operationId: getTextFile
+      summary: Get text media file
+      description: "Get an extra media file (TEXT_MULTI) attached to a text by specifying\
+        \ the media file id and the variant (thumbnail, large, original). Returned\
+        \ inline so browsers render it directly; Content-Type is derived from the\
+        \ filename extension."
+      operationId: getTextMediaFile
       parameters:
       - name: municipalityId
         in: path
@@ -125,6 +125,12 @@ paths:
         schema:
           type: string
       - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: mediaId
         in: path
         required: true
         schema:
@@ -160,13 +166,16 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-  /{municipalityId}/texts/{id}/media/{mediaId}/file:
+  /{municipalityId}/texts/{id}/file:
     get:
       tags:
       - Texts
-      summary: Get text media file
-      description: "Get an extra media file (TEXT_MULTI) attached to a text by specifying the media file id and the variant (thumbnail, large, original). Returned inline so browsers render it directly; Content-Type is derived from the filename extension."
-      operationId: getTextMediaFile
+      summary: Get text file
+      description: "Get a file associated with a text by specifying the variant (thumbnail,\
+        \ large, text). Returned inline so browsers render it directly; Content-Type\
+        \ is derived from the filename extension for thumbnail/large, and is text/html\
+        \ for the text variant when the source is XML."
+      operationId: getTextFile
       parameters:
       - name: municipalityId
         in: path
@@ -174,12 +183,6 @@ paths:
         schema:
           type: string
       - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
-      - name: mediaId
         in: path
         required: true
         schema:
@@ -909,7 +912,7 @@ components:
           default: 1
           description: Page number
           examples:
-          - "1"
+          - 1
           minimum: 1
         limit:
           type: integer
@@ -917,7 +920,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-          - "15"
+          - 15
           minimum: 1
         sortBy:
           type: array
@@ -939,9 +942,9 @@ components:
     Problem:
       type: object
       properties:
-        title:
-          type: string
         detail:
+          type: string
+        title:
           type: string
         instance:
           type: string
@@ -1019,35 +1022,35 @@ components:
           format: int32
           description: Current page
           examples:
-          - "5"
+          - 5
           readOnly: true
         limit:
           type: integer
           format: int32
           description: Displayed objects per page
           examples:
-          - "20"
+          - 20
           readOnly: true
         count:
           type: integer
           format: int32
           description: Displayed objects on current page
           examples:
-          - "13"
+          - 13
           readOnly: true
         totalRecords:
           type: integer
           format: int64
           description: Total amount of hits based on provided search parameters
           examples:
-          - "98"
+          - 98
           readOnly: true
         totalPages:
           type: integer
           format: int32
           description: Total amount of pages based on provided search parameters
           examples:
-          - "23"
+          - 23
           readOnly: true
         sortBy:
           type: array
@@ -1071,7 +1074,7 @@ components:
           format: int32
           description: Text ID
           examples:
-          - "1001"
+          - 1001
         filename:
           type: string
           description: Original filename from archive
@@ -1108,7 +1111,7 @@ components:
           format: int32
           description: OCM subject ID (D_O_ID)
           examples:
-          - "20"
+          - 20
         subject:
           type: string
           description: Resolved subject label from OCM (Ämne)
@@ -1150,9 +1153,9 @@ components:
         id:
           type: integer
           format: int32
-          description: Media file ID (per-text sequence number, MIID)
+          description: "Media file ID (per-text sequence number, MIID)"
           examples:
-          - "1"
+          - 1
         thumbnailFilename:
           type: string
           description: Thumbnail file name
@@ -1178,7 +1181,7 @@ components:
           default: 1
           description: Page number
           examples:
-          - "1"
+          - 1
           minimum: 1
         limit:
           type: integer
@@ -1186,7 +1189,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-          - "15"
+          - 15
           minimum: 1
         sortBy:
           type: array
@@ -1226,7 +1229,7 @@ components:
           format: int32
           description: Publication ID
           examples:
-          - "207"
+          - 207
         filename:
           type: string
           description: Original filename from archive
@@ -1311,7 +1314,7 @@ components:
           default: 1
           description: Page number
           examples:
-          - "1"
+          - 1
           minimum: 1
         limit:
           type: integer
@@ -1319,7 +1322,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-          - "15"
+          - 15
           minimum: 1
         sortBy:
           type: array
@@ -1365,7 +1368,7 @@ components:
           format: int32
           description: Photo ID
           examples:
-          - "1234"
+          - 1234
         filename:
           type: string
           description: Original filename from archive
@@ -1529,7 +1532,7 @@ components:
           default: 1
           description: Page number
           examples:
-          - "1"
+          - 1
           minimum: 1
         limit:
           type: integer
@@ -1537,7 +1540,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-          - "15"
+          - 15
           minimum: 1
         sortBy:
           type: array
@@ -1565,7 +1568,7 @@ components:
           format: int32
           description: Film ID
           examples:
-          - "123"
+          - 123
         filename:
           type: string
           description: Filename
@@ -1596,7 +1599,7 @@ components:
           format: int32
           description: Topography ID
           examples:
-          - "1"
+          - 1
         locationText:
           type: string
           description: Film location (free-text fallback from FILM_OPLATS)
@@ -1613,19 +1616,19 @@ components:
           format: int32
           description: Film organization ID
           examples:
-          - "1"
+          - 1
         subEntityId:
           type: integer
           format: int32
           description: Film sub-entity ID
           examples:
-          - "0"
+          - 0
         unitId:
           type: integer
           format: int32
           description: Film unit ID
           examples:
-          - "1"
+          - 1
         comment:
           type: string
           description: Comment
@@ -1641,13 +1644,13 @@ components:
           format: int32
           description: Node ID
           examples:
-          - "456"
+          - 456
         options:
           type: integer
           format: int32
           description: Options
           examples:
-          - "0"
+          - 0
         deletedDate:
           type: string
           format: date
@@ -1676,7 +1679,7 @@ components:
           default: 1
           description: Page number
           examples:
-          - "1"
+          - 1
           minimum: 1
         limit:
           type: integer
@@ -1684,7 +1687,7 @@ components:
           description: Result size per page. Maximum allowed value is dynamically
             configured
           examples:
-          - "15"
+          - 15
           minimum: 1
         sortBy:
           type: array
@@ -1712,7 +1715,7 @@ components:
           format: int32
           description: Audio ID
           examples:
-          - "123"
+          - 123
         filename:
           type: string
           description: Filename
@@ -1743,7 +1746,7 @@ components:
           format: int32
           description: Topography ID
           examples:
-          - "1"
+          - 1
         locationText:
           type: string
           description: Audio location (free-text fallback from LJUD_OPLATS)
@@ -1760,7 +1763,7 @@ components:
           format: int32
           description: OCM subject ID
           examples:
-          - "1"
+          - 1
         subject:
           type: string
           description: Resolved subject label from OCM (Ämne)
@@ -1771,13 +1774,13 @@ components:
           format: int32
           description: Author (individual person) ID
           examples:
-          - "0"
+          - 0
         authorEntityId:
           type: integer
           format: int32
           description: Author (legal entity) ID
           examples:
-          - "1"
+          - 1
         comment:
           type: string
           description: Comment
@@ -1793,13 +1796,13 @@ components:
           format: int32
           description: Node ID
           examples:
-          - "456"
+          - 456
         options:
           type: integer
           format: int32
           description: Options
           examples:
-          - "0"
+          - 0
         deletedDate:
           type: string
           format: date
