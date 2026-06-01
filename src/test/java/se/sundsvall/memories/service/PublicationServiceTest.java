@@ -35,7 +35,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class PublicationServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/", "/text_multi/");
 
 	private static final String STREAM_ERROR_CONTEXT = "IOException occurred when streaming file for publication with id '207'";
 

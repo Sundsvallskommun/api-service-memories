@@ -38,7 +38,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class PhotoServiceTest {
 
 	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/", "/text_multi/");
 
 	private static final String STREAM_ERROR_CONTEXT = "IOException occurred when streaming file for photo with id '1234'";
 
