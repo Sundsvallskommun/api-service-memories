@@ -15,7 +15,6 @@ import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.FilmParameters;
 import se.sundsvall.memories.integration.db.FilmRepository;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
-import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.model.StreamPayload;
 import se.sundsvall.memories.service.util.FileStreamer;
 
@@ -27,12 +26,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.integration.samba.SambaTestProperties.SAMBA_PROPERTIES;
 
 @ExtendWith(MockitoExtension.class)
 class FilmServiceTest {
-
-	private static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/");
 
 	@Mock
 	private FilmRepository repositoryMock;

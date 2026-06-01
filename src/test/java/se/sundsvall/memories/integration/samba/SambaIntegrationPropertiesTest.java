@@ -29,5 +29,6 @@ class SambaIntegrationPropertiesTest {
 		assertThat(properties.photoFolder()).isEqualTo("/foto/");
 		assertThat(properties.audioFolder()).isEqualTo("/ljud/");
 		assertThat(properties.textFolder()).isEqualTo("/text/");
+		assertThat(properties.textMultiFolder()).isEqualTo("/text_multi/");
 	}
 }
