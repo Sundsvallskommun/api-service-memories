@@ -2,6 +2,7 @@ package se.sundsvall.memories.integration.db.model;
 
 import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,7 @@ class AudioEntityTest {
 		final var audioMimeType = "audio/mpeg";
 		final var nodeId = 6;
 		final var options = 4;
-		final var deletedDate = LocalDate.of(2026, 1, 15);
+		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = AudioEntity.create()
 			.withAudioId(audioId)

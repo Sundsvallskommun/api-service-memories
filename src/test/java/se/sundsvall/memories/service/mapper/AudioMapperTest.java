@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class AudioMapperTest {
 					.withAudioMimeType("audio/mpeg")
 					.withNodeId(6)
 					.withOptions(4)
-					.withDeletedDate(LocalDate.of(2026, 1, 15)),
+					.withDeletedDate(LocalDate.of(2026, Month.JANUARY, 15)),
 				Audio.create()
 					.withAudioId(1)
 					.withFilename("test.mp3")
@@ -56,7 +57,7 @@ class AudioMapperTest {
 					.withAudioMimeType("audio/mpeg")
 					.withNodeId(6)
 					.withOptions(4)
-					.withDeletedDate(LocalDate.of(2026, 1, 15))));
+					.withDeletedDate(LocalDate.of(2026, Month.JANUARY, 15))));
 	}
 
 	@ParameterizedTest

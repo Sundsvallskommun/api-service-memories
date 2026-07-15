@@ -2,6 +2,7 @@ package se.sundsvall.memories.integration.db.model;
 
 import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,7 @@ class TextEntityTest {
 		final var nodeId = 5000;
 		final var options = 4;
 		final var filFormat = "text";
-		final var deletedDate = LocalDate.of(2026, 1, 15);
+		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = TextEntity.create()
 			.withTextId(textId)
