@@ -1,0 +1,19 @@
+{
+	"personId": 1,
+	"personNumber": "42",
+	"lastName": "Nordin",
+	"firstName": "Anton",
+	"gender": "man",
+	"birthDate": "1852-03-14",
+	"birthParish": "Sundsvall",
+	"deathDate": "1921-11-02",
+	"occupation": "Handlare",
+	"relatedPersonName": "Erik Nordin",
+	"relatedPersonOccupation": "Bonde",
+	"movedInParish": "Selånger",
+	"movedOutParish": "Njurunda",
+	"sources": "Kyrkoarkiv",
+	"comment": "Flyttade till Sundsvall 1875",
+	"biographyFilename": "person_1_biografi.xml",
+	"options": 6
+}
