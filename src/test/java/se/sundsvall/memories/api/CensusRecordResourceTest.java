@@ -38,9 +38,9 @@ class CensusRecordResourceTest {
 
 	@Test
 	void searchCensusRecords() {
-		final var record = CensusRecord.create().withId(1).withLastName("Nordin").withFirstName("Anton");
+		final var censusRecord = CensusRecord.create().withId(1).withLastName("Nordin").withFirstName("Anton");
 		final var pagedResponse = PagedCensusRecordResponse.create()
-			.withCensusRecords(List.of(record))
+			.withCensusRecords(List.of(censusRecord))
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
@@ -88,9 +88,9 @@ class CensusRecordResourceTest {
 	@Test
 	void getCensusRecordById() {
 		final var id = 1;
-		final var record = CensusRecord.create().withId(id).withLastName("Nordin");
+		final var censusRecord = CensusRecord.create().withId(id).withLastName("Nordin");
 
-		when(serviceMock.getById(id)).thenReturn(record);
+		when(serviceMock.getById(id)).thenReturn(censusRecord);
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(GET_PATH)
