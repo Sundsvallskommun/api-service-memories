@@ -183,3 +183,17 @@ VALUES (1, 1001, 1002),
 INSERT INTO FOTO_OCM (ID, F_ID, O_ID)
 VALUES (1, 1001, 1),
        (2, 1001, 20);
+
+--
+-- MANTAL (mantalslängder) — no OPTIONS/publish column, no parish
+--
+INSERT INTO MANTAL (ID, OBJEKTSNR, KALLA, MFSTNR1, FSTDEL1, HUSHNR, ORDNR, LOPNR, FNR, YRKREL, RELKOD, MNMNF, MNMNE,
+                    KON, FODAR, ANM)
+VALUES (1, 'SE/1234', 'MTL', 'Norrmalm 3', '1/2', '3', '1', '12', '7', 'Bonde', 'H', 'Anton', 'Nordin', 'man', '1852',
+        'Flyttade in 1875');
+
+INSERT INTO MANTAL (ID, MNMNF, MNMNE, KON, FODAR)
+VALUES (2, 'Anna', 'Berg', 'kvinna', '1870');
+
+INSERT INTO MANTAL (ID, MNMNF, MNMNE, KON, FODAR)
+VALUES (3, 'Erik', 'Nordin', 'man', '1889');

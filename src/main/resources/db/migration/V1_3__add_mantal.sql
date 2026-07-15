@@ -1,0 +1,26 @@
+CREATE TABLE MANTAL
+(
+    ID        bigint NOT NULL PRIMARY KEY,
+    OBJEKTSNR varchar(36),
+    KALLA     varchar(10),
+    MFSTNR1   varchar(100),
+    FSTDEL1   varchar(100),
+    MFSTNR2   varchar(100),
+    FSTDEL2   varchar(100),
+    MFSTNR3   varchar(100),
+    FSTDEL3   varchar(100),
+    LOPNR     varchar(10),
+    HUSHNR    varchar(10),
+    ORDNR     varchar(10),
+    FNR       varchar(10),
+    YRKREL    varchar(100),
+    RELKOD    varchar(10),
+    MNMNF     varchar(100),
+    MNMNE     varchar(100),
+    KON       varchar(10),
+    FODAR     varchar(100),
+    ANM       varchar(2000),
+    INDEX IDX_MANTAL_ENAMN (MNMNE),
+    INDEX IDX_MANTAL_FNAMN (MNMNF),
+    INDEX IDX_MANTAL_FODDAT (FODAR)
+) ENGINE = InnoDB;

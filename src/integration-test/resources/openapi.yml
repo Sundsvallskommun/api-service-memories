@@ -7,13 +7,15 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.4"
 servers:
-- url: http://localhost:65503
+- url: http://localhost:53721
   description: Generated server url
 tags:
 - name: Audio
   description: Audio search and file operations
 - name: Texts
   description: Text search and file operations
+- name: Census record
+  description: Census record (mantal) search and retrieval
 - name: Films
   description: Film search operations
 - name: Photos
@@ -687,6 +689,92 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/census-records:
+    get:
+      tags:
+      - Census record
+      summary: Search census records
+      description: "Search census records (MANTAL) by name, birth year range and gender.\
+        \ Returns paginated results."
+      operationId: searchCensusRecords
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/CensusRecordParameters"
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedCensusRecordResponse"
+  /{municipalityId}/census-records/{id}:
+    get:
+      tags:
+      - Census record
+      summary: Get census record by ID
+      description: Get a specific census record by its ID
+      operationId: getCensusRecord
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CensusRecord"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/audios:
     get:
       tags:
@@ -942,9 +1030,9 @@ components:
     Problem:
       type: object
       properties:
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
         instance:
           type: string
@@ -970,10 +1058,10 @@ components:
             $ref: "#/components/schemas/Violation"
         title:
           type: string
-        detail:
-          type: string
         causeAsProblem:
           $ref: "#/components/schemas/ThrowableProblem"
+        detail:
+          type: string
         instance:
           type: string
           format: uri
@@ -1665,6 +1753,183 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Film"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+          readOnly: true
+    CensusRecordParameters:
+      type: object
+      description: "Census record (mantal) search parameters. All filters are optional\
+        \ and combined with AND. Sort on a physical column: MNMNE, MNMNF or FODAR."
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+          - 1
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+          - 15
+          minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+            - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+          - ASC
+        lastName:
+          type: string
+          description: "Last name (substring, case-insensitive)"
+          examples:
+          - Nordin
+        firstName:
+          type: string
+          description: "First name (substring, case-insensitive)"
+          examples:
+          - Anton
+        yearFrom:
+          type: integer
+          format: int32
+          description: Birth year from (inclusive)
+          examples:
+          - 1850
+        yearTo:
+          type: integer
+          format: int32
+          description: Birth year to (inclusive)
+          examples:
+          - 1900
+        gender:
+          type: string
+          description: Gender (matched case-insensitively against the stored value)
+          examples:
+          - man
+    CensusRecord:
+      type: object
+      description: Census record (mantal) model
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Census record ID
+          examples:
+          - 123
+        objectNumber:
+          type: string
+          description: Object number
+          examples:
+          - SE/1234
+        source:
+          type: string
+          description: Source
+          examples:
+          - MTL
+        propertyNumber1:
+          type: string
+          description: Property number 1
+          examples:
+          - Norrmalm 3
+        propertyPart1:
+          type: string
+          description: Property part 1
+          examples:
+          - 1/2
+        propertyNumber2:
+          type: string
+          description: Property number 2
+          examples:
+          - Söder 5
+        propertyPart2:
+          type: string
+          description: Property part 2
+          examples:
+          - 1/4
+        propertyNumber3:
+          type: string
+          description: Property number 3
+          examples:
+          - Väster 7
+        propertyPart3:
+          type: string
+          description: Property part 3
+          examples:
+          - 1/8
+        serialNumber:
+          type: string
+          description: Serial number (löpnummer)
+          examples:
+          - "12"
+        householdNumber:
+          type: string
+          description: Household number
+          examples:
+          - "3"
+        orderNumber:
+          type: string
+          description: Order number
+          examples:
+          - "1"
+        farmNumber:
+          type: string
+          description: Farm number
+          examples:
+          - "7"
+        occupationRelation:
+          type: string
+          description: Occupation / relation
+          examples:
+          - Bonde
+        relationCode:
+          type: string
+          description: Relation code
+          examples:
+          - H
+        firstName:
+          type: string
+          description: First name
+          examples:
+          - Anton
+        lastName:
+          type: string
+          description: Last name
+          examples:
+          - Nordin
+        gender:
+          type: string
+          description: Gender
+          examples:
+          - man
+        birthYear:
+          type: string
+          description: Birth year (stored as free text)
+          examples:
+          - "1852"
+        note:
+          type: string
+          description: Note (anmärkning)
+          examples:
+          - Flyttade in 1875
+    PagedCensusRecordResponse:
+      type: object
+      description: Paged census record response
+      properties:
+        censusRecords:
+          type: array
+          items:
+            $ref: "#/components/schemas/CensusRecord"
             readOnly: true
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
