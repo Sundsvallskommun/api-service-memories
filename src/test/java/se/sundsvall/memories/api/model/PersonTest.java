@@ -2,6 +2,7 @@ package se.sundsvall.memories.api.model;
 
 import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class PersonTest {
 
 	@Test
 	void testBuilderMethods() {
-		final var deletedDate = LocalDate.of(2026, 1, 15);
+		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = Person.create()
 			.withPersonId(123)

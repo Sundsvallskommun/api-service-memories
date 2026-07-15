@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
@@ -30,7 +31,7 @@ class PersonMapperTest {
 			.withComment("Flyttade till Sundsvall 1875")
 			.withBiographyFilename("person_123_biografi.xml")
 			.withOptions(6)
-			.withDeletedDate(LocalDate.of(2026, 1, 15));
+			.withDeletedDate(LocalDate.of(2026, Month.JANUARY, 15));
 	}
 
 	@Test
@@ -55,7 +56,7 @@ class PersonMapperTest {
 		assertThat(result.getComment()).isEqualTo("Flyttade till Sundsvall 1875");
 		assertThat(result.getBiographyFilename()).isEqualTo("person_123_biografi.xml");
 		assertThat(result.getOptions()).isEqualTo(6);
-		assertThat(result.getDeletedDate()).isEqualTo(LocalDate.of(2026, 1, 15));
+		assertThat(result.getDeletedDate()).isEqualTo(LocalDate.of(2026, Month.JANUARY, 15));
 	}
 
 	@Test
