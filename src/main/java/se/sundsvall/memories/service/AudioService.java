@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
@@ -43,14 +44,27 @@ public class AudioService {
 	public PagedAudioResponse search(final AudioParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
+		final var location = blankToNull(parameters.getLocation());
 
-		final var page = ofNullable(sanitized)
-			.map(query -> audioRepository.searchPublished(query, pageable))
-			.orElseGet(() -> audioRepository.findAllPublished(pageable));
+		final Page<AudioEntity> page;
+		if (parameters.getYearFrom() != null || parameters.getYearTo() != null || location != null) {
+			page = audioRepository.searchFiltered(sanitized, parameters.getYearFrom(), parameters.getYearTo(), location, pageable);
+		} else {
+			page = ofNullable(sanitized)
+				.map(query -> audioRepository.searchPublished(query, pageable))
+				.orElseGet(() -> audioRepository.findAllPublished(pageable));
+		}
 
 		return PagedAudioResponse.create()
 			.withAudios(AudioMapper.toAudioList(page.getContent(), topographyLookup::resolve, ocmLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
+	}
+
+	private static String blankToNull(final String value) {
+		return ofNullable(value)
+			.map(String::trim)
+			.filter(v -> !v.isEmpty())
+			.orElse(null);
 	}
 
 	public Audio getById(final Integer id) {

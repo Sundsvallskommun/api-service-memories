@@ -2,6 +2,7 @@ package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.function.Function;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
@@ -38,14 +39,27 @@ public class PublicationService {
 	public PagedPublicationResponse search(final PublicationParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
+		final var location = blankToNull(parameters.getLocation());
 
-		final var page = ofNullable(sanitized)
-			.map(query -> publicationRepository.searchPublished(query, pageable))
-			.orElseGet(() -> publicationRepository.findAllPublished(pageable));
+		final Page<PublicationEntity> page;
+		if (parameters.getYearFrom() != null || parameters.getYearTo() != null || location != null) {
+			page = publicationRepository.searchFiltered(sanitized, parameters.getYearFrom(), parameters.getYearTo(), location, pageable);
+		} else {
+			page = ofNullable(sanitized)
+				.map(query -> publicationRepository.searchPublished(query, pageable))
+				.orElseGet(() -> publicationRepository.findAllPublished(pageable));
+		}
 
 		return PagedPublicationResponse.create()
 			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topographyLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
+	}
+
+	private static String blankToNull(final String value) {
+		return ofNullable(value)
+			.map(String::trim)
+			.filter(v -> !v.isEmpty())
+			.orElse(null);
 	}
 
 	public Publication getById(final Integer id) {

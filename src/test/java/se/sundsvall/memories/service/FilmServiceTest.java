@@ -65,6 +65,19 @@ class FilmServiceTest {
 	}
 
 	@Test
+	void searchWithFiltersRoutesToSearchFiltered() {
+		final var pageable = PageRequest.of(0, 100);
+		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Sundsvall film");
+		when(repositoryMock.searchFiltered(null, 1970, 1990, "Sundsvall", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+
+		final var result = service.search(FilmParameters.create().withYearFrom(1970).withYearTo(1990).withLocation("Sundsvall"));
+
+		assertThat(result.getFilms()).hasSize(1);
+		verify(repositoryMock).searchFiltered(null, 1970, 1990, "Sundsvall", pageable);
+		verifyNoMoreInteractions(repositoryMock);
+	}
+
+	@Test
 	void searchSanitizesOperatorsInQuery() {
 		final var pageable = PageRequest.of(0, 100);
 		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Midsommar");

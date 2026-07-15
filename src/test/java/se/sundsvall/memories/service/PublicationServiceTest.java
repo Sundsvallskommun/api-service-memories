@@ -91,6 +91,19 @@ class PublicationServiceTest {
 	}
 
 	@Test
+	void searchWithFiltersRoutesToSearchFiltered() {
+		final var pageable = PageRequest.of(0, 100);
+		when(publicationRepositoryMock.searchFiltered(null, 1970, 1990, "Sundsvall", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvall");
+
+		final var result = service.search(PublicationParameters.create().withYearFrom(1970).withYearTo(1990).withLocation("Sundsvall"));
+
+		assertThat(result.getPublications()).hasSize(1);
+		verify(publicationRepositoryMock).searchFiltered(null, 1970, 1990, "Sundsvall", pageable);
+		verifyNoMoreInteractions(publicationRepositoryMock);
+	}
+
+	@Test
 	void searchWithNullQueryUsesFindAllPublished() {
 		final var pageable = PageRequest.of(0, 100);
 		when(publicationRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));

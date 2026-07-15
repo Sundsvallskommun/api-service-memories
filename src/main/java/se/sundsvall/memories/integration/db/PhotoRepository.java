@@ -70,6 +70,52 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer> {
 	Page<PhotoEntity> searchPublishedByObjectType(@Param("query") String query, @Param("objectType") String objectType, Pageable pageable);
 
 	/**
+	 * Searches published photos with optional free-text {@code query}, object type, year range and location. All filters
+	 * are optional (a {@code null} parameter is ignored). The year range is matched against the photo's time period: the
+	 * period start is {@code TIDIG} and the period end is {@code SENAST} (falling back to {@code TIDIG}); a photo matches
+	 * when its period overlaps the requested range. Location matches the resolved TOPOGRAFI name for {@code F_T_ID} or
+	 * the free-text {@code F_OPLATS}. Used only when a year/location filter is present.
+	 *
+	 * @param  query      sanitized fulltext expression, or {@code null} to skip fulltext matching
+	 * @param  objectType the OBJTYP value to filter by, or {@code null} for both
+	 * @param  yearFrom   inclusive lower bound of the time period (nullable)
+	 * @param  yearTo     inclusive upper bound of the time period (nullable)
+	 * @param  location   substring to match against the resolved place name or {@code F_OPLATS} (nullable)
+	 * @param  pageable   pagination and sorting criteria
+	 * @return            a page of matching photo entities
+	 */
+	@Query(value = """
+		SELECT * FROM FOTO
+		WHERE (`OPTIONS` & 4) = 4
+		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE))
+		  AND (:objectType IS NULL OR OBJTYP = :objectType)
+		  AND (:location IS NULL
+		       OR F_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+		       OR F_OPLATS LIKE CONCAT('%', :location, '%'))
+		  AND (:yearFrom IS NULL OR CAST(LEFT(COALESCE(NULLIF(SENAST, ''), TIDIG), 4) AS UNSIGNED) >= :yearFrom)
+		  AND (:yearTo IS NULL OR CAST(LEFT(NULLIF(TIDIG, ''), 4) AS UNSIGNED) <= :yearTo)
+		""",
+		countQuery = """
+			SELECT COUNT(*) FROM FOTO
+			WHERE (`OPTIONS` & 4) = 4
+			  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_FF) AGAINST (:query IN BOOLEAN MODE))
+			  AND (:objectType IS NULL OR OBJTYP = :objectType)
+			  AND (:location IS NULL
+			       OR F_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+			       OR F_OPLATS LIKE CONCAT('%', :location, '%'))
+			  AND (:yearFrom IS NULL OR CAST(LEFT(COALESCE(NULLIF(SENAST, ''), TIDIG), 4) AS UNSIGNED) >= :yearFrom)
+			  AND (:yearTo IS NULL OR CAST(LEFT(NULLIF(TIDIG, ''), 4) AS UNSIGNED) <= :yearTo)
+			""",
+		nativeQuery = true)
+	Page<PhotoEntity> searchFiltered(
+		@Param("query") String query,
+		@Param("objectType") String objectType,
+		@Param("yearFrom") Integer yearFrom,
+		@Param("yearTo") Integer yearTo,
+		@Param("location") String location,
+		Pageable pageable);
+
+	/**
 	 * Returns the IDs of all photos connected to the given photo via the {@code FOTO_FOTO} junction table. The relation
 	 * is bidirectional — a row with {@code F_ID1 = id} returns {@code F_ID2}, a row with {@code F_ID2 = id} returns
 	 * {@code F_ID1}.

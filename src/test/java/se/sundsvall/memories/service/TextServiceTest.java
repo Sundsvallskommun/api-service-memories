@@ -115,6 +115,18 @@ class TextServiceTest {
 	}
 
 	@Test
+	void searchWithFiltersRoutesToSearchFiltered() {
+		final var pageable = PageRequest.of(0, 100);
+		when(textRepositoryMock.searchFiltered(null, 1900, 1950, "Sundsvall", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+
+		final var result = service.search(TextParameters.create().withYearFrom(1900).withYearTo(1950).withLocation("Sundsvall"));
+
+		assertThat(result.getTexts()).hasSize(1);
+		verify(textRepositoryMock).searchFiltered(null, 1900, 1950, "Sundsvall", pageable);
+		verifyNoMoreInteractions(textRepositoryMock);
+	}
+
+	@Test
 	void searchWithNullQueryUsesFindAllPublished() {
 		final var pageable = PageRequest.of(0, 100);
 		when(textRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));

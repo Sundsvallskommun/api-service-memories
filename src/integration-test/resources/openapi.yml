@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.4"
 servers:
-- url: http://localhost:65503
+- url: http://localhost:61935
   description: Generated server url
 tags:
 - name: Audio
@@ -939,12 +939,32 @@ components:
           description: Free text search query
           examples:
           - Stadshuset
+        yearFrom:
+          type: integer
+          format: int32
+          description: Year from (inclusive); matched against the document's date
+            period (DOKDATUM–DOKDATUM_SLUT)
+          examples:
+          - 1900
+        yearTo:
+          type: integer
+          format: int32
+          description: Year to (inclusive); matched against the document's date period
+            (DOKDATUM–DOKDATUM_SLUT)
+          examples:
+          - 1950
+        location:
+          type: string
+          description: "Location (substring, case-insensitive; resolved place name\
+            \ or free-text location)"
+          examples:
+          - Sundsvall
     Problem:
       type: object
       properties:
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
         instance:
           type: string
@@ -1208,6 +1228,24 @@ components:
           description: Free text search query
           examples:
           - Drowning accident
+        yearFrom:
+          type: integer
+          format: int32
+          description: "Year from (inclusive), matched against the object's date"
+          examples:
+          - 1970
+        yearTo:
+          type: integer
+          format: int32
+          description: "Year to (inclusive), matched against the object's date"
+          examples:
+          - 1990
+        location:
+          type: string
+          description: "Location (substring, case-insensitive; resolved place name\
+            \ or free-text location)"
+          examples:
+          - Sundsvall
     PagedPublicationResponse:
       type: object
       description: Paged publication response
@@ -1347,6 +1385,26 @@ components:
             for physical objects. Omit to return both.
           examples:
           - Foto
+        yearFrom:
+          type: integer
+          format: int32
+          description: Year from (inclusive); matched against the photo's time period
+            (TIDIG–SENAST)
+          examples:
+          - 1900
+        yearTo:
+          type: integer
+          format: int32
+          description: Year to (inclusive); matched against the photo's time period
+            (TIDIG–SENAST)
+          examples:
+          - 1950
+        location:
+          type: string
+          description: "Location (substring, case-insensitive; resolved place name\
+            \ or free-text location)"
+          examples:
+          - Sundsvall
     PagedPhotoResponse:
       type: object
       description: Paged photo response
@@ -1559,6 +1617,24 @@ components:
           description: Free text search query
           examples:
           - midsummer
+        yearFrom:
+          type: integer
+          format: int32
+          description: "Year from (inclusive), matched against the object's date"
+          examples:
+          - 1970
+        yearTo:
+          type: integer
+          format: int32
+          description: "Year to (inclusive), matched against the object's date"
+          examples:
+          - 1990
+        location:
+          type: string
+          description: "Location (substring, case-insensitive; resolved place name\
+            \ or free-text location)"
+          examples:
+          - Sundsvall
     Film:
       type: object
       description: Film model
@@ -1706,6 +1782,24 @@ components:
           description: Free text search query
           examples:
           - interview
+        yearFrom:
+          type: integer
+          format: int32
+          description: "Year from (inclusive), matched against the object's date"
+          examples:
+          - 1970
+        yearTo:
+          type: integer
+          format: int32
+          description: "Year to (inclusive), matched against the object's date"
+          examples:
+          - 1990
+        location:
+          type: string
+          description: "Location (substring, case-insensitive; resolved place name\
+            \ or free-text location)"
+          examples:
+          - Sundsvall
     Audio:
       type: object
       description: Audio model

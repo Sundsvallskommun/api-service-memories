@@ -60,4 +60,14 @@ class PhotoIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	@Test
+	void test05_searchPhotosByLocationYearAndObjectType() {
+		setupCall()
+			.withServicePath(PATH + "?location=Timrå&yearFrom=1958&yearTo=1965&objectType=Foto")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

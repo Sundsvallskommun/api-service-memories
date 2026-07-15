@@ -49,8 +49,14 @@ public class PhotoService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 		final var objectType = trimToNull(parameters.getObjectType());
+		final var location = trimToNull(parameters.getLocation());
 
-		final var page = fetchPage(sanitized, objectType, pageable);
+		final Page<PhotoEntity> page;
+		if (parameters.getYearFrom() != null || parameters.getYearTo() != null || location != null) {
+			page = photoRepository.searchFiltered(sanitized, objectType, parameters.getYearFrom(), parameters.getYearTo(), location, pageable);
+		} else {
+			page = fetchPage(sanitized, objectType, pageable);
+		}
 
 		return PagedPhotoResponse.create()
 			.withPhotos(PhotoMapper.toPhotoList(page.getContent(), topographyLookup::resolve))

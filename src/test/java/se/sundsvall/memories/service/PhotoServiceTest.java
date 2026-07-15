@@ -92,6 +92,18 @@ class PhotoServiceTest {
 	}
 
 	@Test
+	void searchWithFiltersRoutesToSearchFilteredWithObjectType() {
+		final var pageable = PageRequest.of(0, 100);
+		when(photoRepositoryMock.searchFiltered(null, "Foto", 1900, 1950, "Sundsvall", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+
+		final var result = service.search(PhotoParameters.create().withObjectType("Foto").withYearFrom(1900).withYearTo(1950).withLocation("Sundsvall"));
+
+		assertThat(result.getPhotos()).hasSize(1);
+		verify(photoRepositoryMock).searchFiltered(null, "Foto", 1900, 1950, "Sundsvall", pageable);
+		verifyNoMoreInteractions(photoRepositoryMock);
+	}
+
+	@Test
 	void searchWithNullQueryUsesFindAllPublished() {
 		final var pageable = PageRequest.of(0, 100);
 		when(photoRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));

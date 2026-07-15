@@ -27,10 +27,18 @@ class PhotoParametersTest {
 	void testBuilderMethods() {
 		final var result = PhotoParameters.create()
 			.withQuery("Sundsvall")
+			.withObjectType("Foto")
+			.withYearFrom(1900)
+			.withYearTo(1950)
+			.withLocation("Sundsvall")
 			.withPage(2)
 			.withLimit(50);
 
 		assertThat(result.getQuery()).isEqualTo("Sundsvall");
+		assertThat(result.getObjectType()).isEqualTo("Foto");
+		assertThat(result.getYearFrom()).isEqualTo(1900);
+		assertThat(result.getYearTo()).isEqualTo(1950);
+		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getPage()).isEqualTo(2);
 		assertThat(result.getLimit()).isEqualTo(50);
 	}
@@ -40,6 +48,10 @@ class PhotoParametersTest {
 		final var result = PhotoParameters.create();
 
 		assertThat(result.getQuery()).isNull();
+		assertThat(result.getObjectType()).isNull();
+		assertThat(result.getYearFrom()).isNull();
+		assertThat(result.getYearTo()).isNull();
+		assertThat(result.getLocation()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
 	}
