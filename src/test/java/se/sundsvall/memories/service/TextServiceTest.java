@@ -73,9 +73,9 @@ class TextServiceTest {
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of(FileVariant.THUMBNAIL, "/text/fil_liten/TEXT.id_1001_fil_liten.jpeg", "TEXT.id_1001_fil_liten.jpeg", false),
-			Arguments.of(FileVariant.LARGE, "/text/fil_stor/TEXT.id_1001_fil_stor.jpeg", "TEXT.id_1001_fil_stor.jpeg", false),
-			Arguments.of(FileVariant.TEXT, "/text/fil_txt/TEXT.id_1001_fil_txt.xml", "TEXT.id_1001_fil_txt.xml", true));
+			Arguments.of(FileVariant.THUMBNAIL, "/text/fil_liten/TEXT.id_1001_fil_liten.jpeg", "TEXT.id_1001_fil_liten.jpeg", "sundsvallsminnen-1001.jpeg", false),
+			Arguments.of(FileVariant.LARGE, "/text/fil_stor/TEXT.id_1001_fil_stor.jpeg", "TEXT.id_1001_fil_stor.jpeg", "sundsvallsminnen-1001.jpeg", false),
+			Arguments.of(FileVariant.TEXT, "/text/fil_txt/TEXT.id_1001_fil_txt.xml", "TEXT.id_1001_fil_txt.xml", "sundsvallsminnen-1001.xml", true));
 	}
 
 	private static TextMediaEntity mediaEntity() {
@@ -89,9 +89,9 @@ class TextServiceTest {
 
 	static Stream<Arguments> mediaFileVariants() {
 		return Stream.of(
-			Arguments.of(MediaFileVariant.THUMBNAIL, "/text_multi/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg"),
-			Arguments.of(MediaFileVariant.LARGE, "/text_multi/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg"),
-			Arguments.of(MediaFileVariant.ORIGINAL, "/text_multi/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg"));
+			Arguments.of(MediaFileVariant.THUMBNAIL, "/text_multi/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg", "sundsvallsminnen-1001-1.jpeg"),
+			Arguments.of(MediaFileVariant.LARGE, "/text_multi/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg", "sundsvallsminnen-1001-1.jpeg"),
+			Arguments.of(MediaFileVariant.ORIGINAL, "/text_multi/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg", "sundsvallsminnen-1001-1.jpeg"));
 	}
 
 	@BeforeEach
@@ -180,13 +180,13 @@ class TextServiceTest {
 
 	@ParameterizedTest
 	@MethodSource("fileVariants")
-	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename, final boolean expectedTransform) {
+	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename, final String expectedDownloadFilename, final boolean expectedTransform) {
 		final var responseMock = mock(HttpServletResponse.class);
 		when(textRepositoryMock.findById(1001)).thenReturn(Optional.of(entity()));
 
 		service.streamFile(1001, variant, responseMock);
 
-		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, expectedTransform, responseMock, STREAM_ERROR_CONTEXT);
+		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, expectedDownloadFilename, expectedTransform, responseMock, STREAM_ERROR_CONTEXT);
 	}
 
 	@Test
@@ -232,13 +232,13 @@ class TextServiceTest {
 
 	@ParameterizedTest
 	@MethodSource("mediaFileVariants")
-	void streamMediaFileDelegatesToFileStreamer(final MediaFileVariant variant, final String expectedPath, final String expectedFilename) {
+	void streamMediaFileDelegatesToFileStreamer(final MediaFileVariant variant, final String expectedPath, final String expectedFilename, final String expectedDownloadFilename) {
 		final var responseMock = mock(HttpServletResponse.class);
 		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 1))).thenReturn(Optional.of(mediaEntity()));
 
 		service.streamMediaFile(1001, 1, variant, responseMock);
 
-		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, false, responseMock, MEDIA_STREAM_ERROR_CONTEXT);
+		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, expectedDownloadFilename, false, responseMock, MEDIA_STREAM_ERROR_CONTEXT);
 	}
 
 	@Test

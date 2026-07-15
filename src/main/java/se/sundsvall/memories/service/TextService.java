@@ -75,7 +75,9 @@ public class TextService {
 		// preferred over a literal "/" concatenation.
 		final var path = String.join("/", sambaProperties.textFolder() + variant.getSubfolder(), filename);
 
-		fileStreamer.streamInline(path, filename, variant == FileVariant.TEXT, response,
+		final var downloadFilename = FileStreamer.downloadFilename("sundsvallsminnen-" + id, filename);
+
+		fileStreamer.streamInline(path, filename, downloadFilename, variant == FileVariant.TEXT, response,
 			"IOException occurred when streaming file for text with id '%s'".formatted(id));
 	}
 
@@ -94,8 +96,10 @@ public class TextService {
 		// fil_liten/fil_stor/fil_original subfolders mirror the primary text layout.
 		final var path = String.join("/", sambaProperties.textMultiFolder() + variant.getSubfolder(), filename);
 
+		final var downloadFilename = FileStreamer.downloadFilename("sundsvallsminnen-" + textId + "-" + mediaId, filename);
+
 		// Media files are images, never XML — no XSLT transform.
-		fileStreamer.streamInline(path, filename, false, response,
+		fileStreamer.streamInline(path, filename, downloadFilename, false, response,
 			"IOException occurred when streaming media file '%s' for text with id '%s'".formatted(mediaId, textId));
 	}
 

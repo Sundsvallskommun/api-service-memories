@@ -157,7 +157,7 @@ class FilmServiceTest {
 
 		service.streamFile(id, responseMock);
 
-		verify(fileStreamerMock).streamAttachment("/film//films/test.mp4", "video/mp4", "test.mp4", responseMock,
+		verify(fileStreamerMock).streamAttachment("/film//films/test.mp4", "video/mp4", "sundsvallsminnen-1.mp4", responseMock,
 			"IOException occurred when streaming file for film with id '1'");
 	}
 
@@ -171,7 +171,7 @@ class FilmServiceTest {
 
 		service.streamFile(id, responseMock);
 
-		verify(fileStreamerMock).streamAttachment("/film/   ", "application/octet-stream", "film-3", responseMock,
+		verify(fileStreamerMock).streamAttachment("/film/   ", "application/octet-stream", "sundsvallsminnen-3", responseMock,
 			"IOException occurred when streaming file for film with id '3'");
 	}
 
@@ -179,10 +179,10 @@ class FilmServiceTest {
 	void openForPlaybackReturnsPayloadFromStreamer() {
 		final var id = 1;
 		final var entity = FilmEntity.create().withFilmId(id).withObjectFilePath("/a/midsommar.mp4").withFilmMimeType("video/mp4");
-		final var expected = new StreamPayload(mock(Resource.class), "video/mp4", "midsommar.mp4");
+		final var expected = new StreamPayload(mock(Resource.class), "video/mp4", "sundsvallsminnen-1.mp4");
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
-		when(fileStreamerMock.openForPlayback("/film//a/midsommar.mp4", "video/mp4", "midsommar.mp4")).thenReturn(expected);
+		when(fileStreamerMock.openForPlayback("/film//a/midsommar.mp4", "video/mp4", "sundsvallsminnen-1.mp4")).thenReturn(expected);
 
 		assertThat(service.openForPlayback(id)).isSameAs(expected);
 	}
@@ -191,10 +191,10 @@ class FilmServiceTest {
 	void openForPlaybackFallsBackToOctetStreamWhenMimeMissing() {
 		final var id = 2;
 		final var entity = FilmEntity.create().withFilmId(id).withObjectFilePath("   ");
-		final var expected = new StreamPayload(mock(Resource.class), "application/octet-stream", "film-2");
+		final var expected = new StreamPayload(mock(Resource.class), "application/octet-stream", "sundsvallsminnen-2");
 
 		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
-		when(fileStreamerMock.openForPlayback("/film/   ", "application/octet-stream", "film-2")).thenReturn(expected);
+		when(fileStreamerMock.openForPlayback("/film/   ", "application/octet-stream", "sundsvallsminnen-2")).thenReturn(expected);
 
 		assertThat(service.openForPlayback(id)).isSameAs(expected);
 	}

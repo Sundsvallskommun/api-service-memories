@@ -67,7 +67,9 @@ public class PublicationService {
 		// preferred over a literal "/" concatenation.
 		final var path = String.join("/", sambaProperties.publicationFolder() + variant.getSubfolder(), filename);
 
-		fileStreamer.streamInline(path, filename, variant == FileVariant.TEXT, response,
+		final var downloadFilename = FileStreamer.downloadFilename("sundsvallsminnen-" + id, filename);
+
+		fileStreamer.streamInline(path, filename, downloadFilename, variant == FileVariant.TEXT, response,
 			"IOException occurred when streaming file for publication with id '%s'".formatted(id));
 	}
 

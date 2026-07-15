@@ -62,9 +62,9 @@ class PublicationServiceTest {
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of(FileVariant.THUMBNAIL, "/publ/fil_liten/PUBL.id_207_fil_liten.jpeg", "PUBL.id_207_fil_liten.jpeg", false),
-			Arguments.of(FileVariant.LARGE, "/publ/fil_stor/PUBL.id_207_fil_stor.jpeg", "PUBL.id_207_fil_stor.jpeg", false),
-			Arguments.of(FileVariant.TEXT, "/publ/fil_txt/PUBL.id_207_fil_txt.xml", "PUBL.id_207_fil_txt.xml", true));
+			Arguments.of(FileVariant.THUMBNAIL, "/publ/fil_liten/PUBL.id_207_fil_liten.jpeg", "PUBL.id_207_fil_liten.jpeg", "sundsvallsminnen-207.jpeg", false),
+			Arguments.of(FileVariant.LARGE, "/publ/fil_stor/PUBL.id_207_fil_stor.jpeg", "PUBL.id_207_fil_stor.jpeg", "sundsvallsminnen-207.jpeg", false),
+			Arguments.of(FileVariant.TEXT, "/publ/fil_txt/PUBL.id_207_fil_txt.xml", "PUBL.id_207_fil_txt.xml", "sundsvallsminnen-207.xml", true));
 	}
 
 	@BeforeEach
@@ -152,13 +152,13 @@ class PublicationServiceTest {
 
 	@ParameterizedTest
 	@MethodSource("fileVariants")
-	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename, final boolean expectedTransform) {
+	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename, final String expectedDownloadFilename, final boolean expectedTransform) {
 		final var responseMock = mock(HttpServletResponse.class);
 		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
 
 		service.streamFile(207, variant, responseMock);
 
-		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, expectedTransform, responseMock, STREAM_ERROR_CONTEXT);
+		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, expectedDownloadFilename, expectedTransform, responseMock, STREAM_ERROR_CONTEXT);
 	}
 
 	@Test

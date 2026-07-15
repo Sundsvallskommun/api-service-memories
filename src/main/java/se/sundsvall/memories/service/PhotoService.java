@@ -104,7 +104,9 @@ public class PhotoService {
 		// preferred over a literal "/" concatenation.
 		final var path = String.join("/", sambaProperties.photoFolder() + variant.getSubfolder(), filename);
 
-		fileStreamer.streamInline(path, filename, false, response,
+		final var downloadFilename = FileStreamer.downloadFilename("sundsvallsminnen-" + id, filename);
+
+		fileStreamer.streamInline(path, filename, downloadFilename, false, response,
 			"IOException occurred when streaming file for photo with id '%s'".formatted(id));
 	}
 
