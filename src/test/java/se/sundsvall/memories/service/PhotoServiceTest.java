@@ -67,8 +67,8 @@ class PhotoServiceTest {
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of(FileVariant.THUMBNAIL, "/foto/fil_liten/FOTO.id_1234_fil_liten.jpg", "FOTO.id_1234_fil_liten.jpg"),
-			Arguments.of(FileVariant.LARGE, "/foto/fil_stor/FOTO.id_1234_fil_stor.jpg", "FOTO.id_1234_fil_stor.jpg"));
+			Arguments.of(FileVariant.THUMBNAIL, "/foto/fil_liten/FOTO.id_1234_fil_liten.jpg", "FOTO.id_1234_fil_liten.jpg", "sundsvallsminnen-1234.jpg"),
+			Arguments.of(FileVariant.LARGE, "/foto/fil_stor/FOTO.id_1234_fil_stor.jpg", "FOTO.id_1234_fil_stor.jpg", "sundsvallsminnen-1234.jpg"));
 	}
 
 	@BeforeEach
@@ -170,14 +170,14 @@ class PhotoServiceTest {
 
 	@ParameterizedTest
 	@MethodSource("fileVariants")
-	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename) {
+	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename, final String expectedDownloadFilename) {
 		final var responseMock = mock(HttpServletResponse.class);
 		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
 
 		service.streamFile(1234, variant, responseMock);
 
 		// Photos never transform to HTML, so the flag is always false.
-		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, false, responseMock, STREAM_ERROR_CONTEXT);
+		verify(fileStreamerMock).streamInline(expectedPath, expectedFilename, expectedDownloadFilename, false, responseMock, STREAM_ERROR_CONTEXT);
 	}
 
 	@Test

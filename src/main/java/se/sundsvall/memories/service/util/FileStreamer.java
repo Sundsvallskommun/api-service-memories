@@ -40,20 +40,23 @@ public class FileStreamer {
 	}
 
 	/**
-	 * Derives a display/download filename from an SMB object path: takes the segment after the last separator (handling
-	 * both {@code /} and {@code \}), falling back to {@code fallback} when the path is blank or has no usable segment.
+	 * Builds a human-friendly download filename of the form {@code <stem>.<extension>}, keeping only the file extension
+	 * of {@code sourcePath} (an internal, non-user-facing SMB filename) and discarding its stem. Handles both {@code /}
+	 * and {@code \} separators. When no extension can be derived the bare {@code stem} is returned.
 	 *
-	 * @param  objectFilePath the SMB object file path (nullable)
-	 * @param  fallback       the filename to use when none can be derived
-	 * @return                the derived filename, never blank
+	 * @param  stem       the user-facing name stem (e.g. {@code "sundsvallsminnen-2757"})
+	 * @param  sourcePath the internal SMB object path or filename to take the extension from (nullable)
+	 * @return            the download filename, never blank
 	 */
-	public static String filenameFromPath(final String objectFilePath, final String fallback) {
-		return ofNullable(objectFilePath)
+	public static String downloadFilename(final String stem, final String sourcePath) {
+		return ofNullable(sourcePath)
 			.filter(path -> !path.isBlank())
 			.map(path -> path.replace('\\', '/'))
 			.map(path -> path.substring(path.lastIndexOf('/') + 1))
-			.filter(name -> !name.isBlank())
-			.orElse(fallback);
+			.map(FileStreamer::extension)
+			.filter(extension -> !extension.isBlank())
+			.map(extension -> stem + "." + extension)
+			.orElse(stem);
 	}
 
 	/**
@@ -62,20 +65,22 @@ public class FileStreamer {
 	 * verbatim with the detected {@code Content-Type}.
 	 *
 	 * @param smbPath            the SMB path to the file
-	 * @param filename           filename used for type detection and the {@code Content-Disposition} header
+	 * @param filename           internal filename used only for Tika type detection (extension hint)
+	 * @param downloadFilename   user-facing filename written to the {@code Content-Disposition} header (extension swapped
+	 *                           to {@code .html} when the content is transformed to HTML)
 	 * @param transformXmlToHtml whether XML content should be transformed to HTML
 	 * @param response           the response to write to
 	 * @param errorContext       human-readable context prefixed to the 500 detail on IO failure
 	 */
-	public void streamInline(final String smbPath, final String filename, final boolean transformXmlToHtml,
+	public void streamInline(final String smbPath, final String filename, final String downloadFilename, final boolean transformXmlToHtml,
 		final HttpServletResponse response, final String errorContext) {
 		try (final var input = sambaIntegration.openResource(smbPath).getInputStream()) {
 			final var detected = fileTypeDetector.detect(input, filename);
 
 			if (transformXmlToHtml && isXmlMimeType(detected.mimeType())) {
-				streamTransformedXml(filename, detected, response);
+				streamTransformedXml(downloadFilename, detected, response);
 			} else {
-				streamBinary(filename, detected, response);
+				streamBinary(downloadFilename, detected, response);
 			}
 		} catch (final IOException e) {
 			throw Problem.valueOf(INTERNAL_SERVER_ERROR, "%s: %s".formatted(errorContext, e.getMessage()));
@@ -115,14 +120,14 @@ public class FileStreamer {
 		return new StreamPayload(sambaIntegration.openResource(smbPath), mimeType, filename);
 	}
 
-	private void streamBinary(final String filename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
+	private void streamBinary(final String downloadFilename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
 		response.addHeader(CONTENT_TYPE, detected.mimeType());
-		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(filename).build().toString());
+		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(downloadFilename).build().toString());
 		detected.writeTo(response.getOutputStream());
 	}
 
-	private void streamTransformedXml(final String filename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
-		final var htmlFilename = swapExtension(filename, "html");
+	private void streamTransformedXml(final String downloadFilename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
+		final var htmlFilename = swapExtension(downloadFilename, "html");
 		response.addHeader(CONTENT_TYPE, new MediaType("text", "html", StandardCharsets.UTF_8).toString());
 		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(htmlFilename).build().toString());
 		xsltTransformer.transform(detected.fullStream(), response.getOutputStream());
@@ -133,8 +138,22 @@ public class FileStreamer {
 	}
 
 	private static String swapExtension(final String filename, final String newExtension) {
+		return stem(filename) + "." + newExtension;
+	}
+
+	private static String stem(final String filename) {
 		final var dot = filename.lastIndexOf('.');
-		final var stem = dot > 0 ? filename.substring(0, dot) : filename;
-		return stem + "." + newExtension;
+		if (dot > 0) {
+			return filename.substring(0, dot);
+		}
+		return filename;
+	}
+
+	private static String extension(final String filename) {
+		final var dot = filename.lastIndexOf('.');
+		if (dot > 0) {
+			return filename.substring(dot + 1);
+		}
+		return "";
 	}
 }
