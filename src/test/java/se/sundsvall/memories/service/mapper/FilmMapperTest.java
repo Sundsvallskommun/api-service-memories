@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class FilmMapperTest {
 					.withFilmMimeType("video/mp4")
 					.withNodeId(6)
 					.withOptions(0)
-					.withDeletedDate(LocalDate.of(2026, 1, 15)),
+					.withDeletedDate(LocalDate.of(2026, Month.JANUARY, 15)),
 				Film.create()
 					.withFilmId(1)
 					.withFilename("test.mp4")
@@ -55,7 +56,7 @@ class FilmMapperTest {
 					.withFilmMimeType("video/mp4")
 					.withNodeId(6)
 					.withOptions(0)
-					.withDeletedDate(LocalDate.of(2026, 1, 15))));
+					.withDeletedDate(LocalDate.of(2026, Month.JANUARY, 15))));
 	}
 
 	@ParameterizedTest
