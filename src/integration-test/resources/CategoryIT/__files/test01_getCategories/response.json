@@ -1,0 +1,12 @@
+[
+	{
+		"categoryId": 2,
+		"code": "AB",
+		"name": "Aktiebolag"
+	},
+	{
+		"categoryId": 5,
+		"code": "KOM",
+		"name": "Kommitté"
+	}
+]
