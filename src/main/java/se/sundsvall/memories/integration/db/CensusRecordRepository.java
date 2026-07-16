@@ -22,7 +22,9 @@ public interface CensusRecordRepository extends JpaRepository<CensusRecordEntity
 	/**
 	 * Searches census records with all filter parameters optional (a {@code null} parameter is ignored). Name filters
 	 * are case-insensitive substring matches; the year filter compares against the four leading characters of the
-	 * {@code FODAR} varchar column (birth year).
+	 * {@code FODAR} varchar column (birth year). {@code FODAR} is dirty free text, so the derived year is guarded with
+	 * {@code NULLIF(CAST(...), 0)}: blank and non-numeric values cast to {@code 0}, which is normalised to {@code NULL}
+	 * so they never satisfy a {@code yearFrom}/{@code yearTo} bound.
 	 *
 	 * @param  lastName  substring to match against {@code MNMNE} (nullable)
 	 * @param  firstName substring to match against {@code MNMNF} (nullable)
@@ -37,16 +39,16 @@ public interface CensusRecordRepository extends JpaRepository<CensusRecordEntity
 		WHERE (:lastName IS NULL OR MNMNE LIKE CONCAT('%', :lastName, '%'))
 		  AND (:firstName IS NULL OR MNMNF LIKE CONCAT('%', :firstName, '%'))
 		  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
-		  AND (:yearFrom IS NULL OR CAST(LEFT(FODAR, 4) AS UNSIGNED) >= :yearFrom)
-		  AND (:yearTo IS NULL OR CAST(LEFT(FODAR, 4) AS UNSIGNED) <= :yearTo)
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 		""",
 		countQuery = """
 			SELECT COUNT(*) FROM MANTAL
 			WHERE (:lastName IS NULL OR MNMNE LIKE CONCAT('%', :lastName, '%'))
 			  AND (:firstName IS NULL OR MNMNF LIKE CONCAT('%', :firstName, '%'))
 			  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
-			  AND (:yearFrom IS NULL OR CAST(LEFT(FODAR, 4) AS UNSIGNED) >= :yearFrom)
-			  AND (:yearTo IS NULL OR CAST(LEFT(FODAR, 4) AS UNSIGNED) <= :yearTo)
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 			""",
 		nativeQuery = true)
 	Page<CensusRecordEntity> search(
