@@ -1,0 +1,28 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"photos": [
+		{
+			"photoId": 1001,
+			"documentTitle": "Stadsvy från Norra berget",
+			"comment": "Panorama över Sundsvall från Norra berget",
+			"earliest": "1920",
+			"latest": "1925",
+			"locationText": "Sundsvall",
+			"location": "Sundsvall",
+			"objectType": "Foto",
+			"colorMode": "Svartvit",
+			"material": "Glas",
+			"technique": "Negativ",
+			"conditionCategory": "Bra",
+			"conditionAssessment": "Inga skador",
+			"thumbnailFilename": "FOTO.id_1001_fil_liten.jpg",
+			"largeImageFilename": "FOTO.id_1001_fil_stor.jpg"
+		}
+	]
+}

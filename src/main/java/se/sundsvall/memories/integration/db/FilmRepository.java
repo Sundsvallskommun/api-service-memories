@@ -46,4 +46,37 @@ public interface FilmRepository extends JpaRepository<FilmEntity, Integer> {
 		countQuery = "SELECT COUNT(*) FROM FILM WHERE MATCH (DOKTITEL, KOMMENT_FILM) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
 		nativeQuery = true)
 	Page<FilmEntity> searchPublished(@Param("query") String query, Pageable pageable);
+
+	/**
+	 * Searches published film with optional free-text {@code query}, year range (on {@code DATUM}) and location (resolved
+	 * TOPOGRAFI name for {@code FILM_T_ID}, or free-text {@code FILM_OPLATS}). All filters are optional. Used only when a
+	 * year/location filter is present.
+	 */
+	@Query(value = """
+		SELECT * FROM FILM
+		WHERE (`OPTIONS` & 4) = 4
+		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_FILM) AGAINST (:query IN BOOLEAN MODE))
+		  AND (:location IS NULL
+		       OR FILM_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+		       OR FILM_OPLATS LIKE CONCAT('%', :location, '%'))
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+		""",
+		countQuery = """
+			SELECT COUNT(*) FROM FILM
+			WHERE (`OPTIONS` & 4) = 4
+			  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_FILM) AGAINST (:query IN BOOLEAN MODE))
+			  AND (:location IS NULL
+			       OR FILM_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+			       OR FILM_OPLATS LIKE CONCAT('%', :location, '%'))
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+			""",
+		nativeQuery = true)
+	Page<FilmEntity> searchFiltered(
+		@Param("query") String query,
+		@Param("yearFrom") Integer yearFrom,
+		@Param("yearTo") Integer yearTo,
+		@Param("location") String location,
+		Pageable pageable);
 }

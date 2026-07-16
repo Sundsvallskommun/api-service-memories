@@ -60,4 +60,28 @@ class PhotoIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	@Test
+	void test05_searchPhotosByLocationYearAndObjectType() {
+		setupCall()
+			.withServicePath(PATH + "?location=Timrå&yearFrom=1958&yearTo=1965&objectType=Foto")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * A yearTo-only search must not match photos whose TIDIG is blank or non-numeric — those cast to year 0, which
+	 * would otherwise satisfy every upper bound.
+	 */
+	@Test
+	void test06_searchPhotosByYearToExcludesUndated() {
+		setupCall()
+			.withServicePath(PATH + "?yearTo=1930")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

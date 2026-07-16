@@ -68,6 +68,31 @@ class AudioServiceTest {
 	}
 
 	@Test
+	void searchWithFiltersRoutesToSearchFiltered() {
+		final var pageable = PageRequest.of(0, 100);
+		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Sundsvall intervju");
+
+		when(repositoryMock.searchFiltered("+sundsvall*", 1970, 1990, "Sundsvall", pageable))
+			.thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+
+		final var result = service.search(AudioParameters.create().withQuery("sundsvall").withYearFrom(1970).withYearTo(1990).withLocation("Sundsvall"));
+
+		assertThat(result.getAudios()).hasSize(1);
+		verify(repositoryMock).searchFiltered("+sundsvall*", 1970, 1990, "Sundsvall", pageable);
+		verifyNoMoreInteractions(repositoryMock);
+	}
+
+	@Test
+	void searchWithOnlyLocationFilterUsesSearchFilteredWithNullQueryAndTrimsLocation() {
+		final var pageable = PageRequest.of(0, 100);
+		when(repositoryMock.searchFiltered(null, null, null, "Timrå", pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+		service.search(AudioParameters.create().withLocation("  Timrå  "));
+
+		verify(repositoryMock).searchFiltered(null, null, null, "Timrå", pageable);
+	}
+
+	@Test
 	void searchSanitizesOperatorsInQuery() {
 		final var pageable = PageRequest.of(0, 100);
 		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Midsommar");

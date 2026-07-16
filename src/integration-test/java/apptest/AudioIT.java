@@ -70,4 +70,14 @@ class AudioIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	@Test
+	void test06_searchAudiosByLocationAndYear() {
+		setupCall()
+			.withServicePath(PATH + "?location=Timrå&yearFrom=1970&yearTo=1980")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

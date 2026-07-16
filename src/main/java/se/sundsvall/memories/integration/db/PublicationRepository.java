@@ -45,4 +45,37 @@ public interface PublicationRepository extends JpaRepository<PublicationEntity, 
 		countQuery = "SELECT COUNT(*) FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
 		nativeQuery = true)
 	Page<PublicationEntity> searchPublished(@Param("query") String query, Pageable pageable);
+
+	/**
+	 * Searches published publications with optional free-text {@code query}, year range (on {@code DATUM}) and location
+	 * (resolved TOPOGRAFI name for {@code P_T_ID}, or free-text {@code P_OPLATS}). All filters are optional. Used only
+	 * when a year/location filter is present.
+	 */
+	@Query(value = """
+		SELECT * FROM PUBL
+		WHERE (`OPTIONS` & 4) = 4
+		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE))
+		  AND (:location IS NULL
+		       OR P_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+		       OR P_OPLATS LIKE CONCAT('%', :location, '%'))
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+		""",
+		countQuery = """
+			SELECT COUNT(*) FROM PUBL
+			WHERE (`OPTIONS` & 4) = 4
+			  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE))
+			  AND (:location IS NULL
+			       OR P_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+			       OR P_OPLATS LIKE CONCAT('%', :location, '%'))
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+			""",
+		nativeQuery = true)
+	Page<PublicationEntity> searchFiltered(
+		@Param("query") String query,
+		@Param("yearFrom") Integer yearFrom,
+		@Param("yearTo") Integer yearTo,
+		@Param("location") String location,
+		Pageable pageable);
 }

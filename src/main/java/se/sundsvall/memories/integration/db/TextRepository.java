@@ -45,4 +45,39 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer> {
 		countQuery = "SELECT COUNT(*) FROM TEXT WHERE MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
 		nativeQuery = true)
 	Page<TextEntity> searchPublished(@Param("query") String query, Pageable pageable);
+
+	/**
+	 * Searches published texts with optional free-text {@code query}, year range and location. The year range is matched
+	 * against the document's period: the period start is {@code DOKDATUM} and the period end is
+	 * {@code DOKDATUM_SLUT} (falling back to {@code DOKDATUM}); a text matches when its period overlaps the requested
+	 * range. Location matches the resolved TOPOGRAFI name for {@code D_T_ID} or the free-text {@code D_OPLATS}. Used only
+	 * when a year/location filter is present.
+	 */
+	@Query(value = """
+		SELECT * FROM TEXT
+		WHERE (`OPTIONS` & 4) = 4
+		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE))
+		  AND (:location IS NULL
+		       OR D_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+		       OR D_OPLATS LIKE CONCAT('%', :location, '%'))
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+		""",
+		countQuery = """
+			SELECT COUNT(*) FROM TEXT
+			WHERE (`OPTIONS` & 4) = 4
+			  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE))
+			  AND (:location IS NULL
+			       OR D_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+			       OR D_OPLATS LIKE CONCAT('%', :location, '%'))
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+			""",
+		nativeQuery = true)
+	Page<TextEntity> searchFiltered(
+		@Param("query") String query,
+		@Param("yearFrom") Integer yearFrom,
+		@Param("yearTo") Integer yearTo,
+		@Param("location") String location,
+		Pageable pageable);
 }

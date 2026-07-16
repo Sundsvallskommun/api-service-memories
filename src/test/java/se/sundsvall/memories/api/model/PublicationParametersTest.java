@@ -27,10 +27,16 @@ class PublicationParametersTest {
 	void testBuilderMethods() {
 		final var result = PublicationParameters.create()
 			.withQuery("Drunkningsolycka")
+			.withYearFrom(1970)
+			.withYearTo(1990)
+			.withLocation("Sundsvall")
 			.withPage(3)
 			.withLimit(25);
 
 		assertThat(result.getQuery()).isEqualTo("Drunkningsolycka");
+		assertThat(result.getYearFrom()).isEqualTo(1970);
+		assertThat(result.getYearTo()).isEqualTo(1990);
+		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getPage()).isEqualTo(3);
 		assertThat(result.getLimit()).isEqualTo(25);
 	}
@@ -40,6 +46,9 @@ class PublicationParametersTest {
 		final var result = PublicationParameters.create();
 
 		assertThat(result.getQuery()).isNull();
+		assertThat(result.getYearFrom()).isNull();
+		assertThat(result.getYearTo()).isNull();
+		assertThat(result.getLocation()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
 	}

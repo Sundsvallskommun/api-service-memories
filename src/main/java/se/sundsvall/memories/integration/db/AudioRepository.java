@@ -46,4 +46,46 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer> {
 		countQuery = "SELECT COUNT(*) FROM LJUD WHERE MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
 		nativeQuery = true)
 	Page<AudioEntity> searchPublished(@Param("query") String query, Pageable pageable);
+
+	/**
+	 * Searches published audio with optional free-text {@code query}, year range and location. All filters are optional
+	 * (a {@code null} parameter is ignored). The year filter compares the four leading characters of {@code DATUM}; the
+	 * location filter matches the resolved place name (TOPOGRAFI {@code TOPNAMN}/{@code PLATS} for {@code LJUD_T_ID}) or
+	 * the free-text {@code LJUD_OPLATS}. Used only when a year/location filter is present; the plain search paths above
+	 * remain the fast path for the common case.
+	 *
+	 * @param  query    sanitized fulltext expression, or {@code null} to skip fulltext matching
+	 * @param  yearFrom inclusive lower bound for the year (nullable)
+	 * @param  yearTo   inclusive upper bound for the year (nullable)
+	 * @param  location substring to match against the resolved place name or {@code LJUD_OPLATS} (nullable)
+	 * @param  pageable pagination and sorting criteria
+	 * @return          a page of matching audio records
+	 */
+	@Query(value = """
+		SELECT * FROM LJUD
+		WHERE (`OPTIONS` & 4) = 4
+		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE))
+		  AND (:location IS NULL
+		       OR LJUD_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+		       OR LJUD_OPLATS LIKE CONCAT('%', :location, '%'))
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+		""",
+		countQuery = """
+			SELECT COUNT(*) FROM LJUD
+			WHERE (`OPTIONS` & 4) = 4
+			  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE))
+			  AND (:location IS NULL
+			       OR LJUD_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+			       OR LJUD_OPLATS LIKE CONCAT('%', :location, '%'))
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+			""",
+		nativeQuery = true)
+	Page<AudioEntity> searchFiltered(
+		@Param("query") String query,
+		@Param("yearFrom") Integer yearFrom,
+		@Param("yearTo") Integer yearTo,
+		@Param("location") String location,
+		Pageable pageable);
 }
