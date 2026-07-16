@@ -7,11 +7,13 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.4"
 servers:
-- url: http://localhost:65503
+- url: http://localhost:63726
   description: Generated server url
 tags:
 - name: Audio
   description: Audio search and file operations
+- name: Object
+  description: Combined object search across all object types
 - name: Texts
   description: Text search and file operations
 - name: Films
@@ -495,6 +497,46 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/objects:
+    get:
+      tags:
+      - Object
+      summary: Search objects
+      description: "Search across all object types (Foto, Föremål, Film, Ljud, Text,\
+        \ Publikation) in one call, with global sorting, pagination and per-type counts."
+      operationId: searchObjects
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/CombinedObjectParameters"
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedCombinedObjectResponse"
   /{municipalityId}/films:
     get:
       tags:
@@ -942,9 +984,9 @@ components:
     Problem:
       type: object
       properties:
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
         instance:
           type: string
@@ -1522,6 +1564,136 @@ components:
           description: Subject description (OCMDESC)
           examples:
           - Allmänt ämne
+    CombinedObjectParameters:
+      type: object
+      description: "Combined object search parameters (across all object types). All\
+        \ filters are optional and combined with AND. Sort on a view column: TITLE,\
+        \ SORT_YEAR or OBJECT_TYPE."
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+          - 1
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+          - 15
+          minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+            - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+          - ASC
+        query:
+          type: string
+          description: "Free text search (substring, case-insensitive) across title\
+            \ and comment"
+          examples:
+          - Sundsvall
+        yearFrom:
+          type: integer
+          format: int32
+          description: Year from (inclusive)
+          examples:
+          - 1900
+        yearTo:
+          type: integer
+          format: int32
+          description: Year to (inclusive)
+          examples:
+          - 1950
+        location:
+          type: string
+          description: "Location (substring, case-insensitive; resolved place name\
+            \ or free-text location)"
+          examples:
+          - Sundsvall
+    CombinedObject:
+      type: object
+      description: Combined object search hit (any object type)
+      properties:
+        objectKey:
+          type: string
+          description: "Stable key across types ({type}-{id})"
+          examples:
+          - foto-1001
+        sourceId:
+          type: integer
+          format: int32
+          description: Source id within its own type
+          examples:
+          - 1001
+        objectType:
+          type: string
+          description: Object type
+          examples:
+          - Foto
+        title:
+          type: string
+          description: Title
+          examples:
+          - Stadsvy från Norra berget
+        year:
+          type: integer
+          format: int32
+          description: Year (derived from the object's date; used for sorting and
+            display)
+          examples:
+          - 1920
+        topographyId:
+          type: integer
+          format: int32
+          description: Topography ID
+          examples:
+          - 1
+        locationText:
+          type: string
+          description: Free-text location
+          examples:
+          - Sundsvall
+        location:
+          type: string
+          description: Resolved place name from TOPOGRAFI (preferred over locationText
+            when set)
+          examples:
+          - Sundsvall
+    PagedCombinedObjectResponse:
+      type: object
+      description: Paged combined object response
+      properties:
+        objects:
+          type: array
+          items:
+            $ref: "#/components/schemas/CombinedObject"
+            readOnly: true
+        typeCounts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: "Total number of matching objects per type (for chip counters),\
+            \ independent of the current page"
+          examples:
+          - Foto: 12
+            Text: 3
+          readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+          readOnly: true
     FilmParameters:
       type: object
       description: Film search parameters
