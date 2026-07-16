@@ -10,6 +10,7 @@ import se.sundsvall.memories.integration.db.CategoryRepository;
 import se.sundsvall.memories.integration.db.model.CategoryEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,9 +64,9 @@ class CategoryLookupTest {
 
 		assertThat(result).extracting("categoryId", "name")
 			.containsExactly(
-				org.assertj.core.groups.Tuple.tuple(2, "Aktiebolag"),
-				org.assertj.core.groups.Tuple.tuple(5, "Förening"),
-				org.assertj.core.groups.Tuple.tuple(9, null));
+				tuple(2, "Aktiebolag"),
+				tuple(5, "Förening"),
+				tuple(9, null));
 	}
 
 	@Test
