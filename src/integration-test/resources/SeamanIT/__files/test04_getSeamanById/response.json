@@ -1,0 +1,23 @@
+{
+	"id": 1,
+	"firstName": "Anton",
+	"lastName1": "Nordin",
+	"lastName2": "Sjöberg",
+	"idNumber": 4711,
+	"birthDate": "1852-03-14",
+	"age": "28",
+	"birthParish": "Sundsvall",
+	"seamensHouse": "Sundsvalls sjömanshus",
+	"enrollmentNumber": "112",
+	"rank": "Matros",
+	"ship": "Briggen Freja",
+	"homePort": "Sundsvall",
+	"shipOwner": "Rederi AB Nord",
+	"captain": "Olof Berg",
+	"destination": "London",
+	"note": "Avmönstrad",
+	"archive": "Sundsvalls sjömanshus arkiv",
+	"volume": "A1:3",
+	"archiveNumber": "SE/HLA/1234",
+	"page": "42"
+}
