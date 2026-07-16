@@ -7,11 +7,13 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.4"
 servers:
-- url: http://localhost:65503
+- url: http://localhost:52064
   description: Generated server url
 tags:
 - name: Audio
   description: Audio search and file operations
+- name: Person
+  description: Person search and retrieval
 - name: Texts
   description: Text search and file operations
 - name: Films
@@ -495,6 +497,92 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/persons:
+    get:
+      tags:
+      - Person
+      summary: Search persons
+      description: "Search individual persons (PERSON) by name, birth parish, birth\
+        \ year range and gender. Returns paginated results."
+      operationId: searchPersons
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/PersonParameters"
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedPersonResponse"
+  /{municipalityId}/persons/{id}:
+    get:
+      tags:
+      - Person
+      summary: Get person by ID
+      description: Get a specific person record by its ID
+      operationId: getPerson
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/films:
     get:
       tags:
@@ -942,9 +1030,9 @@ components:
     Problem:
       type: object
       properties:
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
         instance:
           type: string
@@ -1522,6 +1610,181 @@ components:
           description: Subject description (OCMDESC)
           examples:
           - Allmänt ämne
+    PersonParameters:
+      type: object
+      description: "Person search parameters. All filters are optional and combined\
+        \ with AND. Sort on a physical column: ENAMN, FNAMN, FODDAT or FODFRS."
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+          - 1
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+          - 15
+          minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+            - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+          - ASC
+        lastName:
+          type: string
+          description: "Last name (substring, case-insensitive)"
+          examples:
+          - Nordin
+        firstName:
+          type: string
+          description: "First name (substring, case-insensitive)"
+          examples:
+          - Anton
+        birthParish:
+          type: string
+          description: "Birth parish (substring, case-insensitive)"
+          examples:
+          - Sundsvall
+        yearFrom:
+          type: integer
+          format: int32
+          description: Birth year from (inclusive)
+          examples:
+          - 1850
+        yearTo:
+          type: integer
+          format: int32
+          description: Birth year to (inclusive)
+          examples:
+          - 1900
+        gender:
+          type: string
+          description: Gender (matched case-insensitively against the stored value)
+          examples:
+          - man
+    PagedPersonResponse:
+      type: object
+      description: Paged person response
+      properties:
+        persons:
+          type: array
+          items:
+            $ref: "#/components/schemas/Person"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+          readOnly: true
+    Person:
+      type: object
+      description: Person model
+      properties:
+        personId:
+          type: integer
+          format: int32
+          description: Person ID
+          examples:
+          - 123
+        personNumber:
+          type: string
+          description: Person number (indiko)
+          examples:
+          - "42"
+        lastName:
+          type: string
+          description: Last name
+          examples:
+          - Nordin
+        firstName:
+          type: string
+          description: First name
+          examples:
+          - Anton
+        gender:
+          type: string
+          description: Gender
+          examples:
+          - man
+        birthDate:
+          type: string
+          description: "Birth date (stored as free text, not necessarily a valid date)"
+          examples:
+          - 1852-03-14
+        birthParish:
+          type: string
+          description: Birth parish
+          examples:
+          - Sundsvall
+        deathDate:
+          type: string
+          description: "Death date (stored as free text, not necessarily a valid date)"
+          examples:
+          - 1921-11-02
+        occupation:
+          type: string
+          description: Occupation
+          examples:
+          - Handlare
+        relatedPersonName:
+          type: string
+          description: Related person name (e.g. spouse/father)
+          examples:
+          - Erik Nordin
+        relatedPersonOccupation:
+          type: string
+          description: Related person's occupation
+          examples:
+          - Bonde
+        movedInParish:
+          type: string
+          description: Parish moved in from
+          examples:
+          - Selånger
+        movedOutParish:
+          type: string
+          description: Parish moved out to
+          examples:
+          - Njurunda
+        sources:
+          type: string
+          description: Sources
+          examples:
+          - Kyrkoarkiv
+        comment:
+          type: string
+          description: Comment
+          examples:
+          - Flyttade till Sundsvall 1875
+        biographyFilename:
+          type: string
+          description: Biography file reference (served via a dedicated file endpoint
+            when available)
+          examples:
+          - person_123_biografi.xml
+        options:
+          type: integer
+          format: int32
+          description: Options
+          examples:
+          - 6
+        deletedDate:
+          type: string
+          format: date
+          description: Deleted date
+          examples:
+          - 2026-01-15
     FilmParameters:
       type: object
       description: Film search parameters
