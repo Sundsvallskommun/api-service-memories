@@ -183,3 +183,27 @@ VALUES (1, 1001, 1002),
 INSERT INTO FOTO_OCM (ID, F_ID, O_ID)
 VALUES (1, 1001, 1),
        (2, 1001, 20);
+
+--
+-- KATEGORI (verksamhetskategorier – lookup)
+--
+INSERT INTO KATEGORI (KAT_ID, KATKOD, KATNAMN)
+VALUES (2, 'AB', 'Aktiebolag'),
+       (5, 'KOM', 'Kommitté');
+
+--
+-- JURPERS (juridisk person) — published ((OPTIONS & 4) = 4); id 30 unpublished; J_ID 1 is placeholder
+--
+INSERT INTO JURPERS (J_ID, JURPERS, ALTNAMN, T_ID, OPLATS, STARTDATUM, SLUTDATUM, HUVUDMAN, KOMMENT_JURPERS, HISTORIA,
+                     KAT_ID, `OPTIONS`, DELETEDDATE)
+VALUES (10, 'Nödhjälpskommittén 1888-1889', 'Nödhjälpskommittén', 1, null, '1888', '1889', 'Sundsvalls stad',
+        'Bildad efter branden 1888', 'jurpers_10_historia.xml', 5, 6, null);
+
+INSERT INTO JURPERS (J_ID, JURPERS, T_ID, STARTDATUM, KAT_ID, `OPTIONS`)
+VALUES (20, 'Berg Aktiebolag', 2, '1920', 2, 4);
+
+INSERT INTO JURPERS (J_ID, JURPERS, T_ID, STARTDATUM, KAT_ID, `OPTIONS`)
+VALUES (30, 'Dold förening', 1, '1900', 5, 0);
+
+INSERT INTO JURPERS (J_ID, JURPERS, `OPTIONS`)
+VALUES (1, 'Ingen', 6);

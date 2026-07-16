@@ -7,11 +7,13 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.4"
 servers:
-- url: http://localhost:65503
+- url: http://localhost:57301
   description: Generated server url
 tags:
 - name: Audio
   description: Audio search and file operations
+- name: Legal entity
+  description: Legal entity (juridisk person) search and retrieval
 - name: Texts
   description: Text search and file operations
 - name: Films
@@ -20,6 +22,8 @@ tags:
   description: Photo search and file operations
 - name: Publications
   description: Publication search and file operations
+- name: Category
+  description: Category (verksamhetskategori) lookup for search form dropdowns
 paths:
   /{municipalityId}/texts:
     get:
@@ -495,6 +499,92 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/legal-entities:
+    get:
+      tags:
+      - Legal entity
+      summary: Search legal entities
+      description: "Search legal entities (JURPERS) by name, location, category and\
+        \ activity-period year range. Returns paginated results."
+      operationId: searchLegalEntities
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/LegalEntityParameters"
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedLegalEntityResponse"
+  /{municipalityId}/legal-entities/{id}:
+    get:
+      tags:
+      - Legal entity
+      summary: Get legal entity by ID
+      description: Get a specific legal entity record by its ID
+      operationId: getLegalEntity
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegalEntity"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/films:
     get:
       tags:
@@ -687,6 +777,43 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/categories:
+    get:
+      tags:
+      - Category
+      summary: List categories
+      description: List all verksamhetskategorier (sorted by name) for search form
+        dropdowns.
+      operationId: getCategories
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
   /{municipalityId}/audios:
     get:
       tags:
@@ -942,9 +1069,9 @@ components:
     Problem:
       type: object
       properties:
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
         instance:
           type: string
@@ -1522,6 +1649,168 @@ components:
           description: Subject description (OCMDESC)
           examples:
           - Allmänt ämne
+    LegalEntityParameters:
+      type: object
+      description: "Legal entity (juridisk person) search parameters. All filters\
+        \ are optional and combined with AND. Sort on a physical column: JURPERS,\
+        \ KAT_ID or STARTDATUM."
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+          - 1
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+          - 15
+          minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+            - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+          - ASC
+        name:
+          type: string
+          description: "Name (substring, case-insensitive; matches name or alternative\
+            \ names)"
+          examples:
+          - Nödhjälpskommittén
+        location:
+          type: string
+          description: "Location (substring, case-insensitive; matches resolved place\
+            \ name or free-text location)"
+          examples:
+          - Sundsvall
+        categoryId:
+          type: integer
+          format: int32
+          description: Category ID
+          examples:
+          - 5
+        yearFrom:
+          type: integer
+          format: int32
+          description: Activity period year from (inclusive)
+          examples:
+          - 1880
+        yearTo:
+          type: integer
+          format: int32
+          description: Activity period year to (inclusive)
+          examples:
+          - 1920
+    LegalEntity:
+      type: object
+      description: Legal entity (juridisk person) model
+      properties:
+        legalEntityId:
+          type: integer
+          format: int32
+          description: Legal entity ID
+          examples:
+          - 123
+        name:
+          type: string
+          description: Name
+          examples:
+          - Nödhjälpskommittén 1888-1889
+        alternativeNames:
+          type: string
+          description: Alternative names
+          examples:
+          - Nödhjälpskommittén
+        topographyId:
+          type: integer
+          format: int32
+          description: Topography ID
+          examples:
+          - 1
+        locationText:
+          type: string
+          description: Free-text location (OPLATS)
+          examples:
+          - Sundsvall
+        location:
+          type: string
+          description: Resolved place name from TOPOGRAFI (preferred over locationText
+            when set)
+          examples:
+          - Sundsvall
+        startDate:
+          type: string
+          description: Start date (stored as free text)
+          examples:
+          - "1888"
+        endDate:
+          type: string
+          description: End date (stored as free text)
+          examples:
+          - "1889"
+        principal:
+          type: string
+          description: Principal (huvudman)
+          examples:
+          - Sundsvalls stad
+        comment:
+          type: string
+          description: Comment
+          examples:
+          - Bildad efter branden 1888
+        historyFilename:
+          type: string
+          description: History file reference (served via a dedicated file endpoint
+            when available)
+          examples:
+          - jurpers_123_historia.xml
+        categoryId:
+          type: integer
+          format: int32
+          description: Category ID
+          examples:
+          - 5
+        category:
+          type: string
+          description: Resolved category name from KATEGORI
+          examples:
+          - Kommitté
+        options:
+          type: integer
+          format: int32
+          description: Options
+          examples:
+          - 6
+        deletedDate:
+          type: string
+          format: date
+          description: Deleted date
+          examples:
+          - 2026-01-15
+    PagedLegalEntityResponse:
+      type: object
+      description: Paged legal entity response
+      properties:
+        legalEntities:
+          type: array
+          items:
+            $ref: "#/components/schemas/LegalEntity"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+          readOnly: true
     FilmParameters:
       type: object
       description: Film search parameters
@@ -1669,6 +1958,26 @@ components:
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true
+    Category:
+      type: object
+      description: Category (verksamhetskategori) model
+      properties:
+        categoryId:
+          type: integer
+          format: int32
+          description: Category ID
+          examples:
+          - 5
+        code:
+          type: string
+          description: Category code
+          examples:
+          - FÖR
+        name:
+          type: string
+          description: Category name
+          examples:
+          - Förening
     AudioParameters:
       type: object
       description: Audio search parameters
