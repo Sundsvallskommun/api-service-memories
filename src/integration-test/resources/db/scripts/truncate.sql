@@ -4,6 +4,7 @@ truncate table FOTO;
 truncate table FOTO_FOTO;
 truncate table FOTO_OCM;
 truncate table LJUD;
+truncate table MANTAL;
 truncate table OCM;
 truncate table PUBL;
 truncate table PUBL_TYP;

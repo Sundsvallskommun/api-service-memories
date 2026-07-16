@@ -1,0 +1,43 @@
+{
+	"_meta": {
+		"count": 3,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 3
+	},
+	"censusRecords": [
+		{
+			"id": 1,
+			"objectNumber": "SE/1234",
+			"source": "MTL",
+			"propertyNumber1": "Norrmalm 3",
+			"propertyPart1": "1/2",
+			"serialNumber": "12",
+			"householdNumber": "3",
+			"orderNumber": "1",
+			"farmNumber": "7",
+			"occupationRelation": "Bonde",
+			"relationCode": "H",
+			"firstName": "Anton",
+			"lastName": "Nordin",
+			"gender": "man",
+			"birthYear": "1852",
+			"note": "Flyttade in 1875"
+		},
+		{
+			"id": 2,
+			"firstName": "Anna",
+			"lastName": "Berg",
+			"gender": "kvinna",
+			"birthYear": "1870"
+		},
+		{
+			"id": 3,
+			"firstName": "Erik",
+			"lastName": "Nordin",
+			"gender": "man",
+			"birthYear": "1889"
+		}
+	]
+}
