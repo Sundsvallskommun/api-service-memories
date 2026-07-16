@@ -2,8 +2,8 @@
 	"_meta": {
 		"page": 1,
 		"limit": 100,
-		"count": 3,
-		"totalRecords": 3,
+		"count": 4,
+		"totalRecords": 4,
 		"totalPages": 1
 	},
 	"photos": [
@@ -48,6 +48,14 @@
 			"objectType": "Foto",
 			"thumbnailFilename": "FOTO.id_1003_fil_liten.jpg",
 			"largeImageFilename": "FOTO.id_1003_fil_stor.jpg"
+		},
+		{
+			"photoId": 1004,
+			"documentTitle": "Odaterad bild",
+			"comment": "Bild utan känt datum",
+			"earliest": "okänt",
+			"objectType": "Foto",
+			"location": "Sundsvall"
 		}
 	]
 }

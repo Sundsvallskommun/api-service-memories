@@ -92,8 +92,8 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer> {
 		  AND (:location IS NULL
 		       OR F_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
 		       OR F_OPLATS LIKE CONCAT('%', :location, '%'))
-		  AND (:yearFrom IS NULL OR CAST(LEFT(COALESCE(NULLIF(SENAST, ''), TIDIG), 4) AS UNSIGNED) >= :yearFrom)
-		  AND (:yearTo IS NULL OR CAST(LEFT(NULLIF(TIDIG, ''), 4) AS UNSIGNED) <= :yearTo)
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(SENAST, ''), TIDIG), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(TIDIG, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 		""",
 		countQuery = """
 			SELECT COUNT(*) FROM FOTO
@@ -103,8 +103,8 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer> {
 			  AND (:location IS NULL
 			       OR F_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
 			       OR F_OPLATS LIKE CONCAT('%', :location, '%'))
-			  AND (:yearFrom IS NULL OR CAST(LEFT(COALESCE(NULLIF(SENAST, ''), TIDIG), 4) AS UNSIGNED) >= :yearFrom)
-			  AND (:yearTo IS NULL OR CAST(LEFT(NULLIF(TIDIG, ''), 4) AS UNSIGNED) <= :yearTo)
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(SENAST, ''), TIDIG), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(TIDIG, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 			""",
 		nativeQuery = true)
 	Page<PhotoEntity> searchFiltered(

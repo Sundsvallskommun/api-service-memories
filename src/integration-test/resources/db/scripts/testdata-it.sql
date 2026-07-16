@@ -183,3 +183,8 @@ VALUES (1, 1001, 1002),
 INSERT INTO FOTO_OCM (ID, F_ID, O_ID)
 VALUES (1, 1001, 1),
        (2, 1001, 20);
+
+-- Published photo with a dirty, non-numeric TIDIG — must never satisfy a year bound (regression: a yearTo-only
+-- search previously matched it because CAST('okänt') yields 0).
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, OBJTYP, `OPTIONS`)
+VALUES (1004, 'Odaterad bild', 'Bild utan känt datum', 'okänt', 'Foto', 6);

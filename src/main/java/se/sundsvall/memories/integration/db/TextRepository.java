@@ -60,8 +60,8 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer> {
 		  AND (:location IS NULL
 		       OR D_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
 		       OR D_OPLATS LIKE CONCAT('%', :location, '%'))
-		  AND (:yearFrom IS NULL OR CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED) >= :yearFrom)
-		  AND (:yearTo IS NULL OR CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED) <= :yearTo)
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 		""",
 		countQuery = """
 			SELECT COUNT(*) FROM TEXT
@@ -70,8 +70,8 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer> {
 			  AND (:location IS NULL
 			       OR D_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
 			       OR D_OPLATS LIKE CONCAT('%', :location, '%'))
-			  AND (:yearFrom IS NULL OR CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED) >= :yearFrom)
-			  AND (:yearTo IS NULL OR CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED) <= :yearTo)
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 			""",
 		nativeQuery = true)
 	Page<TextEntity> searchFiltered(
