@@ -15,6 +15,7 @@ import se.sundsvall.memories.integration.db.CombinedObjectRepository.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -56,7 +57,7 @@ class CombinedObjectServiceTest {
 
 		assertThat(result.getObjects()).hasSize(1);
 		assertThat(result.getObjects().getFirst().getLocation()).isEqualTo("Sundsvalls kommun");
-		assertThat(result.getTypeCounts()).containsExactly(org.assertj.core.api.Assertions.entry("Foto", 1L), org.assertj.core.api.Assertions.entry("Text", 3L));
+		assertThat(result.getTypeCounts()).containsExactly(entry("Foto", 1L), entry("Text", 3L));
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(repositoryMock).search(eq("Sundsvall"), eq(1900), eq(1950), eq("Sundsvall"), any(Pageable.class));
 	}
