@@ -1,10 +1,10 @@
 {
 	"_meta": {
-		"count": 3,
+		"count": 1,
 		"limit": 100,
 		"page": 1,
 		"totalPages": 1,
-		"totalRecords": 3
+		"totalRecords": 1
 	},
 	"persons": [
 		{
@@ -24,24 +24,6 @@
 			"sources": "Kyrkoarkiv",
 			"comment": "Flyttade till Sundsvall 1875",
 			"biographyFilename": "person_1_biografi.xml",
-			"options": 6
-		},
-		{
-			"personId": 2,
-			"lastName": "Berg",
-			"firstName": "Anna",
-			"gender": "kvinna",
-			"birthDate": "1870-05-01",
-			"birthParish": "Selånger",
-			"options": 4
-		},
-		{
-			"personId": 4,
-			"lastName": "Okänd",
-			"firstName": "Datum",
-			"gender": "man",
-			"birthDate": "okänt",
-			"birthParish": "Sundsvall",
 			"options": 6
 		}
 	]

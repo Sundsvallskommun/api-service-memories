@@ -201,3 +201,8 @@ VALUES (3, 'Dold', 'Person', 'man', '1880-01-01', 'Sundsvall', 0);
 
 INSERT INTO PERSON (P_ID, ENAMN, `OPTIONS`)
 VALUES (0, 'Ingen', 6);
+
+-- Published person with a dirty, non-numeric FODDAT — must never satisfy a year bound (regression: a yearTo-only
+-- search previously matched it because CAST('okänt') yields 0).
+INSERT INTO PERSON (P_ID, ENAMN, FNAMN, KON, FODDAT, FODFRS, `OPTIONS`)
+VALUES (4, 'Okänd', 'Datum', 'man', 'okänt', 'Sundsvall', 6);

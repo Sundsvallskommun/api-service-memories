@@ -70,4 +70,18 @@ class PersonIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * A yearTo-only search must not match persons whose FODDAT is blank or non-numeric — those cast to year 0, which
+	 * would otherwise satisfy every upper bound.
+	 */
+	@Test
+	void test06_searchPersonsByYearToExcludesUndated() {
+		setupCall()
+			.withServicePath(PATH + "?yearTo=1860")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

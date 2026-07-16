@@ -27,8 +27,10 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer> {
 	 *
 	 * <p>
 	 * Name and parish filters are case-insensitive substring matches. The year filter compares against the four leading
-	 * characters of the {@code FODDAT} varchar column (birth year); rows whose {@code FODDAT} has no numeric year yield
-	 * {@code 0} and are therefore excluded once a {@code yearFrom}/{@code yearTo} bound is supplied.
+	 * characters of the {@code FODDAT} varchar column (birth year). {@code FODDAT} is dirty free text, so the derived
+	 * year is guarded with {@code NULLIF(CAST(...), 0)}: blank and non-numeric values (e.g. "okänt") cast to {@code 0},
+	 * which is normalised to {@code NULL} so they never satisfy a {@code yearFrom}/{@code yearTo} bound — without the
+	 * guard a {@code yearTo}-only search would wrongly match every undated row.
 	 *
 	 * @param  lastName    substring to match against {@code ENAMN} (nullable)
 	 * @param  firstName   substring to match against {@code FNAMN} (nullable)
@@ -46,8 +48,8 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer> {
 		  AND (:firstName IS NULL OR FNAMN LIKE CONCAT('%', :firstName, '%'))
 		  AND (:birthParish IS NULL OR FODFRS LIKE CONCAT('%', :birthParish, '%'))
 		  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
-		  AND (:yearFrom IS NULL OR CAST(LEFT(FODDAT, 4) AS UNSIGNED) >= :yearFrom)
-		  AND (:yearTo IS NULL OR CAST(LEFT(FODDAT, 4) AS UNSIGNED) <= :yearTo)
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 		""",
 		countQuery = """
 			SELECT COUNT(*) FROM PERSON
@@ -56,8 +58,8 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer> {
 			  AND (:firstName IS NULL OR FNAMN LIKE CONCAT('%', :firstName, '%'))
 			  AND (:birthParish IS NULL OR FODFRS LIKE CONCAT('%', :birthParish, '%'))
 			  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
-			  AND (:yearFrom IS NULL OR CAST(LEFT(FODDAT, 4) AS UNSIGNED) >= :yearFrom)
-			  AND (:yearTo IS NULL OR CAST(LEFT(FODDAT, 4) AS UNSIGNED) <= :yearTo)
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 			""",
 		nativeQuery = true)
 	Page<PersonEntity> search(
