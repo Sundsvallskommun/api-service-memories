@@ -23,7 +23,9 @@ public interface SeamanRepository extends JpaRepository<SeamanEntity, Integer> {
 	 * Searches seamen records with all filter parameters optional (a {@code null} parameter is ignored). The last-name
 	 * filter matches either surname column ({@code EFTERNAMN1} / {@code EFTERNAMN2}); name and parish filters are
 	 * case-insensitive substring matches; the year filter compares against the four leading characters of the
-	 * {@code FODDAT} varchar column.
+	 * {@code FODDAT} varchar column. {@code FODDAT} is dirty free text, so the derived year is guarded with
+	 * {@code NULLIF(CAST(...), 0)}: blank and non-numeric values cast to {@code 0}, which is normalised to {@code NULL}
+	 * so they never satisfy a {@code yearFrom}/{@code yearTo} bound.
 	 *
 	 * @param  lastName    substring to match against {@code EFTERNAMN1} or {@code EFTERNAMN2} (nullable)
 	 * @param  firstName   substring to match against {@code FORNAMN} (nullable)
@@ -38,16 +40,16 @@ public interface SeamanRepository extends JpaRepository<SeamanEntity, Integer> {
 		WHERE (:lastName IS NULL OR EFTERNAMN1 LIKE CONCAT('%', :lastName, '%') OR EFTERNAMN2 LIKE CONCAT('%', :lastName, '%'))
 		  AND (:firstName IS NULL OR FORNAMN LIKE CONCAT('%', :firstName, '%'))
 		  AND (:birthParish IS NULL OR FODFORS LIKE CONCAT('%', :birthParish, '%'))
-		  AND (:yearFrom IS NULL OR CAST(LEFT(FODDAT, 4) AS UNSIGNED) >= :yearFrom)
-		  AND (:yearTo IS NULL OR CAST(LEFT(FODDAT, 4) AS UNSIGNED) <= :yearTo)
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 		""",
 		countQuery = """
 			SELECT COUNT(*) FROM SJOMAN
 			WHERE (:lastName IS NULL OR EFTERNAMN1 LIKE CONCAT('%', :lastName, '%') OR EFTERNAMN2 LIKE CONCAT('%', :lastName, '%'))
 			  AND (:firstName IS NULL OR FORNAMN LIKE CONCAT('%', :firstName, '%'))
 			  AND (:birthParish IS NULL OR FODFORS LIKE CONCAT('%', :birthParish, '%'))
-			  AND (:yearFrom IS NULL OR CAST(LEFT(FODDAT, 4) AS UNSIGNED) >= :yearFrom)
-			  AND (:yearTo IS NULL OR CAST(LEFT(FODDAT, 4) AS UNSIGNED) <= :yearTo)
+			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) <= :yearTo)
 			""",
 		nativeQuery = true)
 	Page<SeamanEntity> search(
