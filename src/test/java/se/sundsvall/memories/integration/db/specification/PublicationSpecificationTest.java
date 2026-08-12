@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.PublicationRepository;
-import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -39,16 +38,13 @@ class PublicationSpecificationTest {
 	@Autowired
 	private PublicationRepository publicationRepository;
 
-	@Autowired
-	private TopographyRepository topographyRepository;
-
 	@PersistenceContext
 	private EntityManager entityManager;
 
 	@BeforeEach
 	void clearTables() {
 		publicationRepository.deleteAll();
-		topographyRepository.deleteAll();
+		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		publicationRepository.flush();
 	}
 
@@ -65,6 +61,13 @@ class PublicationSpecificationTest {
 			.map(PublicationEntity::getPublicationId)
 			.sorted()
 			.toList();
+	}
+
+	private TopographyEntity persistTopography(final int id, final String name) {
+		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		entityManager.persist(topography);
+		entityManager.flush();
+		return topography;
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -135,8 +138,7 @@ class PublicationSpecificationTest {
 
 	@Test
 	void fetchTopographyResolvesTheAssociation() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);
 		publicationRepository.flush();
 		entityManager.clear();
@@ -163,8 +165,7 @@ class PublicationSpecificationTest {
 
 	@Test
 	void fetchTopographyDoesNotBreakPagingOrCounting() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);
 		persist(2, 4, "b", null).setTopography(topography);
 		publicationRepository.flush();
@@ -195,7 +196,7 @@ class PublicationSpecificationTest {
 			.getSingleResult())
 			.asInstanceOf(LONG)
 			.isEqualTo(999L);
-		assertThat(topographyRepository.findById(999)).isEmpty();
+		assertThat(entityManager.find(TopographyEntity.class, 999)).isNull();
 	}
 
 	// ---------------------------------------------------------------------------------------------

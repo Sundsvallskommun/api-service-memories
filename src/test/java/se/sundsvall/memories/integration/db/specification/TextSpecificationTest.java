@@ -14,9 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.TextParameters;
-import se.sundsvall.memories.integration.db.OcmRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
-import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -40,20 +38,14 @@ class TextSpecificationTest {
 	@Autowired
 	private TextRepository textRepository;
 
-	@Autowired
-	private TopographyRepository topographyRepository;
-
-	@Autowired
-	private OcmRepository ocmRepository;
-
 	@PersistenceContext
 	private EntityManager entityManager;
 
 	@BeforeEach
 	void clearTables() {
 		textRepository.deleteAll();
-		topographyRepository.deleteAll();
-		ocmRepository.deleteAll();
+		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM OCM").executeUpdate();
 		textRepository.flush();
 	}
 
@@ -70,6 +62,20 @@ class TextSpecificationTest {
 			.map(TextEntity::getTextId)
 			.sorted()
 			.toList();
+	}
+
+	private TopographyEntity persistTopography(final int id, final String name) {
+		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		entityManager.persist(topography);
+		entityManager.flush();
+		return topography;
+	}
+
+	private OcmEntity persistSubject(final int id, final String text) {
+		final var subject = OcmEntity.create().withId(id).withText(text);
+		entityManager.persist(subject);
+		entityManager.flush();
+		return subject;
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -140,8 +146,7 @@ class TextSpecificationTest {
 
 	@Test
 	void fetchTopographyResolvesTheAssociation() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);
 		textRepository.flush();
 		entityManager.clear();
@@ -168,8 +173,7 @@ class TextSpecificationTest {
 
 	@Test
 	void fetchTopographyDoesNotBreakPagingOrCounting() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);
 		persist(2, 4, "b", null).setTopography(topography);
 		textRepository.flush();
@@ -200,7 +204,7 @@ class TextSpecificationTest {
 			.getSingleResult())
 			.asInstanceOf(LONG)
 			.isEqualTo(999L);
-		assertThat(topographyRepository.findById(999)).isEmpty();
+		assertThat(entityManager.find(TopographyEntity.class, 999)).isNull();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -209,7 +213,7 @@ class TextSpecificationTest {
 
 	@Test
 	void fetchSubjectResolvesTheAssociation() {
-		final var subject = ocmRepository.saveAndFlush(OcmEntity.create().withId(700).withText("Musik"));
+		final var subject = persistSubject(700, "Musik");
 		persist(1, 4, "a", null).setSubject(subject);
 		textRepository.flush();
 		entityManager.clear();
@@ -226,7 +230,7 @@ class TextSpecificationTest {
 		persist(1, 4, "a", null);
 		entityManager.createNativeQuery("UPDATE TEXT SET D_O_ID = 999 WHERE ID_ID = 1").executeUpdate();
 		entityManager.clear();
-		assertThat(ocmRepository.findById(999)).isEmpty();
+		assertThat(entityManager.find(OcmEntity.class, 999)).isNull();
 
 		final var row = textRepository.findOne(
 			TextSpecification.fetchSubject().and(TextSpecification.hasId(1))).orElseThrow();

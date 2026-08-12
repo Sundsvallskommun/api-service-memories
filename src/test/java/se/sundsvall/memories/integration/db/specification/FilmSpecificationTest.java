@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.FilmParameters;
 import se.sundsvall.memories.integration.db.FilmRepository;
-import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -38,16 +37,13 @@ class FilmSpecificationTest {
 	@Autowired
 	private FilmRepository filmRepository;
 
-	@Autowired
-	private TopographyRepository topographyRepository;
-
 	@PersistenceContext
 	private EntityManager entityManager;
 
 	@BeforeEach
 	void clearTable() {
 		filmRepository.deleteAll();
-		topographyRepository.deleteAll();
+		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		filmRepository.flush();
 	}
 
@@ -64,6 +60,13 @@ class FilmSpecificationTest {
 			.map(FilmEntity::getFilmId)
 			.sorted()
 			.toList();
+	}
+
+	private TopographyEntity persistTopography(final int id, final String name) {
+		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		entityManager.persist(topography);
+		entityManager.flush();
+		return topography;
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -135,8 +138,7 @@ class FilmSpecificationTest {
 
 	@Test
 	void fetchTopographyResolvesTheAssociation() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);
 		filmRepository.flush();
 		entityManager.clear();
@@ -163,8 +165,7 @@ class FilmSpecificationTest {
 
 	@Test
 	void fetchTopographyDoesNotBreakPagingOrCounting() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);
 		persist(2, 4, "b", null).setTopography(topography);
 		filmRepository.flush();
@@ -195,7 +196,7 @@ class FilmSpecificationTest {
 			.getSingleResult())
 			.asInstanceOf(LONG)
 			.isEqualTo(999L);
-		assertThat(topographyRepository.findById(999)).isEmpty();
+		assertThat(entityManager.find(TopographyEntity.class, 999)).isNull();
 	}
 
 	// ---------------------------------------------------------------------------------------------

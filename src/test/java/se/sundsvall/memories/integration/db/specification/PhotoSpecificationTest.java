@@ -15,9 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PhotoParameters;
-import se.sundsvall.memories.integration.db.OcmRepository;
 import se.sundsvall.memories.integration.db.PhotoRepository;
-import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -42,21 +40,15 @@ class PhotoSpecificationTest {
 	@Autowired
 	private PhotoRepository photoRepository;
 
-	@Autowired
-	private TopographyRepository topographyRepository;
-
-	@Autowired
-	private OcmRepository ocmRepository;
-
 	@PersistenceContext
 	private EntityManager entityManager;
 
 	@BeforeEach
 	void clearTables() {
 		photoRepository.deleteAll();
-		topographyRepository.deleteAll();
+		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM FOTO_OCM").executeUpdate();
-		ocmRepository.deleteAll();
+		entityManager.createNativeQuery("DELETE FROM OCM").executeUpdate();
 		photoRepository.flush();
 	}
 
@@ -74,6 +66,20 @@ class PhotoSpecificationTest {
 			.map(PhotoEntity::getPhotoId)
 			.sorted()
 			.toList();
+	}
+
+	private TopographyEntity persistTopography(final int id, final String name) {
+		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		entityManager.persist(topography);
+		entityManager.flush();
+		return topography;
+	}
+
+	private OcmEntity persistSubject(final int id, final String text) {
+		final var subject = OcmEntity.create().withId(id).withText(text);
+		entityManager.persist(subject);
+		entityManager.flush();
+		return subject;
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -190,8 +196,8 @@ class PhotoSpecificationTest {
 
 	@Test
 	void subjectsAreReadThroughTheJunctionTableInIdOrder() {
-		ocmRepository.saveAndFlush(OcmEntity.create().withId(20).withText("Musik"));
-		ocmRepository.saveAndFlush(OcmEntity.create().withId(1).withText("Allmänt"));
+		persistSubject(20, "Musik");
+		persistSubject(1, "Allmänt");
 		persist(1, 4, "a", null, "Foto");
 		// Junction rows inserted with the higher OCM id first, so the assertion below really tests @OrderBy("id")
 		// rather than insertion order.
@@ -206,12 +212,12 @@ class PhotoSpecificationTest {
 
 	@Test
 	void subjectsIgnoreAJunctionRowPointingAtAMissingOcmEntry() {
-		ocmRepository.saveAndFlush(OcmEntity.create().withId(1).withText("Allmänt"));
+		persistSubject(1, "Allmänt");
 		persist(1, 4, "a", null, "Foto");
 		linkSubject(1, 1, 1);
 		linkSubject(2, 1, 999);
 		entityManager.clear();
-		assertThat(ocmRepository.findById(999)).isEmpty();
+		assertThat(entityManager.find(OcmEntity.class, 999)).isNull();
 
 		final var photo = photoRepository.findVisibleById(1).orElseThrow();
 
@@ -393,8 +399,7 @@ class PhotoSpecificationTest {
 
 	@Test
 	void fetchTopographyResolvesTheAssociation() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null, "Foto").setTopography(topography);
 		photoRepository.flush();
 		entityManager.clear();
@@ -460,13 +465,12 @@ class PhotoSpecificationTest {
 			.getSingleResult())
 			.asInstanceOf(LONG)
 			.isEqualTo(999L);
-		assertThat(topographyRepository.findById(999)).isEmpty();
+		assertThat(entityManager.find(TopographyEntity.class, 999)).isNull();
 	}
 
 	@Test
 	void fetchTopographyDoesNotBreakPagingOrCounting() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null, "Foto").setTopography(topography);
 		persist(2, 4, "b", null, "Foto").setTopography(topography);
 		photoRepository.flush();

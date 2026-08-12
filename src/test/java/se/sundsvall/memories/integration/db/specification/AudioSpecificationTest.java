@@ -15,8 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.integration.db.AudioRepository;
-import se.sundsvall.memories.integration.db.OcmRepository;
-import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -40,20 +38,14 @@ class AudioSpecificationTest {
 	@Autowired
 	private AudioRepository audioRepository;
 
-	@Autowired
-	private TopographyRepository topographyRepository;
-
-	@Autowired
-	private OcmRepository ocmRepository;
-
 	@PersistenceContext
 	private EntityManager entityManager;
 
 	@BeforeEach
 	void clearTables() {
 		audioRepository.deleteAll();
-		topographyRepository.deleteAll();
-		ocmRepository.deleteAll();
+		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM OCM").executeUpdate();
 		audioRepository.flush();
 	}
 
@@ -70,6 +62,20 @@ class AudioSpecificationTest {
 			.map(AudioEntity::getAudioId)
 			.sorted()
 			.toList();
+	}
+
+	private TopographyEntity persistTopography(final int id, final String name) {
+		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		entityManager.persist(topography);
+		entityManager.flush();
+		return topography;
+	}
+
+	private OcmEntity persistSubject(final int id, final String text) {
+		final var subject = OcmEntity.create().withId(id).withText(text);
+		entityManager.persist(subject);
+		entityManager.flush();
+		return subject;
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -139,8 +145,7 @@ class AudioSpecificationTest {
 
 	@Test
 	void fetchTopographyResolvesTheAssociation() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);
 		audioRepository.flush();
 		entityManager.clear();
@@ -167,8 +172,7 @@ class AudioSpecificationTest {
 
 	@Test
 	void fetchTopographyDoesNotBreakPagingOrCounting() {
-		final var topography = topographyRepository.saveAndFlush(
-			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);
 		persist(2, 4, "b", null).setTopography(topography);
 		audioRepository.flush();
@@ -199,7 +203,7 @@ class AudioSpecificationTest {
 			.getSingleResult())
 			.asInstanceOf(LONG)
 			.isEqualTo(999L);
-		assertThat(topographyRepository.findById(999)).isEmpty();
+		assertThat(entityManager.find(TopographyEntity.class, 999)).isNull();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -208,7 +212,7 @@ class AudioSpecificationTest {
 
 	@Test
 	void fetchSubjectResolvesTheAssociation() {
-		final var subject = ocmRepository.saveAndFlush(OcmEntity.create().withId(700).withText("Intervju"));
+		final var subject = persistSubject(700, "Intervju");
 		persist(1, 4, "a", null).setSubject(subject);
 		audioRepository.flush();
 		entityManager.clear();
@@ -225,7 +229,7 @@ class AudioSpecificationTest {
 		persist(1, 4, "a", null);
 		entityManager.createNativeQuery("UPDATE LJUD SET LJUD_O_ID = 999 WHERE LJUD_ID = 1").executeUpdate();
 		entityManager.clear();
-		assertThat(ocmRepository.findById(999)).isEmpty();
+		assertThat(entityManager.find(OcmEntity.class, 999)).isNull();
 
 		final var row = audioRepository.findOne(
 			AudioSpecification.fetchSubject().and(AudioSpecification.hasId(1))).orElseThrow();
