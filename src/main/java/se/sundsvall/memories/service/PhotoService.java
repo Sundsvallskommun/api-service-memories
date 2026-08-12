@@ -3,20 +3,20 @@ package se.sundsvall.memories.service;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Objects;
 import java.util.function.Function;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedPhotoResponse;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.integration.db.FotoOcmRepository;
-import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
+import se.sundsvall.memories.integration.db.specification.PhotoSpecifications;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PhotoMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -45,29 +45,20 @@ public class PhotoService {
 		this.fileStreamer = fileStreamer;
 	}
 
+	@Transactional(readOnly = true)
 	public PagedPhotoResponse search(final PhotoParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
-		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
-		final var objectType = trimToNull(parameters.getObjectType());
 
-		final var page = fetchPage(sanitized, objectType, pageable);
+		final var specification = Specification.allOf(
+			PhotoSpecifications.published(),
+			PhotoSpecifications.matches(parameters.getQuery()),
+			PhotoSpecifications.hasObjectType(trimToNull(parameters.getObjectType())));
+
+		final var page = photoRepository.findAll(specification, pageable);
 
 		return PagedPhotoResponse.create()
 			.withPhotos(PhotoMapper.toPhotoList(page.getContent(), topographyLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
-	}
-
-	private Page<PhotoEntity> fetchPage(final String sanitizedQuery, final String objectType, final Pageable pageable) {
-		if (objectType != null && sanitizedQuery != null) {
-			return photoRepository.searchPublishedByObjectType(sanitizedQuery, objectType, pageable);
-		}
-		if (objectType != null) {
-			return photoRepository.findAllPublishedByObjectType(objectType, pageable);
-		}
-		if (sanitizedQuery != null) {
-			return photoRepository.searchPublished(sanitizedQuery, pageable);
-		}
-		return photoRepository.findAllPublished(pageable);
 	}
 
 	private static String trimToNull(final String value) {
@@ -77,6 +68,7 @@ public class PhotoService {
 			.orElse(null);
 	}
 
+	@Transactional(readOnly = true)
 	public Photo getById(final Integer id) {
 		final var entity = photoRepository.findById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));

@@ -10,10 +10,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.api.model.Subject;
@@ -26,6 +29,7 @@ import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -76,66 +80,54 @@ class PhotoServiceTest {
 		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock, fileStreamerMock);
 	}
 
-	@Test
-	void searchWithQueryUsesFulltextRepository() {
-		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.searchPublished("+Sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+	// Which rows a specification selects is verified against a real database in PhotoSpecificationsTest. These tests
+	// only cover what the service itself does: build the pageable, hand a specification to the repository, and map the
+	// resulting page.
 
-		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall"));
+	@Test
+	void searchDelegatesToRepositoryAndMapsThePage() {
+		final var pageable = PageRequest.of(0, 100);
+		when(photoRepositoryMock.findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+
+		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall").withObjectType("Foto"));
 
 		assertThat(result.getPhotos()).hasSize(1);
 		assertThat(result.getPhotos().getFirst().getDocumentTitle()).isEqualTo("Stadsvy");
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(photoRepositoryMock).searchPublished("+Sundsvall*", pageable);
+		verify(photoRepositoryMock).findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable));
 		verifyNoMoreInteractions(photoRepositoryMock);
 	}
 
 	@Test
-	void searchWithNullQueryUsesFindAllPublished() {
+	void searchWithoutFiltersStillPassesASpecification() {
 		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(photoRepositoryMock.findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
 		final var result = service.search(PhotoParameters.create());
 
-		assertThat(result.getPhotos()).hasSize(1);
-		verify(photoRepositoryMock).findAllPublished(pageable);
-		verifyNoMoreInteractions(photoRepositoryMock);
-	}
-
-	@Test
-	void searchWithBlankQueryUsesFindAllPublished() {
-		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
-
-		final var result = service.search(PhotoParameters.create().withQuery("   "));
-
 		assertThat(result.getPhotos()).isEmpty();
-		verify(photoRepositoryMock).findAllPublished(pageable);
+		// Specification.allOf rejects null elements, so an unfiltered search must still yield a usable specification.
+		final var specificationCaptor = ArgumentCaptor.forClass(Specification.class);
+		verify(photoRepositoryMock).findAll(specificationCaptor.capture(), eq(pageable));
+		assertThat(specificationCaptor.getValue()).isNotNull();
 		verifyNoMoreInteractions(photoRepositoryMock);
 	}
 
 	@Test
-	void searchWithObjectTypeOnlyUsesByObjectTypeRepository() {
-		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.findAllPublishedByObjectType("Foto", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+	void searchAppliesRequestedPaging() {
+		final var pageable = PageRequest.of(2, 25);
+		when(photoRepositoryMock.findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 51));
 
-		final var result = service.search(PhotoParameters.create().withObjectType("Foto"));
+		final var result = service.search(PhotoParameters.create().withPage(3).withLimit(25));
 
-		assertThat(result.getPhotos()).hasSize(1);
-		verify(photoRepositoryMock).findAllPublishedByObjectType("Foto", pageable);
-		verifyNoMoreInteractions(photoRepositoryMock);
-	}
-
-	@Test
-	void searchWithObjectTypeAndQueryUsesSearchByObjectType() {
-		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.searchPublishedByObjectType("+Sundsvall*", "Foto", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
-
-		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall").withObjectType("Foto"));
-
-		assertThat(result.getPhotos()).hasSize(1);
-		verify(photoRepositoryMock).searchPublishedByObjectType("+Sundsvall*", "Foto", pageable);
+		assertThat(result.getMetaData().getPage()).isEqualTo(3);
+		assertThat(result.getMetaData().getLimit()).isEqualTo(25);
+		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(51);
+		verify(photoRepositoryMock).findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable));
 		verifyNoMoreInteractions(photoRepositoryMock);
 	}
 
