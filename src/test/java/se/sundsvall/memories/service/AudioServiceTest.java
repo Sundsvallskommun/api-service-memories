@@ -6,11 +6,14 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.integration.db.AudioRepository;
@@ -20,6 +23,7 @@ import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -35,9 +39,6 @@ class AudioServiceTest {
 	private AudioRepository repositoryMock;
 
 	@Mock
-	private TopographyLookup topographyLookupMock;
-
-	@Mock
 	private OcmLookup ocmLookupMock;
 
 	@Mock
@@ -47,15 +48,20 @@ class AudioServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new AudioService(repositoryMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock, fileStreamerMock);
+		service = new AudioService(repositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
 	}
 
+	// Which rows a specification selects is verified against a real database in AudioSpecificationsTest. These tests
+	// only cover what the service itself does: build the pageable, hand a specification to the repository, and map the
+	// resulting page.
+
 	@Test
-	void searchWithQuery() {
+	void searchDelegatesToRepositoryAndMapsThePage() {
 		final var pageable = PageRequest.of(0, 100);
 		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Sundsvall intervju");
 
-		when(repositoryMock.searchPublished("+sundsvall*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+		when(repositoryMock.findAll(ArgumentMatchers.<Specification<AudioEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
 		final var result = service.search(AudioParameters.create().withQuery("sundsvall"));
 
@@ -63,62 +69,41 @@ class AudioServiceTest {
 		assertThat(result.getAudios().getFirst().getDocumentTitle()).isEqualTo("Sundsvall intervju");
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(repositoryMock).searchPublished("+sundsvall*", pageable);
+		verify(repositoryMock).findAll(ArgumentMatchers.<Specification<AudioEntity>>any(), eq(pageable));
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
 	@Test
-	void searchSanitizesOperatorsInQuery() {
+	void searchWithoutFiltersStillPassesASpecification() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Midsommar");
 
-		when(repositoryMock.searchPublished("+midsommar* +1985*", pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
-
-		final var result = service.search(AudioParameters.create().withQuery("+midsommar -1985"));
-
-		assertThat(result.getAudios()).hasSize(1);
-		verify(repositoryMock).searchPublished("+midsommar* +1985*", pageable);
-		verifyNoMoreInteractions(repositoryMock);
-	}
-
-	@Test
-	void searchWithNullQuery() {
-		final var pageable = PageRequest.of(0, 100);
-		final var entity = AudioEntity.create().withAudioId(1);
-
-		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+		when(repositoryMock.findAll(ArgumentMatchers.<Specification<AudioEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
 		final var result = service.search(AudioParameters.create());
 
-		assertThat(result.getAudios()).hasSize(1);
-		verify(repositoryMock).findAllPublished(pageable);
+		assertThat(result.getAudios()).isEmpty();
+		// Specification.allOf rejects null elements, so an unfiltered search must still yield a usable specification.
+		final var specificationCaptor = ArgumentCaptor.forClass(Specification.class);
+		verify(repositoryMock).findAll(specificationCaptor.capture(), eq(pageable));
+		assertThat(specificationCaptor.getValue()).isNotNull();
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
 	@Test
-	void searchWithBlankQuery() {
-		final var pageable = PageRequest.of(0, 100);
+	void searchAppliesRequestedPaging() {
+		final var pageable = PageRequest.of(2, 25);
 		final var entity = AudioEntity.create().withAudioId(1);
 
-		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+		when(repositoryMock.findAll(ArgumentMatchers.<Specification<AudioEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(entity), pageable, 51));
 
-		final var result = service.search(AudioParameters.create().withQuery("   "));
+		final var result = service.search(AudioParameters.create().withPage(3).withLimit(25));
 
-		assertThat(result.getAudios()).hasSize(1);
-		verify(repositoryMock).findAllPublished(pageable);
-		verifyNoMoreInteractions(repositoryMock);
-	}
-
-	@Test
-	void searchWithOperatorOnlyQueryFallsBackToFindAllPublished() {
-		final var pageable = PageRequest.of(0, 100);
-
-		when(repositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
-
-		final var result = service.search(AudioParameters.create().withQuery("+-*"));
-
-		assertThat(result.getAudios()).isEmpty();
-		verify(repositoryMock).findAllPublished(pageable);
+		assertThat(result.getMetaData().getPage()).isEqualTo(3);
+		assertThat(result.getMetaData().getLimit()).isEqualTo(25);
+		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(51);
+		verify(repositoryMock).findAll(ArgumentMatchers.<Specification<AudioEntity>>any(), eq(pageable));
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
@@ -127,27 +112,27 @@ class AudioServiceTest {
 		final var id = 1;
 		final var entity = AudioEntity.create().withAudioId(id).withDocumentTitle("Test");
 
-		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(repositoryMock.findOne(ArgumentMatchers.<Specification<AudioEntity>>any())).thenReturn(Optional.of(entity));
 
 		final var result = service.getById(id);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getAudioId()).isEqualTo(id);
 		assertThat(result.getDocumentTitle()).isEqualTo("Test");
-		verify(repositoryMock).findById(id);
+		verify(repositoryMock).findOne(ArgumentMatchers.<Specification<AudioEntity>>any());
 	}
 
 	@Test
 	void getByIdNotFound() {
 		final var id = 999;
 
-		when(repositoryMock.findById(id)).thenReturn(Optional.empty());
+		when(repositoryMock.findOne(ArgumentMatchers.<Specification<AudioEntity>>any())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.getById(id));
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("Audio with id '999' not found");
-		verify(repositoryMock).findById(id);
+		verify(repositoryMock).findOne(ArgumentMatchers.<Specification<AudioEntity>>any());
 	}
 
 	@Test
@@ -156,7 +141,7 @@ class AudioServiceTest {
 		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("/ljud/test.mp3").withAudioMimeType("audio/mpeg");
 		final var responseMock = mock(HttpServletResponse.class);
 
-		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(repositoryMock.findOne(ArgumentMatchers.<Specification<AudioEntity>>any())).thenReturn(Optional.of(entity));
 
 		service.streamFile(id, responseMock);
 
@@ -170,7 +155,7 @@ class AudioServiceTest {
 		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("   ");
 		final var responseMock = mock(HttpServletResponse.class);
 
-		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(repositoryMock.findOne(ArgumentMatchers.<Specification<AudioEntity>>any())).thenReturn(Optional.of(entity));
 
 		service.streamFile(id, responseMock);
 
@@ -184,7 +169,7 @@ class AudioServiceTest {
 		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("/a/interview.mp3").withAudioMimeType("audio/mpeg");
 		final var expected = new StreamPayload(mock(Resource.class), "audio/mpeg", "interview.mp3");
 
-		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(repositoryMock.findOne(ArgumentMatchers.<Specification<AudioEntity>>any())).thenReturn(Optional.of(entity));
 		when(fileStreamerMock.openForPlayback("/ljud//a/interview.mp3", "audio/mpeg", "interview.mp3")).thenReturn(expected);
 
 		assertThat(service.openForPlayback(id)).isSameAs(expected);
@@ -196,7 +181,7 @@ class AudioServiceTest {
 		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("   ");
 		final var expected = new StreamPayload(mock(Resource.class), "application/octet-stream", "audio-2");
 
-		when(repositoryMock.findById(id)).thenReturn(Optional.of(entity));
+		when(repositoryMock.findOne(ArgumentMatchers.<Specification<AudioEntity>>any())).thenReturn(Optional.of(entity));
 		when(fileStreamerMock.openForPlayback("/ljud/   ", "application/octet-stream", "audio-2")).thenReturn(expected);
 
 		assertThat(service.openForPlayback(id)).isSameAs(expected);
@@ -205,7 +190,7 @@ class AudioServiceTest {
 	@Test
 	void openForPlaybackNotFound() {
 		final var id = 999;
-		when(repositoryMock.findById(id)).thenReturn(Optional.empty());
+		when(repositoryMock.findOne(ArgumentMatchers.<Specification<AudioEntity>>any())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.openForPlayback(id));
 
@@ -219,13 +204,13 @@ class AudioServiceTest {
 		final var id = 999;
 		final var responseMock = mock(HttpServletResponse.class);
 
-		when(repositoryMock.findById(id)).thenReturn(Optional.empty());
+		when(repositoryMock.findOne(ArgumentMatchers.<Specification<AudioEntity>>any())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.streamFile(id, responseMock));
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("Audio with id '999' not found");
-		verify(repositoryMock).findById(id);
+		verify(repositoryMock).findOne(ArgumentMatchers.<Specification<AudioEntity>>any());
 		verifyNoInteractions(fileStreamerMock);
 	}
 }

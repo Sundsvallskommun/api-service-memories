@@ -2,7 +2,10 @@ package se.sundsvall.memories.integration.db.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -30,8 +33,9 @@ public class AudioEntity {
 	@Column(name = "DOKTITEL", length = 256)
 	private String documentTitle;
 
-	@Column(name = "LJUD_T_ID")
-	private Integer topographyId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "LJUD_T_ID")
+	private TopographyEntity topography;
 
 	@Column(name = "LJUD_OPLATS", length = 64)
 	private String locationText;
@@ -142,16 +146,16 @@ public class AudioEntity {
 		return this;
 	}
 
-	public Integer getTopographyId() {
-		return topographyId;
+	public TopographyEntity getTopography() {
+		return topography;
 	}
 
-	public void setTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public void setTopography(final TopographyEntity topography) {
+		this.topography = topography;
 	}
 
-	public AudioEntity withTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public AudioEntity withTopography(final TopographyEntity topography) {
+		this.topography = topography;
 		return this;
 	}
 
@@ -279,14 +283,14 @@ public class AudioEntity {
 		final AudioEntity that = (AudioEntity) o;
 		return Objects.equals(audioId, that.audioId) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
 			&& Objects.equals(objectType, that.objectType) && Objects.equals(date, that.date) && Objects.equals(documentTitle, that.documentTitle)
-			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(subjectId, that.subjectId)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(subjectId, that.subjectId)
 			&& Objects.equals(authorPersonId, that.authorPersonId) && Objects.equals(authorEntityId, that.authorEntityId) && Objects.equals(comment, that.comment)
 			&& Objects.equals(audioMimeType, that.audioMimeType) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, subjectId, authorPersonId, authorEntityId, comment, audioMimeType, nodeId,
+		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, locationText, subjectId, authorPersonId, authorEntityId, comment, audioMimeType, nodeId,
 			options, deletedDate);
 	}
 
@@ -299,7 +303,6 @@ public class AudioEntity {
 			", objectType='" + objectType + '\'' +
 			", date='" + date + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
-			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", subjectId=" + subjectId +
 			", authorPersonId=" + authorPersonId +

@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import se.sundsvall.memories.api.model.Audio;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -28,7 +29,7 @@ class AudioMapperTest {
 					.withObjectType("LJUD")
 					.withDate("2020-01-01")
 					.withDocumentTitle("Test audio")
-					.withTopographyId(2)
+					.withTopography(TopographyEntity.create().withTId(2).withName("Sundsvalls kommun"))
 					.withLocationText("Sundsvall")
 					.withSubjectId(7)
 					.withAuthorPersonId(4)
@@ -62,7 +63,7 @@ class AudioMapperTest {
 	@ParameterizedTest
 	@MethodSource("toAudioArguments")
 	void toAudio(final AudioEntity input, final Audio expected) {
-		final var result = AudioMapper.toAudio(input, "Sundsvalls kommun", "Intervju");
+		final var result = AudioMapper.toAudio(input, "Intervju");
 
 		if (expected == null) {
 			assertThat(result).isNull();
@@ -74,24 +75,53 @@ class AudioMapperTest {
 	}
 
 	@Test
+	void toAudioFallsBackThroughTheTopographyDisplayName() {
+		final var entity = AudioEntity.create().withAudioId(1)
+			.withTopography(TopographyEntity.create().withTId(2).withName("").withPlace("Indal"));
+
+		assertThat(AudioMapper.toAudio(entity, null).getLocation()).isEqualTo("Indal");
+	}
+
+	@Test
+	void toAudioWithoutTopographyHasNeitherLocationNorTopographyId() {
+		// Both an audio without a place and one whose LJUD_T_ID points at a missing row arrive here as a null
+		// association — see AudioSpecificationsTest for the dangling foreign key case. Since topographyId is read
+		// through the association too, the two can never disagree.
+		final var entity = AudioEntity.create().withAudioId(1).withLocationText("Sundsvall");
+
+		final var result = AudioMapper.toAudio(entity, null);
+
+		assertThat(result.getLocation()).isNull();
+		assertThat(result.getTopographyId()).isNull();
+		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
+	}
+
+	@Test
 	void toAudioList() {
 		final var entities = List.of(
-			AudioEntity.create().withAudioId(1).withTopographyId(10).withSubjectId(100).withDocumentTitle("Audio A"),
-			AudioEntity.create().withAudioId(2).withTopographyId(20).withSubjectId(200).withDocumentTitle("Audio B"));
-		final ReferenceResolver locationLookup = id -> id == 10 ? "Sundsvall" : "Timrå";
-		final ReferenceResolver subjectLookup = id -> id == 100 ? "Intervju" : "Musik";
+			AudioEntity.create().withAudioId(1).withSubjectId(100).withDocumentTitle("Audio A")
+				.withTopography(TopographyEntity.create().withTId(10).withName("Sundsvall")),
+			AudioEntity.create().withAudioId(2).withSubjectId(200).withDocumentTitle("Audio B")
+				.withTopography(TopographyEntity.create().withTId(20).withName("Timrå")),
+			AudioEntity.create().withAudioId(3).withSubjectId(300).withDocumentTitle("Audio C"));
+		final ReferenceResolver subjectLookup = id -> switch (id) {
+			case 100 -> "Intervju";
+			case 200 -> "Musik";
+			default -> null;
+		};
 
-		final var result = AudioMapper.toAudioList(entities, locationLookup, subjectLookup);
+		final var result = AudioMapper.toAudioList(entities, subjectLookup);
 
 		assertThat(result)
-			.extracting(Audio::getAudioId, Audio::getDocumentTitle, Audio::getLocation, Audio::getSubject)
+			.extracting(Audio::getAudioId, Audio::getDocumentTitle, Audio::getTopographyId, Audio::getLocation, Audio::getSubject)
 			.containsExactly(
-				tuple(1, "Audio A", "Sundsvall", "Intervju"),
-				tuple(2, "Audio B", "Timrå", "Musik"));
+				tuple(1, "Audio A", 10, "Sundsvall", "Intervju"),
+				tuple(2, "Audio B", 20, "Timrå", "Musik"),
+				tuple(3, "Audio C", null, null, null));
 	}
 
 	@Test
 	void toAudioListWithNull() {
-		assertThat(AudioMapper.toAudioList(null, NULL_LOOKUP, NULL_LOOKUP)).isEmpty();
+		assertThat(AudioMapper.toAudioList(null, NULL_LOOKUP)).isEmpty();
 	}
 }

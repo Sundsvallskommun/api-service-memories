@@ -149,6 +149,13 @@ INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_
 VALUES (4, 'unpublished.mp3', '/media/ljud/unpublished.mp3', 'LJUD', '2000-01-01', 'Unpublished audio', 1, 'Sundsvall',
         1, 0, 1, 'This audio is not published', 'audio/mpeg', 203, 0, null);
 
+-- Soft-deleted audio. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not hide
+-- it — it must never appear in any response.
+INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_T_ID, LJUD_OPLATS, LJUD_O_ID,
+                  LJUD_U_E_ID, LJUD_U_J_ID, KOMMENT_LJUD, LJUD_MIME_TYPE, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (5, 'raderad.mp3', '/media/ljud/raderad.mp3', 'LJUD', '1980-04-12', 'Intervju raderad', 1, 'Sundsvall',
+        10, 0, 1, 'Ljudupptagning som raderats', 'audio/mpeg', 204, 4, '2024-03-01');
+
 --
 -- TEXT (textarkiv — fjärde mediatypen)
 --
