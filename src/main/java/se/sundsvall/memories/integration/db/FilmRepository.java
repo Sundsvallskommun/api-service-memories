@@ -4,6 +4,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
@@ -14,10 +15,12 @@ import se.sundsvall.memories.integration.db.model.FilmEntity;
  * <p>
  * <strong>Sorting:</strong> the queries below are native, so a sort property supplied via {@link Pageable} must be a
  * physical DB column name (e.g. {@code DOKTITEL}), not the camelCase API/entity field. The resolved {@code location}
- * (from TOPOGRAFI) is not backed by a column and cannot be sorted on.
+ * (from TOPOGRAFI) is not backed by a column and cannot be sorted on. This does <em>not</em> apply to the inherited
+ * {@link JpaSpecificationExecutor} methods, which take entity properties — see
+ * {@link se.sundsvall.memories.integration.db.specification.FilmSpecifications FilmSpecifications}.
  */
 @CircuitBreaker(name = "filmRepository")
-public interface FilmRepository extends JpaRepository<FilmEntity, Integer> {
+public interface FilmRepository extends JpaRepository<FilmEntity, Integer>, JpaSpecificationExecutor<FilmEntity> {
 
 	/**
 	 * Retrieves a paginated list of all published films from the database. A film is considered published when bit
