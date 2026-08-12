@@ -1,7 +1,9 @@
 package se.sundsvall.memories.integration.db.specification;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,7 @@ import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
 /**
@@ -90,6 +93,67 @@ class PhotoSpecificationsTest {
 		persist(1, null, "no options", null, "Foto");
 
 		assertThat(findIds(PhotoSpecifications.published())).isEmpty();
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// notDeleted()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void notDeletedExcludesRowsWithADeletedDate() {
+		persist(1, 4, "kept", null, "Foto");
+		persist(2, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecifications.notDeleted())).containsExactly(1);
+	}
+
+	@Test
+	void notDeletedIsIndependentOfThePublishedBit() {
+		// Deleting a row sets DELETEDDATE but leaves bit 4 set, which is why published() alone does not hide it.
+		persist(1, 4, "deleted but still published", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecifications.published())).containsExactly(1);
+		assertThat(findIds(Specification.allOf(PhotoSpecifications.published(), PhotoSpecifications.notDeleted()))).isEmpty();
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// hasId()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void hasIdMatchesTheSingleRow() {
+		persist(1, 4, "a", null, "Foto");
+		persist(2, 4, "b", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.hasId(2))).containsExactly(2);
+	}
+
+	@Test
+	void findOneByIdSkipsADeletedRow() {
+		persist(1, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		photoRepository.flush();
+
+		final var specification = Specification.allOf(
+			PhotoSpecifications.fetchTopography(),
+			PhotoSpecifications.hasId(1),
+			PhotoSpecifications.notDeleted());
+
+		assertThat(photoRepository.findOne(specification)).isEmpty();
+	}
+
+	@Test
+	void findOneByIdReturnsAnUnpublishedRow() {
+		// Unpublished photos stay reachable by id — a planned administrative interface needs them.
+		persist(1, 0, "unpublished", null, "Foto");
+
+		final var specification = Specification.allOf(
+			PhotoSpecifications.fetchTopography(),
+			PhotoSpecifications.hasId(1),
+			PhotoSpecifications.notDeleted());
+
+		assertThat(photoRepository.findOne(specification)).isPresent();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -258,13 +322,29 @@ class PhotoSpecificationsTest {
 	}
 
 	@Test
-	void findByIdFetchesTopographyAndToleratesADanglingForeignKey() {
+	void findOneWithFetchToleratesADanglingForeignKey() {
 		persist(1, 4, "a", null, "Foto");
 		danglingForeignKey(1);
 
-		final var photo = photoRepository.findById(1).orElseThrow();
+		final var photo = photoRepository.findOne(Specification.allOf(
+			PhotoSpecifications.fetchTopography(),
+			PhotoSpecifications.hasId(1),
+			PhotoSpecifications.notDeleted())).orElseThrow();
 
 		assertThat(photo.getTopography()).isNull();
+	}
+
+	@Test
+	void findByIdWithoutFetchFailsOnADanglingForeignKey() {
+		persist(1, 4, "a", null, "Foto");
+		danglingForeignKey(1);
+
+		// Documents why reads by id go through a specification with fetchTopography() rather than findById: the plain
+		// lookup hands back a lazy proxy, which blows up the moment the mapper asks for the place name.
+		final var photo = photoRepository.findById(1).orElseThrow();
+
+		assertThatThrownBy(() -> photo.getTopography().getDisplayName())
+			.isInstanceOf(EntityNotFoundException.class);
 	}
 
 	/**

@@ -101,6 +101,11 @@ VALUES (1003, 'Industribild från Timrå', 'Sågverk i Timrå', '1960', '1962', 
 INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, FIL_LITEN, NODEID, `OPTIONS`)
 VALUES (1099, 'Draft unpublished photo', 'Stadsvy not yet published', '2024', null, 19099, 0);
 
+-- Soft-deleted photo. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not
+-- hide it — it must never appear in any response.
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, FIL_LITEN, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (1098, 'Hamnen i Sundsvall raderad', 'Stadsvy som raderats', '1950', null, 19098, 4, '2024-03-01');
+
 --
 -- OCM (subject / ämne lookup)
 --

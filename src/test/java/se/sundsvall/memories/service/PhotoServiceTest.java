@@ -130,7 +130,7 @@ class PhotoServiceTest {
 
 	@Test
 	void getByIdReturnsDetailWithRelatedPhotosAndSubjects() {
-		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
+		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.of(entity()));
 		when(photoRepositoryMock.findRelatedPhotoIds(1234)).thenReturn(List.of(2001, 2002));
 		when(fotoOcmRepositoryMock.findByPhotoIdOrderById(1234)).thenReturn(List.of(
 			FotoOcmEntity.create().withPhotoId(1234).withOcmId(10),
@@ -149,7 +149,7 @@ class PhotoServiceTest {
 
 	@Test
 	void getByIdNotFound() {
-		when(photoRepositoryMock.findById(999)).thenReturn(Optional.empty());
+		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.getById(999));
 
@@ -161,7 +161,7 @@ class PhotoServiceTest {
 	@MethodSource("fileVariants")
 	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename) {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entity()));
+		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.of(entity()));
 
 		service.streamFile(1234, variant, responseMock);
 
@@ -172,7 +172,7 @@ class PhotoServiceTest {
 	@Test
 	void streamFileNotFoundPhoto() {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(photoRepositoryMock.findById(999)).thenReturn(Optional.empty());
+		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(999, FileVariant.THUMBNAIL, responseMock));
@@ -186,7 +186,7 @@ class PhotoServiceTest {
 	void streamFileWhenVariantIsBlank() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withThumbnailFilename("   ");
-		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entityMissingFile));
+		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(1234, FileVariant.THUMBNAIL, responseMock));
@@ -200,7 +200,7 @@ class PhotoServiceTest {
 	void streamFileWhenVariantIsNull() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withLargeImageFilename(null);
-		when(photoRepositoryMock.findById(1234)).thenReturn(Optional.of(entityMissingFile));
+		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(1234, FileVariant.LARGE, responseMock));

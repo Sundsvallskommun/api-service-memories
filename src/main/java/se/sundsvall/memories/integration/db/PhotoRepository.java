@@ -2,9 +2,7 @@ package se.sundsvall.memories.integration.db;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -27,18 +25,6 @@ import se.sundsvall.memories.integration.db.model.PhotoEntity;
  */
 @CircuitBreaker(name = "photoRepository")
 public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, JpaSpecificationExecutor<PhotoEntity> {
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>
-	 * Overridden to fetch the topography association in the same query. Without it, a photo whose {@code F_T_ID} points
-	 * at a row that does not exist would be given a lazy proxy that throws {@code EntityNotFoundException} when the
-	 * mapper reads the place name. The left join resolves the association to {@code null} instead.
-	 */
-	@Override
-	@EntityGraph(attributePaths = "topography")
-	Optional<PhotoEntity> findById(Integer id);
 
 	/**
 	 * Returns the IDs of all photos connected to the given photo via the {@code FOTO_FOTO} junction table. The relation

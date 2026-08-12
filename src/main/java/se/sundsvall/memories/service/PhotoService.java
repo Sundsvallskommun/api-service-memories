@@ -48,6 +48,7 @@ public class PhotoService {
 
 		final var specification = Specification.allOf(
 			PhotoSpecifications.fetchTopography(),
+			PhotoSpecifications.notDeleted(),
 			PhotoSpecifications.published(),
 			PhotoSpecifications.matches(parameters.getQuery()),
 			PhotoSpecifications.hasObjectType(trimToNull(parameters.getObjectType())));
@@ -66,10 +67,25 @@ public class PhotoService {
 			.orElse(null);
 	}
 
+	/**
+	 * Loads a single photo by id, applying the same visibility rules as a search so that a soft-deleted photo cannot be
+	 * reached by guessing its id.
+	 *
+	 * <p>
+	 * Unpublished photos are deliberately still reachable here — an administrative interface is planned that needs to
+	 * show them.
+	 */
+	private PhotoEntity findVisible(final Integer id) {
+		return photoRepository.findOne(Specification.allOf(
+			PhotoSpecifications.fetchTopography(),
+			PhotoSpecifications.hasId(id),
+			PhotoSpecifications.notDeleted()))
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
+	}
+
 	@Transactional(readOnly = true)
 	public Photo getById(final Integer id) {
-		final var entity = photoRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
+		final var entity = findVisible(id);
 
 		final var relatedPhotoIds = photoRepository.findRelatedPhotoIds(id);
 		final var subjects = fotoOcmRepository.findByPhotoIdOrderById(id).stream()
@@ -82,8 +98,7 @@ public class PhotoService {
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {
-		final var entity = photoRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
+		final var entity = findVisible(id);
 
 		final var filename = ofNullable(variant.extract(entity))
 			.filter(name -> !name.isBlank())

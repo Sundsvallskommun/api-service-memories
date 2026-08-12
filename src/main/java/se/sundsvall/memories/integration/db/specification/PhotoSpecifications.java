@@ -55,6 +55,29 @@ public final class PhotoSpecifications {
 	}
 
 	/**
+	 * Excludes soft-deleted rows.
+	 *
+	 * <p>
+	 * Deleting a row sets {@code DELETEDDATE} but leaves the published bit in {@code OPTIONS} set, so this is the only
+	 * marker of a deletion and has to be applied everywhere a row is read.
+	 *
+	 * @return a specification matching rows with no {@code DELETEDDATE}
+	 */
+	public static Specification<PhotoEntity> notDeleted() {
+		return (root, _, cb) -> cb.isNull(root.get("deletedDate"));
+	}
+
+	/**
+	 * Matches a single row by primary key, so that reads by id can be composed from the same filters as a search.
+	 *
+	 * @param  id the photo id
+	 * @return    a specification matching the given id
+	 */
+	public static Specification<PhotoEntity> hasId(final Integer id) {
+		return (root, _, cb) -> cb.equal(root.get("photoId"), id);
+	}
+
+	/**
 	 * Fetches the topography association in the same query, so that mapping a page of results does not fire one
 	 * additional select per row.
 	 *

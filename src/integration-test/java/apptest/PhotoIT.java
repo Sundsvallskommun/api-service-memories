@@ -60,4 +60,18 @@ class PhotoIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * Photo 1098 is soft-deleted but still carries the published bit, which is exactly the state that used to leak it
+	 * through both search and get-by-id.
+	 */
+	@Test
+	void test05_getSoftDeletedPhotoByIdNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/1098")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }
