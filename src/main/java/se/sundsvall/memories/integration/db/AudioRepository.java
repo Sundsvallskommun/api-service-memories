@@ -17,9 +17,7 @@ import static se.sundsvall.memories.integration.db.specification.AudioSpecificat
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.published;
 
 /**
- * Repository for the {@code LJUD} table. See
- * {@link se.sundsvall.memories.integration.db.specification.AudioSpecification AudioSpecification} for the filters the
- * methods below compose.
+ * Repository for the {@code LJUD} table.
  *
  * <p>
  * <strong>Sorting:</strong> a sort property supplied via {@link Pageable} is an entity property (e.g.
@@ -29,13 +27,6 @@ import static se.sundsvall.memories.integration.db.specification.AudioSpecificat
 @CircuitBreaker(name = "audioRepository")
 public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, JpaSpecificationExecutor<AudioEntity> {
 
-	/**
-	 * Searches audio recordings matching the given request parameters.
-	 *
-	 * @param  parameters the search parameters
-	 * @param  pageable   the pagination and sorting criteria
-	 * @return            a page of matching recordings
-	 */
 	default Page<AudioEntity> findAllByParameters(final AudioParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
 			.and(fetchSubject())
@@ -45,16 +36,7 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, Jp
 			pageable);
 	}
 
-	/**
-	 * Loads a single recording by id under the same visibility rules a search applies, so that a soft-deleted recording
-	 * cannot be reached by guessing its id.
-	 *
-	 * <p>
-	 * Unpublished recordings are deliberately still reachable — an administrative interface is planned that needs them.
-	 *
-	 * @param  id the audio id
-	 * @return    the recording, or empty if it does not exist or is soft-deleted
-	 */
+	// Unpublished recordings stay reachable by id — a planned administrative interface needs them.
 	default Optional<AudioEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
 			.and(fetchSubject())

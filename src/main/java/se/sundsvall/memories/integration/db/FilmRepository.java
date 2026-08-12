@@ -16,9 +16,7 @@ import static se.sundsvall.memories.integration.db.specification.FilmSpecificati
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.published;
 
 /**
- * Repository for the {@code FILM} table. See
- * {@link se.sundsvall.memories.integration.db.specification.FilmSpecification FilmSpecification} for the filters the
- * methods below compose.
+ * Repository for the {@code FILM} table.
  *
  * <p>
  * <strong>Sorting:</strong> a sort property supplied via {@link Pageable} is an entity property (e.g.
@@ -28,13 +26,6 @@ import static se.sundsvall.memories.integration.db.specification.FilmSpecificati
 @CircuitBreaker(name = "filmRepository")
 public interface FilmRepository extends JpaRepository<FilmEntity, Integer>, JpaSpecificationExecutor<FilmEntity> {
 
-	/**
-	 * Searches films matching the given request parameters.
-	 *
-	 * @param  parameters the search parameters
-	 * @param  pageable   the pagination and sorting criteria
-	 * @return            a page of matching films
-	 */
 	default Page<FilmEntity> findAllByParameters(final FilmParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
 			.and(notDeleted())
@@ -43,16 +34,7 @@ public interface FilmRepository extends JpaRepository<FilmEntity, Integer>, JpaS
 			pageable);
 	}
 
-	/**
-	 * Loads a single film by id under the same visibility rules a search applies, so that a soft-deleted film cannot be
-	 * reached by guessing its id.
-	 *
-	 * <p>
-	 * Unpublished films are deliberately still reachable — an administrative interface is planned that needs them.
-	 *
-	 * @param  id the film id
-	 * @return    the film, or empty if it does not exist or is soft-deleted
-	 */
+	// Unpublished films stay reachable by id — a planned administrative interface needs them.
 	default Optional<FilmEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
 			.and(hasId(id))

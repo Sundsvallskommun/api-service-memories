@@ -16,9 +16,7 @@ import static se.sundsvall.memories.integration.db.specification.PublicationSpec
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.published;
 
 /**
- * Repository for the {@code PUBL} table. See
- * {@link se.sundsvall.memories.integration.db.specification.PublicationSpecification PublicationSpecification} for the
- * filters the methods below compose.
+ * Repository for the {@code PUBL} table.
  *
  * <p>
  * <strong>Sorting:</strong> a sort property supplied via {@link Pageable} is an entity property (e.g.
@@ -28,13 +26,6 @@ import static se.sundsvall.memories.integration.db.specification.PublicationSpec
 @CircuitBreaker(name = "publicationRepository")
 public interface PublicationRepository extends JpaRepository<PublicationEntity, Integer>, JpaSpecificationExecutor<PublicationEntity> {
 
-	/**
-	 * Searches publications matching the given request parameters.
-	 *
-	 * @param  parameters the search parameters
-	 * @param  pageable   the pagination and sorting criteria
-	 * @return            a page of matching publications
-	 */
 	default Page<PublicationEntity> findAllByParameters(final PublicationParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
 			.and(notDeleted())
@@ -43,17 +34,7 @@ public interface PublicationRepository extends JpaRepository<PublicationEntity, 
 			pageable);
 	}
 
-	/**
-	 * Loads a single publication by id under the same visibility rules a search applies, so that a soft-deleted
-	 * publication cannot be reached by guessing its id.
-	 *
-	 * <p>
-	 * Unpublished publications are deliberately still reachable — an administrative interface is planned that needs
-	 * them.
-	 *
-	 * @param  id the publication id
-	 * @return    the publication, or empty if it does not exist or is soft-deleted
-	 */
+	// Unpublished publications stay reachable by id — a planned administrative interface needs them.
 	default Optional<PublicationEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
 			.and(hasId(id))

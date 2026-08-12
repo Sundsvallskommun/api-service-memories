@@ -17,9 +17,7 @@ import static se.sundsvall.memories.integration.db.specification.TextSpecificati
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.published;
 
 /**
- * Repository for the {@code TEXT} table. See
- * {@link se.sundsvall.memories.integration.db.specification.TextSpecification TextSpecification} for the filters the
- * methods below compose.
+ * Repository for the {@code TEXT} table.
  *
  * <p>
  * <strong>Sorting:</strong> a sort property supplied via {@link Pageable} is an entity property (e.g.
@@ -29,13 +27,6 @@ import static se.sundsvall.memories.integration.db.specification.TextSpecificati
 @CircuitBreaker(name = "textRepository")
 public interface TextRepository extends JpaRepository<TextEntity, Integer>, JpaSpecificationExecutor<TextEntity> {
 
-	/**
-	 * Searches text documents matching the given request parameters.
-	 *
-	 * @param  parameters the search parameters
-	 * @param  pageable   the pagination and sorting criteria
-	 * @return            a page of matching documents
-	 */
 	default Page<TextEntity> findAllByParameters(final TextParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
 			.and(fetchSubject())
@@ -45,16 +36,7 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer>, JpaS
 			pageable);
 	}
 
-	/**
-	 * Loads a single document by id under the same visibility rules a search applies, so that a soft-deleted document
-	 * cannot be reached by guessing its id.
-	 *
-	 * <p>
-	 * Unpublished documents are deliberately still reachable — an administrative interface is planned that needs them.
-	 *
-	 * @param  id the text id
-	 * @return    the document, or empty if it does not exist or is soft-deleted
-	 */
+	// Unpublished documents stay reachable by id — a planned administrative interface needs them.
 	default Optional<TextEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
 			.and(fetchSubject())
