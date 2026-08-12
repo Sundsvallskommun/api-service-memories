@@ -181,6 +181,11 @@ VALUES (1002, '1950-06-15', '1950-06-15', 'Brev från Timrå', 0, 1, 2, 'Timrå'
 INSERT INTO TEXT (ID_ID, DOKTITEL, KOMMENT_DOC, NODEID, `OPTIONS`)
 VALUES (1099, 'Draft unpublished text', 'Stadshuset ej publicerad', 20099, 0);
 
+-- Soft-deleted text. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not hide
+-- it — it must never appear in any response.
+INSERT INTO TEXT (ID_ID, DOKTITEL, KOMMENT_DOC, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (1098, 'Minne från stadshuset raderat', 'Handling som raderats', 20098, 4, '2024-03-01');
+
 --
 -- TEXT_MULTI (extra mediafiler kopplade till TEXT)
 --

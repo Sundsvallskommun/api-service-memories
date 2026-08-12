@@ -10,22 +10,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.TextParameters;
 import se.sundsvall.memories.integration.db.TextMediaRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
 import se.sundsvall.memories.service.TextService.FileVariant;
 import se.sundsvall.memories.service.TextService.MediaFileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -48,9 +53,6 @@ class TextServiceTest {
 	private TextMediaRepository textMediaRepositoryMock;
 
 	@Mock
-	private TopographyLookup topographyLookupMock;
-
-	@Mock
 	private OcmLookup ocmLookupMock;
 
 	@Mock
@@ -62,7 +64,7 @@ class TextServiceTest {
 		return TextEntity.create()
 			.withTextId(1001)
 			.withDocumentTitle("Minne från Sundsvall")
-			.withTopographyId(4)
+			.withTopography(TopographyEntity.create().withTId(4).withName("Sundsvalls kommun"))
 			.withSubjectId(20)
 			.withThumbnailFilename("TEXT.id_1001_fil_liten.jpeg")
 			.withLargeImageFilename("TEXT.id_1001_fil_stor.jpeg")
@@ -96,13 +98,18 @@ class TextServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new TextService(textRepositoryMock, textMediaRepositoryMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock, fileStreamerMock);
+		service = new TextService(textRepositoryMock, textMediaRepositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
 	}
 
+	// Which rows a specification selects is verified against a real database in TextSpecificationsTest. These tests
+	// only cover what the service itself does: build the pageable, hand a specification to the repository, and map the
+	// resulting page.
+
 	@Test
-	void searchWithQueryUsesFulltextRepository() {
+	void searchDelegatesToRepositoryAndMapsThePage() {
 		final var pageable = PageRequest.of(0, 100);
-		when(textRepositoryMock.searchPublished("+stadshuset*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(textRepositoryMock.findAll(ArgumentMatchers.<Specification<TextEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
 		final var result = service.search(TextParameters.create().withQuery("stadshuset"));
 
@@ -110,51 +117,47 @@ class TextServiceTest {
 		assertThat(result.getTexts().getFirst().getDocumentTitle()).isEqualTo("Minne från Sundsvall");
 		assertThat(result.getTexts().getFirst().getXmltext()).isNull();
 		assertThat(result.getTexts().getFirst().getMediaFiles()).isNull();
-		verify(textRepositoryMock).searchPublished("+stadshuset*", pageable);
+		verify(textRepositoryMock).findAll(ArgumentMatchers.<Specification<TextEntity>>any(), eq(pageable));
 		verifyNoMoreInteractions(textRepositoryMock);
 	}
 
 	@Test
-	void searchWithNullQueryUsesFindAllPublished() {
+	void searchWithoutFiltersStillPassesASpecification() {
 		final var pageable = PageRequest.of(0, 100);
-		when(textRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
+		when(textRepositoryMock.findAll(ArgumentMatchers.<Specification<TextEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
 		final var result = service.search(TextParameters.create());
 
-		assertThat(result.getTexts()).hasSize(1);
-		verify(textRepositoryMock).findAllPublished(pageable);
+		assertThat(result.getTexts()).isEmpty();
+		// Specification.allOf rejects null elements, so an unfiltered search must still yield a usable specification.
+		final var specificationCaptor = ArgumentCaptor.forClass(Specification.class);
+		verify(textRepositoryMock).findAll(specificationCaptor.capture(), eq(pageable));
+		assertThat(specificationCaptor.getValue()).isNotNull();
 		verifyNoMoreInteractions(textRepositoryMock);
 	}
 
 	@Test
-	void searchWithBlankQueryUsesFindAllPublished() {
-		final var pageable = PageRequest.of(0, 100);
-		when(textRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
+	void searchAppliesRequestedPaging() {
+		final var pageable = PageRequest.of(2, 25);
+		when(textRepositoryMock.findAll(ArgumentMatchers.<Specification<TextEntity>>any(), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 51));
 
-		final var result = service.search(TextParameters.create().withQuery("   "));
+		final var result = service.search(TextParameters.create().withPage(3).withLimit(25));
 
-		assertThat(result.getTexts()).isEmpty();
-		verify(textRepositoryMock).findAllPublished(pageable);
+		assertThat(result.getMetaData().getPage()).isEqualTo(3);
+		assertThat(result.getMetaData().getLimit()).isEqualTo(25);
+		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(51);
+		verify(textRepositoryMock).findAll(ArgumentMatchers.<Specification<TextEntity>>any(), eq(pageable));
 		verifyNoMoreInteractions(textRepositoryMock);
-	}
-
-	@Test
-	void searchWithOperatorOnlyQueryFallsBackToFindAll() {
-		final var pageable = PageRequest.of(0, 100);
-		when(textRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
-
-		final var result = service.search(TextParameters.create().withQuery("+-*"));
-
-		assertThat(result.getTexts()).isEmpty();
-		verify(textRepositoryMock).findAllPublished(pageable);
 	}
 
 	@Test
 	void getByIdIncludesXmltextAndMediaFiles() {
-		when(textRepositoryMock.findById(1001)).thenReturn(Optional.of(entity()));
+		when(textRepositoryMock.findOne(ArgumentMatchers.<Specification<TextEntity>>any())).thenReturn(Optional.of(entity()));
 		when(textMediaRepositoryMock.findByTextIdOrderById(1001)).thenReturn(List.of(
 			TextMediaEntity.create().withTextId(1001).withThumbnailFilename("extra-liten.jpg")));
-		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvalls kommun");
+
 		when(ocmLookupMock.resolve(20)).thenReturn("Musik");
 
 		final var result = service.getById(1001);
@@ -170,7 +173,7 @@ class TextServiceTest {
 
 	@Test
 	void getByIdNotFound() {
-		when(textRepositoryMock.findById(999)).thenReturn(Optional.empty());
+		when(textRepositoryMock.findOne(ArgumentMatchers.<Specification<TextEntity>>any())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.getById(999));
 
@@ -182,7 +185,7 @@ class TextServiceTest {
 	@MethodSource("fileVariants")
 	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename, final boolean expectedTransform) {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(textRepositoryMock.findById(1001)).thenReturn(Optional.of(entity()));
+		when(textRepositoryMock.findOne(ArgumentMatchers.<Specification<TextEntity>>any())).thenReturn(Optional.of(entity()));
 
 		service.streamFile(1001, variant, responseMock);
 
@@ -192,7 +195,7 @@ class TextServiceTest {
 	@Test
 	void streamFileNotFound() {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(textRepositoryMock.findById(999)).thenReturn(Optional.empty());
+		when(textRepositoryMock.findOne(ArgumentMatchers.<Specification<TextEntity>>any())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(999, FileVariant.THUMBNAIL, responseMock));
@@ -206,7 +209,7 @@ class TextServiceTest {
 	void streamFileWhenVariantIsBlank() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withOcrFilename("   ");
-		when(textRepositoryMock.findById(1001)).thenReturn(Optional.of(entityMissingFile));
+		when(textRepositoryMock.findOne(ArgumentMatchers.<Specification<TextEntity>>any())).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(1001, FileVariant.TEXT, responseMock));
@@ -220,7 +223,7 @@ class TextServiceTest {
 	void streamFileWhenVariantIsNull() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withThumbnailFilename(null);
-		when(textRepositoryMock.findById(1001)).thenReturn(Optional.of(entityMissingFile));
+		when(textRepositoryMock.findOne(ArgumentMatchers.<Specification<TextEntity>>any())).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(1001, FileVariant.THUMBNAIL, responseMock));

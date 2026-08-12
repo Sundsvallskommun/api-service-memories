@@ -3,17 +3,19 @@ package se.sundsvall.memories.service;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedTextResponse;
 import se.sundsvall.memories.api.model.Text;
 import se.sundsvall.memories.api.model.TextParameters;
-import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.TextMediaRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
+import se.sundsvall.memories.integration.db.specification.TextSpecifications;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.TextMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -27,44 +29,61 @@ public class TextService {
 	private final TextRepository textRepository;
 	private final TextMediaRepository textMediaRepository;
 	private final SambaIntegrationProperties sambaProperties;
-	private final TopographyLookup topographyLookup;
 	private final OcmLookup ocmLookup;
 	private final FileStreamer fileStreamer;
 
 	public TextService(final TextRepository textRepository, final TextMediaRepository textMediaRepository,
-		final SambaIntegrationProperties sambaProperties, final TopographyLookup topographyLookup,
-		final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
+		final SambaIntegrationProperties sambaProperties, final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
 		this.textRepository = textRepository;
 		this.textMediaRepository = textMediaRepository;
 		this.sambaProperties = sambaProperties;
-		this.topographyLookup = topographyLookup;
 		this.ocmLookup = ocmLookup;
 		this.fileStreamer = fileStreamer;
 	}
 
+	@Transactional(readOnly = true)
 	public PagedTextResponse search(final TextParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
-		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
-		final var page = ofNullable(sanitized)
-			.map(query -> textRepository.searchPublished(query, pageable))
-			.orElseGet(() -> textRepository.findAllPublished(pageable));
+		final var specification = Specification.allOf(
+			TextSpecifications.fetchTopography(),
+			TextSpecifications.notDeleted(),
+			TextSpecifications.published(),
+			TextSpecifications.matches(parameters.getQuery()));
+
+		final var page = textRepository.findAll(specification, pageable);
 
 		return PagedTextResponse.create()
-			.withTexts(TextMapper.toTextList(page.getContent(), topographyLookup::resolve, ocmLookup::resolve))
+			.withTexts(TextMapper.toTextList(page.getContent(), ocmLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
-	public Text getById(final Integer id) {
-		final var entity = textRepository.findById(id)
+	/**
+	 * Loads a single text by id, applying the same visibility rules as a search so that a soft-deleted document cannot
+	 * be reached by guessing its id.
+	 *
+	 * <p>
+	 * Unpublished documents are deliberately still reachable here — an administrative interface is planned that needs
+	 * to show them.
+	 */
+	private TextEntity findVisible(final Integer id) {
+		return textRepository.findOne(Specification.allOf(
+			TextSpecifications.fetchTopography(),
+			TextSpecifications.hasId(id),
+			TextSpecifications.notDeleted()))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Text with id '%s' not found".formatted(id)));
+	}
+
+	@Transactional(readOnly = true)
+	public Text getById(final Integer id) {
+		final var entity = findVisible(id);
 		final var mediaEntities = textMediaRepository.findByTextIdOrderById(id);
-		return TextMapper.toText(entity, topographyLookup.resolve(entity.getTopographyId()), ocmLookup.resolve(entity.getSubjectId()), mediaEntities);
+
+		return TextMapper.toText(entity, ocmLookup.resolve(entity.getSubjectId()), mediaEntities);
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {
-		final var entity = textRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Text with id '%s' not found".formatted(id)));
+		final var entity = findVisible(id);
 
 		final var filename = ofNullable(variant.extract(entity))
 			.filter(name -> !name.isBlank())
