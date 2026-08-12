@@ -10,6 +10,13 @@ import java.util.regex.Pattern;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
 
+import static se.sundsvall.memories.integration.db.model.FilmEntity_.COMMENT;
+import static se.sundsvall.memories.integration.db.model.FilmEntity_.DELETED_DATE;
+import static se.sundsvall.memories.integration.db.model.FilmEntity_.DOCUMENT_TITLE;
+import static se.sundsvall.memories.integration.db.model.FilmEntity_.FILM_ID;
+import static se.sundsvall.memories.integration.db.model.FilmEntity_.OPTIONS;
+import static se.sundsvall.memories.integration.db.model.FilmEntity_.TOPOGRAPHY;
+
 /**
  * Criteria specifications for searching the {@code FILM} table.
  *
@@ -40,7 +47,7 @@ public final class FilmSpecifications {
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
 	/** The columns free-text search covers, matching the {@code MATCH (DOKTITEL, KOMMENT_FILM)} index it replaces. */
-	private static final List<String> SEARCHABLE_ATTRIBUTES = List.of("documentTitle", "comment");
+	private static final List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
 
 	private FilmSpecifications() {}
 
@@ -51,7 +58,7 @@ public final class FilmSpecifications {
 	 */
 	public static Specification<FilmEntity> published() {
 		return (root, _, cb) -> cb.equal(
-			cb.function("bitand", Integer.class, root.get("options"), cb.literal(PUBLISHED_BIT)), PUBLISHED_BIT);
+			cb.function("bitand", Integer.class, root.get(OPTIONS), cb.literal(PUBLISHED_BIT)), PUBLISHED_BIT);
 	}
 
 	/**
@@ -64,7 +71,7 @@ public final class FilmSpecifications {
 	 * @return a specification matching rows with no {@code DELETEDDATE}
 	 */
 	public static Specification<FilmEntity> notDeleted() {
-		return (root, _, cb) -> cb.isNull(root.get("deletedDate"));
+		return (root, _, cb) -> cb.isNull(root.get(DELETED_DATE));
 	}
 
 	/**
@@ -74,7 +81,7 @@ public final class FilmSpecifications {
 	 * @return    a specification matching the given id
 	 */
 	public static Specification<FilmEntity> hasId(final Integer id) {
-		return (root, _, cb) -> cb.equal(root.get("filmId"), id);
+		return (root, _, cb) -> cb.equal(root.get(FILM_ID), id);
 	}
 
 	/**
@@ -91,7 +98,7 @@ public final class FilmSpecifications {
 	public static Specification<FilmEntity> fetchTopography() {
 		return (root, query, cb) -> {
 			if (query == null || !Long.class.equals(query.getResultType())) {
-				root.fetch("topography", JoinType.LEFT);
+				root.fetch(TOPOGRAPHY, JoinType.LEFT);
 			}
 			return cb.conjunction();
 		};

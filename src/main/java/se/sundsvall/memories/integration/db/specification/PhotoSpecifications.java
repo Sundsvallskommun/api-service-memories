@@ -10,6 +10,14 @@ import java.util.regex.Pattern;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.COMMENT;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DELETED_DATE;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DOCUMENT_TITLE;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.OBJECT_TYPE;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.OPTIONS;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.PHOTO_ID;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.TOPOGRAPHY;
+
 /**
  * Criteria specifications for searching the {@code FOTO} table.
  *
@@ -40,7 +48,7 @@ public final class PhotoSpecifications {
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
 	/** The columns free-text search covers, matching the {@code MATCH (DOKTITEL, KOMMENT_FF)} index it replaces. */
-	private static final List<String> SEARCHABLE_ATTRIBUTES = List.of("documentTitle", "comment");
+	private static final List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
 
 	private PhotoSpecifications() {}
 
@@ -51,7 +59,7 @@ public final class PhotoSpecifications {
 	 */
 	public static Specification<PhotoEntity> published() {
 		return (root, _, cb) -> cb.equal(
-			cb.function("bitand", Integer.class, root.get("options"), cb.literal(PUBLISHED_BIT)), PUBLISHED_BIT);
+			cb.function("bitand", Integer.class, root.get(OPTIONS), cb.literal(PUBLISHED_BIT)), PUBLISHED_BIT);
 	}
 
 	/**
@@ -64,7 +72,7 @@ public final class PhotoSpecifications {
 	 * @return a specification matching rows with no {@code DELETEDDATE}
 	 */
 	public static Specification<PhotoEntity> notDeleted() {
-		return (root, _, cb) -> cb.isNull(root.get("deletedDate"));
+		return (root, _, cb) -> cb.isNull(root.get(DELETED_DATE));
 	}
 
 	/**
@@ -74,7 +82,7 @@ public final class PhotoSpecifications {
 	 * @return    a specification matching the given id
 	 */
 	public static Specification<PhotoEntity> hasId(final Integer id) {
-		return (root, _, cb) -> cb.equal(root.get("photoId"), id);
+		return (root, _, cb) -> cb.equal(root.get(PHOTO_ID), id);
 	}
 
 	/**
@@ -91,7 +99,7 @@ public final class PhotoSpecifications {
 	public static Specification<PhotoEntity> fetchTopography() {
 		return (root, query, cb) -> {
 			if (query == null || !Long.class.equals(query.getResultType())) {
-				root.fetch("topography", JoinType.LEFT);
+				root.fetch(TOPOGRAPHY, JoinType.LEFT);
 			}
 			return cb.conjunction();
 		};
@@ -107,7 +115,7 @@ public final class PhotoSpecifications {
 		if (objectType == null) {
 			return Specification.unrestricted();
 		}
-		return (root, _, cb) -> cb.equal(root.get("objectType"), objectType);
+		return (root, _, cb) -> cb.equal(root.get(OBJECT_TYPE), objectType);
 	}
 
 	/**
