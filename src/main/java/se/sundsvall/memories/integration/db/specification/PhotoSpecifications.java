@@ -1,6 +1,7 @@
 package se.sundsvall.memories.integration.db.specification;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.Arrays;
@@ -51,6 +52,26 @@ public final class PhotoSpecifications {
 	public static Specification<PhotoEntity> published() {
 		return (root, _, cb) -> cb.equal(
 			cb.function("bitand", Integer.class, root.get("options"), cb.literal(PUBLISHED_BIT)), PUBLISHED_BIT);
+	}
+
+	/**
+	 * Fetches the topography association in the same query, so that mapping a page of results does not fire one
+	 * additional select per row.
+	 *
+	 * <p>
+	 * A fetch join is invalid in a count projection, and Spring Data reuses the same specification for both the content
+	 * query and the count query, so the fetch is skipped when the result type is {@link Long}. The {@code CriteriaQuery}
+	 * is nullable in Spring Data JPA 4 and is treated as "not a count query" when absent.
+	 *
+	 * @return a specification that adds a left fetch join and no restriction of its own
+	 */
+	public static Specification<PhotoEntity> fetchTopography() {
+		return (root, query, cb) -> {
+			if (query == null || !Long.class.equals(query.getResultType())) {
+				root.fetch("topography", JoinType.LEFT);
+			}
+			return cb.conjunction();
+		};
 	}
 
 	/**

@@ -2,7 +2,10 @@ package se.sundsvall.memories.integration.db.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -15,8 +18,9 @@ public class PhotoEntity {
 	@Column(name = "F_ID")
 	private Integer photoId;
 
-	@Column(name = "F_T_ID")
-	private Integer topographyId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "F_T_ID")
+	private TopographyEntity topography;
 
 	@Column(name = "FILNAMN", length = 256)
 	private String filename;
@@ -158,16 +162,16 @@ public class PhotoEntity {
 		return this;
 	}
 
-	public Integer getTopographyId() {
-		return topographyId;
+	public TopographyEntity getTopography() {
+		return topography;
 	}
 
-	public void setTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public void setTopography(final TopographyEntity topography) {
+		this.topography = topography;
 	}
 
-	public PhotoEntity withTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public PhotoEntity withTopography(final TopographyEntity topography) {
+		this.topography = topography;
 		return this;
 	}
 
@@ -709,7 +713,7 @@ public class PhotoEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final PhotoEntity that = (PhotoEntity) o;
-		return Objects.equals(photoId, that.photoId) && Objects.equals(topographyId, that.topographyId) && Objects.equals(filename, that.filename) && Objects.equals(accessionNumber, that.accessionNumber)
+		return Objects.equals(photoId, that.photoId) && Objects.equals(filename, that.filename) && Objects.equals(accessionNumber, that.accessionNumber)
 			&& Objects.equals(referenceCode, that.referenceCode) && Objects.equals(inventoryNumber, that.inventoryNumber) && Objects.equals(earlierReference, that.earlierReference)
 			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(subjectKeyword, that.subjectKeyword) && Objects.equals(comment, that.comment)
 			&& Objects.equals(earliest, that.earliest) && Objects.equals(latest, that.latest) && Objects.equals(observationDate, that.observationDate)
@@ -727,7 +731,7 @@ public class PhotoEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(photoId, topographyId, filename, accessionNumber, referenceCode, inventoryNumber, earlierReference, documentTitle, subjectKeyword, comment,
+		return Objects.hash(photoId, filename, accessionNumber, referenceCode, inventoryNumber, earlierReference, documentTitle, subjectKeyword, comment,
 			earliest, latest, observationDate, locationText, storageLocation, objectType, colorMode, negativePositive, transmissiveReflective,
 			imageCarrier, material, technique, function, height, width, diameter, framed, conditionCategory, conditionAssessment,
 			observerName, treatment, treatmentDate, signature, rights, restricted, restrictionNote, provenance,
@@ -738,7 +742,6 @@ public class PhotoEntity {
 	public String toString() {
 		return "PhotoEntity{" +
 			"photoId=" + photoId +
-			", topographyId=" + topographyId +
 			", filename='" + filename + '\'' +
 			", accessionNumber='" + accessionNumber + '\'' +
 			", referenceCode='" + referenceCode + '\'' +

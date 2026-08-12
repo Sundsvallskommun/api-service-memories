@@ -1,5 +1,7 @@
 package se.sundsvall.memories.integration.db.specification;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,9 +13,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.integration.db.PhotoRepository;
+import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
 /**
  * Exercises {@link PhotoSpecifications} against a real MariaDB instance (Testcontainers), because the behaviour under
@@ -31,9 +36,16 @@ class PhotoSpecificationsTest {
 	@Autowired
 	private PhotoRepository photoRepository;
 
+	@Autowired
+	private TopographyRepository topographyRepository;
+
+	@PersistenceContext
+	private EntityManager entityManager;
+
 	@BeforeEach
-	void clearTable() {
+	void clearTables() {
 		photoRepository.deleteAll();
+		topographyRepository.deleteAll();
 		photoRepository.flush();
 	}
 
@@ -213,6 +225,83 @@ class PhotoSpecificationsTest {
 			PhotoSpecifications.hasObjectType(null));
 
 		assertThat(findIds(specification)).containsExactly(1);
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// fetchTopography()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void fetchTopographyResolvesTheAssociation() {
+		final var topography = topographyRepository.saveAndFlush(
+			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		persist(1, 4, "a", null, "Foto").setTopography(topography);
+		photoRepository.flush();
+		entityManager.clear();
+
+		final var photos = photoRepository.findAll(PhotoSpecifications.fetchTopography(), Pageable.unpaged()).getContent();
+
+		assertThat(photos).hasSize(1);
+		assertThat(photos.getFirst().getTopography().getTId()).isEqualTo(500);
+		assertThat(photos.getFirst().getTopography().getDisplayName()).isEqualTo("Sundsvall");
+	}
+
+	@Test
+	void fetchTopographyLeavesTheAssociationNullWhenTheForeignKeyDangles() {
+		persist(1, 4, "a", null, "Foto");
+		danglingForeignKey(1);
+
+		final var photos = photoRepository.findAll(PhotoSpecifications.fetchTopography(), Pageable.unpaged()).getContent();
+
+		assertThat(photos).hasSize(1);
+		assertThat(photos.getFirst().getTopography()).isNull();
+	}
+
+	@Test
+	void findByIdFetchesTopographyAndToleratesADanglingForeignKey() {
+		persist(1, 4, "a", null, "Foto");
+		danglingForeignKey(1);
+
+		final var photo = photoRepository.findById(1).orElseThrow();
+
+		assertThat(photo.getTopography()).isNull();
+	}
+
+	/**
+	 * Points a photo's {@code F_T_ID} at a TOPOGRAFI row that does not exist. The legacy schema declares no foreign key
+	 * constraints, so this state is representable — and without a fetch join it would produce a lazy proxy that throws
+	 * {@code EntityNotFoundException} when the mapper reads the place name.
+	 */
+	private void danglingForeignKey(final int photoId) {
+		entityManager.createNativeQuery("UPDATE FOTO SET F_T_ID = 999 WHERE F_ID = :id")
+			.setParameter("id", photoId)
+			.executeUpdate();
+		entityManager.clear();
+
+		// The association is only interesting if the raw column really points somewhere unresolvable.
+		assertThat(entityManager.createNativeQuery("SELECT F_T_ID FROM FOTO WHERE F_ID = :id")
+			.setParameter("id", photoId)
+			.getSingleResult())
+			.asInstanceOf(LONG)
+			.isEqualTo(999L);
+		assertThat(topographyRepository.findById(999)).isEmpty();
+	}
+
+	@Test
+	void fetchTopographyDoesNotBreakPagingOrCounting() {
+		final var topography = topographyRepository.saveAndFlush(
+			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		persist(1, 4, "a", null, "Foto").setTopography(topography);
+		persist(2, 4, "b", null, "Foto").setTopography(topography);
+		photoRepository.flush();
+
+		// The fetch join is invalid in the count projection, so the specification must skip it there.
+		final var page = photoRepository.findAll(
+			Specification.allOf(PhotoSpecifications.fetchTopography(), PhotoSpecifications.published()),
+			Pageable.ofSize(1));
+
+		assertThat(page.getTotalElements()).isEqualTo(2);
+		assertThat(page.getContent()).hasSize(1);
 	}
 
 	@Test

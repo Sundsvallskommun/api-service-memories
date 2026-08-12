@@ -4,6 +4,7 @@ import java.util.List;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.api.model.Subject;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -13,32 +14,41 @@ public final class PhotoMapper {
 	private PhotoMapper() {}
 
 	/** Summary mapping (no relatedPhotoIds, no subjects) used for list responses. */
-	public static Photo toPhotoSummary(final PhotoEntity entity, final String location) {
-		return toBase(entity, location);
+	public static Photo toPhotoSummary(final PhotoEntity entity) {
+		return toBase(entity);
 	}
 
 	/** Detail mapping including FOTO_FOTO relations and FOTO_OCM subjects, used for get-by-id. */
-	public static Photo toPhoto(final PhotoEntity entity, final String location, final List<Integer> relatedPhotoIds, final List<Subject> subjects) {
-		return ofNullable(toBase(entity, location))
+	public static Photo toPhoto(final PhotoEntity entity, final List<Integer> relatedPhotoIds, final List<Subject> subjects) {
+		return ofNullable(toBase(entity))
 			.map(photo -> photo.withRelatedPhotoIds(ofNullable(relatedPhotoIds).orElse(emptyList()))
 				.withSubjects(ofNullable(subjects).orElse(emptyList())))
 			.orElse(null);
 	}
 
 	/**
-	 * Map a list of PhotoEntities to summary {@link Photo}s, resolving each entity's location via the provided lookup.
+	 * Map a list of PhotoEntities to summary {@link Photo}s.
 	 *
-	 * @param  entities       source entities
-	 * @param  locationLookup resolver from topographyId → location string (nullable)
-	 * @return                list of mapped {@link Photo}, empty if entities is null
+	 * @param  entities source entities
+	 * @return          list of mapped {@link Photo}, empty if entities is null
 	 */
-	public static List<Photo> toPhotoList(final List<PhotoEntity> entities, final ReferenceResolver locationLookup) {
+	public static List<Photo> toPhotoList(final List<PhotoEntity> entities) {
 		return ofNullable(entities).orElse(emptyList()).stream()
-			.map(e -> toPhotoSummary(e, locationLookup.resolve(e.getTopographyId())))
+			.map(PhotoMapper::toPhotoSummary)
 			.toList();
 	}
 
-	private static Photo toBase(final PhotoEntity entity, final String location) {
+	/**
+	 * Resolves the place name through the topography association. The association is {@code null} both when the photo
+	 * has no place and when {@code F_T_ID} points at a row that does not exist.
+	 */
+	private static String location(final PhotoEntity entity) {
+		return ofNullable(entity.getTopography())
+			.map(TopographyEntity::getDisplayName)
+			.orElse(null);
+	}
+
+	private static Photo toBase(final PhotoEntity entity) {
 		return ofNullable(entity)
 			.map(e -> Photo.create()
 				.withPhotoId(e.getPhotoId())
@@ -54,7 +64,7 @@ public final class PhotoMapper {
 				.withLatest(e.getLatest())
 				.withObservationDate(e.getObservationDate())
 				.withLocationText(e.getLocationText())
-				.withLocation(location)
+				.withLocation(location(e))
 				.withStorageLocation(e.getStorageLocation())
 				.withObjectType(e.getObjectType())
 				.withColorMode(e.getColorMode())

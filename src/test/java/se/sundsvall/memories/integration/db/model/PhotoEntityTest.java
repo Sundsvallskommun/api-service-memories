@@ -7,9 +7,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToStringExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -24,12 +24,14 @@ class PhotoEntityTest {
 
 	@Test
 	void testBean() {
+		// The topography association is excluded: including it in equals/hashCode/toString would initialise the lazy
+		// proxy and turn every comparison or log line into a database round trip.
 		assertThat(PhotoEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCode(),
-			hasValidBeanEquals(),
-			hasValidBeanToString()));
+			hasValidBeanHashCodeExcluding("topography"),
+			hasValidBeanEqualsExcluding("topography"),
+			hasValidBeanToStringExcluding("topography")));
 	}
 
 	@Test
@@ -38,7 +40,7 @@ class PhotoEntityTest {
 
 		final var result = PhotoEntity.create()
 			.withPhotoId(1234)
-			.withTopographyId(42)
+			.withTopography(TopographyEntity.create().withTId(42).withName("Sundsvall"))
 			.withFilename("original.jpg")
 			.withAccessionNumber("ACC-1")
 			.withReferenceCode("REF-1")
@@ -83,7 +85,7 @@ class PhotoEntityTest {
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getPhotoId()).isEqualTo(1234);
-		assertThat(result.getTopographyId()).isEqualTo(42);
+		assertThat(result.getTopography().getTId()).isEqualTo(42);
 		assertThat(result.getFilename()).isEqualTo("original.jpg");
 		assertThat(result.getAccessionNumber()).isEqualTo("ACC-1");
 		assertThat(result.getReferenceCode()).isEqualTo("REF-1");

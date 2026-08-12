@@ -50,9 +50,6 @@ class PhotoServiceTest {
 	private FotoOcmRepository fotoOcmRepositoryMock;
 
 	@Mock
-	private TopographyLookup topographyLookupMock;
-
-	@Mock
 	private OcmLookup ocmLookupMock;
 
 	@Mock
@@ -77,7 +74,7 @@ class PhotoServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, SAMBA_PROPERTIES, topographyLookupMock, ocmLookupMock, fileStreamerMock);
+		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
 	}
 
 	// Which rows a specification selects is verified against a real database in PhotoSpecificationsTest. These tests

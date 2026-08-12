@@ -30,17 +30,14 @@ public class PhotoService {
 	private final PhotoRepository photoRepository;
 	private final FotoOcmRepository fotoOcmRepository;
 	private final SambaIntegrationProperties sambaProperties;
-	private final TopographyLookup topographyLookup;
 	private final OcmLookup ocmLookup;
 	private final FileStreamer fileStreamer;
 
 	public PhotoService(final PhotoRepository photoRepository, final FotoOcmRepository fotoOcmRepository,
-		final SambaIntegrationProperties sambaProperties, final TopographyLookup topographyLookup,
-		final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
+		final SambaIntegrationProperties sambaProperties, final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
 		this.photoRepository = photoRepository;
 		this.fotoOcmRepository = fotoOcmRepository;
 		this.sambaProperties = sambaProperties;
-		this.topographyLookup = topographyLookup;
 		this.ocmLookup = ocmLookup;
 		this.fileStreamer = fileStreamer;
 	}
@@ -50,6 +47,7 @@ public class PhotoService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
 		final var specification = Specification.allOf(
+			PhotoSpecifications.fetchTopography(),
 			PhotoSpecifications.published(),
 			PhotoSpecifications.matches(parameters.getQuery()),
 			PhotoSpecifications.hasObjectType(trimToNull(parameters.getObjectType())));
@@ -57,7 +55,7 @@ public class PhotoService {
 		final var page = photoRepository.findAll(specification, pageable);
 
 		return PagedPhotoResponse.create()
-			.withPhotos(PhotoMapper.toPhotoList(page.getContent(), topographyLookup::resolve))
+			.withPhotos(PhotoMapper.toPhotoList(page.getContent()))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
@@ -80,7 +78,7 @@ public class PhotoService {
 			.filter(Objects::nonNull)
 			.toList();
 
-		return PhotoMapper.toPhoto(entity, topographyLookup.resolve(entity.getTopographyId()), relatedPhotoIds, subjects);
+		return PhotoMapper.toPhoto(entity, relatedPhotoIds, subjects);
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {
