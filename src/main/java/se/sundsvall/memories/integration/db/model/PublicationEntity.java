@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -62,8 +64,9 @@ public class PublicationEntity {
 	@Column(name = "U_E_ID")
 	private Integer ueId;
 
-	@Column(name = "P_T_ID")
-	private Integer topographyId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "P_T_ID")
+	private TopographyEntity topography;
 
 	@Column(name = "P_OPLATS", length = 64)
 	private String locationText;
@@ -317,16 +320,16 @@ public class PublicationEntity {
 		return this;
 	}
 
-	public Integer getTopographyId() {
-		return topographyId;
+	public TopographyEntity getTopography() {
+		return topography;
 	}
 
-	public void setTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public void setTopography(final TopographyEntity topography) {
+		this.topography = topography;
 	}
 
-	public PublicationEntity withTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public PublicationEntity withTopography(final TopographyEntity topography) {
+		this.topography = topography;
 		return this;
 	}
 
@@ -509,7 +512,7 @@ public class PublicationEntity {
 			&& Objects.equals(pageNumber, that.pageNumber) && Objects.equals(bfJId, that.bfJId) && Objects.equals(publisherTopographyId, that.publisherTopographyId)
 			&& Objects.equals(publisherLocation, that.publisherLocation) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(feId, that.feId) && Objects.equals(reId, that.reId) && Objects.equals(ujId, that.ujId) && Objects.equals(ueId, that.ueId)
-			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(meOId, that.meOId)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(meOId, that.meOId)
 			&& Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(originalFilename, that.originalFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(filXtra, that.filXtra) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options)
@@ -519,7 +522,7 @@ public class PublicationEntity {
 	@Override
 	public int hashCode() {
 		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, bfJId, publisherTopographyId, publisherLocation, documentDate,
-			documentTitle, feId, reId, ujId, ueId, topographyId, locationText, meOId, comment, thumbnailFilename, largeImageFilename, originalFilename, ocrFilename,
+			documentTitle, feId, reId, ujId, ueId, locationText, meOId, comment, thumbnailFilename, largeImageFilename, originalFilename, ocrFilename,
 			xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
 
@@ -542,7 +545,6 @@ public class PublicationEntity {
 			", reId=" + reId +
 			", ujId=" + ujId +
 			", ueId=" + ueId +
-			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", meOId=" + meOId +
 			", comment='" + comment + '\'' +

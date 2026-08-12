@@ -4,13 +4,12 @@ import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 class PublicationMapperTest {
-
-	private static final ReferenceResolver NULL_LOOKUP = id -> null;
 
 	private static PublicationEntity sampleEntity() {
 		return PublicationEntity.create()
@@ -23,7 +22,7 @@ class PublicationMapperTest {
 			.withPageNumber("3")
 			.withPublisherLocation("Sundsvall")
 			.withDocumentTitle("Page 3 Alfwar och Skämt nr 8 1841")
-			.withTopographyId(4)
+			.withTopography(TopographyEntity.create().withTId(4).withName("Sundsvall"))
 			.withLocationText("Sundsvall")
 			.withComment("Archive comment")
 			.withThumbnailFilename("PUBL.id_207_fil_liten.jpeg")
@@ -38,7 +37,7 @@ class PublicationMapperTest {
 
 	@Test
 	void toPublicationSummaryExcludesXmltext() {
-		final var result = PublicationMapper.toPublicationSummary(sampleEntity(), "Sundsvall");
+		final var result = PublicationMapper.toPublicationSummary(sampleEntity());
 
 		assertThat(result).isNotNull();
 		assertThat(result.getPublicationId()).isEqualTo(207);
@@ -50,7 +49,7 @@ class PublicationMapperTest {
 
 	@Test
 	void toPublicationIncludesXmltext() {
-		final var result = PublicationMapper.toPublication(sampleEntity(), "Sundsvall");
+		final var result = PublicationMapper.toPublication(sampleEntity());
 
 		assertThat(result).isNotNull();
 		assertThat(result.getXmltext()).isEqualTo("<text>OCR content</text>");
@@ -60,28 +59,43 @@ class PublicationMapperTest {
 
 	@Test
 	void toPublicationWithNullEntityReturnsNull() {
-		assertThat(PublicationMapper.toPublicationSummary(null, "ignored")).isNull();
-		assertThat(PublicationMapper.toPublication(null, "ignored")).isNull();
+		assertThat(PublicationMapper.toPublicationSummary(null)).isNull();
+		assertThat(PublicationMapper.toPublication(null)).isNull();
 	}
 
 	@Test
 	void toPublicationListMapsAllEntitiesWithoutXmltext() {
 		final var entities = List.of(
-			PublicationEntity.create().withPublicationId(1).withTopographyId(10).withPublicationType("Broschyrer").withDocumentTitle("A").withXmltext("hidden"),
-			PublicationEntity.create().withPublicationId(2).withTopographyId(20).withPublicationType("Tidningar").withDocumentTitle("B").withXmltext("hidden"));
-		final ReferenceResolver locationLookup = id -> id == 10 ? "Sundsvall" : "Timrå";
+			PublicationEntity.create().withPublicationId(1).withPublicationType("Broschyrer").withDocumentTitle("A").withXmltext("hidden")
+				.withTopography(TopographyEntity.create().withTId(10).withName("Sundsvall")),
+			PublicationEntity.create().withPublicationId(2).withPublicationType("Tidningar").withDocumentTitle("B").withXmltext("hidden")
+				.withTopography(TopographyEntity.create().withTId(20).withName("Timrå")),
+			PublicationEntity.create().withPublicationId(3).withPublicationType("Broschyrer").withDocumentTitle("C").withXmltext("hidden"));
 
-		final var result = PublicationMapper.toPublicationList(entities, locationLookup);
+		final var result = PublicationMapper.toPublicationList(entities);
 
 		assertThat(result)
 			.extracting("publicationId", "documentTitle", "publicationType", "location", "xmltext")
 			.containsExactly(
 				tuple(1, "A", "Broschyrer", "Sundsvall", null),
-				tuple(2, "B", "Tidningar", "Timrå", null));
+				tuple(2, "B", "Tidningar", "Timrå", null),
+				tuple(3, "C", "Broschyrer", null, null));
+	}
+
+	@Test
+	void toPublicationWithoutTopographyHasNoLocation() {
+		// Both a publication without a place and one whose P_T_ID points at a missing row arrive here as a null
+		// association — see PublicationSpecificationTest for the dangling foreign key case.
+		final var entity = PublicationEntity.create().withPublicationId(1).withLocationText("Sundsvall");
+
+		final var result = PublicationMapper.toPublicationSummary(entity);
+
+		assertThat(result.getLocation()).isNull();
+		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
 	}
 
 	@Test
 	void toPublicationListWithNullReturnsEmpty() {
-		assertThat(PublicationMapper.toPublicationList(null, NULL_LOOKUP)).isEmpty();
+		assertThat(PublicationMapper.toPublicationList(null)).isEmpty();
 	}
 }

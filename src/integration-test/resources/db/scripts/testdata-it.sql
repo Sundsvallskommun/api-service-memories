@@ -83,6 +83,17 @@ VALUES (500, 'draft.xml', '', '2024-01-01', null, null, null, 1, 1, 'Sundsvall',
         'Draft unpublished publication', 0, 0, 1, 0, 4, 'Sundsvall', 1, 'Not yet published', null, null, null, null,
         'Drunkningsolycka draft not published', null, 18700, 0, 'text', null);
 
+-- Soft-deleted publication. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not
+-- hide it. Its XMLTEXT carries the same word the query test searches for, so the row surfaces if the filter
+-- regresses — it must never appear in any response.
+INSERT INTO PUBL (P_ID, FILNAMN, PUBLIKTYP, DATUM, TIDTITEL, TIDNR, TIDSIDA, BF_J_ID, FORLAG_T_ID, FORLAG_OPLATS,
+                  DOKDATUM, DOKTITEL, F_E_ID, R_E_ID, U_J_ID, U_E_ID, P_T_ID, P_OPLATS, ME_O_ID, KOMMENT_PUBL,
+                  FIL_LITEN, FIL_STOR, FIL_ORIGINAL, FIL_TXT, XMLTEXT, FIL_XTRA, NODEID, `OPTIONS`, FIL_FORMAT,
+                  DELETEDDATE)
+VALUES (600, 'raderad.xml', '', '1841-02-18', null, null, null, 1, 1, 'Sundsvall', '1841-02-18',
+        'Raderad publikation', 0, 0, 1, 0, 16, 'Sundsvall', 1, 'Publikation som raderats', null, null, null, null,
+        'Drunkningsolycka i en raderad publikation', null, 18800, 4, 'text', '2024-03-01');
+
 --
 -- FOTO
 --

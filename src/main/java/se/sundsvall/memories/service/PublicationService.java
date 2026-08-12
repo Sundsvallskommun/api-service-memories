@@ -4,12 +4,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
 import se.sundsvall.memories.api.model.PublicationParameters;
-import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.PublicationRepository;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
@@ -24,39 +24,38 @@ public class PublicationService {
 
 	private final PublicationRepository publicationRepository;
 	private final SambaIntegrationProperties sambaProperties;
-	private final TopographyLookup topographyLookup;
 	private final FileStreamer fileStreamer;
 
 	public PublicationService(final PublicationRepository publicationRepository, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup, final FileStreamer fileStreamer) {
+		final FileStreamer fileStreamer) {
 		this.publicationRepository = publicationRepository;
 		this.sambaProperties = sambaProperties;
-		this.topographyLookup = topographyLookup;
 		this.fileStreamer = fileStreamer;
 	}
 
+	@Transactional(readOnly = true)
 	public PagedPublicationResponse search(final PublicationParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
-		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
 
-		final var page = ofNullable(sanitized)
-			.map(query -> publicationRepository.searchPublished(query, pageable))
-			.orElseGet(() -> publicationRepository.findAllPublished(pageable));
+		final var page = publicationRepository.findAllByParameters(parameters, pageable);
 
 		return PagedPublicationResponse.create()
-			.withPublications(PublicationMapper.toPublicationList(page.getContent(), topographyLookup::resolve))
+			.withPublications(PublicationMapper.toPublicationList(page.getContent()))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
-	public Publication getById(final Integer id) {
-		return publicationRepository.findById(id)
-			.map(entity -> PublicationMapper.toPublication(entity, topographyLookup.resolve(entity.getTopographyId())))
+	private PublicationEntity findVisible(final Integer id) {
+		return publicationRepository.findVisibleById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));
 	}
 
+	@Transactional(readOnly = true)
+	public Publication getById(final Integer id) {
+		return PublicationMapper.toPublication(findVisible(id));
+	}
+
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {
-		final var entity = publicationRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Publication with id '%s' not found".formatted(id)));
+		final var entity = findVisible(id);
 
 		final var filename = ofNullable(variant.extract(entity))
 			.filter(name -> !name.isBlank())

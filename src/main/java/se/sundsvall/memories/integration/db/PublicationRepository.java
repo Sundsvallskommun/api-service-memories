@@ -1,48 +1,62 @@
 package se.sundsvall.memories.integration.db;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.fetchTopography;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.hasId;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.notDeleted;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.published;
+
 /**
- * Repository for the {@code PUBL} table.
+ * Repository for the {@code PUBL} table. See
+ * {@link se.sundsvall.memories.integration.db.specification.PublicationSpecification PublicationSpecification} for the
+ * filters the methods below compose.
  *
  * <p>
- * <strong>Sorting:</strong> the queries below are native, so a sort property supplied via {@link Pageable} must be a
- * physical DB column name (e.g. {@code DOKTITEL}), not the camelCase API/entity field. The resolved {@code location}
- * (from TOPOGRAFI) is not backed by a column and cannot be sorted on.
+ * <strong>Sorting:</strong> a sort property supplied via {@link Pageable} is an entity property (e.g.
+ * {@code documentTitle}), not a physical DB column name. The resolved {@code location} (from TOPOGRAFI) is not backed
+ * by a column on this entity and cannot be sorted on.
  */
 @CircuitBreaker(name = "publicationRepository")
-public interface PublicationRepository extends JpaRepository<PublicationEntity, Integer> {
+public interface PublicationRepository extends JpaRepository<PublicationEntity, Integer>, JpaSpecificationExecutor<PublicationEntity> {
 
 	/**
-	 * Retrieves all published records from the {@code PUBL} table. A record is considered published when bit {@code 4} of
-	 * the {@code OPTIONS} bitmask is set, i.e. {@code (OPTIONS & 4) = 4}. Other status bits may be set simultaneously.
+	 * Searches publications matching the given request parameters.
 	 *
-	 * @param  pageable the pagination and sorting criteria
-	 * @return          a list of PublicationEntity objects representing published records
+	 * @param  parameters the search parameters
+	 * @param  pageable   the pagination and sorting criteria
+	 * @return            a page of matching publications
 	 */
-	@Query(value = "SELECT * FROM PUBL WHERE (`OPTIONS` & 4) = 4",
-		countQuery = "SELECT COUNT(*) FROM PUBL WHERE (`OPTIONS` & 4) = 4",
-		nativeQuery = true)
-	Page<PublicationEntity> findAllPublished(Pageable pageable);
+	default Page<PublicationEntity> findAllByParameters(final PublicationParameters parameters, final Pageable pageable) {
+		return findAll(fetchTopography()
+			.and(notDeleted())
+			.and(published())
+			.and(matches(parameters.getQuery())),
+			pageable);
+	}
 
 	/**
-	 * Searches the published records in the database using a full-text search query. The search is conducted against the
-	 * specified fields: {@code DOKTITEL}, {@code KOMMENT_PUBL}, and {@code XMLTEXT}. Only records where bit {@code 4} of
-	 * the {@code OPTIONS} bitmask is set ({@code (OPTIONS & 4) = 4}) are returned; other status bits may be set
-	 * simultaneously.
+	 * Loads a single publication by id under the same visibility rules a search applies, so that a soft-deleted
+	 * publication cannot be reached by guessing its id.
 	 *
-	 * @param  query    the full-text search query to match against the specified fields
-	 * @param  pageable the pagination and sorting criteria
-	 * @return          a list of PublicationEntity objects that match the search criteria
+	 * <p>
+	 * Unpublished publications are deliberately still reachable — an administrative interface is planned that needs
+	 * them.
+	 *
+	 * @param  id the publication id
+	 * @return    the publication, or empty if it does not exist or is soft-deleted
 	 */
-	@Query(value = "SELECT * FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
-		countQuery = "SELECT COUNT(*) FROM PUBL WHERE MATCH (DOKTITEL, KOMMENT_PUBL, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
-		nativeQuery = true)
-	Page<PublicationEntity> searchPublished(@Param("query") String query, Pageable pageable);
+	default Optional<PublicationEntity> findVisibleById(final Integer id) {
+		return findOne(fetchTopography()
+			.and(hasId(id))
+			.and(notDeleted()));
+	}
 }
