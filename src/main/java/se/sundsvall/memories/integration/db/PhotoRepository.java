@@ -15,7 +15,7 @@ import se.sundsvall.memories.integration.db.model.PhotoEntity;
  * <p>
  * Searching is done with {@link JpaSpecificationExecutor#findAll(org.springframework.data.jpa.domain.Specification,
  * Pageable) findAll(Specification, Pageable)} — see
- * {@link se.sundsvall.memories.integration.db.specification.PhotoSpecifications PhotoSpecifications} for the available
+ * {@link se.sundsvall.memories.integration.db.specification.PhotoSpecification PhotoSpecification} for the available
  * filters.
  *
  * <p>

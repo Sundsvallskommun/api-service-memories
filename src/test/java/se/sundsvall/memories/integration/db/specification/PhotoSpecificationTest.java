@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
 /**
- * Exercises {@link PhotoSpecifications} against a real MariaDB instance (Testcontainers), because the behaviour under
+ * Exercises {@link PhotoSpecification} against a real MariaDB instance (Testcontainers), because the behaviour under
  * test — the {@code bitand} bitmask function, {@code LIKE} escaping and the collation-driven case insensitivity — is
  * database behaviour, not Java behaviour, and would be assumed rather than verified against an in-memory database.
  *
@@ -34,7 +34,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("junit")
 @Transactional
-class PhotoSpecificationsTest {
+class PhotoSpecificationTest {
 
 	@Autowired
 	private PhotoRepository photoRepository;
@@ -77,7 +77,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "published", null, "Foto");
 		persist(2, 0, "unpublished", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.published())).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.published())).containsExactly(1);
 	}
 
 	@Test
@@ -85,14 +85,14 @@ class PhotoSpecificationsTest {
 		persist(1, 6, "bit 2 and bit 4", null, "Foto");
 		persist(2, 2, "bit 2 only", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.published())).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.published())).containsExactly(1);
 	}
 
 	@Test
 	void publishedExcludesRowsWithNullOptions() {
 		persist(1, null, "no options", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.published())).isEmpty();
+		assertThat(findIds(PhotoSpecification.published())).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ class PhotoSpecificationsTest {
 		persist(2, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
 		photoRepository.flush();
 
-		assertThat(findIds(PhotoSpecifications.notDeleted())).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.notDeleted())).containsExactly(1);
 	}
 
 	@Test
@@ -114,8 +114,8 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "deleted but still published", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
 		photoRepository.flush();
 
-		assertThat(findIds(PhotoSpecifications.published())).containsExactly(1);
-		assertThat(findIds(Specification.allOf(PhotoSpecifications.published(), PhotoSpecifications.notDeleted()))).isEmpty();
+		assertThat(findIds(PhotoSpecification.published())).containsExactly(1);
+		assertThat(findIds(Specification.allOf(PhotoSpecification.published(), PhotoSpecification.notDeleted()))).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.hasId(2))).containsExactly(2);
+		assertThat(findIds(PhotoSpecification.hasId(2))).containsExactly(2);
 	}
 
 	@Test
@@ -136,9 +136,9 @@ class PhotoSpecificationsTest {
 		photoRepository.flush();
 
 		final var specification = Specification.allOf(
-			PhotoSpecifications.fetchTopography(),
-			PhotoSpecifications.hasId(1),
-			PhotoSpecifications.notDeleted());
+			PhotoSpecification.fetchTopography(),
+			PhotoSpecification.hasId(1),
+			PhotoSpecification.notDeleted());
 
 		assertThat(photoRepository.findOne(specification)).isEmpty();
 	}
@@ -149,9 +149,9 @@ class PhotoSpecificationsTest {
 		persist(1, 0, "unpublished", null, "Foto");
 
 		final var specification = Specification.allOf(
-			PhotoSpecifications.fetchTopography(),
-			PhotoSpecifications.hasId(1),
-			PhotoSpecifications.notDeleted());
+			PhotoSpecification.fetchTopography(),
+			PhotoSpecification.hasId(1),
+			PhotoSpecification.notDeleted());
 
 		assertThat(photoRepository.findOne(specification)).isPresent();
 	}
@@ -165,7 +165,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Föremål");
 
-		assertThat(findIds(PhotoSpecifications.hasObjectType("Föremål"))).containsExactly(2);
+		assertThat(findIds(PhotoSpecification.hasObjectType("Föremål"))).containsExactly(2);
 	}
 
 	@Test
@@ -173,7 +173,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Föremål");
 
-		assertThat(findIds(PhotoSpecifications.hasObjectType(null))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.hasObjectType(null))).containsExactly(1, 2);
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -185,7 +185,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
 		persist(2, 4, "Storgatan", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("hamnen"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matches("hamnen"))).containsExactly(1);
 	}
 
 	@Test
@@ -193,14 +193,14 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "Utan titel", "Taget vid hamnen", "Foto");
 		persist(2, 4, "Storgatan", "Inget av intresse", "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("hamnen"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matches("hamnen"))).containsExactly(1);
 	}
 
 	@Test
 	void matchesIsCaseInsensitiveViaCollation() {
 		persist(1, 4, "HAMNEN", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("hamnen"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matches("hamnen"))).containsExactly(1);
 	}
 
 	@Test
@@ -208,7 +208,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
 		persist(2, 4, "Hamnen i Timrå", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("hamnen sundsvall"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matches("hamnen sundsvall"))).containsExactly(1);
 	}
 
 	@Test
@@ -216,7 +216,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "Hamnen", "Fotograferad i Sundsvall", "Foto");
 		persist(2, 4, "Hamnen", "Fotograferad i Timrå", "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("hamnen sundsvall"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matches("hamnen sundsvall"))).containsExactly(1);
 	}
 
 	@Test
@@ -224,7 +224,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "100% ull", null, "Foto");
 		persist(2, 4, "Storgatan", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("%"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matches("%"))).containsExactly(1);
 	}
 
 	@Test
@@ -232,7 +232,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "fil_namn", null, "Foto");
 		persist(2, 4, "filXnamn", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("fil_namn"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matches("fil_namn"))).containsExactly(1);
 	}
 
 	@Test
@@ -240,7 +240,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "Vilken tur!", null, "Foto");
 		persist(2, 4, "Vilken tur", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("tur!"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matches("tur!"))).containsExactly(1);
 	}
 
 	@Test
@@ -248,15 +248,15 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches(null))).containsExactly(1, 2);
-		assertThat(findIds(PhotoSpecifications.matches("   "))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.matches(null))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.matches("   "))).containsExactly(1, 2);
 	}
 
 	@Test
 	void matchesIgnoresRowsWhereBothColumnsAreNull() {
 		persist(1, 4, null, null, "Foto");
 
-		assertThat(findIds(PhotoSpecifications.matches("hamnen"))).isEmpty();
+		assertThat(findIds(PhotoSpecification.matches("hamnen"))).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -271,9 +271,9 @@ class PhotoSpecificationsTest {
 		persist(4, 4, "Storgatan", null, "Foto");
 
 		final var specification = Specification.allOf(
-			PhotoSpecifications.published(),
-			PhotoSpecifications.matches("hamnen"),
-			PhotoSpecifications.hasObjectType("Foto"));
+			PhotoSpecification.published(),
+			PhotoSpecification.matches("hamnen"),
+			PhotoSpecification.hasObjectType("Foto"));
 
 		assertThat(findIds(specification)).containsExactly(1);
 	}
@@ -284,9 +284,9 @@ class PhotoSpecificationsTest {
 		persist(2, 0, "Storgatan", null, "Föremål");
 
 		final var specification = Specification.allOf(
-			PhotoSpecifications.published(),
-			PhotoSpecifications.matches(null),
-			PhotoSpecifications.hasObjectType(null));
+			PhotoSpecification.published(),
+			PhotoSpecification.matches(null),
+			PhotoSpecification.hasObjectType(null));
 
 		assertThat(findIds(specification)).containsExactly(1);
 	}
@@ -303,7 +303,7 @@ class PhotoSpecificationsTest {
 		photoRepository.flush();
 		entityManager.clear();
 
-		final var photos = photoRepository.findAll(PhotoSpecifications.fetchTopography(), Pageable.unpaged()).getContent();
+		final var photos = photoRepository.findAll(PhotoSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(photos).hasSize(1);
 		assertThat(photos.getFirst().getTopography().getTId()).isEqualTo(500);
@@ -315,7 +315,7 @@ class PhotoSpecificationsTest {
 		persist(1, 4, "a", null, "Foto");
 		danglingForeignKey(1);
 
-		final var photos = photoRepository.findAll(PhotoSpecifications.fetchTopography(), Pageable.unpaged()).getContent();
+		final var photos = photoRepository.findAll(PhotoSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(photos).hasSize(1);
 		assertThat(photos.getFirst().getTopography()).isNull();
@@ -327,9 +327,9 @@ class PhotoSpecificationsTest {
 		danglingForeignKey(1);
 
 		final var photo = photoRepository.findOne(Specification.allOf(
-			PhotoSpecifications.fetchTopography(),
-			PhotoSpecifications.hasId(1),
-			PhotoSpecifications.notDeleted())).orElseThrow();
+			PhotoSpecification.fetchTopography(),
+			PhotoSpecification.hasId(1),
+			PhotoSpecification.notDeleted())).orElseThrow();
 
 		assertThat(photo.getTopography()).isNull();
 	}
@@ -377,7 +377,7 @@ class PhotoSpecificationsTest {
 
 		// The fetch join is invalid in the count projection, so the specification must skip it there.
 		final var page = photoRepository.findAll(
-			Specification.allOf(PhotoSpecifications.fetchTopography(), PhotoSpecifications.published()),
+			Specification.allOf(PhotoSpecification.fetchTopography(), PhotoSpecification.published()),
 			Pageable.ofSize(1));
 
 		assertThat(page.getTotalElements()).isEqualTo(2);
@@ -391,8 +391,8 @@ class PhotoSpecificationsTest {
 		persist(3, 0, "Hamnen i Härnösand", null, "Foto");
 
 		final var specification = Specification.allOf(
-			PhotoSpecifications.published(),
-			PhotoSpecifications.matches("hamnen"));
+			PhotoSpecification.published(),
+			PhotoSpecification.matches("hamnen"));
 
 		// Spring Data reuses the specification for the count projection — a page request exercises both.
 		final var page = photoRepository.findAll(specification, Pageable.ofSize(1));

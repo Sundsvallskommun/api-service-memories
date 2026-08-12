@@ -12,7 +12,7 @@ import se.sundsvall.memories.integration.db.model.AudioEntity;
  * <p>
  * Searching is done with {@link JpaSpecificationExecutor#findAll(org.springframework.data.jpa.domain.Specification,
  * Pageable) findAll(Specification, Pageable)} — see
- * {@link se.sundsvall.memories.integration.db.specification.AudioSpecifications AudioSpecifications} for the available
+ * {@link se.sundsvall.memories.integration.db.specification.AudioSpecification AudioSpecification} for the available
  * filters.
  *
  * <p>

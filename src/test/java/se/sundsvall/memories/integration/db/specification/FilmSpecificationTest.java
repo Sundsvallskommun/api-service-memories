@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
 /**
- * Exercises {@link FilmSpecifications} against a real MariaDB instance (Testcontainers), because the behaviour under
+ * Exercises {@link FilmSpecification} against a real MariaDB instance (Testcontainers), because the behaviour under
  * test — the {@code bitand} bitmask function, {@code LIKE} escaping and the collation-driven case insensitivity — is
  * database behaviour, not Java behaviour, and would be assumed rather than verified against an in-memory database.
  *
@@ -32,7 +32,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("junit")
 @Transactional
-class FilmSpecificationsTest {
+class FilmSpecificationTest {
 
 	@Autowired
 	private FilmRepository filmRepository;
@@ -74,7 +74,7 @@ class FilmSpecificationsTest {
 		persist(1, 4, "published", null);
 		persist(2, 0, "unpublished", null);
 
-		assertThat(findIds(FilmSpecifications.published())).containsExactly(1);
+		assertThat(findIds(FilmSpecification.published())).containsExactly(1);
 	}
 
 	@Test
@@ -82,14 +82,14 @@ class FilmSpecificationsTest {
 		persist(1, 6, "bit 2 and bit 4", null);
 		persist(2, 2, "bit 2 only", null);
 
-		assertThat(findIds(FilmSpecifications.published())).containsExactly(1);
+		assertThat(findIds(FilmSpecification.published())).containsExactly(1);
 	}
 
 	@Test
 	void publishedExcludesRowsWithNullOptions() {
 		persist(1, null, "no options", null);
 
-		assertThat(findIds(FilmSpecifications.published())).isEmpty();
+		assertThat(findIds(FilmSpecification.published())).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ class FilmSpecificationsTest {
 		persist(2, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
 		filmRepository.flush();
 
-		assertThat(findIds(FilmSpecifications.notDeleted())).containsExactly(1);
+		assertThat(findIds(FilmSpecification.notDeleted())).containsExactly(1);
 	}
 
 	@Test
@@ -112,8 +112,8 @@ class FilmSpecificationsTest {
 		persist(1, 4, "deleted but still published", null).setDeletedDate(LocalDate.of(2024, 3, 1));
 		filmRepository.flush();
 
-		assertThat(findIds(FilmSpecifications.published())).containsExactly(1);
-		assertThat(findIds(Specification.allOf(FilmSpecifications.published(), FilmSpecifications.notDeleted()))).isEmpty();
+		assertThat(findIds(FilmSpecification.published())).containsExactly(1);
+		assertThat(findIds(Specification.allOf(FilmSpecification.published(), FilmSpecification.notDeleted()))).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ class FilmSpecificationsTest {
 		persist(1, 4, "a", null);
 		persist(2, 4, "b", null);
 
-		assertThat(findIds(FilmSpecifications.hasId(2))).containsExactly(2);
+		assertThat(findIds(FilmSpecification.hasId(2))).containsExactly(2);
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ class FilmSpecificationsTest {
 		filmRepository.flush();
 		entityManager.clear();
 
-		final var films = filmRepository.findAll(FilmSpecifications.fetchTopography(), Pageable.unpaged()).getContent();
+		final var films = filmRepository.findAll(FilmSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(films).hasSize(1);
 		assertThat(films.getFirst().getTopography().getTId()).isEqualTo(500);
@@ -153,9 +153,9 @@ class FilmSpecificationsTest {
 		danglingForeignKey(1);
 
 		final var film = filmRepository.findOne(Specification.allOf(
-			FilmSpecifications.fetchTopography(),
-			FilmSpecifications.hasId(1),
-			FilmSpecifications.notDeleted())).orElseThrow();
+			FilmSpecification.fetchTopography(),
+			FilmSpecification.hasId(1),
+			FilmSpecification.notDeleted())).orElseThrow();
 
 		assertThat(film.getTopography()).isNull();
 	}
@@ -170,7 +170,7 @@ class FilmSpecificationsTest {
 
 		// The fetch join is invalid in the count projection, so the specification must skip it there.
 		final var page = filmRepository.findAll(
-			Specification.allOf(FilmSpecifications.fetchTopography(), FilmSpecifications.published()),
+			Specification.allOf(FilmSpecification.fetchTopography(), FilmSpecification.published()),
 			Pageable.ofSize(1));
 
 		assertThat(page.getTotalElements()).isEqualTo(2);
@@ -206,7 +206,7 @@ class FilmSpecificationsTest {
 		persist(1, 4, "Midsommar i Sundsvall", null);
 		persist(2, 4, "Storgatan", null);
 
-		assertThat(findIds(FilmSpecifications.matches("midsommar"))).containsExactly(1);
+		assertThat(findIds(FilmSpecification.matches("midsommar"))).containsExactly(1);
 	}
 
 	@Test
@@ -214,14 +214,14 @@ class FilmSpecificationsTest {
 		persist(1, 4, "Utan titel", "Filmad vid hamnen");
 		persist(2, 4, "Storgatan", "Inget av intresse");
 
-		assertThat(findIds(FilmSpecifications.matches("hamnen"))).containsExactly(1);
+		assertThat(findIds(FilmSpecification.matches("hamnen"))).containsExactly(1);
 	}
 
 	@Test
 	void matchesIsCaseInsensitiveViaCollation() {
 		persist(1, 4, "MIDSOMMAR", null);
 
-		assertThat(findIds(FilmSpecifications.matches("midsommar"))).containsExactly(1);
+		assertThat(findIds(FilmSpecification.matches("midsommar"))).containsExactly(1);
 	}
 
 	@Test
@@ -229,7 +229,7 @@ class FilmSpecificationsTest {
 		persist(1, 4, "Midsommar i Sundsvall", null);
 		persist(2, 4, "Midsommar i Timrå", null);
 
-		assertThat(findIds(FilmSpecifications.matches("midsommar sundsvall"))).containsExactly(1);
+		assertThat(findIds(FilmSpecification.matches("midsommar sundsvall"))).containsExactly(1);
 	}
 
 	@Test
@@ -237,7 +237,7 @@ class FilmSpecificationsTest {
 		persist(1, 4, "Midsommar", "Filmad i Sundsvall");
 		persist(2, 4, "Midsommar", "Filmad i Timrå");
 
-		assertThat(findIds(FilmSpecifications.matches("midsommar sundsvall"))).containsExactly(1);
+		assertThat(findIds(FilmSpecification.matches("midsommar sundsvall"))).containsExactly(1);
 	}
 
 	@Test
@@ -245,7 +245,7 @@ class FilmSpecificationsTest {
 		persist(1, 4, "100% film", null);
 		persist(2, 4, "Storgatan", null);
 
-		assertThat(findIds(FilmSpecifications.matches("%"))).containsExactly(1);
+		assertThat(findIds(FilmSpecification.matches("%"))).containsExactly(1);
 	}
 
 	@Test
@@ -253,7 +253,7 @@ class FilmSpecificationsTest {
 		persist(1, 4, "fil_namn", null);
 		persist(2, 4, "filXnamn", null);
 
-		assertThat(findIds(FilmSpecifications.matches("fil_namn"))).containsExactly(1);
+		assertThat(findIds(FilmSpecification.matches("fil_namn"))).containsExactly(1);
 	}
 
 	@Test
@@ -261,7 +261,7 @@ class FilmSpecificationsTest {
 		persist(1, 4, "Vilken tur!", null);
 		persist(2, 4, "Vilken tur", null);
 
-		assertThat(findIds(FilmSpecifications.matches("tur!"))).containsExactly(1);
+		assertThat(findIds(FilmSpecification.matches("tur!"))).containsExactly(1);
 	}
 
 	@Test
@@ -269,15 +269,15 @@ class FilmSpecificationsTest {
 		persist(1, 4, "a", null);
 		persist(2, 4, "b", null);
 
-		assertThat(findIds(FilmSpecifications.matches(null))).containsExactly(1, 2);
-		assertThat(findIds(FilmSpecifications.matches("   "))).containsExactly(1, 2);
+		assertThat(findIds(FilmSpecification.matches(null))).containsExactly(1, 2);
+		assertThat(findIds(FilmSpecification.matches("   "))).containsExactly(1, 2);
 	}
 
 	@Test
 	void matchesIgnoresRowsWhereBothColumnsAreNull() {
 		persist(1, 4, null, null);
 
-		assertThat(findIds(FilmSpecifications.matches("midsommar"))).isEmpty();
+		assertThat(findIds(FilmSpecification.matches("midsommar"))).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -293,9 +293,9 @@ class FilmSpecificationsTest {
 		filmRepository.flush();
 
 		final var specification = Specification.allOf(
-			FilmSpecifications.notDeleted(),
-			FilmSpecifications.published(),
-			FilmSpecifications.matches("midsommar"));
+			FilmSpecification.notDeleted(),
+			FilmSpecification.published(),
+			FilmSpecification.matches("midsommar"));
 
 		assertThat(findIds(specification)).containsExactly(1);
 	}
@@ -306,9 +306,9 @@ class FilmSpecificationsTest {
 		persist(2, 0, "Storgatan", null);
 
 		final var specification = Specification.allOf(
-			FilmSpecifications.notDeleted(),
-			FilmSpecifications.published(),
-			FilmSpecifications.matches(null));
+			FilmSpecification.notDeleted(),
+			FilmSpecification.published(),
+			FilmSpecification.matches(null));
 
 		assertThat(findIds(specification)).containsExactly(1);
 	}
@@ -320,8 +320,8 @@ class FilmSpecificationsTest {
 		persist(3, 0, "Midsommar i Härnösand", null);
 
 		final var specification = Specification.allOf(
-			FilmSpecifications.published(),
-			FilmSpecifications.matches("midsommar"));
+			FilmSpecification.published(),
+			FilmSpecification.matches("midsommar"));
 
 		// Spring Data reuses the specification for the count projection — a page request exercises both.
 		final var page = filmRepository.findAll(specification, Pageable.ofSize(1));

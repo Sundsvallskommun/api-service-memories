@@ -101,7 +101,7 @@ class TextServiceTest {
 		service = new TextService(textRepositoryMock, textMediaRepositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
 	}
 
-	// Which rows a specification selects is verified against a real database in TextSpecificationsTest. These tests
+	// Which rows a specification selects is verified against a real database in TextSpecificationTest. These tests
 	// only cover what the service itself does: build the pageable, hand a specification to the repository, and map the
 	// resulting page.
 

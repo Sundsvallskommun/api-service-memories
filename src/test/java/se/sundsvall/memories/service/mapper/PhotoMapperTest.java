@@ -53,7 +53,7 @@ class PhotoMapperTest {
 	@Test
 	void toPhotoSummaryWithoutTopographyHasNoLocation() {
 		// Both a photo without a place and a photo whose F_T_ID points at a missing row arrive here as a null
-		// association — see PhotoSpecificationsTest for the dangling foreign key case.
+		// association — see PhotoSpecificationTest for the dangling foreign key case.
 		final var entity = sampleEntity().withTopography(null);
 
 		assertThat(PhotoMapper.toPhotoSummary(entity).getLocation()).isNull();

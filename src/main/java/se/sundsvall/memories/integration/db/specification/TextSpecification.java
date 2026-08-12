@@ -23,11 +23,11 @@ import static se.sundsvall.memories.integration.db.model.TextEntity_.TOPOGRAPHY;
  * <strong>Sorting:</strong> unlike the native queries these replace, a sort property supplied via {@code Pageable} is
  * an entity property (e.g. {@code documentTitle}), not a physical column name.
  */
-public final class TextSpecifications {
+public interface TextSpecification {
 
-	private static final SpecificationBuilder<TextEntity> BUILDER = new SpecificationBuilder<>();
+	SpecificationBuilder<TextEntity> BUILDER = new SpecificationBuilder<>();
 
-	private static final int PUBLISHED_BIT = 4;
+	int PUBLISHED_BIT = 4;
 
 	/**
 	 * The native query this replaces searched {@code MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT)}. {@code XMLTEXT} is
@@ -35,32 +35,30 @@ public final class TextSpecifications {
 	 * nothing while making every search do an unindexable {@code LIKE} over a longtext column. Revisit this if the
 	 * digitised document text is ever loaded — at that point the volume decides whether {@code LIKE} is still viable.
 	 */
-	private static final List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
-
-	private TextSpecifications() {}
+	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
 
 	/** Restricts the result to published rows. */
-	public static Specification<TextEntity> published() {
+	static Specification<TextEntity> published() {
 		return BUILDER.buildBitmaskFilter(OPTIONS, PUBLISHED_BIT);
 	}
 
 	/** Excludes soft-deleted rows. Deletion sets {@code DELETEDDATE} but leaves the published bit set. */
-	public static Specification<TextEntity> notDeleted() {
+	static Specification<TextEntity> notDeleted() {
 		return BUILDER.buildIsNullFilter(DELETED_DATE);
 	}
 
 	/** Matches a single row by primary key, so reads by id compose from the same filters as a search. */
-	public static Specification<TextEntity> hasId(final Integer id) {
+	static Specification<TextEntity> hasId(final Integer id) {
 		return BUILDER.buildEqualFilter(TEXT_ID, id);
 	}
 
 	/** Free-text search across {@code DOKTITEL} and {@code KOMMENT_DOC}. Every word must occur in one of them. */
-	public static Specification<TextEntity> matches(final String query) {
+	static Specification<TextEntity> matches(final String query) {
 		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
 	}
 
 	/** Fetches the place in the same query, so mapping a page does not fire one select per row. */
-	public static Specification<TextEntity> fetchTopography() {
+	static Specification<TextEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
 	}
 }

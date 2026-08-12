@@ -82,7 +82,7 @@ class FilmMapperTest {
 	@Test
 	void toFilmWithoutTopographyHasNeitherLocationNorTopographyId() {
 		// Both a film without a place and a film whose FILM_T_ID points at a missing row arrive here as a null
-		// association — see FilmSpecificationsTest for the dangling foreign key case. Since topographyId is read
+		// association — see FilmSpecificationTest for the dangling foreign key case. Since topographyId is read
 		// through the association too, the two can never disagree.
 		final var entity = FilmEntity.create().withFilmId(1).withLocationText("Sundsvall");
 

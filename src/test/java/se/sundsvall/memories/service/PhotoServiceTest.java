@@ -77,7 +77,7 @@ class PhotoServiceTest {
 		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
 	}
 
-	// Which rows a specification selects is verified against a real database in PhotoSpecificationsTest. These tests
+	// Which rows a specification selects is verified against a real database in PhotoSpecificationTest. These tests
 	// only cover what the service itself does: build the pageable, hand a specification to the repository, and map the
 	// resulting page.
 

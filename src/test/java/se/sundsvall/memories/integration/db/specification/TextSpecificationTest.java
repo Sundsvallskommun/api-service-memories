@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
 /**
- * Exercises {@link TextSpecifications} against a real MariaDB instance (Testcontainers), because the behaviour under
+ * Exercises {@link TextSpecification} against a real MariaDB instance (Testcontainers), because the behaviour under
  * test — the {@code bitand} bitmask function, {@code LIKE} escaping and the collation-driven case insensitivity — is
  * database behaviour, not Java behaviour, and would be assumed rather than verified against an in-memory database.
  *
@@ -32,7 +32,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("junit")
 @Transactional
-class TextSpecificationsTest {
+class TextSpecificationTest {
 
 	@Autowired
 	private TextRepository textRepository;
@@ -74,7 +74,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "published", null);
 		persist(2, 0, "unpublished", null);
 
-		assertThat(findIds(TextSpecifications.published())).containsExactly(1);
+		assertThat(findIds(TextSpecification.published())).containsExactly(1);
 	}
 
 	@Test
@@ -82,14 +82,14 @@ class TextSpecificationsTest {
 		persist(1, 6, "bit 2 and bit 4", null);
 		persist(2, 2, "bit 2 only", null);
 
-		assertThat(findIds(TextSpecifications.published())).containsExactly(1);
+		assertThat(findIds(TextSpecification.published())).containsExactly(1);
 	}
 
 	@Test
 	void publishedExcludesRowsWithNullOptions() {
 		persist(1, null, "no options", null);
 
-		assertThat(findIds(TextSpecifications.published())).isEmpty();
+		assertThat(findIds(TextSpecification.published())).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ class TextSpecificationsTest {
 		persist(2, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
 		textRepository.flush();
 
-		assertThat(findIds(TextSpecifications.notDeleted())).containsExactly(1);
+		assertThat(findIds(TextSpecification.notDeleted())).containsExactly(1);
 	}
 
 	@Test
@@ -111,8 +111,8 @@ class TextSpecificationsTest {
 		persist(1, 4, "deleted but still published", null).setDeletedDate(LocalDate.of(2024, 3, 1));
 		textRepository.flush();
 
-		assertThat(findIds(TextSpecifications.published())).containsExactly(1);
-		assertThat(findIds(Specification.allOf(TextSpecifications.published(), TextSpecifications.notDeleted()))).isEmpty();
+		assertThat(findIds(TextSpecification.published())).containsExactly(1);
+		assertThat(findIds(Specification.allOf(TextSpecification.published(), TextSpecification.notDeleted()))).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -124,7 +124,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "a", null);
 		persist(2, 4, "b", null);
 
-		assertThat(findIds(TextSpecifications.hasId(2))).containsExactly(2);
+		assertThat(findIds(TextSpecification.hasId(2))).containsExactly(2);
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -139,7 +139,7 @@ class TextSpecificationsTest {
 		textRepository.flush();
 		entityManager.clear();
 
-		final var texts = textRepository.findAll(TextSpecifications.fetchTopography(), Pageable.unpaged()).getContent();
+		final var texts = textRepository.findAll(TextSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(texts).hasSize(1);
 		assertThat(texts.getFirst().getTopography().getTId()).isEqualTo(500);
@@ -152,9 +152,9 @@ class TextSpecificationsTest {
 		danglingForeignKey(1);
 
 		final var text = textRepository.findOne(Specification.allOf(
-			TextSpecifications.fetchTopography(),
-			TextSpecifications.hasId(1),
-			TextSpecifications.notDeleted())).orElseThrow();
+			TextSpecification.fetchTopography(),
+			TextSpecification.hasId(1),
+			TextSpecification.notDeleted())).orElseThrow();
 
 		assertThat(text.getTopography()).isNull();
 	}
@@ -169,7 +169,7 @@ class TextSpecificationsTest {
 
 		// The fetch join is invalid in the count projection, so the specification must skip it there.
 		final var page = textRepository.findAll(
-			Specification.allOf(TextSpecifications.fetchTopography(), TextSpecifications.published()),
+			Specification.allOf(TextSpecification.fetchTopography(), TextSpecification.published()),
 			Pageable.ofSize(1));
 
 		assertThat(page.getTotalElements()).isEqualTo(2);
@@ -205,7 +205,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "Protokoll från Sundsvall", null);
 		persist(2, 4, "Storgatan", null);
 
-		assertThat(findIds(TextSpecifications.matches("protokoll"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("protokoll"))).containsExactly(1);
 	}
 
 	@Test
@@ -213,7 +213,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "Utan titel", "Handling rörande hamnen");
 		persist(2, 4, "Storgatan", "Inget av intresse");
 
-		assertThat(findIds(TextSpecifications.matches("hamnen"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("hamnen"))).containsExactly(1);
 	}
 
 	@Test
@@ -223,15 +223,15 @@ class TextSpecificationsTest {
 		persist(1, 4, "Protokoll", null).setXmltext("hemligheten står i brödtexten");
 		textRepository.flush();
 
-		assertThat(findIds(TextSpecifications.matches("hemligheten"))).isEmpty();
-		assertThat(findIds(TextSpecifications.matches("protokoll"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("hemligheten"))).isEmpty();
+		assertThat(findIds(TextSpecification.matches("protokoll"))).containsExactly(1);
 	}
 
 	@Test
 	void matchesIsCaseInsensitiveViaCollation() {
 		persist(1, 4, "PROTOKOLL", null);
 
-		assertThat(findIds(TextSpecifications.matches("protokoll"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("protokoll"))).containsExactly(1);
 	}
 
 	@Test
@@ -239,7 +239,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "Protokoll från Sundsvall", null);
 		persist(2, 4, "Protokoll från Timrå", null);
 
-		assertThat(findIds(TextSpecifications.matches("protokoll sundsvall"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("protokoll sundsvall"))).containsExactly(1);
 	}
 
 	@Test
@@ -247,7 +247,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "Protokoll", "Upprättat i Sundsvall");
 		persist(2, 4, "Protokoll", "Upprättat i Timrå");
 
-		assertThat(findIds(TextSpecifications.matches("protokoll sundsvall"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("protokoll sundsvall"))).containsExactly(1);
 	}
 
 	@Test
@@ -255,7 +255,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "100% avskrift", null);
 		persist(2, 4, "Storgatan", null);
 
-		assertThat(findIds(TextSpecifications.matches("%"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("%"))).containsExactly(1);
 	}
 
 	@Test
@@ -263,7 +263,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "fil_namn", null);
 		persist(2, 4, "filXnamn", null);
 
-		assertThat(findIds(TextSpecifications.matches("fil_namn"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("fil_namn"))).containsExactly(1);
 	}
 
 	@Test
@@ -271,7 +271,7 @@ class TextSpecificationsTest {
 		persist(1, 4, "Vilken tur!", null);
 		persist(2, 4, "Vilken tur", null);
 
-		assertThat(findIds(TextSpecifications.matches("tur!"))).containsExactly(1);
+		assertThat(findIds(TextSpecification.matches("tur!"))).containsExactly(1);
 	}
 
 	@Test
@@ -279,15 +279,15 @@ class TextSpecificationsTest {
 		persist(1, 4, "a", null);
 		persist(2, 4, "b", null);
 
-		assertThat(findIds(TextSpecifications.matches(null))).containsExactly(1, 2);
-		assertThat(findIds(TextSpecifications.matches("   "))).containsExactly(1, 2);
+		assertThat(findIds(TextSpecification.matches(null))).containsExactly(1, 2);
+		assertThat(findIds(TextSpecification.matches("   "))).containsExactly(1, 2);
 	}
 
 	@Test
 	void matchesIgnoresRowsWhereBothColumnsAreNull() {
 		persist(1, 4, null, null);
 
-		assertThat(findIds(TextSpecifications.matches("protokoll"))).isEmpty();
+		assertThat(findIds(TextSpecification.matches("protokoll"))).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -303,9 +303,9 @@ class TextSpecificationsTest {
 		textRepository.flush();
 
 		final var specification = Specification.allOf(
-			TextSpecifications.notDeleted(),
-			TextSpecifications.published(),
-			TextSpecifications.matches("protokoll"));
+			TextSpecification.notDeleted(),
+			TextSpecification.published(),
+			TextSpecification.matches("protokoll"));
 
 		assertThat(findIds(specification)).containsExactly(1);
 	}
@@ -317,8 +317,8 @@ class TextSpecificationsTest {
 		persist(3, 0, "Protokoll från Härnösand", null);
 
 		final var specification = Specification.allOf(
-			TextSpecifications.published(),
-			TextSpecifications.matches("protokoll"));
+			TextSpecification.published(),
+			TextSpecification.matches("protokoll"));
 
 		// Spring Data reuses the specification for the count projection — a page request exercises both.
 		final var page = textRepository.findAll(specification, Pageable.ofSize(1));

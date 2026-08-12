@@ -85,7 +85,7 @@ class AudioMapperTest {
 	@Test
 	void toAudioWithoutTopographyHasNeitherLocationNorTopographyId() {
 		// Both an audio without a place and one whose LJUD_T_ID points at a missing row arrive here as a null
-		// association — see AudioSpecificationsTest for the dangling foreign key case. Since topographyId is read
+		// association — see AudioSpecificationTest for the dangling foreign key case. Since topographyId is read
 		// through the association too, the two can never disagree.
 		final var entity = AudioEntity.create().withAudioId(1).withLocationText("Sundsvall");
 

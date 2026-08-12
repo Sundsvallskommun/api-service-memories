@@ -12,7 +12,7 @@ import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.api.model.PagedAudioResponse;
 import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
-import se.sundsvall.memories.integration.db.specification.AudioSpecifications;
+import se.sundsvall.memories.integration.db.specification.AudioSpecification;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.AudioMapper;
 import se.sundsvall.memories.service.model.StreamPayload;
@@ -45,10 +45,10 @@ public class AudioService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
 		final var specification = Specification.allOf(
-			AudioSpecifications.fetchTopography(),
-			AudioSpecifications.notDeleted(),
-			AudioSpecifications.published(),
-			AudioSpecifications.matches(parameters.getQuery()));
+			AudioSpecification.fetchTopography(),
+			AudioSpecification.notDeleted(),
+			AudioSpecification.published(),
+			AudioSpecification.matches(parameters.getQuery()));
 
 		final var page = audioRepository.findAll(specification, pageable);
 
@@ -67,9 +67,9 @@ public class AudioService {
 	 */
 	private AudioEntity findVisible(final Integer id) {
 		return audioRepository.findOne(Specification.allOf(
-			AudioSpecifications.fetchTopography(),
-			AudioSpecifications.hasId(id),
-			AudioSpecifications.notDeleted()))
+			AudioSpecification.fetchTopography(),
+			AudioSpecification.hasId(id),
+			AudioSpecification.notDeleted()))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
 	}
 

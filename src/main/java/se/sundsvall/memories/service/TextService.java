@@ -15,7 +15,7 @@ import se.sundsvall.memories.integration.db.TextMediaRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
-import se.sundsvall.memories.integration.db.specification.TextSpecifications;
+import se.sundsvall.memories.integration.db.specification.TextSpecification;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.TextMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -46,10 +46,10 @@ public class TextService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
 		final var specification = Specification.allOf(
-			TextSpecifications.fetchTopography(),
-			TextSpecifications.notDeleted(),
-			TextSpecifications.published(),
-			TextSpecifications.matches(parameters.getQuery()));
+			TextSpecification.fetchTopography(),
+			TextSpecification.notDeleted(),
+			TextSpecification.published(),
+			TextSpecification.matches(parameters.getQuery()));
 
 		final var page = textRepository.findAll(specification, pageable);
 
@@ -68,9 +68,9 @@ public class TextService {
 	 */
 	private TextEntity findVisible(final Integer id) {
 		return textRepository.findOne(Specification.allOf(
-			TextSpecifications.fetchTopography(),
-			TextSpecifications.hasId(id),
-			TextSpecifications.notDeleted()))
+			TextSpecification.fetchTopography(),
+			TextSpecification.hasId(id),
+			TextSpecification.notDeleted()))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Text with id '%s' not found".formatted(id)));
 	}
 

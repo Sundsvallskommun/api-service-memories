@@ -104,7 +104,7 @@ class TextMapperTest {
 	@Test
 	void toTextWithoutTopographyHasNoLocation() {
 		// Both a text without a place and one whose D_T_ID points at a missing row arrive here as a null association —
-		// see TextSpecificationsTest for the dangling foreign key case.
+		// see TextSpecificationTest for the dangling foreign key case.
 		final var entity = TextEntity.create().withTextId(1).withLocationText("Sundsvall");
 
 		final var result = TextMapper.toTextSummary(entity, null);

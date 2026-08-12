@@ -12,7 +12,7 @@ import se.sundsvall.memories.integration.db.model.FilmEntity;
  * <p>
  * Searching is done with {@link JpaSpecificationExecutor#findAll(org.springframework.data.jpa.domain.Specification,
  * Pageable) findAll(Specification, Pageable)} — see
- * {@link se.sundsvall.memories.integration.db.specification.FilmSpecifications FilmSpecifications} for the available
+ * {@link se.sundsvall.memories.integration.db.specification.FilmSpecification FilmSpecification} for the available
  * filters.
  *
  * <p>

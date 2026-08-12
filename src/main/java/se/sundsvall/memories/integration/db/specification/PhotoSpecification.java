@@ -24,44 +24,42 @@ import static se.sundsvall.memories.integration.db.model.PhotoEntity_.TOPOGRAPHY
  * <strong>Sorting:</strong> unlike the native queries these replace, a sort property supplied via {@code Pageable} is
  * an entity property (e.g. {@code documentTitle}), not a physical column name.
  */
-public final class PhotoSpecifications {
+public interface PhotoSpecification {
 
-	private static final SpecificationBuilder<PhotoEntity> BUILDER = new SpecificationBuilder<>();
+	SpecificationBuilder<PhotoEntity> BUILDER = new SpecificationBuilder<>();
 
-	private static final int PUBLISHED_BIT = 4;
+	int PUBLISHED_BIT = 4;
 
 	/** Matches the {@code MATCH (DOKTITEL, KOMMENT_FF)} index the free-text search replaces. */
-	private static final List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
-
-	private PhotoSpecifications() {}
+	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
 
 	/** Restricts the result to published rows. */
-	public static Specification<PhotoEntity> published() {
+	static Specification<PhotoEntity> published() {
 		return BUILDER.buildBitmaskFilter(OPTIONS, PUBLISHED_BIT);
 	}
 
 	/** Excludes soft-deleted rows. Deletion sets {@code DELETEDDATE} but leaves the published bit set. */
-	public static Specification<PhotoEntity> notDeleted() {
+	static Specification<PhotoEntity> notDeleted() {
 		return BUILDER.buildIsNullFilter(DELETED_DATE);
 	}
 
 	/** Matches a single row by primary key, so reads by id compose from the same filters as a search. */
-	public static Specification<PhotoEntity> hasId(final Integer id) {
+	static Specification<PhotoEntity> hasId(final Integer id) {
 		return BUILDER.buildEqualFilter(PHOTO_ID, id);
 	}
 
 	/** Filters on the {@code OBJTYP} column (e.g. {@code Foto} or {@code Föremål}). */
-	public static Specification<PhotoEntity> hasObjectType(final String objectType) {
+	static Specification<PhotoEntity> hasObjectType(final String objectType) {
 		return BUILDER.buildEqualFilter(OBJECT_TYPE, objectType);
 	}
 
 	/** Free-text search across {@code DOKTITEL} and {@code KOMMENT_FF}. Every word must occur in one of them. */
-	public static Specification<PhotoEntity> matches(final String query) {
+	static Specification<PhotoEntity> matches(final String query) {
 		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
 	}
 
 	/** Fetches the place in the same query, so mapping a page does not fire one select per row. */
-	public static Specification<PhotoEntity> fetchTopography() {
+	static Specification<PhotoEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
 	}
 }

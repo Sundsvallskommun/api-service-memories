@@ -16,7 +16,7 @@ import se.sundsvall.memories.integration.db.FotoOcmRepository;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
-import se.sundsvall.memories.integration.db.specification.PhotoSpecifications;
+import se.sundsvall.memories.integration.db.specification.PhotoSpecification;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PhotoMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -47,11 +47,11 @@ public class PhotoService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
 		final var specification = Specification.allOf(
-			PhotoSpecifications.fetchTopography(),
-			PhotoSpecifications.notDeleted(),
-			PhotoSpecifications.published(),
-			PhotoSpecifications.matches(parameters.getQuery()),
-			PhotoSpecifications.hasObjectType(trimToNull(parameters.getObjectType())));
+			PhotoSpecification.fetchTopography(),
+			PhotoSpecification.notDeleted(),
+			PhotoSpecification.published(),
+			PhotoSpecification.matches(parameters.getQuery()),
+			PhotoSpecification.hasObjectType(trimToNull(parameters.getObjectType())));
 
 		final var page = photoRepository.findAll(specification, pageable);
 
@@ -77,9 +77,9 @@ public class PhotoService {
 	 */
 	private PhotoEntity findVisible(final Integer id) {
 		return photoRepository.findOne(Specification.allOf(
-			PhotoSpecifications.fetchTopography(),
-			PhotoSpecifications.hasId(id),
-			PhotoSpecifications.notDeleted()))
+			PhotoSpecification.fetchTopography(),
+			PhotoSpecification.hasId(id),
+			PhotoSpecification.notDeleted()))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
 	}
 

@@ -48,7 +48,7 @@ class FilmServiceTest {
 		service = new FilmService(repositoryMock, SAMBA_PROPERTIES, fileStreamerMock);
 	}
 
-	// Which rows a specification selects is verified against a real database in FilmSpecificationsTest. These tests only
+	// Which rows a specification selects is verified against a real database in FilmSpecificationTest. These tests only
 	// cover what the service itself does: build the pageable, hand a specification to the repository, and map the page.
 
 	@Test

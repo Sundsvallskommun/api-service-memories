@@ -12,7 +12,7 @@ import se.sundsvall.memories.api.model.FilmParameters;
 import se.sundsvall.memories.api.model.PagedFilmResponse;
 import se.sundsvall.memories.integration.db.FilmRepository;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
-import se.sundsvall.memories.integration.db.specification.FilmSpecifications;
+import se.sundsvall.memories.integration.db.specification.FilmSpecification;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.FilmMapper;
 import se.sundsvall.memories.service.model.StreamPayload;
@@ -43,10 +43,10 @@ public class FilmService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
 		final var specification = Specification.allOf(
-			FilmSpecifications.fetchTopography(),
-			FilmSpecifications.notDeleted(),
-			FilmSpecifications.published(),
-			FilmSpecifications.matches(parameters.getQuery()));
+			FilmSpecification.fetchTopography(),
+			FilmSpecification.notDeleted(),
+			FilmSpecification.published(),
+			FilmSpecification.matches(parameters.getQuery()));
 
 		final var page = filmRepository.findAll(specification, pageable);
 
@@ -65,9 +65,9 @@ public class FilmService {
 	 */
 	private FilmEntity findVisible(final Integer id) {
 		return filmRepository.findOne(Specification.allOf(
-			FilmSpecifications.fetchTopography(),
-			FilmSpecifications.hasId(id),
-			FilmSpecifications.notDeleted()))
+			FilmSpecification.fetchTopography(),
+			FilmSpecification.hasId(id),
+			FilmSpecification.notDeleted()))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, FILM_NOT_FOUND.formatted(id)));
 	}
 
