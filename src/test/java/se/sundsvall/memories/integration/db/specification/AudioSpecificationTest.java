@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
+import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
@@ -279,8 +280,42 @@ class AudioSpecificationTest {
 	}
 
 	// ---------------------------------------------------------------------------------------------
-	// Composition — the shape the service uses
+	// Composition — the repository methods the service calls
 	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void findAllByParametersHidesUnpublishedAndDeletedRows() {
+		persist(1, 4, "Intervju i Sundsvall", null);
+		persist(2, 0, "Intervju opublicerad", null);
+		persist(3, 4, "Intervju raderad", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(4, 4, "Storgatan", null);
+		audioRepository.flush();
+
+		final var page = audioRepository.findAllByParameters(AudioParameters.create().withQuery("intervju"), Pageable.unpaged());
+
+		assertThat(page.getContent()).extracting(AudioEntity::getAudioId).containsExactly(1);
+	}
+
+	@Test
+	void findAllByParametersWithoutAQueryReturnsEveryVisibleRow() {
+		persist(1, 4, "a", null);
+		persist(2, 0, "b", null);
+
+		final var page = audioRepository.findAllByParameters(AudioParameters.create(), Pageable.unpaged());
+
+		assertThat(page.getContent()).extracting(AudioEntity::getAudioId).containsExactly(1);
+	}
+
+	@Test
+	void findVisibleByIdSkipsADeletedRowButKeepsAnUnpublishedOne() {
+		persist(1, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(2, 0, "unpublished", null);
+		audioRepository.flush();
+
+		assertThat(audioRepository.findVisibleById(1)).isEmpty();
+		assertThat(audioRepository.findVisibleById(2)).isPresent();
+		assertThat(audioRepository.findVisibleById(999)).isEmpty();
+	}
 
 	@Test
 	void allOfCombinesEveryFilter() {

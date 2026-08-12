@@ -3,7 +3,6 @@ package se.sundsvall.memories.service;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
@@ -15,7 +14,6 @@ import se.sundsvall.memories.integration.db.TextMediaRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
-import se.sundsvall.memories.integration.db.specification.TextSpecification;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.TextMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -45,32 +43,15 @@ public class TextService {
 	public PagedTextResponse search(final TextParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
-		final var specification = Specification.allOf(
-			TextSpecification.fetchTopography(),
-			TextSpecification.notDeleted(),
-			TextSpecification.published(),
-			TextSpecification.matches(parameters.getQuery()));
-
-		final var page = textRepository.findAll(specification, pageable);
+		final var page = textRepository.findAllByParameters(parameters, pageable);
 
 		return PagedTextResponse.create()
 			.withTexts(TextMapper.toTextList(page.getContent(), ocmLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
-	/**
-	 * Loads a single text by id, applying the same visibility rules as a search so that a soft-deleted document cannot
-	 * be reached by guessing its id.
-	 *
-	 * <p>
-	 * Unpublished documents are deliberately still reachable here — an administrative interface is planned that needs
-	 * to show them.
-	 */
 	private TextEntity findVisible(final Integer id) {
-		return textRepository.findOne(Specification.allOf(
-			TextSpecification.fetchTopography(),
-			TextSpecification.hasId(id),
-			TextSpecification.notDeleted()))
+		return textRepository.findVisibleById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Text with id '%s' not found".formatted(id)));
 	}
 

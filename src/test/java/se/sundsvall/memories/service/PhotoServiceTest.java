@@ -11,12 +11,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.api.model.Subject;
@@ -29,6 +27,8 @@ import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -77,14 +77,13 @@ class PhotoServiceTest {
 		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
 	}
 
-	// Which rows a specification selects is verified against a real database in PhotoSpecificationTest. These tests
-	// only cover what the service itself does: build the pageable, hand a specification to the repository, and map the
-	// resulting page.
+	// Which rows the filters select is verified against a real database in PhotoSpecificationTest. These tests cover
+	// what the service itself does: build the pageable, forward the parameters, and map the resulting page.
 
 	@Test
 	void searchDelegatesToRepositoryAndMapsThePage() {
 		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable)))
+		when(photoRepositoryMock.findAllByParameters(any(PhotoParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
 		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall").withObjectType("Foto"));
@@ -93,30 +92,32 @@ class PhotoServiceTest {
 		assertThat(result.getPhotos().getFirst().getDocumentTitle()).isEqualTo("Stadsvy");
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(photoRepositoryMock).findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable));
+		verify(photoRepositoryMock).findAllByParameters(any(PhotoParameters.class), eq(pageable));
 		verifyNoMoreInteractions(photoRepositoryMock);
 	}
 
 	@Test
-	void searchWithoutFiltersStillPassesASpecification() {
+	void searchForwardsTheParametersUnchanged() {
 		final var pageable = PageRequest.of(0, 100);
-		when(photoRepositoryMock.findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable)))
+		final var parameters = PhotoParameters.create();
+		when(photoRepositoryMock.findAllByParameters(any(PhotoParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
-		final var result = service.search(PhotoParameters.create());
+		final var result = service.search(parameters);
 
 		assertThat(result.getPhotos()).isEmpty();
-		// Specification.allOf rejects null elements, so an unfiltered search must still yield a usable specification.
-		final var specificationCaptor = ArgumentCaptor.forClass(Specification.class);
-		verify(photoRepositoryMock).findAll(specificationCaptor.capture(), eq(pageable));
-		assertThat(specificationCaptor.getValue()).isNotNull();
+		// Which filters the parameters turn into is the repository's job, verified against a real database in
+		// PhotoSpecificationTest. The service only has to hand them over untouched.
+		final var parametersCaptor = ArgumentCaptor.forClass(PhotoParameters.class);
+		verify(photoRepositoryMock).findAllByParameters(parametersCaptor.capture(), eq(pageable));
+		assertThat(parametersCaptor.getValue()).isSameAs(parameters);
 		verifyNoMoreInteractions(photoRepositoryMock);
 	}
 
 	@Test
 	void searchAppliesRequestedPaging() {
 		final var pageable = PageRequest.of(2, 25);
-		when(photoRepositoryMock.findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable)))
+		when(photoRepositoryMock.findAllByParameters(any(PhotoParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 51));
 
 		final var result = service.search(PhotoParameters.create().withPage(3).withLimit(25));
@@ -124,13 +125,13 @@ class PhotoServiceTest {
 		assertThat(result.getMetaData().getPage()).isEqualTo(3);
 		assertThat(result.getMetaData().getLimit()).isEqualTo(25);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(51);
-		verify(photoRepositoryMock).findAll(ArgumentMatchers.<Specification<PhotoEntity>>any(), eq(pageable));
+		verify(photoRepositoryMock).findAllByParameters(any(PhotoParameters.class), eq(pageable));
 		verifyNoMoreInteractions(photoRepositoryMock);
 	}
 
 	@Test
 	void getByIdReturnsDetailWithRelatedPhotosAndSubjects() {
-		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.of(entity()));
+		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity()));
 		when(photoRepositoryMock.findRelatedPhotoIds(1234)).thenReturn(List.of(2001, 2002));
 		when(fotoOcmRepositoryMock.findByPhotoIdOrderById(1234)).thenReturn(List.of(
 			FotoOcmEntity.create().withPhotoId(1234).withOcmId(10),
@@ -149,7 +150,7 @@ class PhotoServiceTest {
 
 	@Test
 	void getByIdNotFound() {
-		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.empty());
+		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.getById(999));
 
@@ -161,7 +162,7 @@ class PhotoServiceTest {
 	@MethodSource("fileVariants")
 	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename) {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.of(entity()));
+		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity()));
 
 		service.streamFile(1234, variant, responseMock);
 
@@ -172,7 +173,7 @@ class PhotoServiceTest {
 	@Test
 	void streamFileNotFoundPhoto() {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.empty());
+		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(999, FileVariant.THUMBNAIL, responseMock));
@@ -186,7 +187,7 @@ class PhotoServiceTest {
 	void streamFileWhenVariantIsBlank() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withThumbnailFilename("   ");
-		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.of(entityMissingFile));
+		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(1234, FileVariant.THUMBNAIL, responseMock));
@@ -200,7 +201,7 @@ class PhotoServiceTest {
 	void streamFileWhenVariantIsNull() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withLargeImageFilename(null);
-		when(photoRepositoryMock.findOne(ArgumentMatchers.<Specification<PhotoEntity>>any())).thenReturn(Optional.of(entityMissingFile));
+		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(1234, FileVariant.LARGE, responseMock));

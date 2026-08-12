@@ -2,7 +2,6 @@ package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
@@ -12,7 +11,6 @@ import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.api.model.PagedAudioResponse;
 import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
-import se.sundsvall.memories.integration.db.specification.AudioSpecification;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.AudioMapper;
 import se.sundsvall.memories.service.model.StreamPayload;
@@ -44,32 +42,15 @@ public class AudioService {
 	public PagedAudioResponse search(final AudioParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
-		final var specification = Specification.allOf(
-			AudioSpecification.fetchTopography(),
-			AudioSpecification.notDeleted(),
-			AudioSpecification.published(),
-			AudioSpecification.matches(parameters.getQuery()));
-
-		final var page = audioRepository.findAll(specification, pageable);
+		final var page = audioRepository.findAllByParameters(parameters, pageable);
 
 		return PagedAudioResponse.create()
 			.withAudios(AudioMapper.toAudioList(page.getContent(), ocmLookup::resolve))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
-	/**
-	 * Loads a single audio by id, applying the same visibility rules as a search so that a soft-deleted recording
-	 * cannot be reached by guessing its id.
-	 *
-	 * <p>
-	 * Unpublished recordings are deliberately still reachable here — an administrative interface is planned that needs
-	 * to show them.
-	 */
 	private AudioEntity findVisible(final Integer id) {
-		return audioRepository.findOne(Specification.allOf(
-			AudioSpecification.fetchTopography(),
-			AudioSpecification.hasId(id),
-			AudioSpecification.notDeleted()))
+		return audioRepository.findVisibleById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
 	}
 

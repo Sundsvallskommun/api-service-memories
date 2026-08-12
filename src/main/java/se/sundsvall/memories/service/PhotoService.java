@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Objects;
 import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
@@ -16,7 +15,6 @@ import se.sundsvall.memories.integration.db.FotoOcmRepository;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
-import se.sundsvall.memories.integration.db.specification.PhotoSpecification;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PhotoMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -46,40 +44,15 @@ public class PhotoService {
 	public PagedPhotoResponse search(final PhotoParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
-		final var specification = Specification.allOf(
-			PhotoSpecification.fetchTopography(),
-			PhotoSpecification.notDeleted(),
-			PhotoSpecification.published(),
-			PhotoSpecification.matches(parameters.getQuery()),
-			PhotoSpecification.hasObjectType(trimToNull(parameters.getObjectType())));
-
-		final var page = photoRepository.findAll(specification, pageable);
+		final var page = photoRepository.findAllByParameters(parameters, pageable);
 
 		return PagedPhotoResponse.create()
 			.withPhotos(PhotoMapper.toPhotoList(page.getContent()))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
-	private static String trimToNull(final String value) {
-		return ofNullable(value)
-			.map(String::trim)
-			.filter(s -> !s.isEmpty())
-			.orElse(null);
-	}
-
-	/**
-	 * Loads a single photo by id, applying the same visibility rules as a search so that a soft-deleted photo cannot be
-	 * reached by guessing its id.
-	 *
-	 * <p>
-	 * Unpublished photos are deliberately still reachable here — an administrative interface is planned that needs to
-	 * show them.
-	 */
 	private PhotoEntity findVisible(final Integer id) {
-		return photoRepository.findOne(Specification.allOf(
-			PhotoSpecification.fetchTopography(),
-			PhotoSpecification.hasId(id),
-			PhotoSpecification.notDeleted()))
+		return photoRepository.findVisibleById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
 	}
 

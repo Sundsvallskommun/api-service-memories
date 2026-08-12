@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
+import se.sundsvall.memories.api.model.FilmParameters;
 import se.sundsvall.memories.integration.db.FilmRepository;
 import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
@@ -281,8 +282,42 @@ class FilmSpecificationTest {
 	}
 
 	// ---------------------------------------------------------------------------------------------
-	// Composition — the shape the service will use
+	// Composition — the repository methods the service calls
 	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void findAllByParametersHidesUnpublishedAndDeletedRows() {
+		persist(1, 4, "Midsommar i Sundsvall", null);
+		persist(2, 0, "Midsommar opublicerad", null);
+		persist(3, 4, "Midsommar raderad", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(4, 4, "Storgatan", null);
+		filmRepository.flush();
+
+		final var page = filmRepository.findAllByParameters(FilmParameters.create().withQuery("midsommar"), Pageable.unpaged());
+
+		assertThat(page.getContent()).extracting(FilmEntity::getFilmId).containsExactly(1);
+	}
+
+	@Test
+	void findAllByParametersWithoutAQueryReturnsEveryVisibleRow() {
+		persist(1, 4, "a", null);
+		persist(2, 0, "b", null);
+
+		final var page = filmRepository.findAllByParameters(FilmParameters.create(), Pageable.unpaged());
+
+		assertThat(page.getContent()).extracting(FilmEntity::getFilmId).containsExactly(1);
+	}
+
+	@Test
+	void findVisibleByIdSkipsADeletedRowButKeepsAnUnpublishedOne() {
+		persist(1, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(2, 0, "unpublished", null);
+		filmRepository.flush();
+
+		assertThat(filmRepository.findVisibleById(1)).isEmpty();
+		assertThat(filmRepository.findVisibleById(2)).isPresent();
+		assertThat(filmRepository.findVisibleById(999)).isEmpty();
+	}
 
 	@Test
 	void allOfCombinesEveryFilter() {

@@ -2,12 +2,22 @@ package se.sundsvall.memories.integration.db;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
+
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.fetchTopography;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasId;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasObjectType;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.notDeleted;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.published;
 
 /**
  * Repository for the {@code FOTO} table.
@@ -25,6 +35,38 @@ import se.sundsvall.memories.integration.db.model.PhotoEntity;
  */
 @CircuitBreaker(name = "photoRepository")
 public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, JpaSpecificationExecutor<PhotoEntity> {
+
+	/**
+	 * Searches photos matching the given request parameters.
+	 *
+	 * @param  parameters the search parameters
+	 * @param  pageable   the pagination and sorting criteria
+	 * @return            a page of matching photos
+	 */
+	default Page<PhotoEntity> findAllByParameters(final PhotoParameters parameters, final Pageable pageable) {
+		return findAll(fetchTopography()
+			.and(notDeleted())
+			.and(published())
+			.and(matches(parameters.getQuery()))
+			.and(hasObjectType(parameters.getObjectType())),
+			pageable);
+	}
+
+	/**
+	 * Loads a single photo by id under the same visibility rules a search applies, so that a soft-deleted photo cannot
+	 * be reached by guessing its id.
+	 *
+	 * <p>
+	 * Unpublished photos are deliberately still reachable — an administrative interface is planned that needs them.
+	 *
+	 * @param  id the photo id
+	 * @return    the photo, or empty if it does not exist or is soft-deleted
+	 */
+	default Optional<PhotoEntity> findVisibleById(final Integer id) {
+		return findOne(fetchTopography()
+			.and(hasId(id))
+			.and(notDeleted()));
+	}
 
 	/**
 	 * Returns the IDs of all photos connected to the given photo via the {@code FOTO_FOTO} junction table. The relation

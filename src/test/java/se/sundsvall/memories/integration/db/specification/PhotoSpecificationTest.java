@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
+import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
@@ -260,8 +261,44 @@ class PhotoSpecificationTest {
 	}
 
 	// ---------------------------------------------------------------------------------------------
-	// Composition — the shape the service will use
+	// Composition — the repository methods the service calls
 	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void findAllByParametersHidesUnpublishedAndDeletedRows() {
+		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
+		persist(2, 0, "Hamnen opublicerad", null, "Foto");
+		persist(3, 4, "Hamnen raderad", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(4, 4, "Storgatan", null, "Foto");
+		photoRepository.flush();
+
+		final var page = photoRepository.findAllByParameters(PhotoParameters.create().withQuery("hamnen"), Pageable.unpaged());
+
+		assertThat(page.getContent()).extracting(PhotoEntity::getPhotoId).containsExactly(1);
+	}
+
+	@Test
+	void findAllByParametersAppliesTheObjectTypeFilterAndIgnoresItWhenBlank() {
+		persist(1, 4, "a", null, "Foto");
+		persist(2, 4, "b", null, "Föremål");
+
+		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType("Föremål"), Pageable.unpaged())
+			.getContent()).extracting(PhotoEntity::getPhotoId).containsExactly(2);
+		// A blank object type means "no filter", so the request parameter can be passed through untrimmed.
+		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType("   "), Pageable.unpaged())
+			.getContent()).extracting(PhotoEntity::getPhotoId).containsExactlyInAnyOrder(1, 2);
+	}
+
+	@Test
+	void findVisibleByIdSkipsADeletedRowButKeepsAnUnpublishedOne() {
+		persist(1, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(2, 0, "unpublished", null, "Foto");
+		photoRepository.flush();
+
+		assertThat(photoRepository.findVisibleById(1)).isEmpty();
+		assertThat(photoRepository.findVisibleById(2)).isPresent();
+		assertThat(photoRepository.findVisibleById(999)).isEmpty();
+	}
 
 	@Test
 	void allOfCombinesEveryFilter() {

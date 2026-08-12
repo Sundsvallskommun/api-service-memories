@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 
+import static java.util.Optional.ofNullable;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DOCUMENT_TITLE;
@@ -48,9 +49,19 @@ public interface PhotoSpecification {
 		return BUILDER.buildEqualFilter(PHOTO_ID, id);
 	}
 
-	/** Filters on the {@code OBJTYP} column (e.g. {@code Foto} or {@code Föremål}). */
+	/**
+	 * Filters on the {@code OBJTYP} column (e.g. {@code Foto} or {@code Föremål}). A blank value means "no filter", so
+	 * callers can pass the request parameter straight through.
+	 */
 	static Specification<PhotoEntity> hasObjectType(final String objectType) {
-		return BUILDER.buildEqualFilter(OBJECT_TYPE, objectType);
+		return BUILDER.buildEqualFilter(OBJECT_TYPE, trimToNull(objectType));
+	}
+
+	private static String trimToNull(final String value) {
+		return ofNullable(value)
+			.map(String::trim)
+			.filter(trimmed -> !trimmed.isEmpty())
+			.orElse(null);
 	}
 
 	/** Free-text search across {@code DOKTITEL} and {@code KOMMENT_FF}. Every word must occur in one of them. */

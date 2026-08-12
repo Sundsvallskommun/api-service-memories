@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
+import se.sundsvall.memories.api.model.TextParameters;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.TextEntity;
@@ -291,8 +292,42 @@ class TextSpecificationTest {
 	}
 
 	// ---------------------------------------------------------------------------------------------
-	// Composition — the shape the service uses
+	// Composition — the repository methods the service calls
 	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void findAllByParametersHidesUnpublishedAndDeletedRows() {
+		persist(1, 4, "Protokoll från Sundsvall", null);
+		persist(2, 0, "Protokoll opublicerat", null);
+		persist(3, 4, "Protokoll raderat", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(4, 4, "Storgatan", null);
+		textRepository.flush();
+
+		final var page = textRepository.findAllByParameters(TextParameters.create().withQuery("protokoll"), Pageable.unpaged());
+
+		assertThat(page.getContent()).extracting(TextEntity::getTextId).containsExactly(1);
+	}
+
+	@Test
+	void findAllByParametersWithoutAQueryReturnsEveryVisibleRow() {
+		persist(1, 4, "a", null);
+		persist(2, 0, "b", null);
+
+		final var page = textRepository.findAllByParameters(TextParameters.create(), Pageable.unpaged());
+
+		assertThat(page.getContent()).extracting(TextEntity::getTextId).containsExactly(1);
+	}
+
+	@Test
+	void findVisibleByIdSkipsADeletedRowButKeepsAnUnpublishedOne() {
+		persist(1, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(2, 0, "unpublished", null);
+		textRepository.flush();
+
+		assertThat(textRepository.findVisibleById(1)).isEmpty();
+		assertThat(textRepository.findVisibleById(2)).isPresent();
+		assertThat(textRepository.findVisibleById(999)).isEmpty();
+	}
 
 	@Test
 	void allOfCombinesEveryFilter() {
