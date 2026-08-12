@@ -7,6 +7,7 @@ import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 
 public final class PhotoMapper {
@@ -19,11 +20,24 @@ public final class PhotoMapper {
 	}
 
 	/** Detail mapping including FOTO_FOTO relations and FOTO_OCM subjects, used for get-by-id. */
-	public static Photo toPhoto(final PhotoEntity entity, final List<Integer> relatedPhotoIds, final List<Subject> subjects) {
+	public static Photo toPhoto(final PhotoEntity entity, final List<Integer> relatedPhotoIds) {
 		return ofNullable(toBase(entity))
 			.map(photo -> photo.withRelatedPhotoIds(ofNullable(relatedPhotoIds).orElse(emptyList()))
-				.withSubjects(ofNullable(subjects).orElse(emptyList())))
+				.withSubjects(subjects(entity)))
 			.orElse(null);
+	}
+
+	/**
+	 * Maps the subjects reached through the {@code FOTO_OCM} association. A photo with no subjects yields an empty
+	 * list, which is what the API has always returned.
+	 */
+	private static List<Subject> subjects(final PhotoEntity entity) {
+		return ofNullable(entity.getSubjects()).orElse(emptySet()).stream()
+			.map(subject -> Subject.create()
+				.withCode(subject.getCode())
+				.withText(subject.getText())
+				.withDescription(subject.getDescription()))
+			.toList();
 	}
 
 	/**

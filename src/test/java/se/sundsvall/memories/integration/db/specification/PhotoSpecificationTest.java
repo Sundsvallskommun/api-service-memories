@@ -15,8 +15,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PhotoParameters;
+import se.sundsvall.memories.integration.db.OcmRepository;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.TopographyRepository;
+import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -43,6 +45,9 @@ class PhotoSpecificationTest {
 	@Autowired
 	private TopographyRepository topographyRepository;
 
+	@Autowired
+	private OcmRepository ocmRepository;
+
 	@PersistenceContext
 	private EntityManager entityManager;
 
@@ -50,6 +55,8 @@ class PhotoSpecificationTest {
 	void clearTables() {
 		photoRepository.deleteAll();
 		topographyRepository.deleteAll();
+		entityManager.createNativeQuery("DELETE FROM FOTO_OCM").executeUpdate();
+		ocmRepository.deleteAll();
 		photoRepository.flush();
 	}
 
@@ -175,6 +182,58 @@ class PhotoSpecificationTest {
 		persist(2, 4, "b", null, "Föremål");
 
 		assertThat(findIds(PhotoSpecification.hasObjectType(null))).containsExactly(1, 2);
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// FOTO_OCM subjects
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void subjectsAreReadThroughTheJunctionTableInIdOrder() {
+		ocmRepository.saveAndFlush(OcmEntity.create().withId(20).withText("Musik"));
+		ocmRepository.saveAndFlush(OcmEntity.create().withId(1).withText("Allmänt"));
+		persist(1, 4, "a", null, "Foto");
+		// Junction rows inserted with the higher OCM id first, so the assertion below really tests @OrderBy("id")
+		// rather than insertion order.
+		linkSubject(1, 1, 20);
+		linkSubject(2, 1, 1);
+		entityManager.clear();
+
+		final var photo = photoRepository.findVisibleById(1).orElseThrow();
+
+		assertThat(photo.getSubjects()).extracting(OcmEntity::getText).containsExactly("Allmänt", "Musik");
+	}
+
+	@Test
+	void subjectsIgnoreAJunctionRowPointingAtAMissingOcmEntry() {
+		ocmRepository.saveAndFlush(OcmEntity.create().withId(1).withText("Allmänt"));
+		persist(1, 4, "a", null, "Foto");
+		linkSubject(1, 1, 1);
+		linkSubject(2, 1, 999);
+		entityManager.clear();
+		assertThat(ocmRepository.findById(999)).isEmpty();
+
+		final var photo = photoRepository.findVisibleById(1).orElseThrow();
+
+		// The junction row survives, but the missing OCM entry simply does not appear — the same outcome the old
+		// lookup produced by filtering out unresolved ids.
+		assertThat(photo.getSubjects()).extracting(OcmEntity::getText).containsExactly("Allmänt");
+	}
+
+	@Test
+	void aPhotoWithoutJunctionRowsHasNoSubjects() {
+		persist(1, 4, "a", null, "Foto");
+		entityManager.clear();
+
+		assertThat(photoRepository.findVisibleById(1).orElseThrow().getSubjects()).isEmpty();
+	}
+
+	private void linkSubject(final int junctionId, final int photoId, final int ocmId) {
+		entityManager.createNativeQuery("INSERT INTO FOTO_OCM (ID, F_ID, O_ID) VALUES (:junctionId, :photoId, :ocmId)")
+			.setParameter("junctionId", junctionId)
+			.setParameter("photoId", photoId)
+			.setParameter("ocmId", ocmId)
+			.executeUpdate();
 	}
 
 	// ---------------------------------------------------------------------------------------------

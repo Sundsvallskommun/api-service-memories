@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -18,14 +19,14 @@ import org.springframework.data.domain.PageRequest;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.api.model.Subject;
-import se.sundsvall.memories.integration.db.FotoOcmRepository;
 import se.sundsvall.memories.integration.db.PhotoRepository;
-import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
+import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.service.PhotoService.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -45,12 +46,6 @@ class PhotoServiceTest {
 
 	@Mock
 	private PhotoRepository photoRepositoryMock;
-
-	@Mock
-	private FotoOcmRepository fotoOcmRepositoryMock;
-
-	@Mock
-	private OcmLookup ocmLookupMock;
 
 	@Mock
 	private FileStreamer fileStreamerMock;
@@ -74,7 +69,7 @@ class PhotoServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new PhotoService(photoRepositoryMock, fotoOcmRepositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
+		service = new PhotoService(photoRepositoryMock, SAMBA_PROPERTIES, fileStreamerMock);
 	}
 
 	// Which rows the filters select is verified against a real database in PhotoSpecificationTest. These tests cover
@@ -131,21 +126,28 @@ class PhotoServiceTest {
 
 	@Test
 	void getByIdReturnsDetailWithRelatedPhotosAndSubjects() {
-		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity()));
+		final var entity = entity().withSubjects(new LinkedHashSet<>(List.of(
+			OcmEntity.create().withId(10).withCode("ALM").withText("Allmänt"),
+			OcmEntity.create().withId(20).withCode("MUS").withText("Musik"))));
+		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
 		when(photoRepositoryMock.findRelatedPhotoIds(1234)).thenReturn(List.of(2001, 2002));
-		when(fotoOcmRepositoryMock.findByPhotoIdOrderById(1234)).thenReturn(List.of(
-			FotoOcmEntity.create().withPhotoId(1234).withOcmId(10),
-			FotoOcmEntity.create().withPhotoId(1234).withOcmId(20)));
-		when(ocmLookupMock.resolveSubject(10)).thenReturn(Subject.create().withCode("ALM").withText("Allmänt"));
-		when(ocmLookupMock.resolveSubject(20)).thenReturn(null);
 
 		final var result = service.getById(1234);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getPhotoId()).isEqualTo(1234);
 		assertThat(result.getRelatedPhotoIds()).containsExactly(2001, 2002);
-		assertThat(result.getSubjects()).hasSize(1);
-		assertThat(result.getSubjects().getFirst().getCode()).isEqualTo("ALM");
+		assertThat(result.getSubjects())
+			.extracting(Subject::getCode, Subject::getText)
+			.containsExactly(tuple("ALM", "Allmänt"), tuple("MUS", "Musik"));
+	}
+
+	@Test
+	void getByIdWithoutSubjectsReturnsAnEmptyList() {
+		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity()));
+		when(photoRepositoryMock.findRelatedPhotoIds(1234)).thenReturn(List.of());
+
+		assertThat(service.getById(1234).getSubjects()).isEmpty();
 	}
 
 	@Test

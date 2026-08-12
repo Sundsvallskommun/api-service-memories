@@ -5,10 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "FOTO")
@@ -21,6 +26,13 @@ public class PhotoEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_T_ID")
 	private TopographyEntity topography;
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "FOTO_OCM",
+		joinColumns = @JoinColumn(name = "F_ID"),
+		inverseJoinColumns = @JoinColumn(name = "O_ID"))
+	@OrderBy("id")
+	private Set<OcmEntity> subjects = new LinkedHashSet<>();
 
 	@Column(name = "FILNAMN", length = 256)
 	private String filename;
@@ -159,6 +171,19 @@ public class PhotoEntity {
 
 	public PhotoEntity withPhotoId(final Integer photoId) {
 		this.photoId = photoId;
+		return this;
+	}
+
+	public Set<OcmEntity> getSubjects() {
+		return subjects;
+	}
+
+	public void setSubjects(final Set<OcmEntity> subjects) {
+		this.subjects = subjects;
+	}
+
+	public PhotoEntity withSubjects(final Set<OcmEntity> subjects) {
+		this.subjects = subjects;
 		return this;
 	}
 

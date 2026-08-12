@@ -1,7 +1,6 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Objects;
 import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -11,9 +10,7 @@ import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedPhotoResponse;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.api.model.PhotoParameters;
-import se.sundsvall.memories.integration.db.FotoOcmRepository;
 import se.sundsvall.memories.integration.db.PhotoRepository;
-import se.sundsvall.memories.integration.db.model.FotoOcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PhotoMapper;
@@ -26,17 +23,13 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class PhotoService {
 
 	private final PhotoRepository photoRepository;
-	private final FotoOcmRepository fotoOcmRepository;
 	private final SambaIntegrationProperties sambaProperties;
-	private final OcmLookup ocmLookup;
 	private final FileStreamer fileStreamer;
 
-	public PhotoService(final PhotoRepository photoRepository, final FotoOcmRepository fotoOcmRepository,
-		final SambaIntegrationProperties sambaProperties, final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
+	public PhotoService(final PhotoRepository photoRepository, final SambaIntegrationProperties sambaProperties,
+		final FileStreamer fileStreamer) {
 		this.photoRepository = photoRepository;
-		this.fotoOcmRepository = fotoOcmRepository;
 		this.sambaProperties = sambaProperties;
-		this.ocmLookup = ocmLookup;
 		this.fileStreamer = fileStreamer;
 	}
 
@@ -60,14 +53,7 @@ public class PhotoService {
 	public Photo getById(final Integer id) {
 		final var entity = findVisible(id);
 
-		final var relatedPhotoIds = photoRepository.findRelatedPhotoIds(id);
-		final var subjects = fotoOcmRepository.findByPhotoIdOrderById(id).stream()
-			.map(FotoOcmEntity::getOcmId)
-			.map(ocmLookup::resolveSubject)
-			.filter(Objects::nonNull)
-			.toList();
-
-		return PhotoMapper.toPhoto(entity, relatedPhotoIds, subjects);
+		return PhotoMapper.toPhoto(entity, photoRepository.findRelatedPhotoIds(id));
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {

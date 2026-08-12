@@ -3,6 +3,7 @@ package se.sundsvall.memories.integration.db.model;
 import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
 import java.util.Random;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -24,14 +25,14 @@ class PhotoEntityTest {
 
 	@Test
 	void testBean() {
-		// The topography association is excluded: including it in equals/hashCode/toString would initialise the lazy
-		// proxy and turn every comparison or log line into a database round trip.
+		// Both associations are excluded: including them in equals/hashCode/toString would initialise the lazy proxy or
+		// collection and turn every comparison or log line into a database round trip.
 		assertThat(PhotoEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography"),
-			hasValidBeanEqualsExcluding("topography"),
-			hasValidBeanToStringExcluding("topography")));
+			hasValidBeanHashCodeExcluding("topography", "subjects"),
+			hasValidBeanEqualsExcluding("topography", "subjects"),
+			hasValidBeanToStringExcluding("topography", "subjects")));
 	}
 
 	@Test
@@ -41,6 +42,7 @@ class PhotoEntityTest {
 		final var result = PhotoEntity.create()
 			.withPhotoId(1234)
 			.withTopography(TopographyEntity.create().withTId(42).withName("Sundsvall"))
+			.withSubjects(Set.of(OcmEntity.create().withId(7).withText("Musik")))
 			.withFilename("original.jpg")
 			.withAccessionNumber("ACC-1")
 			.withReferenceCode("REF-1")
@@ -86,6 +88,7 @@ class PhotoEntityTest {
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getPhotoId()).isEqualTo(1234);
 		assertThat(result.getTopography().getTId()).isEqualTo(42);
+		assertThat(result.getSubjects()).extracting(OcmEntity::getId).containsExactly(7);
 		assertThat(result.getFilename()).isEqualTo("original.jpg");
 		assertThat(result.getAccessionNumber()).isEqualTo("ACC-1");
 		assertThat(result.getReferenceCode()).isEqualTo("REF-1");
@@ -131,7 +134,9 @@ class PhotoEntityTest {
 
 	@Test
 	void testNoDirtOnCreatedBean() {
-		assertThat(PhotoEntity.create()).hasAllNullFieldsOrProperties();
-		assertThat(new PhotoEntity()).hasAllNullFieldsOrProperties();
+		// subjects is initialised to an empty set, as a JPA collection field should be.
+		assertThat(PhotoEntity.create()).hasAllNullFieldsOrPropertiesExcept("subjects");
+		assertThat(PhotoEntity.create().getSubjects()).isEmpty();
+		assertThat(new PhotoEntity()).hasAllNullFieldsOrPropertiesExcept("subjects");
 	}
 }

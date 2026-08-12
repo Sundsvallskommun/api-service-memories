@@ -1,8 +1,10 @@
 package se.sundsvall.memories.service.mapper;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.api.model.Subject;
+import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -62,21 +64,25 @@ class PhotoMapperTest {
 
 	@Test
 	void toPhotoDetailAttachesRelatedPhotosAndSubjects() {
-		final var subjects = List.of(Subject.create().withCode("ALM").withText("Allmänt").withDescription("Allmänt ämne"));
-		final var related = List.of(2001, 2002);
+		final var entity = sampleEntity().withSubjects(new LinkedHashSet<>(List.of(
+			OcmEntity.create().withId(1).withCode("ALM").withText("Allmänt").withDescription("Allmänt ämne"),
+			OcmEntity.create().withId(20).withCode("MUS").withText("Musik").withDescription("Musikinspelning"))));
 
-		final var result = PhotoMapper.toPhoto(sampleEntity(), related, subjects);
+		final var result = PhotoMapper.toPhoto(entity, List.of(2001, 2002));
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getRelatedPhotoIds()).containsExactly(2001, 2002);
-		assertThat(result.getSubjects()).hasSize(1);
-		assertThat(result.getSubjects().getFirst().getCode()).isEqualTo("ALM");
+		assertThat(result.getSubjects())
+			.extracting(Subject::getCode, Subject::getText, Subject::getDescription)
+			.containsExactly(
+				tuple("ALM", "Allmänt", "Allmänt ämne"),
+				tuple("MUS", "Musik", "Musikinspelning"));
 	}
 
 	@Test
-	void toPhotoDetailNullListsBecomeEmpty() {
-		final var result = PhotoMapper.toPhoto(sampleEntity(), null, null);
+	void toPhotoDetailWithoutRelationsBecomesEmptyLists() {
+		final var result = PhotoMapper.toPhoto(sampleEntity(), null);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getRelatedPhotoIds()).isEqualTo(emptyList());
@@ -85,7 +91,7 @@ class PhotoMapperTest {
 
 	@Test
 	void toPhotoDetailWithNullEntityReturnsNull() {
-		assertThat(PhotoMapper.toPhoto(null, List.of(), List.of())).isNull();
+		assertThat(PhotoMapper.toPhoto(null, List.of())).isNull();
 	}
 
 	@Test
