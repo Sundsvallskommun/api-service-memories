@@ -1,0 +1,234 @@
+package se.sundsvall.memories.integration.db.specification;
+
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+import se.sundsvall.memories.Application;
+import se.sundsvall.memories.integration.db.PhotoRepository;
+import se.sundsvall.memories.integration.db.model.PhotoEntity;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Exercises {@link PhotoSpecifications} against a real MariaDB instance (Testcontainers), because the behaviour under
+ * test — the {@code bitand} bitmask function, {@code LIKE} escaping and the collation-driven case insensitivity — is
+ * database behaviour, not Java behaviour, and would be assumed rather than verified against an in-memory database.
+ *
+ * <p>
+ * Each test runs in a transaction that is rolled back, so the rows inserted here do not leak between tests.
+ */
+@SpringBootTest(classes = Application.class)
+@ActiveProfiles("junit")
+@Transactional
+class PhotoSpecificationsTest {
+
+	@Autowired
+	private PhotoRepository photoRepository;
+
+	@BeforeEach
+	void clearTable() {
+		photoRepository.deleteAll();
+		photoRepository.flush();
+	}
+
+	private PhotoEntity persist(final Integer id, final Integer options, final String title, final String comment, final String objectType) {
+		return photoRepository.saveAndFlush(PhotoEntity.create()
+			.withPhotoId(id)
+			.withOptions(options)
+			.withDocumentTitle(title)
+			.withComment(comment)
+			.withObjectType(objectType));
+	}
+
+	private List<Integer> findIds(final Specification<PhotoEntity> specification) {
+		return photoRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
+			.map(PhotoEntity::getPhotoId)
+			.sorted()
+			.toList();
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// published()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void publishedMatchesRowsWithBitFourSet() {
+		persist(1, 4, "published", null, "Foto");
+		persist(2, 0, "unpublished", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.published())).containsExactly(1);
+	}
+
+	@Test
+	void publishedMatchesWhenOtherBitsAreSetSimultaneously() {
+		persist(1, 6, "bit 2 and bit 4", null, "Foto");
+		persist(2, 2, "bit 2 only", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.published())).containsExactly(1);
+	}
+
+	@Test
+	void publishedExcludesRowsWithNullOptions() {
+		persist(1, null, "no options", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.published())).isEmpty();
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// hasObjectType()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void hasObjectTypeFiltersOnExactValue() {
+		persist(1, 4, "a", null, "Foto");
+		persist(2, 4, "b", null, "Föremål");
+
+		assertThat(findIds(PhotoSpecifications.hasObjectType("Föremål"))).containsExactly(2);
+	}
+
+	@Test
+	void hasObjectTypeIsUnrestrictedWhenNull() {
+		persist(1, 4, "a", null, "Foto");
+		persist(2, 4, "b", null, "Föremål");
+
+		assertThat(findIds(PhotoSpecifications.hasObjectType(null))).containsExactly(1, 2);
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// matches()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void matchesFindsSubstringInTitle() {
+		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
+		persist(2, 4, "Storgatan", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("hamnen"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesFindsSubstringInComment() {
+		persist(1, 4, "Utan titel", "Taget vid hamnen", "Foto");
+		persist(2, 4, "Storgatan", "Inget av intresse", "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("hamnen"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesIsCaseInsensitiveViaCollation() {
+		persist(1, 4, "HAMNEN", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("hamnen"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesRequiresEveryWordButNotAdjacency() {
+		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
+		persist(2, 4, "Hamnen i Timrå", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("hamnen sundsvall"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesAllowsWordsToComeFromDifferentColumns() {
+		persist(1, 4, "Hamnen", "Fotograferad i Sundsvall", "Foto");
+		persist(2, 4, "Hamnen", "Fotograferad i Timrå", "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("hamnen sundsvall"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesEscapesPercentWildcard() {
+		persist(1, 4, "100% ull", null, "Foto");
+		persist(2, 4, "Storgatan", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("%"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesEscapesUnderscoreWildcard() {
+		persist(1, 4, "fil_namn", null, "Foto");
+		persist(2, 4, "filXnamn", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("fil_namn"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesEscapesTheEscapeCharacterItself() {
+		persist(1, 4, "Vilken tur!", null, "Foto");
+		persist(2, 4, "Vilken tur", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("tur!"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesIsUnrestrictedWhenQueryIsNullOrBlank() {
+		persist(1, 4, "a", null, "Foto");
+		persist(2, 4, "b", null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches(null))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecifications.matches("   "))).containsExactly(1, 2);
+	}
+
+	@Test
+	void matchesIgnoresRowsWhereBothColumnsAreNull() {
+		persist(1, 4, null, null, "Foto");
+
+		assertThat(findIds(PhotoSpecifications.matches("hamnen"))).isEmpty();
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// Composition — the shape the service will use
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void allOfCombinesEveryFilter() {
+		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
+		persist(2, 4, "Hamnen i Sundsvall", null, "Föremål");
+		persist(3, 0, "Hamnen i Sundsvall", null, "Foto");
+		persist(4, 4, "Storgatan", null, "Foto");
+
+		final var specification = Specification.allOf(
+			PhotoSpecifications.published(),
+			PhotoSpecifications.matches("hamnen"),
+			PhotoSpecifications.hasObjectType("Foto"));
+
+		assertThat(findIds(specification)).containsExactly(1);
+	}
+
+	@Test
+	void allOfAcceptsUnrestrictedFiltersWithoutNarrowingTheResult() {
+		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
+		persist(2, 0, "Storgatan", null, "Föremål");
+
+		final var specification = Specification.allOf(
+			PhotoSpecifications.published(),
+			PhotoSpecifications.matches(null),
+			PhotoSpecifications.hasObjectType(null));
+
+		assertThat(findIds(specification)).containsExactly(1);
+	}
+
+	@Test
+	void countQuerySurvivesTheSameSpecification() {
+		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
+		persist(2, 4, "Hamnen i Timrå", null, "Foto");
+		persist(3, 0, "Hamnen i Härnösand", null, "Foto");
+
+		final var specification = Specification.allOf(
+			PhotoSpecifications.published(),
+			PhotoSpecifications.matches("hamnen"));
+
+		// Spring Data reuses the specification for the count projection — a page request exercises both.
+		final var page = photoRepository.findAll(specification, Pageable.ofSize(1));
+
+		assertThat(page.getTotalElements()).isEqualTo(2);
+		assertThat(page.getContent()).hasSize(1);
+	}
+}
