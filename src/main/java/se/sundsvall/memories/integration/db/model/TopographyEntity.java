@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 @Table(name = "TOPOGRAFI")
@@ -93,6 +94,20 @@ public class TopographyEntity {
 	public TopographyEntity withCountry(final String country) {
 		this.country = country;
 		return this;
+	}
+
+	/**
+	 * Resolves this entry to the string used to present a place. Prefers {@code TOPNAMN}, falls back to {@code PLATS},
+	 * then {@code TOPKOD}. Blank values are treated as absent, since the legacy data uses empty strings rather than
+	 * {@code NULL}.
+	 *
+	 * @return the display name, or {@code null} if all three columns are missing or blank
+	 */
+	public String getDisplayName() {
+		return Optional.ofNullable(name).filter(s -> !s.isBlank())
+			.or(() -> Optional.ofNullable(place).filter(s -> !s.isBlank()))
+			.or(() -> Optional.ofNullable(code).filter(s -> !s.isBlank()))
+			.orElse(null);
 	}
 
 	@Override

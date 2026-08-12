@@ -4,12 +4,10 @@ import jakarta.annotation.PostConstruct;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import se.sundsvall.memories.integration.db.TopographyRepository;
-import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
@@ -33,7 +31,7 @@ public class TopographyLookup {
 	@PostConstruct
 	void loadCache() {
 		locationByTopographyId = topographyRepository.findAll().stream()
-			.map(entry -> new SimpleImmutableEntry<>(entry.getTId(), resolveDisplayName(entry)))
+			.map(entry -> new SimpleImmutableEntry<>(entry.getTId(), entry.getDisplayName()))
 			.filter(e -> Objects.nonNull(e.getKey()) && Objects.nonNull(e.getValue()))
 			.collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue, (existing, replacement) -> existing));
 		LOGGER.info("Loaded {} topography entries into cache", locationByTopographyId.size());
@@ -53,13 +51,5 @@ public class TopographyLookup {
 			loadCache();
 		}
 		return locationByTopographyId.get(tId);
-	}
-
-	private static String resolveDisplayName(final TopographyEntity entry) {
-		return Optional.ofNullable(entry.getName())
-			.filter(s -> !s.isBlank())
-			.or(() -> Optional.ofNullable(entry.getPlace()).filter(s -> !s.isBlank()))
-			.or(() -> Optional.ofNullable(entry.getCode()).filter(s -> !s.isBlank()))
-			.orElse(null);
 	}
 }
