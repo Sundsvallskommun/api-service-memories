@@ -32,6 +32,13 @@ INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_
                   FILM_U_E_ID, FILM_U_J_ID, KOMMENT_FILM, FILM_MIME_TYPE, ASV, NODEID, `OPTIONS`, DELETEDDATE)
 VALUES (4, 'unpublished.mp4', '/media/film/unpublished.mp4', 'VIDEO', '2000-01-01', 'Unpublished film', 1, 'Sundsvall',
         1, 0, 1, 'This film is not published', 'video/mp4', 'ASV004', 103, 0, null);
+
+-- Soft-deleted film. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not hide
+-- it — it must never appear in any response.
+INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_T_ID, FILM_OPLATS, FILM_O_ID,
+                  FILM_U_E_ID, FILM_U_J_ID, KOMMENT_FILM, FILM_MIME_TYPE, ASV, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (5, 'raderad.mp4', '/media/film/raderad.mp4', 'VIDEO', '1985-06-21', 'Midsommarfirande raderad', 1, 'Sundsvall',
+        1, 0, 1, 'Film som raderats', 'video/mp4', 'ASV005', 104, 4, '2024-03-01');
 --
 -- PUBL
 --

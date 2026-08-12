@@ -9,13 +9,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 class FilmMapperTest {
-
-	private static final ReferenceResolver NULL_LOOKUP = id -> null;
 
 	private static Stream<Arguments> toFilmArguments() {
 		return Stream.of(
@@ -28,7 +27,7 @@ class FilmMapperTest {
 					.withObjectType("VIDEO")
 					.withDate("2020-01-01")
 					.withDocumentTitle("Test film")
-					.withTopographyId(2)
+					.withTopography(TopographyEntity.create().withTId(2).withName("Sundsvall kommun"))
 					.withLocationText("Sundsvall")
 					.withOrganizationId(3)
 					.withSubEntityId(4)
@@ -61,7 +60,7 @@ class FilmMapperTest {
 	@ParameterizedTest
 	@MethodSource("toFilmArguments")
 	void toFilm(final FilmEntity input, final Film expected) {
-		final var result = FilmMapper.toFilm(input, "Sundsvall kommun");
+		final var result = FilmMapper.toFilm(input);
 
 		if (expected == null) {
 			assertThat(result).isNull();
@@ -73,22 +72,56 @@ class FilmMapperTest {
 	}
 
 	@Test
+	void toFilmFallsBackThroughTheTopographyDisplayName() {
+		final var entity = FilmEntity.create().withFilmId(1)
+			.withTopography(TopographyEntity.create().withTId(2).withName("").withPlace("Indal"));
+
+		assertThat(FilmMapper.toFilm(entity).getLocation()).isEqualTo("Indal");
+	}
+
+	@Test
+	void toFilmWithoutTopographyHasNeitherLocationNorTopographyId() {
+		// Both a film without a place and a film whose FILM_T_ID points at a missing row arrive here as a null
+		// association — see FilmSpecificationsTest for the dangling foreign key case. Since topographyId is read
+		// through the association too, the two can never disagree.
+		final var entity = FilmEntity.create().withFilmId(1).withLocationText("Sundsvall");
+
+		final var result = FilmMapper.toFilm(entity);
+
+		assertThat(result.getLocation()).isNull();
+		assertThat(result.getTopographyId()).isNull();
+		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
+	}
+
+	@Test
+	void toFilmReadsTopographyIdThroughTheAssociation() {
+		final var entity = FilmEntity.create().withFilmId(1)
+			.withTopography(TopographyEntity.create().withTId(42).withName("Indal"));
+
+		final var result = FilmMapper.toFilm(entity);
+
+		assertThat(result.getTopographyId()).isEqualTo(42);
+		assertThat(result.getLocation()).isEqualTo("Indal");
+	}
+
+	@Test
 	void toFilmList() {
 		final var entities = List.of(
-			FilmEntity.create().withFilmId(1).withTopographyId(10).withDocumentTitle("Film A"),
-			FilmEntity.create().withFilmId(2).withTopographyId(20).withDocumentTitle("Film B"));
-		final ReferenceResolver lookup = id -> id == 10 ? "Sundsvall" : "Timrå";
+			FilmEntity.create().withFilmId(1).withDocumentTitle("Film A")
+				.withTopography(TopographyEntity.create().withTId(10).withName("Sundsvall")),
+			FilmEntity.create().withFilmId(2).withDocumentTitle("Film B")
+				.withTopography(TopographyEntity.create().withTId(20).withName("Timrå")),
+			FilmEntity.create().withFilmId(3).withDocumentTitle("Film C"));
 
-		final var result = FilmMapper.toFilmList(entities, lookup);
+		final var result = FilmMapper.toFilmList(entities);
 
 		assertThat(result)
 			.extracting(Film::getFilmId, Film::getDocumentTitle, Film::getLocation)
-			.containsExactly(tuple(1, "Film A", "Sundsvall"), tuple(2, "Film B", "Timrå"));
+			.containsExactly(tuple(1, "Film A", "Sundsvall"), tuple(2, "Film B", "Timrå"), tuple(3, "Film C", null));
 	}
 
 	@Test
 	void toFilmListWithNull() {
-		assertThat(FilmMapper.toFilmList(null, NULL_LOOKUP)).isEmpty();
+		assertThat(FilmMapper.toFilmList(null)).isEmpty();
 	}
-
 }

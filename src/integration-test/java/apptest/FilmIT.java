@@ -70,4 +70,18 @@ class FilmIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * Film 5 is soft-deleted but still carries the published bit, which is exactly the state that used to leak it
+	 * through both search and get-by-id.
+	 */
+	@Test
+	void test06_getSoftDeletedFilmByIdNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/5")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

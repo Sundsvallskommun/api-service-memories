@@ -1,5 +1,7 @@
 package se.sundsvall.memories.integration.db.specification;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,9 +14,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.integration.db.FilmRepository;
+import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
 /**
  * Exercises {@link FilmSpecifications} against a real MariaDB instance (Testcontainers), because the behaviour under
@@ -32,9 +37,16 @@ class FilmSpecificationsTest {
 	@Autowired
 	private FilmRepository filmRepository;
 
+	@Autowired
+	private TopographyRepository topographyRepository;
+
+	@PersistenceContext
+	private EntityManager entityManager;
+
 	@BeforeEach
 	void clearTable() {
 		filmRepository.deleteAll();
+		topographyRepository.deleteAll();
 		filmRepository.flush();
 	}
 
@@ -114,6 +126,75 @@ class FilmSpecificationsTest {
 		persist(2, 4, "b", null);
 
 		assertThat(findIds(FilmSpecifications.hasId(2))).containsExactly(2);
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// fetchTopography()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void fetchTopographyResolvesTheAssociation() {
+		final var topography = topographyRepository.saveAndFlush(
+			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		persist(1, 4, "a", null).setTopography(topography);
+		filmRepository.flush();
+		entityManager.clear();
+
+		final var films = filmRepository.findAll(FilmSpecifications.fetchTopography(), Pageable.unpaged()).getContent();
+
+		assertThat(films).hasSize(1);
+		assertThat(films.getFirst().getTopography().getTId()).isEqualTo(500);
+		assertThat(films.getFirst().getTopography().getDisplayName()).isEqualTo("Sundsvall");
+	}
+
+	@Test
+	void findOneWithFetchToleratesADanglingForeignKey() {
+		persist(1, 4, "a", null);
+		danglingForeignKey(1);
+
+		final var film = filmRepository.findOne(Specification.allOf(
+			FilmSpecifications.fetchTopography(),
+			FilmSpecifications.hasId(1),
+			FilmSpecifications.notDeleted())).orElseThrow();
+
+		assertThat(film.getTopography()).isNull();
+	}
+
+	@Test
+	void fetchTopographyDoesNotBreakPagingOrCounting() {
+		final var topography = topographyRepository.saveAndFlush(
+			TopographyEntity.create().withTId(500).withName("Sundsvall"));
+		persist(1, 4, "a", null).setTopography(topography);
+		persist(2, 4, "b", null).setTopography(topography);
+		filmRepository.flush();
+
+		// The fetch join is invalid in the count projection, so the specification must skip it there.
+		final var page = filmRepository.findAll(
+			Specification.allOf(FilmSpecifications.fetchTopography(), FilmSpecifications.published()),
+			Pageable.ofSize(1));
+
+		assertThat(page.getTotalElements()).isEqualTo(2);
+		assertThat(page.getContent()).hasSize(1);
+	}
+
+	/**
+	 * Points a film's {@code FILM_T_ID} at a TOPOGRAFI row that does not exist. The legacy schema declares no foreign
+	 * key constraints, so this state is representable — and without a fetch join it would produce a lazy proxy that
+	 * throws {@code EntityNotFoundException} when the mapper reads the place name.
+	 */
+	private void danglingForeignKey(final int filmId) {
+		entityManager.createNativeQuery("UPDATE FILM SET FILM_T_ID = 999 WHERE FILM_ID = :id")
+			.setParameter("id", filmId)
+			.executeUpdate();
+		entityManager.clear();
+
+		// The association is only interesting if the raw column really points somewhere unresolvable.
+		assertThat(entityManager.createNativeQuery("SELECT FILM_T_ID FROM FILM WHERE FILM_ID = :id")
+			.setParameter("id", filmId)
+			.getSingleResult())
+			.asInstanceOf(LONG)
+			.isEqualTo(999L);
+		assertThat(topographyRepository.findById(999)).isEmpty();
 	}
 
 	// ---------------------------------------------------------------------------------------------
