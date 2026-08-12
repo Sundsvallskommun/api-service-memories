@@ -15,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.integration.db.AudioRepository;
+import se.sundsvall.memories.integration.db.OcmRepository;
 import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
+import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,6 +43,9 @@ class AudioSpecificationTest {
 	@Autowired
 	private TopographyRepository topographyRepository;
 
+	@Autowired
+	private OcmRepository ocmRepository;
+
 	@PersistenceContext
 	private EntityManager entityManager;
 
@@ -48,6 +53,7 @@ class AudioSpecificationTest {
 	void clearTables() {
 		audioRepository.deleteAll();
 		topographyRepository.deleteAll();
+		ocmRepository.deleteAll();
 		audioRepository.flush();
 	}
 
@@ -194,6 +200,37 @@ class AudioSpecificationTest {
 			.asInstanceOf(LONG)
 			.isEqualTo(999L);
 		assertThat(topographyRepository.findById(999)).isEmpty();
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// fetchSubject()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void fetchSubjectResolvesTheAssociation() {
+		final var subject = ocmRepository.saveAndFlush(OcmEntity.create().withId(700).withText("Intervju"));
+		persist(1, 4, "a", null).setSubject(subject);
+		audioRepository.flush();
+		entityManager.clear();
+
+		final var rows = audioRepository.findAll(AudioSpecification.fetchSubject(), Pageable.unpaged()).getContent();
+
+		assertThat(rows).hasSize(1);
+		assertThat(rows.getFirst().getSubject().getId()).isEqualTo(700);
+		assertThat(rows.getFirst().getSubject().getDisplayName()).isEqualTo("Intervju");
+	}
+
+	@Test
+	void fetchSubjectLeavesTheAssociationNullWhenTheForeignKeyDangles() {
+		persist(1, 4, "a", null);
+		entityManager.createNativeQuery("UPDATE LJUD SET LJUD_O_ID = 999 WHERE LJUD_ID = 1").executeUpdate();
+		entityManager.clear();
+		assertThat(ocmRepository.findById(999)).isEmpty();
+
+		final var row = audioRepository.findOne(
+			AudioSpecification.fetchSubject().and(AudioSpecification.hasId(1))).orElseThrow();
+
+		assertThat(row.getSubject()).isNull();
 	}
 
 	// ---------------------------------------------------------------------------------------------

@@ -3,6 +3,7 @@ package se.sundsvall.memories.service.mapper;
 import java.util.List;
 import se.sundsvall.memories.api.model.Text;
 import se.sundsvall.memories.api.model.TextMediaFile;
+import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -15,30 +16,46 @@ public final class TextMapper {
 	private TextMapper() {}
 
 	/** Summary mapping (no XMLTEXT, no media files) used for list responses. */
-	public static Text toTextSummary(final TextEntity entity, final String subject) {
-		return toBase(entity, subject);
+	public static Text toTextSummary(final TextEntity entity) {
+		return toBase(entity);
 	}
 
 	/** Detail mapping including XMLTEXT and extra media files, used for get-by-id. */
-	public static Text toText(final TextEntity entity, final String subject, final List<TextMediaEntity> mediaEntities) {
-		return ofNullable(toBase(entity, subject))
+	public static Text toText(final TextEntity entity, final List<TextMediaEntity> mediaEntities) {
+		return ofNullable(toBase(entity))
 			.map(text -> text.withXmltext(entity.getXmltext())
 				.withMediaFiles(toMediaFiles(mediaEntities)))
 			.orElse(null);
 	}
 
 	/**
-	 * Map a list of {@link TextEntity} to summary {@link Text}s, resolving each entity's subject via the provided
-	 * lookup. The place is read from the topography association.
+	 * Map a list of {@link TextEntity} to summary {@link Text}s. Place and subject are both read from their
+	 * associations.
 	 *
-	 * @param  entities      source entities
-	 * @param  subjectLookup resolver from subjectId → OCM subject label (nullable)
-	 * @return               list of mapped texts (empty if entities is null)
+	 * @param  entities source entities
+	 * @return          list of mapped texts (empty if entities is null)
 	 */
-	public static List<Text> toTextList(final List<TextEntity> entities, final ReferenceResolver subjectLookup) {
+	public static List<Text> toTextList(final List<TextEntity> entities) {
 		return ofNullable(entities).orElse(emptyList()).stream()
-			.map(e -> toTextSummary(e, subjectLookup.resolve(e.getSubjectId())))
+			.map(TextMapper::toTextSummary)
 			.toList();
+	}
+
+	/** Resolves the subject label through the OCM association, {@code null} when there is none. */
+	private static String subject(final TextEntity entity) {
+		return ofNullable(entity.getSubject())
+			.map(OcmEntity::getDisplayName)
+			.orElse(null);
+	}
+
+	/**
+	 * Resolves the raw OCM id, which the API exposes alongside the resolved {@code subject}. Read through the
+	 * association rather than from a second mapping of {@code D_O_ID}, so the two can never disagree.
+	 */
+	private static Integer subjectId(final TextEntity entity) {
+		return ofNullable(entity.getSubject())
+			.map(OcmEntity::getId)
+			.orElse(null);
 	}
 
 	/**
@@ -61,7 +78,7 @@ public final class TextMapper {
 			.toList();
 	}
 
-	private static Text toBase(final TextEntity entity, final String subject) {
+	private static Text toBase(final TextEntity entity) {
 		return ofNullable(entity)
 			.map(e -> Text.create()
 				.withTextId(e.getTextId())
@@ -71,8 +88,8 @@ public final class TextMapper {
 				.withDocumentTitle(e.getDocumentTitle())
 				.withLocationText(e.getLocationText())
 				.withLocation(location(e))
-				.withSubjectId(e.getSubjectId())
-				.withSubject(subject)
+				.withSubjectId(subjectId(e))
+				.withSubject(subject(e))
 				.withComment(e.getComment())
 				.withThumbnailFilename(e.getThumbnailFilename())
 				.withLargeImageFilename(e.getLargeImageFilename())

@@ -40,8 +40,9 @@ public class AudioEntity {
 	@Column(name = "LJUD_OPLATS", length = 64)
 	private String locationText;
 
-	@Column(name = "LJUD_O_ID")
-	private Integer subjectId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "LJUD_O_ID")
+	private OcmEntity subject;
 
 	@Column(name = "LJUD_U_E_ID")
 	private Integer authorPersonId;
@@ -172,16 +173,16 @@ public class AudioEntity {
 		return this;
 	}
 
-	public Integer getSubjectId() {
-		return subjectId;
+	public OcmEntity getSubject() {
+		return subject;
 	}
 
-	public void setSubjectId(final Integer subjectId) {
-		this.subjectId = subjectId;
+	public void setSubject(final OcmEntity subject) {
+		this.subject = subject;
 	}
 
-	public AudioEntity withSubjectId(final Integer subjectId) {
-		this.subjectId = subjectId;
+	public AudioEntity withSubject(final OcmEntity subject) {
+		this.subject = subject;
 		return this;
 	}
 
@@ -283,14 +284,14 @@ public class AudioEntity {
 		final AudioEntity that = (AudioEntity) o;
 		return Objects.equals(audioId, that.audioId) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
 			&& Objects.equals(objectType, that.objectType) && Objects.equals(date, that.date) && Objects.equals(documentTitle, that.documentTitle)
-			&& Objects.equals(locationText, that.locationText) && Objects.equals(subjectId, that.subjectId)
+			&& Objects.equals(locationText, that.locationText)
 			&& Objects.equals(authorPersonId, that.authorPersonId) && Objects.equals(authorEntityId, that.authorEntityId) && Objects.equals(comment, that.comment)
 			&& Objects.equals(audioMimeType, that.audioMimeType) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, locationText, subjectId, authorPersonId, authorEntityId, comment, audioMimeType, nodeId,
+		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, locationText, authorPersonId, authorEntityId, comment, audioMimeType, nodeId,
 			options, deletedDate);
 	}
 
@@ -304,7 +305,6 @@ public class AudioEntity {
 			", date='" + date + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
 			", locationText='" + locationText + '\'' +
-			", subjectId=" + subjectId +
 			", authorPersonId=" + authorPersonId +
 			", authorEntityId=" + authorEntityId +
 			", comment='" + comment + '\'' +

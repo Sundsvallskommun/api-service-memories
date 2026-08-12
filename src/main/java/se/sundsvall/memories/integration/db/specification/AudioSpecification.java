@@ -9,6 +9,7 @@ import static se.sundsvall.memories.integration.db.model.AudioEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.DOCUMENT_TITLE;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.OPTIONS;
+import static se.sundsvall.memories.integration.db.model.AudioEntity_.SUBJECT;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.TOPOGRAPHY;
 
 /**
@@ -55,5 +56,10 @@ public interface AudioSpecification {
 	/** Fetches the place in the same query, so mapping a page does not fire one select per row. */
 	static Specification<AudioEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
+	}
+
+	/** Fetches the subject in the same query, for the same reason as {@link #fetchTopography()}. */
+	static Specification<AudioEntity> fetchSubject() {
+		return BUILDER.buildFetchJoin(SUBJECT);
 	}
 }

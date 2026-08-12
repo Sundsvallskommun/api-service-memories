@@ -27,9 +27,9 @@ class TextEntityTest {
 		assertThat(TextEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography"),
-			hasValidBeanEqualsExcluding("topography"),
-			hasValidBeanToStringExcluding("topography")));
+			hasValidBeanHashCodeExcluding("topography", "subject"),
+			hasValidBeanEqualsExcluding("topography", "subject"),
+			hasValidBeanToStringExcluding("topography", "subject")));
 	}
 
 	@Test
@@ -65,7 +65,7 @@ class TextEntityTest {
 			.withUjId(ujId)
 			.withTopography(TopographyEntity.create().withTId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
-			.withSubjectId(subjectId)
+			.withSubject(OcmEntity.create().withId(subjectId).withText("Musik"))
 			.withComment(comment)
 			.withFilename(filename)
 			.withThumbnailFilename(thumbnailFilename)
@@ -88,7 +88,7 @@ class TextEntityTest {
 		assertThat(result.getUjId()).isEqualTo(ujId);
 		assertThat(result.getTopography().getTId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
-		assertThat(result.getSubjectId()).isEqualTo(subjectId);
+		assertThat(result.getSubject().getId()).isEqualTo(subjectId);
 		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getThumbnailFilename()).isEqualTo(thumbnailFilename);

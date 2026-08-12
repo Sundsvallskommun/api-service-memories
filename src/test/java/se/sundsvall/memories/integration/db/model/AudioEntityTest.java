@@ -27,9 +27,9 @@ class AudioEntityTest {
 		assertThat(AudioEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography"),
-			hasValidBeanEqualsExcluding("topography"),
-			hasValidBeanToStringExcluding("topography")));
+			hasValidBeanHashCodeExcluding("topography", "subject"),
+			hasValidBeanEqualsExcluding("topography", "subject"),
+			hasValidBeanToStringExcluding("topography", "subject")));
 	}
 
 	@Test
@@ -60,7 +60,7 @@ class AudioEntityTest {
 			.withDocumentTitle(documentTitle)
 			.withTopography(TopographyEntity.create().withTId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
-			.withSubjectId(subjectId)
+			.withSubject(OcmEntity.create().withId(subjectId).withText("Musik"))
 			.withAuthorPersonId(authorPersonId)
 			.withAuthorEntityId(authorEntityId)
 			.withComment(comment)
@@ -78,7 +78,7 @@ class AudioEntityTest {
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
 		assertThat(result.getTopography().getTId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
-		assertThat(result.getSubjectId()).isEqualTo(subjectId);
+		assertThat(result.getSubject().getId()).isEqualTo(subjectId);
 		assertThat(result.getAuthorPersonId()).isEqualTo(authorPersonId);
 		assertThat(result.getAuthorEntityId()).isEqualTo(authorEntityId);
 		assertThat(result.getComment()).isEqualTo(comment);

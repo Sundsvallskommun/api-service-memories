@@ -27,15 +27,13 @@ public class TextService {
 	private final TextRepository textRepository;
 	private final TextMediaRepository textMediaRepository;
 	private final SambaIntegrationProperties sambaProperties;
-	private final OcmLookup ocmLookup;
 	private final FileStreamer fileStreamer;
 
 	public TextService(final TextRepository textRepository, final TextMediaRepository textMediaRepository,
-		final SambaIntegrationProperties sambaProperties, final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
+		final SambaIntegrationProperties sambaProperties, final FileStreamer fileStreamer) {
 		this.textRepository = textRepository;
 		this.textMediaRepository = textMediaRepository;
 		this.sambaProperties = sambaProperties;
-		this.ocmLookup = ocmLookup;
 		this.fileStreamer = fileStreamer;
 	}
 
@@ -46,7 +44,7 @@ public class TextService {
 		final var page = textRepository.findAllByParameters(parameters, pageable);
 
 		return PagedTextResponse.create()
-			.withTexts(TextMapper.toTextList(page.getContent(), ocmLookup::resolve))
+			.withTexts(TextMapper.toTextList(page.getContent()))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
@@ -60,7 +58,7 @@ public class TextService {
 		final var entity = findVisible(id);
 		final var mediaEntities = textMediaRepository.findByTextIdOrderById(id);
 
-		return TextMapper.toText(entity, ocmLookup.resolve(entity.getSubjectId()), mediaEntities);
+		return TextMapper.toText(entity, mediaEntities);
 	}
 
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {

@@ -39,16 +39,13 @@ class AudioServiceTest {
 	private AudioRepository repositoryMock;
 
 	@Mock
-	private OcmLookup ocmLookupMock;
-
-	@Mock
 	private FileStreamer fileStreamerMock;
 
 	private AudioService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new AudioService(repositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
+		service = new AudioService(repositoryMock, SAMBA_PROPERTIES, fileStreamerMock);
 	}
 
 	// Which rows the filters select is verified against a real database in AudioSpecificationTest. These tests cover

@@ -21,48 +21,8 @@ class OcmLookupTest {
 	@InjectMocks
 	private OcmLookup lookup;
 
-	@Test
-	void resolvesByTextWhenPresent() {
-		when(ocmRepositoryMock.findAll()).thenReturn(List.of(
-			OcmEntity.create().withId(1).withText("Midsommar").withDescription("ignored").withCode("ignored")));
-		lookup.loadCache();
-
-		assertThat(lookup.resolve(1)).isEqualTo("Midsommar");
-	}
-
-	@Test
-	void fallsBackToDescriptionWhenTextBlank() {
-		when(ocmRepositoryMock.findAll()).thenReturn(List.of(
-			OcmEntity.create().withId(2).withText("").withDescription("Folkfest").withCode("ignored")));
-		lookup.loadCache();
-
-		assertThat(lookup.resolve(2)).isEqualTo("Folkfest");
-	}
-
-	@Test
-	void fallsBackToCodeWhenOthersBlank() {
-		when(ocmRepositoryMock.findAll()).thenReturn(List.of(
-			OcmEntity.create().withId(3).withCode("MID")));
-		lookup.loadCache();
-
-		assertThat(lookup.resolve(3)).isEqualTo("MID");
-	}
-
-	@Test
-	void returnsNullForUnknownId() {
-		when(ocmRepositoryMock.findAll()).thenReturn(List.of());
-		lookup.loadCache();
-
-		assertThat(lookup.resolve(999)).isNull();
-	}
-
-	@Test
-	void returnsNullForNullId() {
-		when(ocmRepositoryMock.findAll()).thenReturn(List.of());
-		lookup.loadCache();
-
-		assertThat(lookup.resolve(null)).isNull();
-	}
+	// The display-name fallback this class used to own now lives on OcmEntity.getDisplayName() and is tested there.
+	// What remains here is the cache itself.
 
 	@Test
 	void skipsEntriesWithNullId() {
@@ -71,7 +31,7 @@ class OcmLookupTest {
 			OcmEntity.create().withId(5).withText("With ID")));
 		lookup.loadCache();
 
-		assertThat(lookup.resolve(5)).isEqualTo("With ID");
+		assertThat(lookup.resolveSubject(5).getText()).isEqualTo("With ID");
 	}
 
 	@Test

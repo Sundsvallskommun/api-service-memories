@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import se.sundsvall.memories.api.model.TextParameters;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 
+import static se.sundsvall.memories.integration.db.specification.TextSpecification.fetchSubject;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.matches;
@@ -37,6 +38,7 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer>, JpaS
 	 */
 	default Page<TextEntity> findAllByParameters(final TextParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
+			.and(fetchSubject())
 			.and(notDeleted())
 			.and(published())
 			.and(matches(parameters.getQuery())),
@@ -55,6 +57,7 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer>, JpaS
 	 */
 	default Optional<TextEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
+			.and(fetchSubject())
 			.and(hasId(id))
 			.and(notDeleted()));
 	}

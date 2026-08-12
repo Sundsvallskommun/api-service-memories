@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 
+import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchSubject;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.matches;
@@ -37,6 +38,7 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, Jp
 	 */
 	default Page<AudioEntity> findAllByParameters(final AudioParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
+			.and(fetchSubject())
 			.and(notDeleted())
 			.and(published())
 			.and(matches(parameters.getQuery())),
@@ -55,6 +57,7 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, Jp
 	 */
 	default Optional<AudioEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
+			.and(fetchSubject())
 			.and(hasId(id))
 			.and(notDeleted()));
 	}

@@ -8,6 +8,7 @@ import static se.sundsvall.memories.integration.db.model.TextEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.DOCUMENT_TITLE;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.OPTIONS;
+import static se.sundsvall.memories.integration.db.model.TextEntity_.SUBJECT;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.TEXT_ID;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.TOPOGRAPHY;
 
@@ -60,5 +61,10 @@ public interface TextSpecification {
 	/** Fetches the place in the same query, so mapping a page does not fire one select per row. */
 	static Specification<TextEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
+	}
+
+	/** Fetches the subject in the same query, for the same reason as {@link #fetchTopography()}. */
+	static Specification<TextEntity> fetchSubject() {
+		return BUILDER.buildFetchJoin(SUBJECT);
 	}
 }

@@ -19,6 +19,7 @@ import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.TextParameters;
 import se.sundsvall.memories.integration.db.TextMediaRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
+import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -53,9 +54,6 @@ class TextServiceTest {
 	private TextMediaRepository textMediaRepositoryMock;
 
 	@Mock
-	private OcmLookup ocmLookupMock;
-
-	@Mock
 	private FileStreamer fileStreamerMock;
 
 	private TextService service;
@@ -65,7 +63,7 @@ class TextServiceTest {
 			.withTextId(1001)
 			.withDocumentTitle("Minne från Sundsvall")
 			.withTopography(TopographyEntity.create().withTId(4).withName("Sundsvalls kommun"))
-			.withSubjectId(20)
+			.withSubject(OcmEntity.create().withId(20).withText("Musik"))
 			.withThumbnailFilename("TEXT.id_1001_fil_liten.jpeg")
 			.withLargeImageFilename("TEXT.id_1001_fil_stor.jpeg")
 			.withOcrFilename("TEXT.id_1001_fil_txt.xml")
@@ -98,7 +96,7 @@ class TextServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new TextService(textRepositoryMock, textMediaRepositoryMock, SAMBA_PROPERTIES, ocmLookupMock, fileStreamerMock);
+		service = new TextService(textRepositoryMock, textMediaRepositoryMock, SAMBA_PROPERTIES, fileStreamerMock);
 	}
 
 	// Which rows the filters select is verified against a real database in TextSpecificationTest. These tests cover
@@ -158,8 +156,6 @@ class TextServiceTest {
 		when(textRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity()));
 		when(textMediaRepositoryMock.findByTextIdOrderById(1001)).thenReturn(List.of(
 			TextMediaEntity.create().withTextId(1001).withThumbnailFilename("extra-liten.jpg")));
-
-		when(ocmLookupMock.resolve(20)).thenReturn("Musik");
 
 		final var result = service.getById(1001);
 

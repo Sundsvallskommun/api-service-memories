@@ -3,6 +3,7 @@ package se.sundsvall.memories.service.mapper;
 import java.util.List;
 import se.sundsvall.memories.api.model.Audio;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
+import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static java.util.Collections.emptyList;
@@ -13,14 +14,12 @@ public final class AudioMapper {
 	private AudioMapper() {}
 
 	/**
-	 * Map a single AudioEntity to an Audio API model. The place is read from the topography association; the subject is
-	 * still resolved by the caller, since {@code LJUD_O_ID} is not modelled as a relation yet.
+	 * Map a single AudioEntity to an Audio API model. Both the place and the subject are read from their associations.
 	 *
-	 * @param  entity  the source entity
-	 * @param  subject the OCM-resolved subject label (nullable)
-	 * @return         the mapped {@link Audio}, or {@code null} if {@code entity} is null
+	 * @param  entity the source entity
+	 * @return        the mapped {@link Audio}, or {@code null} if {@code entity} is null
 	 */
-	public static Audio toAudio(final AudioEntity entity, final String subject) {
+	public static Audio toAudio(final AudioEntity entity) {
 		return ofNullable(entity)
 			.map(e -> Audio.create()
 				.withAudioId(e.getAudioId())
@@ -32,8 +31,8 @@ public final class AudioMapper {
 				.withTopographyId(topographyId(e))
 				.withLocationText(e.getLocationText())
 				.withLocation(location(e))
-				.withSubjectId(e.getSubjectId())
-				.withSubject(subject)
+				.withSubjectId(subjectId(e))
+				.withSubject(subject(e))
 				.withAuthorPersonId(e.getAuthorPersonId())
 				.withAuthorEntityId(e.getAuthorEntityId())
 				.withComment(e.getComment())
@@ -45,16 +44,32 @@ public final class AudioMapper {
 	}
 
 	/**
-	 * Map a list of AudioEntities, resolving each entity's subject via the provided lookup.
+	 * Map a list of AudioEntities.
 	 *
-	 * @param  entities      source entities
-	 * @param  subjectLookup resolver from subjectId → OCM subject label (nullable)
-	 * @return               list of mapped {@link Audio} objects (empty if entities is null)
+	 * @param  entities source entities
+	 * @return          list of mapped {@link Audio} objects (empty if entities is null)
 	 */
-	public static List<Audio> toAudioList(final List<AudioEntity> entities, final ReferenceResolver subjectLookup) {
+	public static List<Audio> toAudioList(final List<AudioEntity> entities) {
 		return ofNullable(entities).orElse(emptyList()).stream()
-			.map(e -> toAudio(e, subjectLookup.resolve(e.getSubjectId())))
+			.map(AudioMapper::toAudio)
 			.toList();
+	}
+
+	/** Resolves the subject label through the OCM association, {@code null} when there is none. */
+	private static String subject(final AudioEntity entity) {
+		return ofNullable(entity.getSubject())
+			.map(OcmEntity::getDisplayName)
+			.orElse(null);
+	}
+
+	/**
+	 * Resolves the raw OCM id, which the API exposes alongside the resolved {@code subject}. Read through the
+	 * association rather than from a second mapping of {@code LJUD_O_ID}, so the two can never disagree.
+	 */
+	private static Integer subjectId(final AudioEntity entity) {
+		return ofNullable(entity.getSubject())
+			.map(OcmEntity::getId)
+			.orElse(null);
 	}
 
 	/**

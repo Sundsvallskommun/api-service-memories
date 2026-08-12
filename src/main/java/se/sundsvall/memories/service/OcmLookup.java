@@ -4,7 +4,6 @@ import jakarta.annotation.PostConstruct;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,9 +14,8 @@ import se.sundsvall.memories.integration.db.model.OcmEntity;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
 /**
- * Loads the small OCM subject table into memory at startup so that audio/film/photo services can resolve their OCM FK
- * (Ämne / subject keyword) without joining at query time. The table is small and effectively static, so a single
- * eager load is fine.
+ * Loads the small OCM subject table into memory at startup so that the photo service can resolve the OCM ids behind
+ * FOTO_OCM without joining at query time. The table is small and effectively static, so a single eager load is fine.
  */
 @Component
 public class OcmLookup {
@@ -41,18 +39,6 @@ public class OcmLookup {
 	}
 
 	/**
-	 * Resolves an OCM FK to a display string. Prefers OCMTEXT, falls back to OCMDESC, then OCMKOD.
-	 *
-	 * @param  oId the OCM id (often nullable, may be 0/1 for unmapped rows)
-	 * @return     the resolved subject label, or {@code null} if the id is missing or unknown
-	 */
-	public String resolve(final Integer oId) {
-		return Optional.ofNullable(resolveSubject(oId))
-			.map(OcmLookup::resolveDisplayName)
-			.orElse(null);
-	}
-
-	/**
 	 * Resolves an OCM FK to a full {@link Subject} (code + text + description).
 	 *
 	 * @param  oId the OCM id
@@ -73,13 +59,5 @@ public class OcmLookup {
 			.withCode(entry.getCode())
 			.withText(entry.getText())
 			.withDescription(entry.getDescription());
-	}
-
-	private static String resolveDisplayName(final Subject subject) {
-		return Optional.ofNullable(subject.getText())
-			.filter(s -> !s.isBlank())
-			.or(() -> Optional.ofNullable(subject.getDescription()).filter(s -> !s.isBlank()))
-			.or(() -> Optional.ofNullable(subject.getCode()).filter(s -> !s.isBlank()))
-			.orElse(null);
 	}
 }

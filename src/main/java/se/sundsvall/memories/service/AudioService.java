@@ -27,14 +27,12 @@ public class AudioService {
 
 	private final AudioRepository audioRepository;
 	private final SambaIntegrationProperties sambaProperties;
-	private final OcmLookup ocmLookup;
 	private final FileStreamer fileStreamer;
 
 	public AudioService(final AudioRepository audioRepository, final SambaIntegrationProperties sambaProperties,
-		final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
+		final FileStreamer fileStreamer) {
 		this.audioRepository = audioRepository;
 		this.sambaProperties = sambaProperties;
-		this.ocmLookup = ocmLookup;
 		this.fileStreamer = fileStreamer;
 	}
 
@@ -45,7 +43,7 @@ public class AudioService {
 		final var page = audioRepository.findAllByParameters(parameters, pageable);
 
 		return PagedAudioResponse.create()
-			.withAudios(AudioMapper.toAudioList(page.getContent(), ocmLookup::resolve))
+			.withAudios(AudioMapper.toAudioList(page.getContent()))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
@@ -56,9 +54,7 @@ public class AudioService {
 
 	@Transactional(readOnly = true)
 	public Audio getById(final Integer id) {
-		final var entity = findVisible(id);
-
-		return AudioMapper.toAudio(entity, ocmLookup.resolve(entity.getSubjectId()));
+		return AudioMapper.toAudio(findVisible(id));
 	}
 
 	/**

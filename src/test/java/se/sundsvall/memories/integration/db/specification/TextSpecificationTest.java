@@ -14,8 +14,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.TextParameters;
+import se.sundsvall.memories.integration.db.OcmRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.TopographyRepository;
+import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -41,6 +43,9 @@ class TextSpecificationTest {
 	@Autowired
 	private TopographyRepository topographyRepository;
 
+	@Autowired
+	private OcmRepository ocmRepository;
+
 	@PersistenceContext
 	private EntityManager entityManager;
 
@@ -48,6 +53,7 @@ class TextSpecificationTest {
 	void clearTables() {
 		textRepository.deleteAll();
 		topographyRepository.deleteAll();
+		ocmRepository.deleteAll();
 		textRepository.flush();
 	}
 
@@ -195,6 +201,37 @@ class TextSpecificationTest {
 			.asInstanceOf(LONG)
 			.isEqualTo(999L);
 		assertThat(topographyRepository.findById(999)).isEmpty();
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// fetchSubject()
+	// ---------------------------------------------------------------------------------------------
+
+	@Test
+	void fetchSubjectResolvesTheAssociation() {
+		final var subject = ocmRepository.saveAndFlush(OcmEntity.create().withId(700).withText("Musik"));
+		persist(1, 4, "a", null).setSubject(subject);
+		textRepository.flush();
+		entityManager.clear();
+
+		final var rows = textRepository.findAll(TextSpecification.fetchSubject(), Pageable.unpaged()).getContent();
+
+		assertThat(rows).hasSize(1);
+		assertThat(rows.getFirst().getSubject().getId()).isEqualTo(700);
+		assertThat(rows.getFirst().getSubject().getDisplayName()).isEqualTo("Musik");
+	}
+
+	@Test
+	void fetchSubjectLeavesTheAssociationNullWhenTheForeignKeyDangles() {
+		persist(1, 4, "a", null);
+		entityManager.createNativeQuery("UPDATE TEXT SET D_O_ID = 999 WHERE ID_ID = 1").executeUpdate();
+		entityManager.clear();
+		assertThat(ocmRepository.findById(999)).isEmpty();
+
+		final var row = textRepository.findOne(
+			TextSpecification.fetchSubject().and(TextSpecification.hasId(1))).orElseThrow();
+
+		assertThat(row.getSubject()).isNull();
 	}
 
 	// ---------------------------------------------------------------------------------------------
