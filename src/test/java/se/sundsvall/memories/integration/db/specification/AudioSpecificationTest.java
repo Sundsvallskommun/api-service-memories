@@ -51,7 +51,7 @@ class AudioSpecificationTest {
 
 	private AudioEntity persist(final Integer id, final Integer options, final String title, final String comment) {
 		return audioRepository.saveAndFlush(AudioEntity.create()
-			.withAudioId(id)
+			.withId(id)
 			.withOptions(options)
 			.withDocumentTitle(title)
 			.withComment(comment));
@@ -59,13 +59,13 @@ class AudioSpecificationTest {
 
 	private List<Integer> findIds(final Specification<AudioEntity> specification) {
 		return audioRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
-			.map(AudioEntity::getAudioId)
+			.map(AudioEntity::getId)
 			.sorted()
 			.toList();
 	}
 
 	private TopographyEntity persistTopography(final int id, final String name) {
-		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		final var topography = TopographyEntity.create().withId(id).withName(name);
 		entityManager.persist(topography);
 		entityManager.flush();
 		return topography;
@@ -153,7 +153,7 @@ class AudioSpecificationTest {
 		final var audios = audioRepository.findAll(AudioSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(audios).hasSize(1);
-		assertThat(audios.getFirst().getTopography().getTId()).isEqualTo(500);
+		assertThat(audios.getFirst().getTopography().getId()).isEqualTo(500);
 		assertThat(audios.getFirst().getTopography().getDisplayName()).isEqualTo("Sundsvall");
 	}
 
@@ -334,7 +334,7 @@ class AudioSpecificationTest {
 
 		final var page = audioRepository.findAllByParameters(AudioParameters.create().withQuery("intervju"), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(AudioEntity::getAudioId).containsExactly(1);
+		assertThat(page.getContent()).extracting(AudioEntity::getId).containsExactly(1);
 	}
 
 	@Test
@@ -344,7 +344,7 @@ class AudioSpecificationTest {
 
 		final var page = audioRepository.findAllByParameters(AudioParameters.create(), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(AudioEntity::getAudioId).containsExactly(1);
+		assertThat(page.getContent()).extracting(AudioEntity::getId).containsExactly(1);
 	}
 
 	@Test

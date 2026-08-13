@@ -52,13 +52,13 @@ class FilmEntityTest {
 		final var deletedDate = LocalDate.of(2026, 1, 15);
 
 		final var result = FilmEntity.create()
-			.withFilmId(filmId)
+			.withId(filmId)
 			.withFilename(filename)
 			.withObjectFilePath(objectFilePath)
 			.withObjectType(objectType)
 			.withDate(date)
 			.withDocumentTitle(documentTitle)
-			.withTopography(TopographyEntity.create().withTId(topographyId).withName("Sundsvall"))
+			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withOrganizationId(organizationId)
 			.withSubEntityId(subEntityId)
@@ -70,13 +70,13 @@ class FilmEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getFilmId()).isEqualTo(filmId);
+		assertThat(result.getId()).isEqualTo(filmId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getObjectFilePath()).isEqualTo(objectFilePath);
 		assertThat(result.getObjectType()).isEqualTo(objectType);
 		assertThat(result.getDate()).isEqualTo(date);
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
-		assertThat(result.getTopography().getTId()).isEqualTo(topographyId);
+		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getOrganizationId()).isEqualTo(organizationId);
 		assertThat(result.getSubEntityId()).isEqualTo(subEntityId);

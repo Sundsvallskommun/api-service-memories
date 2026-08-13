@@ -51,7 +51,7 @@ class TextSpecificationTest {
 
 	private TextEntity persist(final Integer id, final Integer options, final String title, final String comment) {
 		return textRepository.saveAndFlush(TextEntity.create()
-			.withTextId(id)
+			.withId(id)
 			.withOptions(options)
 			.withDocumentTitle(title)
 			.withComment(comment));
@@ -59,13 +59,13 @@ class TextSpecificationTest {
 
 	private List<Integer> findIds(final Specification<TextEntity> specification) {
 		return textRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
-			.map(TextEntity::getTextId)
+			.map(TextEntity::getId)
 			.sorted()
 			.toList();
 	}
 
 	private TopographyEntity persistTopography(final int id, final String name) {
-		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		final var topography = TopographyEntity.create().withId(id).withName(name);
 		entityManager.persist(topography);
 		entityManager.flush();
 		return topography;
@@ -154,7 +154,7 @@ class TextSpecificationTest {
 		final var texts = textRepository.findAll(TextSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(texts).hasSize(1);
-		assertThat(texts.getFirst().getTopography().getTId()).isEqualTo(500);
+		assertThat(texts.getFirst().getTopography().getId()).isEqualTo(500);
 		assertThat(texts.getFirst().getTopography().getDisplayName()).isEqualTo("Sundsvall");
 	}
 
@@ -346,7 +346,7 @@ class TextSpecificationTest {
 
 		final var page = textRepository.findAllByParameters(TextParameters.create().withQuery("protokoll"), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(TextEntity::getTextId).containsExactly(1);
+		assertThat(page.getContent()).extracting(TextEntity::getId).containsExactly(1);
 	}
 
 	@Test
@@ -356,7 +356,7 @@ class TextSpecificationTest {
 
 		final var page = textRepository.findAllByParameters(TextParameters.create(), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(TextEntity::getTextId).containsExactly(1);
+		assertThat(page.getContent()).extracting(TextEntity::getId).containsExactly(1);
 	}
 
 	@Test

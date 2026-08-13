@@ -54,7 +54,7 @@ class AudioServiceTest {
 	@Test
 	void searchDelegatesToRepositoryAndMapsThePage() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = AudioEntity.create().withAudioId(1).withDocumentTitle("Sundsvall intervju");
+		final var entity = AudioEntity.create().withId(1).withDocumentTitle("Sundsvall intervju");
 
 		when(repositoryMock.findAllByParameters(any(AudioParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
@@ -91,7 +91,7 @@ class AudioServiceTest {
 	@Test
 	void searchAppliesRequestedPaging() {
 		final var pageable = PageRequest.of(2, 25);
-		final var entity = AudioEntity.create().withAudioId(1);
+		final var entity = AudioEntity.create().withId(1);
 
 		when(repositoryMock.findAllByParameters(any(AudioParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity), pageable, 51));
@@ -108,7 +108,7 @@ class AudioServiceTest {
 	@Test
 	void getById() {
 		final var id = 1;
-		final var entity = AudioEntity.create().withAudioId(id).withDocumentTitle("Test");
+		final var entity = AudioEntity.create().withId(id).withDocumentTitle("Test");
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
 
@@ -136,7 +136,7 @@ class AudioServiceTest {
 	@Test
 	void streamFileDelegatesToFileStreamer() {
 		final var id = 1;
-		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("/ljud/test.mp3").withAudioMimeType("audio/mpeg");
+		final var entity = AudioEntity.create().withId(id).withObjectFilePath("/ljud/test.mp3").withAudioMimeType("audio/mpeg");
 		final var responseMock = mock(HttpServletResponse.class);
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
@@ -150,7 +150,7 @@ class AudioServiceTest {
 	@Test
 	void streamFileFallsBackToOctetStreamAndDerivedNameWhenObjectPathBlank() {
 		final var id = 3;
-		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("   ");
+		final var entity = AudioEntity.create().withId(id).withObjectFilePath("   ");
 		final var responseMock = mock(HttpServletResponse.class);
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
@@ -164,7 +164,7 @@ class AudioServiceTest {
 	@Test
 	void openForPlaybackReturnsPayloadFromStreamer() {
 		final var id = 1;
-		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("/a/interview.mp3").withAudioMimeType("audio/mpeg");
+		final var entity = AudioEntity.create().withId(id).withObjectFilePath("/a/interview.mp3").withAudioMimeType("audio/mpeg");
 		final var expected = new StreamPayload(mock(Resource.class), "audio/mpeg", "interview.mp3");
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
@@ -176,7 +176,7 @@ class AudioServiceTest {
 	@Test
 	void openForPlaybackFallsBackToOctetStreamWhenMimeMissing() {
 		final var id = 2;
-		final var entity = AudioEntity.create().withAudioId(id).withObjectFilePath("   ");
+		final var entity = AudioEntity.create().withId(id).withObjectFilePath("   ");
 		final var expected = new StreamPayload(mock(Resource.class), "application/octet-stream", "audio-2");
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));

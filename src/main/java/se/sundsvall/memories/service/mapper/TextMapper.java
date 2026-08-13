@@ -81,7 +81,7 @@ public final class TextMapper {
 	private static Text toBase(final TextEntity entity) {
 		return ofNullable(entity)
 			.map(e -> Text.create()
-				.withTextId(e.getTextId())
+				.withTextId(e.getId())
 				.withFilename(e.getFilename())
 				.withDocumentDate(e.getDocumentDate())
 				.withDocumentEndDate(e.getDocumentEndDate())

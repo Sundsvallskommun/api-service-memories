@@ -8,9 +8,9 @@ import static java.util.Optional.ofNullable;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DOCUMENT_TITLE;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.ID;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.OBJECT_TYPE;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.OPTIONS;
-import static se.sundsvall.memories.integration.db.model.PhotoEntity_.PHOTO_ID;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.TOPOGRAPHY;
 
 public interface PhotoSpecification {
@@ -29,7 +29,7 @@ public interface PhotoSpecification {
 	}
 
 	static Specification<PhotoEntity> hasId(final Integer id) {
-		return BUILDER.buildEqualFilter(PHOTO_ID, id);
+		return BUILDER.buildEqualFilter(ID, id);
 	}
 
 	// A blank object type means "no filter", so the request parameter can be passed through untrimmed.

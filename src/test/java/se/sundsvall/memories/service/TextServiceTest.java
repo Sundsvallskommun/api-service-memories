@@ -22,6 +22,7 @@ import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
+import se.sundsvall.memories.integration.db.model.TextMediaId;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -59,9 +60,9 @@ class TextServiceTest {
 
 	private static TextEntity entity() {
 		return TextEntity.create()
-			.withTextId(1001)
+			.withId(1001)
 			.withDocumentTitle("Minne från Sundsvall")
-			.withTopography(TopographyEntity.create().withTId(4).withName("Sundsvalls kommun"))
+			.withTopography(TopographyEntity.create().withId(4).withName("Sundsvalls kommun"))
 			.withSubject(OcmEntity.create().withId(20).withText("Musik"))
 			.withThumbnailFilename("TEXT.id_1001_fil_liten.jpeg")
 			.withLargeImageFilename("TEXT.id_1001_fil_stor.jpeg")
@@ -233,7 +234,7 @@ class TextServiceTest {
 	@MethodSource("mediaFileVariants")
 	void streamMediaFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename) {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 1))).thenReturn(Optional.of(mediaEntity()));
+		when(textMediaRepositoryMock.findById(new TextMediaId(1001, 1))).thenReturn(Optional.of(mediaEntity()));
 
 		service.streamMediaFile(1001, 1, variant, responseMock);
 
@@ -243,7 +244,7 @@ class TextServiceTest {
 	@Test
 	void streamMediaFileNotFound() {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 99))).thenReturn(Optional.empty());
+		when(textMediaRepositoryMock.findById(new TextMediaId(1001, 99))).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamMediaFile(1001, 99, FileVariant.THUMBNAIL, responseMock));
@@ -257,7 +258,7 @@ class TextServiceTest {
 	void streamMediaFileWhenVariantIsBlank() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var mediaMissingFile = mediaEntity().withOriginalFilename("   ");
-		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 1))).thenReturn(Optional.of(mediaMissingFile));
+		when(textMediaRepositoryMock.findById(new TextMediaId(1001, 1))).thenReturn(Optional.of(mediaMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamMediaFile(1001, 1, FileVariant.ORIGINAL, responseMock));

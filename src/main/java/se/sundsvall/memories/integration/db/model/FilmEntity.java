@@ -16,7 +16,7 @@ public class FilmEntity {
 
 	@Id
 	@Column(name = "FILM_ID")
-	private Integer filmId;
+	private Integer id;
 
 	@Column(name = "FILNAMN", length = 256)
 	private String filename;
@@ -68,16 +68,16 @@ public class FilmEntity {
 		return new FilmEntity();
 	}
 
-	public Integer getFilmId() {
-		return filmId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setFilmId(final Integer filmId) {
-		this.filmId = filmId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public FilmEntity withFilmId(final Integer filmId) {
-		this.filmId = filmId;
+	public FilmEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -281,7 +281,7 @@ public class FilmEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final FilmEntity that = (FilmEntity) o;
-		return Objects.equals(filmId, that.filmId) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
+		return Objects.equals(id, that.id) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
 			&& Objects.equals(objectType, that.objectType) && Objects.equals(date, that.date) && Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(organizationId, that.organizationId)
 			&& Objects.equals(subEntityId, that.subEntityId) && Objects.equals(unitId, that.unitId) && Objects.equals(comment, that.comment)
@@ -290,14 +290,14 @@ public class FilmEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, locationText, organizationId, subEntityId, unitId, comment, filmMimeType, nodeId, options,
+		return Objects.hash(id, filename, objectFilePath, objectType, date, documentTitle, locationText, organizationId, subEntityId, unitId, comment, filmMimeType, nodeId, options,
 			deletedDate);
 	}
 
 	@Override
 	public String toString() {
 		return "FilmEntity{" +
-			"filmId=" + filmId +
+			"id=" + id +
 			", filename='" + filename + '\'' +
 			", objectFilePath='" + objectFilePath + '\'' +
 			", objectType='" + objectType + '\'' +

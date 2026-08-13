@@ -40,8 +40,8 @@ class PhotoEntityTest {
 		final var deletedDate = LocalDate.of(2026, 1, 15);
 
 		final var result = PhotoEntity.create()
-			.withPhotoId(1234)
-			.withTopography(TopographyEntity.create().withTId(42).withName("Sundsvall"))
+			.withId(1234)
+			.withTopography(TopographyEntity.create().withId(42).withName("Sundsvall"))
 			.withSubjects(Set.of(OcmEntity.create().withId(7).withText("Musik")))
 			.withFilename("original.jpg")
 			.withAccessionNumber("ACC-1")
@@ -86,8 +86,8 @@ class PhotoEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getPhotoId()).isEqualTo(1234);
-		assertThat(result.getTopography().getTId()).isEqualTo(42);
+		assertThat(result.getId()).isEqualTo(1234);
+		assertThat(result.getTopography().getId()).isEqualTo(42);
 		assertThat(result.getSubjects()).extracting(OcmEntity::getId).containsExactly(7);
 		assertThat(result.getFilename()).isEqualTo("original.jpg");
 		assertThat(result.getAccessionNumber()).isEqualTo("ACC-1");

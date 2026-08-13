@@ -77,6 +77,6 @@ public class FilmService {
 	}
 
 	private static String deriveFilename(final FilmEntity entity) {
-		return FileStreamer.filenameFromPath(entity.getObjectFilePath(), "film-" + entity.getFilmId());
+		return FileStreamer.filenameFromPath(entity.getObjectFilePath(), "film-" + entity.getId());
 	}
 }

@@ -57,13 +57,13 @@ class TextEntityTest {
 		final var deletedDate = LocalDate.of(2026, 1, 15);
 
 		final var result = TextEntity.create()
-			.withTextId(textId)
+			.withId(textId)
 			.withDocumentDate(documentDate)
 			.withDocumentEndDate(documentEndDate)
 			.withDocumentTitle(documentTitle)
 			.withUeId(ueId)
 			.withUjId(ujId)
-			.withTopography(TopographyEntity.create().withTId(topographyId).withName("Sundsvall"))
+			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withSubject(OcmEntity.create().withId(subjectId).withText("Musik"))
 			.withComment(comment)
@@ -80,13 +80,13 @@ class TextEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getTextId()).isEqualTo(textId);
+		assertThat(result.getId()).isEqualTo(textId);
 		assertThat(result.getDocumentDate()).isEqualTo(documentDate);
 		assertThat(result.getDocumentEndDate()).isEqualTo(documentEndDate);
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
 		assertThat(result.getUeId()).isEqualTo(ueId);
 		assertThat(result.getUjId()).isEqualTo(ujId);
-		assertThat(result.getTopography().getTId()).isEqualTo(topographyId);
+		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getSubject().getId()).isEqualTo(subjectId);
 		assertThat(result.getComment()).isEqualTo(comment);

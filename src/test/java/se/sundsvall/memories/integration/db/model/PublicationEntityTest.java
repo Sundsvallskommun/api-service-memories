@@ -66,7 +66,7 @@ class PublicationEntityTest {
 		final var deletedDate = LocalDate.of(2026, 1, 15);
 
 		final var result = PublicationEntity.create()
-			.withPublicationId(publicationId)
+			.withId(publicationId)
 			.withFilename(filename)
 			.withPublicationType(publicationType)
 			.withDate(date)
@@ -82,7 +82,7 @@ class PublicationEntityTest {
 			.withReId(reId)
 			.withUjId(ujId)
 			.withUeId(ueId)
-			.withTopography(TopographyEntity.create().withTId(topographyId).withName("Sundsvall"))
+			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withMeOId(meOId)
 			.withComment(comment)
@@ -98,7 +98,7 @@ class PublicationEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getPublicationId()).isEqualTo(publicationId);
+		assertThat(result.getId()).isEqualTo(publicationId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getPublicationType()).isEqualTo(publicationType);
 		assertThat(result.getDate()).isEqualTo(date);
@@ -114,7 +114,7 @@ class PublicationEntityTest {
 		assertThat(result.getReId()).isEqualTo(reId);
 		assertThat(result.getUjId()).isEqualTo(ujId);
 		assertThat(result.getUeId()).isEqualTo(ueId);
-		assertThat(result.getTopography().getTId()).isEqualTo(topographyId);
+		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getMeOId()).isEqualTo(meOId);
 		assertThat(result.getComment()).isEqualTo(comment);

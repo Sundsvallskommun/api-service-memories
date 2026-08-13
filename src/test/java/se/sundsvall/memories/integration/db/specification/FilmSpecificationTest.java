@@ -49,7 +49,7 @@ class FilmSpecificationTest {
 
 	private FilmEntity persist(final Integer id, final Integer options, final String title, final String comment) {
 		return filmRepository.saveAndFlush(FilmEntity.create()
-			.withFilmId(id)
+			.withId(id)
 			.withOptions(options)
 			.withDocumentTitle(title)
 			.withComment(comment));
@@ -57,13 +57,13 @@ class FilmSpecificationTest {
 
 	private List<Integer> findIds(final Specification<FilmEntity> specification) {
 		return filmRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
-			.map(FilmEntity::getFilmId)
+			.map(FilmEntity::getId)
 			.sorted()
 			.toList();
 	}
 
 	private TopographyEntity persistTopography(final int id, final String name) {
-		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		final var topography = TopographyEntity.create().withId(id).withName(name);
 		entityManager.persist(topography);
 		entityManager.flush();
 		return topography;
@@ -146,7 +146,7 @@ class FilmSpecificationTest {
 		final var films = filmRepository.findAll(FilmSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(films).hasSize(1);
-		assertThat(films.getFirst().getTopography().getTId()).isEqualTo(500);
+		assertThat(films.getFirst().getTopography().getId()).isEqualTo(500);
 		assertThat(films.getFirst().getTopography().getDisplayName()).isEqualTo("Sundsvall");
 	}
 
@@ -296,7 +296,7 @@ class FilmSpecificationTest {
 
 		final var page = filmRepository.findAllByParameters(FilmParameters.create().withQuery("midsommar"), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(FilmEntity::getFilmId).containsExactly(1);
+		assertThat(page.getContent()).extracting(FilmEntity::getId).containsExactly(1);
 	}
 
 	@Test
@@ -306,7 +306,7 @@ class FilmSpecificationTest {
 
 		final var page = filmRepository.findAllByParameters(FilmParameters.create(), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(FilmEntity::getFilmId).containsExactly(1);
+		assertThat(page.getContent()).extracting(FilmEntity::getId).containsExactly(1);
 	}
 
 	@Test

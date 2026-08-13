@@ -16,8 +16,8 @@ class PhotoMapperTest {
 
 	private static PhotoEntity sampleEntity() {
 		return PhotoEntity.create()
-			.withPhotoId(1234)
-			.withTopography(TopographyEntity.create().withTId(42).withName("Sundsvall"))
+			.withId(1234)
+			.withTopography(TopographyEntity.create().withId(42).withName("Sundsvall"))
 			.withDocumentTitle("Stadsvy från Norra berget")
 			.withEarliest("1920")
 			.withLatest("1925")
@@ -47,7 +47,7 @@ class PhotoMapperTest {
 	@Test
 	void toPhotoSummaryFallsBackThroughTheTopographyDisplayName() {
 		final var entity = sampleEntity()
-			.withTopography(TopographyEntity.create().withTId(42).withName("").withPlace("Indal"));
+			.withTopography(TopographyEntity.create().withId(42).withName("").withPlace("Indal"));
 
 		assertThat(PhotoMapper.toPhotoSummary(entity).getLocation()).isEqualTo("Indal");
 	}
@@ -97,11 +97,11 @@ class PhotoMapperTest {
 	@Test
 	void toPhotoListMapsAllEntities() {
 		final var entities = List.of(
-			PhotoEntity.create().withPhotoId(1).withDocumentTitle("A")
-				.withTopography(TopographyEntity.create().withTId(10).withName("Sundsvall")),
-			PhotoEntity.create().withPhotoId(2).withDocumentTitle("B")
-				.withTopography(TopographyEntity.create().withTId(20).withName("Timrå")),
-			PhotoEntity.create().withPhotoId(3).withDocumentTitle("C"));
+			PhotoEntity.create().withId(1).withDocumentTitle("A")
+				.withTopography(TopographyEntity.create().withId(10).withName("Sundsvall")),
+			PhotoEntity.create().withId(2).withDocumentTitle("B")
+				.withTopography(TopographyEntity.create().withId(20).withName("Timrå")),
+			PhotoEntity.create().withId(3).withDocumentTitle("C"));
 
 		final var result = PhotoMapper.toPhotoList(entities);
 

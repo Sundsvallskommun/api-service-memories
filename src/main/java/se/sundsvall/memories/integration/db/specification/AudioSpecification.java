@@ -4,10 +4,10 @@ import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 
-import static se.sundsvall.memories.integration.db.model.AudioEntity_.AUDIO_ID;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.DOCUMENT_TITLE;
+import static se.sundsvall.memories.integration.db.model.AudioEntity_.ID;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.OPTIONS;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.SUBJECT;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.TOPOGRAPHY;
@@ -28,7 +28,7 @@ public interface AudioSpecification {
 	}
 
 	static Specification<AudioEntity> hasId(final Integer id) {
-		return BUILDER.buildEqualFilter(AUDIO_ID, id);
+		return BUILDER.buildEqualFilter(ID, id);
 	}
 
 	static Specification<AudioEntity> matches(final String query) {

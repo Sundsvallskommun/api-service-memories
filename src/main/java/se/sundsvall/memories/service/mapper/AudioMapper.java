@@ -22,7 +22,7 @@ public final class AudioMapper {
 	public static Audio toAudio(final AudioEntity entity) {
 		return ofNullable(entity)
 			.map(e -> Audio.create()
-				.withAudioId(e.getAudioId())
+				.withAudioId(e.getId())
 				.withFilename(e.getFilename())
 				.withObjectFilePath(e.getObjectFilePath())
 				.withObjectType(e.getObjectType())
@@ -88,7 +88,7 @@ public final class AudioMapper {
 	 */
 	private static Integer topographyId(final AudioEntity entity) {
 		return ofNullable(entity.getTopography())
-			.map(TopographyEntity::getTId)
+			.map(TopographyEntity::getId)
 			.orElse(null);
 	}
 }

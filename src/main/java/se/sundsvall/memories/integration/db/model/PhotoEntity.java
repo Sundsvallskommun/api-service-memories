@@ -21,7 +21,7 @@ public class PhotoEntity {
 
 	@Id
 	@Column(name = "F_ID")
-	private Integer photoId;
+	private Integer id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_T_ID")
@@ -161,16 +161,16 @@ public class PhotoEntity {
 		return new PhotoEntity();
 	}
 
-	public Integer getPhotoId() {
-		return photoId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setPhotoId(final Integer photoId) {
-		this.photoId = photoId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public PhotoEntity withPhotoId(final Integer photoId) {
-		this.photoId = photoId;
+	public PhotoEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -738,7 +738,7 @@ public class PhotoEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final PhotoEntity that = (PhotoEntity) o;
-		return Objects.equals(photoId, that.photoId) && Objects.equals(filename, that.filename) && Objects.equals(accessionNumber, that.accessionNumber)
+		return Objects.equals(id, that.id) && Objects.equals(filename, that.filename) && Objects.equals(accessionNumber, that.accessionNumber)
 			&& Objects.equals(referenceCode, that.referenceCode) && Objects.equals(inventoryNumber, that.inventoryNumber) && Objects.equals(earlierReference, that.earlierReference)
 			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(subjectKeyword, that.subjectKeyword) && Objects.equals(comment, that.comment)
 			&& Objects.equals(earliest, that.earliest) && Objects.equals(latest, that.latest) && Objects.equals(observationDate, that.observationDate)
@@ -756,7 +756,7 @@ public class PhotoEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(photoId, filename, accessionNumber, referenceCode, inventoryNumber, earlierReference, documentTitle, subjectKeyword, comment,
+		return Objects.hash(id, filename, accessionNumber, referenceCode, inventoryNumber, earlierReference, documentTitle, subjectKeyword, comment,
 			earliest, latest, observationDate, locationText, storageLocation, objectType, colorMode, negativePositive, transmissiveReflective,
 			imageCarrier, material, technique, function, height, width, diameter, framed, conditionCategory, conditionAssessment,
 			observerName, treatment, treatmentDate, signature, rights, restricted, restrictionNote, provenance,
@@ -766,7 +766,7 @@ public class PhotoEntity {
 	@Override
 	public String toString() {
 		return "PhotoEntity{" +
-			"photoId=" + photoId +
+			"id=" + id +
 			", filename='" + filename + '\'' +
 			", accessionNumber='" + accessionNumber + '\'' +
 			", referenceCode='" + referenceCode + '\'' +

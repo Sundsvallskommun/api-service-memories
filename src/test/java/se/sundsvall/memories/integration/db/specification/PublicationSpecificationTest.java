@@ -50,7 +50,7 @@ class PublicationSpecificationTest {
 
 	private PublicationEntity persist(final Integer id, final Integer options, final String title, final String comment) {
 		return publicationRepository.saveAndFlush(PublicationEntity.create()
-			.withPublicationId(id)
+			.withId(id)
 			.withOptions(options)
 			.withDocumentTitle(title)
 			.withComment(comment));
@@ -58,13 +58,13 @@ class PublicationSpecificationTest {
 
 	private List<Integer> findIds(final Specification<PublicationEntity> specification) {
 		return publicationRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
-			.map(PublicationEntity::getPublicationId)
+			.map(PublicationEntity::getId)
 			.sorted()
 			.toList();
 	}
 
 	private TopographyEntity persistTopography(final int id, final String name) {
-		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		final var topography = TopographyEntity.create().withId(id).withName(name);
 		entityManager.persist(topography);
 		entityManager.flush();
 		return topography;
@@ -146,7 +146,7 @@ class PublicationSpecificationTest {
 		final var publications = publicationRepository.findAll(PublicationSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(publications).hasSize(1);
-		assertThat(publications.getFirst().getTopography().getTId()).isEqualTo(500);
+		assertThat(publications.getFirst().getTopography().getId()).isEqualTo(500);
 		assertThat(publications.getFirst().getTopography().getDisplayName()).isEqualTo("Sundsvall");
 	}
 
@@ -308,7 +308,7 @@ class PublicationSpecificationTest {
 
 		final var page = publicationRepository.findAllByParameters(PublicationParameters.create().withQuery("tidning"), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(PublicationEntity::getPublicationId).containsExactly(1);
+		assertThat(page.getContent()).extracting(PublicationEntity::getId).containsExactly(1);
 	}
 
 	@Test
@@ -318,7 +318,7 @@ class PublicationSpecificationTest {
 
 		final var page = publicationRepository.findAllByParameters(PublicationParameters.create(), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(PublicationEntity::getPublicationId).containsExactly(1);
+		assertThat(page.getContent()).extracting(PublicationEntity::getId).containsExactly(1);
 	}
 
 	@Test

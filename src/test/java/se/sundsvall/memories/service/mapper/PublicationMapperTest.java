@@ -13,7 +13,7 @@ class PublicationMapperTest {
 
 	private static PublicationEntity sampleEntity() {
 		return PublicationEntity.create()
-			.withPublicationId(207)
+			.withId(207)
 			.withFilename("alfwar-1841.xml")
 			.withPublicationType("Tidningar")
 			.withDate("1841-02-18")
@@ -22,7 +22,7 @@ class PublicationMapperTest {
 			.withPageNumber("3")
 			.withPublisherLocation("Sundsvall")
 			.withDocumentTitle("Page 3 Alfwar och Skämt nr 8 1841")
-			.withTopography(TopographyEntity.create().withTId(4).withName("Sundsvall"))
+			.withTopography(TopographyEntity.create().withId(4).withName("Sundsvall"))
 			.withLocationText("Sundsvall")
 			.withComment("Archive comment")
 			.withThumbnailFilename("PUBL.id_207_fil_liten.jpeg")
@@ -66,11 +66,11 @@ class PublicationMapperTest {
 	@Test
 	void toPublicationListMapsAllEntitiesWithoutXmltext() {
 		final var entities = List.of(
-			PublicationEntity.create().withPublicationId(1).withPublicationType("Broschyrer").withDocumentTitle("A").withXmltext("hidden")
-				.withTopography(TopographyEntity.create().withTId(10).withName("Sundsvall")),
-			PublicationEntity.create().withPublicationId(2).withPublicationType("Tidningar").withDocumentTitle("B").withXmltext("hidden")
-				.withTopography(TopographyEntity.create().withTId(20).withName("Timrå")),
-			PublicationEntity.create().withPublicationId(3).withPublicationType("Broschyrer").withDocumentTitle("C").withXmltext("hidden"));
+			PublicationEntity.create().withId(1).withPublicationType("Broschyrer").withDocumentTitle("A").withXmltext("hidden")
+				.withTopography(TopographyEntity.create().withId(10).withName("Sundsvall")),
+			PublicationEntity.create().withId(2).withPublicationType("Tidningar").withDocumentTitle("B").withXmltext("hidden")
+				.withTopography(TopographyEntity.create().withId(20).withName("Timrå")),
+			PublicationEntity.create().withId(3).withPublicationType("Broschyrer").withDocumentTitle("C").withXmltext("hidden"));
 
 		final var result = PublicationMapper.toPublicationList(entities);
 
@@ -86,7 +86,7 @@ class PublicationMapperTest {
 	void toPublicationWithoutTopographyHasNoLocation() {
 		// Both a publication without a place and one whose P_T_ID points at a missing row arrive here as a null
 		// association — see PublicationSpecificationTest for the dangling foreign key case.
-		final var entity = PublicationEntity.create().withPublicationId(1).withLocationText("Sundsvall");
+		final var entity = PublicationEntity.create().withId(1).withLocationText("Sundsvall");
 
 		final var result = PublicationMapper.toPublicationSummary(entity);
 

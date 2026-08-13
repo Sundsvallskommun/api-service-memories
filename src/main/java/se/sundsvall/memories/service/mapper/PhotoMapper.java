@@ -65,7 +65,7 @@ public final class PhotoMapper {
 	private static Photo toBase(final PhotoEntity entity) {
 		return ofNullable(entity)
 			.map(e -> Photo.create()
-				.withPhotoId(e.getPhotoId())
+				.withPhotoId(e.getId())
 				.withFilename(e.getFilename())
 				.withAccessionNumber(e.getAccessionNumber())
 				.withReferenceCode(e.getReferenceCode())

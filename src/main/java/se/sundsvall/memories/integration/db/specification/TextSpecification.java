@@ -7,9 +7,9 @@ import se.sundsvall.memories.integration.db.model.TextEntity;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.DOCUMENT_TITLE;
+import static se.sundsvall.memories.integration.db.model.TextEntity_.ID;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.OPTIONS;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.SUBJECT;
-import static se.sundsvall.memories.integration.db.model.TextEntity_.TEXT_ID;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.TOPOGRAPHY;
 
 public interface TextSpecification {
@@ -30,7 +30,7 @@ public interface TextSpecification {
 	}
 
 	static Specification<TextEntity> hasId(final Integer id) {
-		return BUILDER.buildEqualFilter(TEXT_ID, id);
+		return BUILDER.buildEqualFilter(ID, id);
 	}
 
 	static Specification<TextEntity> matches(final String query) {

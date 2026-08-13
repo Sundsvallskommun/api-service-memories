@@ -21,13 +21,13 @@ class FilmMapperTest {
 			Arguments.of(null, null),
 			Arguments.of(
 				FilmEntity.create()
-					.withFilmId(1)
+					.withId(1)
 					.withFilename("test.mp4")
 					.withObjectFilePath("/path/test.mp4")
 					.withObjectType("VIDEO")
 					.withDate("2020-01-01")
 					.withDocumentTitle("Test film")
-					.withTopography(TopographyEntity.create().withTId(2).withName("Sundsvall kommun"))
+					.withTopography(TopographyEntity.create().withId(2).withName("Sundsvall kommun"))
 					.withLocationText("Sundsvall")
 					.withOrganizationId(3)
 					.withSubEntityId(4)
@@ -73,8 +73,8 @@ class FilmMapperTest {
 
 	@Test
 	void toFilmFallsBackThroughTheTopographyDisplayName() {
-		final var entity = FilmEntity.create().withFilmId(1)
-			.withTopography(TopographyEntity.create().withTId(2).withName("").withPlace("Indal"));
+		final var entity = FilmEntity.create().withId(1)
+			.withTopography(TopographyEntity.create().withId(2).withName("").withPlace("Indal"));
 
 		assertThat(FilmMapper.toFilm(entity).getLocation()).isEqualTo("Indal");
 	}
@@ -84,7 +84,7 @@ class FilmMapperTest {
 		// Both a film without a place and a film whose FILM_T_ID points at a missing row arrive here as a null
 		// association — see FilmSpecificationTest for the dangling foreign key case. Since topographyId is read
 		// through the association too, the two can never disagree.
-		final var entity = FilmEntity.create().withFilmId(1).withLocationText("Sundsvall");
+		final var entity = FilmEntity.create().withId(1).withLocationText("Sundsvall");
 
 		final var result = FilmMapper.toFilm(entity);
 
@@ -95,8 +95,8 @@ class FilmMapperTest {
 
 	@Test
 	void toFilmReadsTopographyIdThroughTheAssociation() {
-		final var entity = FilmEntity.create().withFilmId(1)
-			.withTopography(TopographyEntity.create().withTId(42).withName("Indal"));
+		final var entity = FilmEntity.create().withId(1)
+			.withTopography(TopographyEntity.create().withId(42).withName("Indal"));
 
 		final var result = FilmMapper.toFilm(entity);
 
@@ -107,11 +107,11 @@ class FilmMapperTest {
 	@Test
 	void toFilmList() {
 		final var entities = List.of(
-			FilmEntity.create().withFilmId(1).withDocumentTitle("Film A")
-				.withTopography(TopographyEntity.create().withTId(10).withName("Sundsvall")),
-			FilmEntity.create().withFilmId(2).withDocumentTitle("Film B")
-				.withTopography(TopographyEntity.create().withTId(20).withName("Timrå")),
-			FilmEntity.create().withFilmId(3).withDocumentTitle("Film C"));
+			FilmEntity.create().withId(1).withDocumentTitle("Film A")
+				.withTopography(TopographyEntity.create().withId(10).withName("Sundsvall")),
+			FilmEntity.create().withId(2).withDocumentTitle("Film B")
+				.withTopography(TopographyEntity.create().withId(20).withName("Timrå")),
+			FilmEntity.create().withId(3).withDocumentTitle("Film C"));
 
 		final var result = FilmMapper.toFilmList(entities);
 

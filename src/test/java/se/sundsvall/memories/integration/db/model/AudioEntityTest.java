@@ -52,13 +52,13 @@ class AudioEntityTest {
 		final var deletedDate = LocalDate.of(2026, 1, 15);
 
 		final var result = AudioEntity.create()
-			.withAudioId(audioId)
+			.withId(audioId)
 			.withFilename(filename)
 			.withObjectFilePath(objectFilePath)
 			.withObjectType(objectType)
 			.withDate(date)
 			.withDocumentTitle(documentTitle)
-			.withTopography(TopographyEntity.create().withTId(topographyId).withName("Sundsvall"))
+			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withSubject(OcmEntity.create().withId(subjectId).withText("Musik"))
 			.withAuthorPersonId(authorPersonId)
@@ -70,13 +70,13 @@ class AudioEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getAudioId()).isEqualTo(audioId);
+		assertThat(result.getId()).isEqualTo(audioId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getObjectFilePath()).isEqualTo(objectFilePath);
 		assertThat(result.getObjectType()).isEqualTo(objectType);
 		assertThat(result.getDate()).isEqualTo(date);
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
-		assertThat(result.getTopography().getTId()).isEqualTo(topographyId);
+		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getSubject().getId()).isEqualTo(subjectId);
 		assertThat(result.getAuthorPersonId()).isEqualTo(authorPersonId);

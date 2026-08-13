@@ -51,9 +51,9 @@ class PublicationServiceTest {
 
 	private static PublicationEntity entity() {
 		return PublicationEntity.create()
-			.withPublicationId(207)
+			.withId(207)
 			.withDocumentTitle("Alfwar och Skämt")
-			.withTopography(TopographyEntity.create().withTId(4).withName("Sundsvall"))
+			.withTopography(TopographyEntity.create().withId(4).withName("Sundsvall"))
 			.withPublicationType("Broschyrer")
 			.withThumbnailFilename("PUBL.id_207_fil_liten.jpeg")
 			.withLargeImageFilename("PUBL.id_207_fil_stor.jpeg")

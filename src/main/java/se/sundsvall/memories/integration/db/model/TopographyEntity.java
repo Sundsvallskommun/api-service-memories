@@ -13,7 +13,7 @@ public class TopographyEntity {
 
 	@Id
 	@Column(name = "T_ID")
-	private Integer tId;
+	private Integer id;
 
 	@Column(name = "TOPNAMN", length = 64)
 	private String name;
@@ -31,16 +31,16 @@ public class TopographyEntity {
 		return new TopographyEntity();
 	}
 
-	public Integer getTId() {
-		return tId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setTId(final Integer tId) {
-		this.tId = tId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public TopographyEntity withTId(final Integer tId) {
-		this.tId = tId;
+	public TopographyEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -115,19 +115,19 @@ public class TopographyEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final TopographyEntity that = (TopographyEntity) o;
-		return Objects.equals(tId, that.tId) && Objects.equals(name, that.name) && Objects.equals(code, that.code) && Objects.equals(place, that.place)
+		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(code, that.code) && Objects.equals(place, that.place)
 			&& Objects.equals(country, that.country);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(tId, name, code, place, country);
+		return Objects.hash(id, name, code, place, country);
 	}
 
 	@Override
 	public String toString() {
 		return "TopographyEntity{" +
-			"TId=" + tId +
+			"id=" + id +
 			", name='" + name + '\'' +
 			", code='" + code + '\'' +
 			", place='" + place + '\'' +

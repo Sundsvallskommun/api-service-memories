@@ -81,6 +81,6 @@ public class AudioService {
 	}
 
 	private static String deriveFilename(final AudioEntity entity) {
-		return FileStreamer.filenameFromPath(entity.getObjectFilePath(), "audio-" + entity.getAudioId());
+		return FileStreamer.filenameFromPath(entity.getObjectFilePath(), "audio-" + entity.getId());
 	}
 }

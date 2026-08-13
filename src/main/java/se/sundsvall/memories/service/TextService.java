@@ -12,7 +12,7 @@ import se.sundsvall.memories.api.model.TextParameters;
 import se.sundsvall.memories.integration.db.TextMediaRepository;
 import se.sundsvall.memories.integration.db.TextRepository;
 import se.sundsvall.memories.integration.db.model.TextEntity;
-import se.sundsvall.memories.integration.db.model.TextMediaEntity;
+import se.sundsvall.memories.integration.db.model.TextMediaId;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.TextMapper;
 import se.sundsvall.memories.service.model.FileVariant;
@@ -77,7 +77,7 @@ public class TextService {
 	}
 
 	public void streamMediaFile(final Integer textId, final Integer mediaId, final FileVariant variant, final HttpServletResponse response) {
-		final var entity = textMediaRepository.findById(new TextMediaEntity.TextMediaId(textId, mediaId))
+		final var entity = textMediaRepository.findById(new TextMediaId(textId, mediaId))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Media file with id '%s' for text with id '%s' not found".formatted(mediaId, textId)));
 

@@ -21,7 +21,7 @@ public final class FilmMapper {
 	public static Film toFilm(final FilmEntity entity) {
 		return ofNullable(entity)
 			.map(e -> Film.create()
-				.withFilmId(e.getFilmId())
+				.withFilmId(e.getId())
 				.withFilename(e.getFilename())
 				.withObjectFilePath(e.getObjectFilePath())
 				.withObjectType(e.getObjectType())
@@ -69,7 +69,7 @@ public final class FilmMapper {
 	 */
 	private static Integer topographyId(final FilmEntity entity) {
 		return ofNullable(entity.getTopography())
-			.map(TopographyEntity::getTId)
+			.map(TopographyEntity::getId)
 			.orElse(null);
 	}
 }

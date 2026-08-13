@@ -49,7 +49,7 @@ public final class PublicationMapper {
 	private static Publication toBase(final PublicationEntity entity) {
 		return ofNullable(entity)
 			.map(e -> Publication.create()
-				.withPublicationId(e.getPublicationId())
+				.withPublicationId(e.getId())
 				.withFilename(e.getFilename())
 				.withPublicationType(e.getPublicationType())
 				.withDate(e.getDate())

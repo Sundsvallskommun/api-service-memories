@@ -54,7 +54,7 @@ class PhotoSpecificationTest {
 
 	private PhotoEntity persist(final Integer id, final Integer options, final String title, final String comment, final String objectType) {
 		return photoRepository.saveAndFlush(PhotoEntity.create()
-			.withPhotoId(id)
+			.withId(id)
 			.withOptions(options)
 			.withDocumentTitle(title)
 			.withComment(comment)
@@ -63,13 +63,13 @@ class PhotoSpecificationTest {
 
 	private List<Integer> findIds(final Specification<PhotoEntity> specification) {
 		return photoRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
-			.map(PhotoEntity::getPhotoId)
+			.map(PhotoEntity::getId)
 			.sorted()
 			.toList();
 	}
 
 	private TopographyEntity persistTopography(final int id, final String name) {
-		final var topography = TopographyEntity.create().withTId(id).withName(name);
+		final var topography = TopographyEntity.create().withId(id).withName(name);
 		entityManager.persist(topography);
 		entityManager.flush();
 		return topography;
@@ -339,7 +339,7 @@ class PhotoSpecificationTest {
 
 		final var page = photoRepository.findAllByParameters(PhotoParameters.create().withQuery("hamnen"), Pageable.unpaged());
 
-		assertThat(page.getContent()).extracting(PhotoEntity::getPhotoId).containsExactly(1);
+		assertThat(page.getContent()).extracting(PhotoEntity::getId).containsExactly(1);
 	}
 
 	@Test
@@ -348,10 +348,10 @@ class PhotoSpecificationTest {
 		persist(2, 4, "b", null, "Föremål");
 
 		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType("Föremål"), Pageable.unpaged())
-			.getContent()).extracting(PhotoEntity::getPhotoId).containsExactly(2);
+			.getContent()).extracting(PhotoEntity::getId).containsExactly(2);
 		// A blank object type means "no filter", so the request parameter can be passed through untrimmed.
 		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType("   "), Pageable.unpaged())
-			.getContent()).extracting(PhotoEntity::getPhotoId).containsExactlyInAnyOrder(1, 2);
+			.getContent()).extracting(PhotoEntity::getId).containsExactlyInAnyOrder(1, 2);
 	}
 
 	@Test
@@ -407,7 +407,7 @@ class PhotoSpecificationTest {
 		final var photos = photoRepository.findAll(PhotoSpecification.fetchTopography(), Pageable.unpaged()).getContent();
 
 		assertThat(photos).hasSize(1);
-		assertThat(photos.getFirst().getTopography().getTId()).isEqualTo(500);
+		assertThat(photos.getFirst().getTopography().getId()).isEqualTo(500);
 		assertThat(photos.getFirst().getTopography().getDisplayName()).isEqualTo("Sundsvall");
 	}
 

@@ -17,7 +17,7 @@ public class PublicationEntity {
 
 	@Id
 	@Column(name = "P_ID")
-	private Integer publicationId;
+	private Integer id;
 
 	@Column(name = "FILNAMN", length = 256)
 	private String filename;
@@ -112,16 +112,16 @@ public class PublicationEntity {
 		return new PublicationEntity();
 	}
 
-	public Integer getPublicationId() {
-		return publicationId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setPublicationId(final Integer publicationId) {
-		this.publicationId = publicationId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public PublicationEntity withPublicationId(final Integer publicationId) {
-		this.publicationId = publicationId;
+	public PublicationEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -507,7 +507,7 @@ public class PublicationEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final PublicationEntity that = (PublicationEntity) o;
-		return Objects.equals(publicationId, that.publicationId) && Objects.equals(filename, that.filename) && Objects.equals(publicationType, that.publicationType)
+		return Objects.equals(id, that.id) && Objects.equals(filename, that.filename) && Objects.equals(publicationType, that.publicationType)
 			&& Objects.equals(date, that.date) && Objects.equals(periodicalTitle, that.periodicalTitle) && Objects.equals(issueNumber, that.issueNumber)
 			&& Objects.equals(pageNumber, that.pageNumber) && Objects.equals(bfJId, that.bfJId) && Objects.equals(publisherTopographyId, that.publisherTopographyId)
 			&& Objects.equals(publisherLocation, that.publisherLocation) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentTitle, that.documentTitle)
@@ -521,7 +521,7 @@ public class PublicationEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, bfJId, publisherTopographyId, publisherLocation, documentDate,
+		return Objects.hash(id, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, bfJId, publisherTopographyId, publisherLocation, documentDate,
 			documentTitle, feId, reId, ujId, ueId, locationText, meOId, comment, thumbnailFilename, largeImageFilename, originalFilename, ocrFilename,
 			xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
@@ -529,7 +529,7 @@ public class PublicationEntity {
 	@Override
 	public String toString() {
 		return "PublicationEntity{" +
-			"publicationId=" + publicationId +
+			"id=" + id +
 			", filename='" + filename + '\'' +
 			", publicationType='" + publicationType + '\'' +
 			", date='" + date + '\'' +

@@ -54,7 +54,7 @@ class FilmServiceTest {
 	@Test
 	void searchDelegatesToRepositoryAndMapsThePage() {
 		final var pageable = PageRequest.of(0, 100);
-		final var entity = FilmEntity.create().withFilmId(1).withDocumentTitle("Sundsvall film");
+		final var entity = FilmEntity.create().withId(1).withDocumentTitle("Sundsvall film");
 
 		when(repositoryMock.findAllByParameters(any(FilmParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
@@ -91,7 +91,7 @@ class FilmServiceTest {
 	@Test
 	void searchAppliesRequestedPaging() {
 		final var pageable = PageRequest.of(2, 25);
-		final var entity = FilmEntity.create().withFilmId(1);
+		final var entity = FilmEntity.create().withId(1);
 
 		when(repositoryMock.findAllByParameters(any(FilmParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity), pageable, 51));
@@ -108,7 +108,7 @@ class FilmServiceTest {
 	@Test
 	void getById() {
 		final var id = 1;
-		final var entity = FilmEntity.create().withFilmId(id).withDocumentTitle("Test");
+		final var entity = FilmEntity.create().withId(id).withDocumentTitle("Test");
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
 
@@ -136,7 +136,7 @@ class FilmServiceTest {
 	@Test
 	void streamFileDelegatesToFileStreamer() {
 		final var id = 1;
-		final var entity = FilmEntity.create().withFilmId(id).withObjectFilePath("/films/test.mp4").withFilmMimeType("video/mp4");
+		final var entity = FilmEntity.create().withId(id).withObjectFilePath("/films/test.mp4").withFilmMimeType("video/mp4");
 		final var responseMock = mock(HttpServletResponse.class);
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
@@ -150,7 +150,7 @@ class FilmServiceTest {
 	@Test
 	void streamFileFallsBackToOctetStreamAndDerivedNameWhenObjectPathBlank() {
 		final var id = 3;
-		final var entity = FilmEntity.create().withFilmId(id).withObjectFilePath("   ");
+		final var entity = FilmEntity.create().withId(id).withObjectFilePath("   ");
 		final var responseMock = mock(HttpServletResponse.class);
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
@@ -164,7 +164,7 @@ class FilmServiceTest {
 	@Test
 	void openForPlaybackReturnsPayloadFromStreamer() {
 		final var id = 1;
-		final var entity = FilmEntity.create().withFilmId(id).withObjectFilePath("/a/midsommar.mp4").withFilmMimeType("video/mp4");
+		final var entity = FilmEntity.create().withId(id).withObjectFilePath("/a/midsommar.mp4").withFilmMimeType("video/mp4");
 		final var expected = new StreamPayload(mock(Resource.class), "video/mp4", "midsommar.mp4");
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
@@ -176,7 +176,7 @@ class FilmServiceTest {
 	@Test
 	void openForPlaybackFallsBackToOctetStreamWhenMimeMissing() {
 		final var id = 2;
-		final var entity = FilmEntity.create().withFilmId(id).withObjectFilePath("   ");
+		final var entity = FilmEntity.create().withId(id).withObjectFilePath("   ");
 		final var expected = new StreamPayload(mock(Resource.class), "application/octet-stream", "film-2");
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));

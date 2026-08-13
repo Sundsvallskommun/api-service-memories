@@ -7,8 +7,8 @@ import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.DOCUMENT_TITLE;
+import static se.sundsvall.memories.integration.db.model.PublicationEntity_.ID;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.OPTIONS;
-import static se.sundsvall.memories.integration.db.model.PublicationEntity_.PUBLICATION_ID;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.TOPOGRAPHY;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.XMLTEXT;
 
@@ -30,7 +30,7 @@ public interface PublicationSpecification {
 	}
 
 	static Specification<PublicationEntity> hasId(final Integer id) {
-		return BUILDER.buildEqualFilter(PUBLICATION_ID, id);
+		return BUILDER.buildEqualFilter(ID, id);
 	}
 
 	static Specification<PublicationEntity> matches(final String query) {

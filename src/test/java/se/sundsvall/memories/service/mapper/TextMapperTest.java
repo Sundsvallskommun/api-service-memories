@@ -15,12 +15,12 @@ class TextMapperTest {
 
 	private static TextEntity sampleEntity() {
 		return TextEntity.create()
-			.withTextId(1001)
+			.withId(1001)
 			.withFilename("minne.xml")
 			.withDocumentDate("1920-01-01")
 			.withDocumentEndDate("1920-12-31")
 			.withDocumentTitle("Minne från Sundsvall")
-			.withTopography(TopographyEntity.create().withTId(4).withName("Sundsvall"))
+			.withTopography(TopographyEntity.create().withId(4).withName("Sundsvall"))
 			.withLocationText("Sundsvall")
 			.withSubject(OcmEntity.create().withId(20).withText("Musik"))
 			.withComment("Memoir")
@@ -79,13 +79,13 @@ class TextMapperTest {
 	@Test
 	void toTextListMapsAllEntities() {
 		final var entities = List.of(
-			TextEntity.create().withTextId(1).withDocumentTitle("A").withXmltext("hidden")
-				.withTopography(TopographyEntity.create().withTId(10).withName("Sundsvall"))
+			TextEntity.create().withId(1).withDocumentTitle("A").withXmltext("hidden")
+				.withTopography(TopographyEntity.create().withId(10).withName("Sundsvall"))
 				.withSubject(OcmEntity.create().withId(100).withText("Intervju")),
-			TextEntity.create().withTextId(2).withDocumentTitle("B").withXmltext("hidden")
-				.withTopography(TopographyEntity.create().withTId(20).withName("Timrå"))
+			TextEntity.create().withId(2).withDocumentTitle("B").withXmltext("hidden")
+				.withTopography(TopographyEntity.create().withId(20).withName("Timrå"))
 				.withSubject(OcmEntity.create().withId(200).withText("Musik")),
-			TextEntity.create().withTextId(3).withDocumentTitle("C").withXmltext("hidden"));
+			TextEntity.create().withId(3).withDocumentTitle("C").withXmltext("hidden"));
 
 		final var result = TextMapper.toTextList(entities);
 
@@ -101,7 +101,7 @@ class TextMapperTest {
 	void toTextWithoutTopographyHasNoLocation() {
 		// Both a text without a place and one whose D_T_ID points at a missing row arrive here as a null association —
 		// see TextSpecificationTest for the dangling foreign key case.
-		final var entity = TextEntity.create().withTextId(1).withLocationText("Sundsvall");
+		final var entity = TextEntity.create().withId(1).withLocationText("Sundsvall");
 
 		final var result = TextMapper.toTextSummary(entity);
 

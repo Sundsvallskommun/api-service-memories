@@ -22,13 +22,13 @@ class AudioMapperTest {
 			Arguments.of(null, null),
 			Arguments.of(
 				AudioEntity.create()
-					.withAudioId(1)
+					.withId(1)
 					.withFilename("test.mp3")
 					.withObjectFilePath("/path/test.mp3")
 					.withObjectType("LJUD")
 					.withDate("2020-01-01")
 					.withDocumentTitle("Test audio")
-					.withTopography(TopographyEntity.create().withTId(2).withName("Sundsvalls kommun"))
+					.withTopography(TopographyEntity.create().withId(2).withName("Sundsvalls kommun"))
 					.withLocationText("Sundsvall")
 					.withSubject(OcmEntity.create().withId(7).withText("Intervju"))
 					.withAuthorPersonId(4)
@@ -75,8 +75,8 @@ class AudioMapperTest {
 
 	@Test
 	void toAudioFallsBackThroughTheTopographyDisplayName() {
-		final var entity = AudioEntity.create().withAudioId(1)
-			.withTopography(TopographyEntity.create().withTId(2).withName("").withPlace("Indal"));
+		final var entity = AudioEntity.create().withId(1)
+			.withTopography(TopographyEntity.create().withId(2).withName("").withPlace("Indal"));
 
 		assertThat(AudioMapper.toAudio(entity).getLocation()).isEqualTo("Indal");
 	}
@@ -86,7 +86,7 @@ class AudioMapperTest {
 		// Both an audio without a place and one whose LJUD_T_ID points at a missing row arrive here as a null
 		// association — see AudioSpecificationTest for the dangling foreign key case. Since topographyId is read
 		// through the association too, the two can never disagree.
-		final var entity = AudioEntity.create().withAudioId(1).withLocationText("Sundsvall");
+		final var entity = AudioEntity.create().withId(1).withLocationText("Sundsvall");
 
 		final var result = AudioMapper.toAudio(entity);
 
@@ -98,13 +98,13 @@ class AudioMapperTest {
 	@Test
 	void toAudioList() {
 		final var entities = List.of(
-			AudioEntity.create().withAudioId(1).withDocumentTitle("Audio A")
-				.withTopography(TopographyEntity.create().withTId(10).withName("Sundsvall"))
+			AudioEntity.create().withId(1).withDocumentTitle("Audio A")
+				.withTopography(TopographyEntity.create().withId(10).withName("Sundsvall"))
 				.withSubject(OcmEntity.create().withId(100).withText("Intervju")),
-			AudioEntity.create().withAudioId(2).withDocumentTitle("Audio B")
-				.withTopography(TopographyEntity.create().withTId(20).withName("Timrå"))
+			AudioEntity.create().withId(2).withDocumentTitle("Audio B")
+				.withTopography(TopographyEntity.create().withId(20).withName("Timrå"))
 				.withSubject(OcmEntity.create().withId(200).withText("Musik")),
-			AudioEntity.create().withAudioId(3).withDocumentTitle("Audio C"));
+			AudioEntity.create().withId(3).withDocumentTitle("Audio C"));
 
 		final var result = AudioMapper.toAudioList(entities);
 

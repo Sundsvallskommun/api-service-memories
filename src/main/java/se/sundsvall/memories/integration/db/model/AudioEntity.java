@@ -16,7 +16,7 @@ public class AudioEntity {
 
 	@Id
 	@Column(name = "LJUD_ID")
-	private Integer audioId;
+	private Integer id;
 
 	@Column(name = "FILNAMN", length = 256)
 	private String filename;
@@ -69,16 +69,16 @@ public class AudioEntity {
 		return new AudioEntity();
 	}
 
-	public Integer getAudioId() {
-		return audioId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setAudioId(final Integer audioId) {
-		this.audioId = audioId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public AudioEntity withAudioId(final Integer audioId) {
-		this.audioId = audioId;
+	public AudioEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -282,7 +282,7 @@ public class AudioEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final AudioEntity that = (AudioEntity) o;
-		return Objects.equals(audioId, that.audioId) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
+		return Objects.equals(id, that.id) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
 			&& Objects.equals(objectType, that.objectType) && Objects.equals(date, that.date) && Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(locationText, that.locationText)
 			&& Objects.equals(authorPersonId, that.authorPersonId) && Objects.equals(authorEntityId, that.authorEntityId) && Objects.equals(comment, that.comment)
@@ -291,14 +291,14 @@ public class AudioEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, locationText, authorPersonId, authorEntityId, comment, audioMimeType, nodeId,
+		return Objects.hash(id, filename, objectFilePath, objectType, date, documentTitle, locationText, authorPersonId, authorEntityId, comment, audioMimeType, nodeId,
 			options, deletedDate);
 	}
 
 	@Override
 	public String toString() {
 		return "AudioEntity{" +
-			"audioId=" + audioId +
+			"id=" + id +
 			", filename='" + filename + '\'' +
 			", objectFilePath='" + objectFilePath + '\'' +
 			", objectType='" + objectType + '\'' +

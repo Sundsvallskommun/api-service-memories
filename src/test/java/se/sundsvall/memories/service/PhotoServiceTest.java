@@ -54,7 +54,7 @@ class PhotoServiceTest {
 
 	private static PhotoEntity entity() {
 		return PhotoEntity.create()
-			.withPhotoId(1234)
+			.withId(1234)
 			.withDocumentTitle("Stadsvy")
 			.withThumbnailFilename("FOTO.id_1234_fil_liten.jpg")
 			.withLargeImageFilename("FOTO.id_1234_fil_stor.jpg")

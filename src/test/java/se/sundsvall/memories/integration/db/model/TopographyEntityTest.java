@@ -27,14 +27,14 @@ class TopographyEntityTest {
 	@Test
 	void testBuilderMethods() {
 		final var result = TopographyEntity.create()
-			.withTId(42)
+			.withId(42)
 			.withName("Sundsvall")
 			.withCode("2281")
 			.withPlace("Sundsvalls kommun")
 			.withCountry("Sverige");
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getTId()).isEqualTo(42);
+		assertThat(result.getId()).isEqualTo(42);
 		assertThat(result.getName()).isEqualTo("Sundsvall");
 		assertThat(result.getCode()).isEqualTo("2281");
 		assertThat(result.getPlace()).isEqualTo("Sundsvalls kommun");

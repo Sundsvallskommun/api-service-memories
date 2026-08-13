@@ -17,7 +17,7 @@ public class TextEntity {
 
 	@Id
 	@Column(name = "ID_ID")
-	private Integer textId;
+	private Integer id;
 
 	@Column(name = "DOKDATUM", length = 10)
 	private String documentDate;
@@ -86,16 +86,16 @@ public class TextEntity {
 		return new TextEntity();
 	}
 
-	public Integer getTextId() {
-		return textId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setTextId(final Integer textId) {
-		this.textId = textId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public TextEntity withTextId(final Integer textId) {
-		this.textId = textId;
+	public TextEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -364,7 +364,7 @@ public class TextEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final TextEntity that = (TextEntity) o;
-		return Objects.equals(textId, that.textId) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentEndDate, that.documentEndDate)
+		return Objects.equals(id, that.id) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentEndDate, that.documentEndDate)
 			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(ueId, that.ueId) && Objects.equals(ujId, that.ujId)
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(comment, that.comment)
 			&& Objects.equals(filename, that.filename) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
@@ -375,14 +375,14 @@ public class TextEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(textId, documentDate, documentEndDate, documentTitle, ueId, ujId, locationText, comment, filename,
+		return Objects.hash(id, documentDate, documentEndDate, documentTitle, ueId, ujId, locationText, comment, filename,
 			thumbnailFilename, largeImageFilename, originalFilename, ocrFilename, xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
 
 	@Override
 	public String toString() {
 		return "TextEntity{" +
-			"textId=" + textId +
+			"id=" + id +
 			", documentDate='" + documentDate + '\'' +
 			", documentEndDate='" + documentEndDate + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
