@@ -1,7 +1,6 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +13,9 @@ import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.PhotoMapper;
+import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
+import se.sundsvall.memories.service.util.FileVariants;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -59,7 +60,7 @@ public class PhotoService {
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {
 		final var entity = findVisible(id);
 
-		final var filename = ofNullable(variant.extract(entity))
+		final var filename = ofNullable(FileVariants.filename(entity, variant))
 			.filter(name -> !name.isBlank())
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Photo with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase())));
@@ -72,24 +73,4 @@ public class PhotoService {
 			"IOException occurred when streaming file for photo with id '%s'".formatted(id));
 	}
 
-	public enum FileVariant {
-		THUMBNAIL("fil_liten", PhotoEntity::getThumbnailFilename),
-		LARGE("fil_stor", PhotoEntity::getLargeImageFilename);
-
-		private final String subfolder;
-		private final Function<PhotoEntity, String> fileNameExtractor;
-
-		FileVariant(final String subfolder, final Function<PhotoEntity, String> fileNameExtractor) {
-			this.subfolder = subfolder;
-			this.fileNameExtractor = fileNameExtractor;
-		}
-
-		String extract(final PhotoEntity entity) {
-			return fileNameExtractor.apply(entity);
-		}
-
-		String getSubfolder() {
-			return subfolder;
-		}
-	}
 }

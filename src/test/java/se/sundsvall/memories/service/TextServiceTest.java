@@ -23,8 +23,7 @@ import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
-import se.sundsvall.memories.service.TextService.FileVariant;
-import se.sundsvall.memories.service.TextService.MediaFileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,9 +88,9 @@ class TextServiceTest {
 
 	static Stream<Arguments> mediaFileVariants() {
 		return Stream.of(
-			Arguments.of(MediaFileVariant.THUMBNAIL, "/text_multi/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg"),
-			Arguments.of(MediaFileVariant.LARGE, "/text_multi/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg"),
-			Arguments.of(MediaFileVariant.ORIGINAL, "/text_multi/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg"));
+			Arguments.of(FileVariant.THUMBNAIL, "/text_multi/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg"),
+			Arguments.of(FileVariant.LARGE, "/text_multi/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg"),
+			Arguments.of(FileVariant.ORIGINAL, "/text_multi/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg"));
 	}
 
 	@BeforeEach
@@ -232,7 +231,7 @@ class TextServiceTest {
 
 	@ParameterizedTest
 	@MethodSource("mediaFileVariants")
-	void streamMediaFileDelegatesToFileStreamer(final MediaFileVariant variant, final String expectedPath, final String expectedFilename) {
+	void streamMediaFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename) {
 		final var responseMock = mock(HttpServletResponse.class);
 		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 1))).thenReturn(Optional.of(mediaEntity()));
 
@@ -247,7 +246,7 @@ class TextServiceTest {
 		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 99))).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class,
-			() -> service.streamMediaFile(1001, 99, MediaFileVariant.THUMBNAIL, responseMock));
+			() -> service.streamMediaFile(1001, 99, FileVariant.THUMBNAIL, responseMock));
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("Media file with id '99' for text with id '1001' not found");
@@ -261,7 +260,7 @@ class TextServiceTest {
 		when(textMediaRepositoryMock.findById(new TextMediaEntity.TextMediaId(1001, 1))).thenReturn(Optional.of(mediaMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
-			() -> service.streamMediaFile(1001, 1, MediaFileVariant.ORIGINAL, responseMock));
+			() -> service.streamMediaFile(1001, 1, FileVariant.ORIGINAL, responseMock));
 
 		assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
 		assertThat(exception.getMessage()).contains("has no file for variant 'original'");

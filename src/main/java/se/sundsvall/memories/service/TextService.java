@@ -1,7 +1,6 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.function.Function;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +15,9 @@ import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.TextMapper;
+import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
+import se.sundsvall.memories.service.util.FileVariants;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -64,7 +65,7 @@ public class TextService {
 	public void streamFile(final Integer id, final FileVariant variant, final HttpServletResponse response) {
 		final var entity = findVisible(id);
 
-		final var filename = ofNullable(variant.extract(entity))
+		final var filename = ofNullable(FileVariants.filename(entity, variant))
 			.filter(name -> !name.isBlank())
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Text with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase())));
@@ -77,12 +78,12 @@ public class TextService {
 			"IOException occurred when streaming file for text with id '%s'".formatted(id));
 	}
 
-	public void streamMediaFile(final Integer textId, final Integer mediaId, final MediaFileVariant variant, final HttpServletResponse response) {
+	public void streamMediaFile(final Integer textId, final Integer mediaId, final FileVariant variant, final HttpServletResponse response) {
 		final var entity = textMediaRepository.findById(new TextMediaEntity.TextMediaId(textId, mediaId))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Media file with id '%s' for text with id '%s' not found".formatted(mediaId, textId)));
 
-		final var filename = ofNullable(variant.extract(entity))
+		final var filename = ofNullable(FileVariants.filename(entity, variant))
 			.filter(name -> !name.isBlank())
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Media file with id '%s' for text with id '%s' has no file for variant '%s'".formatted(mediaId, textId, variant.name().toLowerCase())));
@@ -97,47 +98,4 @@ public class TextService {
 			"IOException occurred when streaming media file '%s' for text with id '%s'".formatted(mediaId, textId));
 	}
 
-	public enum FileVariant {
-		THUMBNAIL("fil_liten", TextEntity::getThumbnailFilename),
-		LARGE("fil_stor", TextEntity::getLargeImageFilename),
-		TEXT("fil_txt", TextEntity::getOcrFilename);
-
-		private final String subfolder;
-		private final Function<TextEntity, String> fileNameExtractor;
-
-		FileVariant(final String subfolder, final Function<TextEntity, String> fileNameExtractor) {
-			this.subfolder = subfolder;
-			this.fileNameExtractor = fileNameExtractor;
-		}
-
-		String extract(final TextEntity entity) {
-			return fileNameExtractor.apply(entity);
-		}
-
-		String getSubfolder() {
-			return subfolder;
-		}
-	}
-
-	public enum MediaFileVariant {
-		THUMBNAIL("fil_liten", TextMediaEntity::getThumbnailFilename),
-		LARGE("fil_stor", TextMediaEntity::getLargeImageFilename),
-		ORIGINAL("fil_original", TextMediaEntity::getOriginalFilename);
-
-		private final String subfolder;
-		private final Function<TextMediaEntity, String> fileNameExtractor;
-
-		MediaFileVariant(final String subfolder, final Function<TextMediaEntity, String> fileNameExtractor) {
-			this.subfolder = subfolder;
-			this.fileNameExtractor = fileNameExtractor;
-		}
-
-		String extract(final TextMediaEntity entity) {
-			return fileNameExtractor.apply(entity);
-		}
-
-		String getSubfolder() {
-			return subfolder;
-		}
-	}
 }

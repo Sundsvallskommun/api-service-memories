@@ -19,8 +19,7 @@ import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PagedTextResponse;
 import se.sundsvall.memories.api.model.Text;
 import se.sundsvall.memories.service.TextService;
-import se.sundsvall.memories.service.TextService.FileVariant;
-import se.sundsvall.memories.service.TextService.MediaFileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -138,14 +137,14 @@ class TextResourceTest {
 
 	static Stream<Arguments> mediaFileVariants() {
 		return Stream.of(
-			Arguments.of("thumbnail", MediaFileVariant.THUMBNAIL),
-			Arguments.of("large", MediaFileVariant.LARGE),
-			Arguments.of("original", MediaFileVariant.ORIGINAL));
+			Arguments.of("thumbnail", FileVariant.THUMBNAIL),
+			Arguments.of("large", FileVariant.LARGE),
+			Arguments.of("original", FileVariant.ORIGINAL));
 	}
 
 	@ParameterizedTest
 	@MethodSource("mediaFileVariants")
-	void getTextMediaFile(final String pathSegment, final MediaFileVariant expectedVariant) {
+	void getTextMediaFile(final String pathSegment, final FileVariant expectedVariant) {
 		final var textId = 1001;
 		final var mediaId = 1;
 

@@ -23,7 +23,7 @@ import se.sundsvall.memories.api.model.PagedPhotoResponse;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.service.PhotoService;
-import se.sundsvall.memories.service.PhotoService.FileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;

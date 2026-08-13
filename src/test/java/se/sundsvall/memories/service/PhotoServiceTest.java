@@ -22,7 +22,7 @@ import se.sundsvall.memories.api.model.Subject;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
-import se.sundsvall.memories.service.PhotoService.FileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -19,7 +19,7 @@ import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
 import se.sundsvall.memories.service.PublicationService;
-import se.sundsvall.memories.service.PublicationService.FileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

@@ -20,7 +20,7 @@ import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.PublicationRepository;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
-import se.sundsvall.memories.service.PublicationService.FileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
