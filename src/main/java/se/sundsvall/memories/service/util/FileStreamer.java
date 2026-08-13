@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
+import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.model.StreamPayload;
 
 import static java.util.Optional.ofNullable;
@@ -54,6 +55,19 @@ public class FileStreamer {
 			.map(path -> path.substring(path.lastIndexOf('/') + 1))
 			.filter(name -> !name.isBlank())
 			.orElse(fallback);
+	}
+
+	/**
+	 * Assembles the SMB path to a file variant: the material type's folder, the variant's subfolder, and the filename.
+	 * SMB paths always use {@code /}, whatever the host runs on.
+	 *
+	 * @param  folder   the material type's folder on the share, e.g. {@code /foto/}
+	 * @param  variant  the variant, which names the subfolder
+	 * @param  filename the filename within that subfolder
+	 * @return          the full path on the share
+	 */
+	public static String smbPath(final String folder, final FileVariant variant, final String filename) {
+		return folder + variant.getSubfolder() + "/" + filename;
 	}
 
 	/**

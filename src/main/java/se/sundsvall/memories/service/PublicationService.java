@@ -63,9 +63,7 @@ public class PublicationService {
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
 				"Publication with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase())));
 
-		// SMB URI separator is always "/" — see SambaIntegration for the reason String.join is
-		// preferred over a literal "/" concatenation.
-		final var path = String.join("/", sambaProperties.publicationFolder() + variant.getSubfolder(), filename);
+		final var path = FileStreamer.smbPath(sambaProperties.publicationFolder(), variant, filename);
 
 		fileStreamer.streamInline(path, filename, variant == FileVariant.TEXT, response,
 			"IOException occurred when streaming file for publication with id '%s'".formatted(id));
