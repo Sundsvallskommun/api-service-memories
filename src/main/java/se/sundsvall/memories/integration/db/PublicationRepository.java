@@ -15,14 +15,6 @@ import static se.sundsvall.memories.integration.db.specification.PublicationSpec
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.published;
 
-/**
- * Repository for the {@code PUBL} table.
- *
- * <p>
- * <strong>Sorting:</strong> a sort property supplied via {@link Pageable} is an entity property (e.g.
- * {@code documentTitle}), not a physical DB column name. The resolved {@code location} (from TOPOGRAFI) is not backed
- * by a column on this entity and cannot be sorted on.
- */
 @CircuitBreaker(name = "publicationRepository")
 public interface PublicationRepository extends JpaRepository<PublicationEntity, Integer>, JpaSpecificationExecutor<PublicationEntity> {
 

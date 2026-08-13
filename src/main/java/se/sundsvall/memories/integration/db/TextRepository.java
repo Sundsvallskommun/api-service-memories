@@ -16,14 +16,6 @@ import static se.sundsvall.memories.integration.db.specification.TextSpecificati
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.published;
 
-/**
- * Repository for the {@code TEXT} table.
- *
- * <p>
- * <strong>Sorting:</strong> a sort property supplied via {@link Pageable} is an entity property (e.g.
- * {@code documentTitle}), not a physical DB column name. The resolved {@code location} (from TOPOGRAFI) and
- * {@code subject} (from OCM) are not backed by a column on this entity and cannot be sorted on.
- */
 @CircuitBreaker(name = "textRepository")
 public interface TextRepository extends JpaRepository<TextEntity, Integer>, JpaSpecificationExecutor<TextEntity> {
 

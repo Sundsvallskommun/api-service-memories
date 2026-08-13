@@ -11,48 +11,29 @@ import static se.sundsvall.memories.integration.db.model.FilmEntity_.FILM_ID;
 import static se.sundsvall.memories.integration.db.model.FilmEntity_.OPTIONS;
 import static se.sundsvall.memories.integration.db.model.FilmEntity_.TOPOGRAPHY;
 
-/**
- * Criteria specifications for searching the {@code FILM} table. The predicates themselves are built by
- * {@link SpecificationBuilder}; this class only states which attributes each filter applies to.
- *
- * <p>
- * Each factory returns {@link Specification#unrestricted()} when its filter is not requested, so callers can combine
- * them unconditionally with {@link Specification#allOf}, which does not accept {@code null} elements.
- *
- * <p>
- * <strong>Sorting:</strong> unlike the native queries these replace, a sort property supplied via {@code Pageable} is
- * an entity property (e.g. {@code documentTitle}), not a physical column name.
- */
 public interface FilmSpecification {
 
 	SpecificationBuilder<FilmEntity> BUILDER = new SpecificationBuilder<>();
 
-	int PUBLISHED_BIT = 4;
-
-	/** Matches the {@code MATCH (DOKTITEL, KOMMENT_FILM)} index the free-text search replaces. */
 	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
 
-	/** Restricts the result to published rows. */
 	static Specification<FilmEntity> published() {
-		return BUILDER.buildBitmaskFilter(OPTIONS, PUBLISHED_BIT);
+		return BUILDER.buildPublishedFilter(OPTIONS);
 	}
 
-	/** Excludes soft-deleted rows. Deletion sets {@code DELETEDDATE} but leaves the published bit set. */
+	// Deletion sets DELETEDDATE but leaves the published bit set, so published() alone does not hide the row.
 	static Specification<FilmEntity> notDeleted() {
 		return BUILDER.buildIsNullFilter(DELETED_DATE);
 	}
 
-	/** Matches a single row by primary key, so reads by id compose from the same filters as a search. */
 	static Specification<FilmEntity> hasId(final Integer id) {
 		return BUILDER.buildEqualFilter(FILM_ID, id);
 	}
 
-	/** Free-text search across {@code DOKTITEL} and {@code KOMMENT_FILM}. Every word must occur in one of them. */
 	static Specification<FilmEntity> matches(final String query) {
 		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
 	}
 
-	/** Fetches the place in the same query, so mapping a page does not fire one select per row. */
 	static Specification<FilmEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
 	}

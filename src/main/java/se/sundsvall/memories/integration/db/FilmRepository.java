@@ -15,14 +15,6 @@ import static se.sundsvall.memories.integration.db.specification.FilmSpecificati
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.published;
 
-/**
- * Repository for the {@code FILM} table.
- *
- * <p>
- * <strong>Sorting:</strong> a sort property supplied via {@link Pageable} is an entity property (e.g.
- * {@code documentTitle}), not a physical DB column name. The resolved {@code location} (from TOPOGRAFI) is not backed
- * by a column on this entity and cannot be sorted on.
- */
 @CircuitBreaker(name = "filmRepository")
 public interface FilmRepository extends JpaRepository<FilmEntity, Integer>, JpaSpecificationExecutor<FilmEntity> {
 
