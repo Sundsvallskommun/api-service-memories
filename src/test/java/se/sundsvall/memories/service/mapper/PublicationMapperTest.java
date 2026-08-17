@@ -1,12 +1,12 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
-import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -33,7 +33,7 @@ class PublicationMapperTest {
 			.withNodeId(18407)
 			.withOptions(4)
 			.withFilFormat("text")
-			.withDeletedDate(LocalDate.of(2026, JANUARY, 15));
+			.withDeletedDate(LocalDate.of(2026, Month.JANUARY, 15));
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package se.sundsvall.memories.api.model;
 
 import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,6 @@ import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
-import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,7 +51,7 @@ class FilmTest {
 		final var filmMimeType = "video/mp4";
 		final var nodeId = 6;
 		final var options = 0;
-		final var deletedDate = LocalDate.of(2026, JANUARY, 15);
+		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = Film.create()
 			.withFilmId(filmId)

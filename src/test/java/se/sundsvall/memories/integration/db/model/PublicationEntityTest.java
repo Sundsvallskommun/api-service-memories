@@ -2,6 +2,7 @@ package se.sundsvall.memories.integration.db.model;
 
 import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,6 @@ import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExclud
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToStringExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
-import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -64,7 +64,7 @@ class PublicationEntityTest {
 		final var nodeId = 18407;
 		final var options = 4;
 		final var filFormat = "text";
-		final var deletedDate = LocalDate.of(2026, JANUARY, 15);
+		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = PublicationEntity.create()
 			.withId(publicationId)
