@@ -19,6 +19,7 @@ import se.sundsvall.memories.service.util.FileStreamer;
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.FILM;
 
 @Service
 public class FilmService {
@@ -79,6 +80,6 @@ public class FilmService {
 	}
 
 	private static String deriveFilename(final FilmEntity entity) {
-		return FileStreamer.filenameFromPath(entity.getObjectFilePath(), "film-" + entity.getFilmId());
+		return FileStreamer.downloadFilename(FILM, entity.getFilmId(), entity.getObjectFilePath());
 	}
 }
