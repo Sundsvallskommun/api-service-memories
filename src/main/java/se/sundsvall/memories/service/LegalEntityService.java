@@ -45,7 +45,7 @@ public class LegalEntityService {
 	}
 
 	public LegalEntity getById(final Integer id) {
-		return legalEntityRepository.findById(id)
+		return legalEntityRepository.findVisibleById(id)
 			.map(entity -> LegalEntityMapper.toLegalEntity(entity, topographyLookup.resolve(entity.getTopographyId()), categoryLookup.resolve(entity.getCategoryId())))
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, LEGAL_ENTITY_NOT_FOUND.formatted(id)));
 	}

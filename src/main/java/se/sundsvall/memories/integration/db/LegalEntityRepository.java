@@ -1,6 +1,7 @@
 package se.sundsvall.memories.integration.db;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,6 +39,23 @@ public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, 
 	 * @param  pageable   pagination and sorting criteria
 	 * @return            a page of matching {@link LegalEntityEntity} records
 	 */
+	/**
+	 * Looks up a single legal entity by its {@code J_ID}, excluding the placeholder row {@code J_ID = 1} ("ingen"). That
+	 * row is not a legal entity at all — it is the sentinel other tables point at to express "no legal entity" — so it
+	 * must never be retrievable through the API.
+	 *
+	 * <p>
+	 * <strong>The published bit is deliberately NOT applied here.</strong> Unlike {@link #search}, this lookup returns
+	 * unpublished records ({@code (OPTIONS & 4) <> 4}) as well. That is an intentional decision, not an oversight: a
+	 * planned administrative interface needs to reach unpublished records by id. Do not add a published-bit filter to
+	 * this query — hiding unpublished records here would break that use case.
+	 *
+	 * @param  id the {@code J_ID} to look up
+	 * @return    the matching {@link LegalEntityEntity}, or empty if no such row exists or the id is the placeholder
+	 */
+	@Query(value = "SELECT * FROM JURPERS WHERE J_ID = :id AND J_ID <> 1", nativeQuery = true)
+	Optional<LegalEntityEntity> findVisibleById(@Param("id") Integer id);
+
 	@Query(value = """
 		SELECT j.* FROM JURPERS j
 		LEFT JOIN TOPOGRAFI t ON t.T_ID = j.T_ID

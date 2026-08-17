@@ -70,4 +70,32 @@ class LegalEntityIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * {@code J_ID = 1} is the "ingen" placeholder other tables point at, not a real legal entity, so it must not be
+	 * retrievable even though it carries the published bit.
+	 */
+	@Test
+	void test06_getLegalEntityByIdPlaceholderNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/1")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Entity 30 is unpublished ({@code OPTIONS = 0}) and therefore hidden from search, but detail lookup by id must still
+	 * return it — a planned administrative interface depends on that.
+	 */
+	@Test
+	void test07_getUnpublishedLegalEntityById() {
+		setupCall()
+			.withServicePath(PATH + "/30")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

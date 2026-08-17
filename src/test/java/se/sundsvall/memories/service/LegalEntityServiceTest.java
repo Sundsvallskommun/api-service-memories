@@ -77,7 +77,7 @@ class LegalEntityServiceTest {
 
 	@Test
 	void getByIdFound() {
-		when(repositoryMock.findById(1)).thenReturn(Optional.of(LegalEntityEntity.create().withLegalEntityId(1).withName("Berg AB").withTopographyId(7).withCategoryId(2)));
+		when(repositoryMock.findVisibleById(1)).thenReturn(Optional.of(LegalEntityEntity.create().withLegalEntityId(1).withName("Berg AB").withTopographyId(7).withCategoryId(2)));
 		when(topographyLookupMock.resolve(7)).thenReturn("Sundsvall");
 		when(categoryLookupMock.resolve(2)).thenReturn("Aktiebolag");
 
@@ -87,17 +87,32 @@ class LegalEntityServiceTest {
 		assertThat(result.getName()).isEqualTo("Berg AB");
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getCategory()).isEqualTo("Aktiebolag");
-		verify(repositoryMock).findById(1);
+		verify(repositoryMock).findVisibleById(1);
 	}
 
 	@Test
 	void getByIdNotFound() {
-		when(repositoryMock.findById(999)).thenReturn(Optional.empty());
+		when(repositoryMock.findVisibleById(999)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.getById(999))
 			.isInstanceOf(ThrowableProblem.class)
 			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
 			.hasMessageContaining("Legal entity with id '999' not found");
-		verify(repositoryMock).findById(999);
+		verify(repositoryMock).findVisibleById(999);
+	}
+
+	/**
+	 * The placeholder row {@code J_ID = 1} ("ingen") is filtered out by the repository query, so the service must surface
+	 * it as an ordinary 404 rather than returning the sentinel.
+	 */
+	@Test
+	void getByIdPlaceholderNotFound() {
+		when(repositoryMock.findVisibleById(1)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.getById(1))
+			.isInstanceOf(ThrowableProblem.class)
+			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
+			.hasMessageContaining("Legal entity with id '1' not found");
+		verify(repositoryMock).findVisibleById(1);
 	}
 }
