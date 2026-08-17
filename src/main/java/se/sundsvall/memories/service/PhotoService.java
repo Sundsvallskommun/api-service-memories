@@ -24,6 +24,7 @@ import se.sundsvall.memories.service.util.FileStreamer;
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.PHOTO;
+import static se.sundsvall.memories.service.util.StringUtil.trimToNull;
 
 @Service
 public class PhotoService {
@@ -69,13 +70,6 @@ public class PhotoService {
 			return photoRepository.searchPublished(sanitizedQuery, pageable);
 		}
 		return photoRepository.findAllPublished(pageable);
-	}
-
-	private static String trimToNull(final String value) {
-		return ofNullable(value)
-			.map(String::trim)
-			.filter(s -> !s.isEmpty())
-			.orElse(null);
 	}
 
 	public Photo getById(final Integer id) {
