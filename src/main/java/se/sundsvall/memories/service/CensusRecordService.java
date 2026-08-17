@@ -11,7 +11,6 @@ import se.sundsvall.memories.integration.db.CensusRecordRepository;
 import se.sundsvall.memories.service.mapper.CensusRecordMapper;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static se.sundsvall.memories.service.util.StringUtil.trimToNull;
 
 @Service
 public class CensusRecordService {
@@ -27,13 +26,7 @@ public class CensusRecordService {
 	public PagedCensusRecordResponse search(final CensusRecordParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
-		final var page = censusRecordRepository.search(
-			trimToNull(parameters.getLastName()),
-			trimToNull(parameters.getFirstName()),
-			trimToNull(parameters.getGender()),
-			parameters.getYearFrom(),
-			parameters.getYearTo(),
-			pageable);
+		final var page = censusRecordRepository.findAllByParameters(parameters, pageable);
 
 		return PagedCensusRecordResponse.create()
 			.withCensusRecords(CensusRecordMapper.toCensusRecordList(page.getContent()))

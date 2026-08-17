@@ -34,6 +34,41 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows where the attribute differs from the value. Rows where the attribute is {@code NULL} are kept, which
+	 * is what the legacy schema needs: it uses sentinel ids rather than {@code NULL}, and a row that has neither is
+	 * still a real row.
+	 */
+	public Specification<T> buildNotEqualFilter(final String attribute, final Object value) {
+		if (value == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> cb.or(cb.isNull(root.get(attribute)), cb.notEqual(root.get(attribute), value));
+	}
+
+	/**
+	 * Matches rows where the attribute equals the value regardless of case. Matches every row when the value is blank,
+	 * so the request parameter can be passed through untrimmed.
+	 */
+	public Specification<T> buildEqualIgnoreCaseFilter(final String attribute, final String value) {
+		if (value == null || value.isBlank()) {
+			return Specification.unrestricted();
+		}
+		final var lowerCased = value.trim().toLowerCase();
+		return (root, _, cb) -> cb.equal(cb.lower(root.get(attribute)), lowerCased);
+	}
+
+	/**
+	 * Matches rows where the value occurs anywhere in at least one of the attributes. Wildcards in the value are
+	 * escaped. Matches every row when the value is blank.
+	 */
+	public Specification<T> buildLikeAnyFilter(final List<String> attributes, final String value) {
+		if (value == null || value.isBlank()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> matchesAnyAttribute(root, cb, attributes, value.trim());
+	}
+
+	/**
 	 * Matches rows where the attribute is {@code NULL}.
 	 */
 	public Specification<T> buildIsNullFilter(final String attribute) {
