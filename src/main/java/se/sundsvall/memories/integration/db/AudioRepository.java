@@ -20,6 +20,43 @@ import se.sundsvall.memories.integration.db.model.AudioEntity;
 public interface AudioRepository extends JpaRepository<AudioEntity, Integer> {
 
 	/**
+	 * Row projection for the paged queries below. Paired with {@link #SELECT_COUNT} so that the fetch query and its count
+	 * query always share the exact same {@code WHERE} clause constant.
+	 */
+	String SELECT_ROWS = "SELECT * FROM LJUD ";
+
+	/**
+	 * Count projection matching {@link #SELECT_ROWS}.
+	 */
+	String SELECT_COUNT = "SELECT COUNT(*) FROM LJUD ";
+
+	/**
+	 * Restricts the result to published audio records, i.e. bit {@code 4} of the {@code OPTIONS} bitmask is set.
+	 */
+	String WHERE_PUBLISHED = "WHERE (`OPTIONS` & 4) = 4";
+
+	/**
+	 * Published audio records matching a mandatory fulltext expression.
+	 */
+	String WHERE_PUBLISHED_AND_FULLTEXT = "WHERE MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4";
+
+	/**
+	 * Published audio records matching the optional {@code query}, {@code location}, {@code yearFrom} and {@code yearTo}
+	 * filters. A {@code null} parameter disables its filter. The year guards wrap the derived year in
+	 * {@code NULLIF(CAST(...), 0)} so that unparsable free-text dates (e.g. {@code 'okänt'}), which cast to {@code 0}, are
+	 * excluded instead of wrongly satisfying an upper bound.
+	 */
+	String WHERE_FILTERED = """
+		WHERE (`OPTIONS` & 4) = 4
+		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE))
+		  AND (:location IS NULL
+		       OR LJUD_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+		       OR LJUD_OPLATS LIKE CONCAT('%', :location, '%'))
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+		""";
+
+	/**
 	 * Retrieves a paginated list of all published audio records from the database. A record is considered published when
 	 * bit {@code 4} of the {@code OPTIONS} bitmask is set, i.e. {@code (OPTIONS & 4) = 4}. Other status bits may be set
 	 * simultaneously.
@@ -27,8 +64,8 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer> {
 	 * @param  pageable the pagination and sorting criteria
 	 * @return          a page containing the list of published audio records, encapsulated as {@code AudioEntity} objects
 	 */
-	@Query(value = "SELECT * FROM LJUD WHERE (`OPTIONS` & 4) = 4",
-		countQuery = "SELECT COUNT(*) FROM LJUD WHERE (`OPTIONS` & 4) = 4",
+	@Query(value = SELECT_ROWS + WHERE_PUBLISHED,
+		countQuery = SELECT_COUNT + WHERE_PUBLISHED,
 		nativeQuery = true)
 	Page<AudioEntity> findAllPublished(Pageable pageable);
 
@@ -42,8 +79,8 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer> {
 	 * @param  pageable the pagination parameters for the query result.
 	 * @return          a list of {@code AudioEntity} objects that match the search query and meet the filtering criteria.
 	 */
-	@Query(value = "SELECT * FROM LJUD WHERE MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
-		countQuery = "SELECT COUNT(*) FROM LJUD WHERE MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
+	@Query(value = SELECT_ROWS + WHERE_PUBLISHED_AND_FULLTEXT,
+		countQuery = SELECT_COUNT + WHERE_PUBLISHED_AND_FULLTEXT,
 		nativeQuery = true)
 	Page<AudioEntity> searchPublished(@Param("query") String query, Pageable pageable);
 
@@ -61,26 +98,8 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer> {
 	 * @param  pageable pagination and sorting criteria
 	 * @return          a page of matching audio records
 	 */
-	@Query(value = """
-		SELECT * FROM LJUD
-		WHERE (`OPTIONS` & 4) = 4
-		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE))
-		  AND (:location IS NULL
-		       OR LJUD_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
-		       OR LJUD_OPLATS LIKE CONCAT('%', :location, '%'))
-		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
-		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
-		""",
-		countQuery = """
-			SELECT COUNT(*) FROM LJUD
-			WHERE (`OPTIONS` & 4) = 4
-			  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_LJUD) AGAINST (:query IN BOOLEAN MODE))
-			  AND (:location IS NULL
-			       OR LJUD_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
-			       OR LJUD_OPLATS LIKE CONCAT('%', :location, '%'))
-			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
-			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
-			""",
+	@Query(value = SELECT_ROWS + WHERE_FILTERED,
+		countQuery = SELECT_COUNT + WHERE_FILTERED,
 		nativeQuery = true)
 	Page<AudioEntity> searchFiltered(
 		@Param("query") String query,

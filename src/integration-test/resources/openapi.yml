@@ -1379,12 +1379,6 @@ components:
           description: Free text search query
           examples:
           - Sundsvall
-        objectType:
-          type: string
-          description: Filter by object type. Use 'Foto' for photographs or 'Föremål'
-            for physical objects. Omit to return both.
-          examples:
-          - Foto
         yearFrom:
           type: integer
           format: int32
@@ -1405,6 +1399,12 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        objectType:
+          type: string
+          description: Filter by object type. Use 'Foto' for photographs or 'Föremål'
+            for physical objects. Omit to return both.
+          examples:
+          - Foto
     PagedPhotoResponse:
       type: object
       description: Paged photo response

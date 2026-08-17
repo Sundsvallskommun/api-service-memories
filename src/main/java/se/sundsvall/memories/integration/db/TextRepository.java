@@ -22,14 +22,51 @@ import se.sundsvall.memories.integration.db.model.TextEntity;
 public interface TextRepository extends JpaRepository<TextEntity, Integer> {
 
 	/**
+	 * Row projection for the paged queries below. Paired with {@link #SELECT_COUNT} so that the fetch query and its count
+	 * query always share the exact same {@code WHERE} clause constant.
+	 */
+	String SELECT_ROWS = "SELECT * FROM TEXT ";
+
+	/**
+	 * Count projection matching {@link #SELECT_ROWS}.
+	 */
+	String SELECT_COUNT = "SELECT COUNT(*) FROM TEXT ";
+
+	/**
+	 * Restricts the result to published texts, i.e. bit {@code 4} of the {@code OPTIONS} bitmask is set.
+	 */
+	String WHERE_PUBLISHED = "WHERE (`OPTIONS` & 4) = 4";
+
+	/**
+	 * Published texts matching a mandatory fulltext expression.
+	 */
+	String WHERE_PUBLISHED_AND_FULLTEXT = "WHERE MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4";
+
+	/**
+	 * Published texts matching the optional {@code query}, {@code location}, {@code yearFrom} and {@code yearTo} filters.
+	 * A {@code null} parameter disables its filter. The year guards wrap the derived year in
+	 * {@code NULLIF(CAST(...), 0)} so that unparsable free-text dates (e.g. {@code 'okänt'}), which cast to {@code 0}, are
+	 * excluded instead of wrongly satisfying an upper bound.
+	 */
+	String WHERE_FILTERED = """
+		WHERE (`OPTIONS` & 4) = 4
+		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE))
+		  AND (:location IS NULL
+		       OR D_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
+		       OR D_OPLATS LIKE CONCAT('%', :location, '%'))
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+		""";
+
+	/**
 	 * Retrieves all published records from the {@code TEXT} table. A record is considered published when bit {@code 4} of
 	 * the {@code OPTIONS} bitmask is set, i.e. {@code (OPTIONS & 4) = 4}. Other status bits may be set simultaneously.
 	 *
 	 * @param  pageable the pagination and sorting criteria
 	 * @return          a page of published text entities
 	 */
-	@Query(value = "SELECT * FROM TEXT WHERE (`OPTIONS` & 4) = 4",
-		countQuery = "SELECT COUNT(*) FROM TEXT WHERE (`OPTIONS` & 4) = 4",
+	@Query(value = SELECT_ROWS + WHERE_PUBLISHED,
+		countQuery = SELECT_COUNT + WHERE_PUBLISHED,
 		nativeQuery = true)
 	Page<TextEntity> findAllPublished(Pageable pageable);
 
@@ -41,8 +78,8 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer> {
 	 * @param  pageable the pagination and sorting criteria
 	 * @return          a page of matching text entities
 	 */
-	@Query(value = "SELECT * FROM TEXT WHERE MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
-		countQuery = "SELECT COUNT(*) FROM TEXT WHERE MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE) AND (`OPTIONS` & 4) = 4",
+	@Query(value = SELECT_ROWS + WHERE_PUBLISHED_AND_FULLTEXT,
+		countQuery = SELECT_COUNT + WHERE_PUBLISHED_AND_FULLTEXT,
 		nativeQuery = true)
 	Page<TextEntity> searchPublished(@Param("query") String query, Pageable pageable);
 
@@ -53,26 +90,8 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer> {
 	 * range. Location matches the resolved TOPOGRAFI name for {@code D_T_ID} or the free-text {@code D_OPLATS}. Used only
 	 * when a year/location filter is present.
 	 */
-	@Query(value = """
-		SELECT * FROM TEXT
-		WHERE (`OPTIONS` & 4) = 4
-		  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE))
-		  AND (:location IS NULL
-		       OR D_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
-		       OR D_OPLATS LIKE CONCAT('%', :location, '%'))
-		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED), 0) >= :yearFrom)
-		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
-		""",
-		countQuery = """
-			SELECT COUNT(*) FROM TEXT
-			WHERE (`OPTIONS` & 4) = 4
-			  AND (:query IS NULL OR MATCH (DOKTITEL, KOMMENT_DOC, XMLTEXT) AGAINST (:query IN BOOLEAN MODE))
-			  AND (:location IS NULL
-			       OR D_T_ID IN (SELECT T_ID FROM TOPOGRAFI WHERE TOPNAMN LIKE CONCAT('%', :location, '%') OR PLATS LIKE CONCAT('%', :location, '%'))
-			       OR D_OPLATS LIKE CONCAT('%', :location, '%'))
-			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(COALESCE(NULLIF(DOKDATUM_SLUT, ''), DOKDATUM), 4) AS UNSIGNED), 0) >= :yearFrom)
-			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED), 0) <= :yearTo)
-			""",
+	@Query(value = SELECT_ROWS + WHERE_FILTERED,
+		countQuery = SELECT_COUNT + WHERE_FILTERED,
 		nativeQuery = true)
 	Page<TextEntity> searchFiltered(
 		@Param("query") String query,

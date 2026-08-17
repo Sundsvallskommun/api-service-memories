@@ -2,36 +2,21 @@ package se.sundsvall.memories.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
-import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Photo search parameters")
-public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
-
-	@Schema(description = "Free text search query", examples = "Sundsvall")
-	private String query;
+public class PhotoParameters extends AbstractSearchParameters {
 
 	@Schema(description = "Filter by object type. Use 'Foto' for photographs or 'Föremål' for physical objects. Omit to return both.", examples = "Foto")
 	private String objectType;
-
-	@Schema(description = "Year from (inclusive); matched against the photo's time period (TIDIG–SENAST)", examples = "1900")
-	private Integer yearFrom;
-
-	@Schema(description = "Year to (inclusive); matched against the photo's time period (TIDIG–SENAST)", examples = "1950")
-	private Integer yearTo;
-
-	@Schema(description = "Location (substring, case-insensitive; resolved place name or free-text location)", examples = "Sundsvall")
-	private String location;
 
 	public static PhotoParameters create() {
 		return new PhotoParameters();
 	}
 
+	@Override
+	@Schema(description = "Free text search query", examples = "Sundsvall")
 	public String getQuery() {
-		return query;
-	}
-
-	public void setQuery(final String query) {
-		this.query = query;
+		return super.getQuery();
 	}
 
 	public PhotoParameters withQuery(final String query) {
@@ -52,12 +37,10 @@ public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 		return this;
 	}
 
+	@Override
+	@Schema(description = "Year from (inclusive); matched against the photo's time period (TIDIG–SENAST)", examples = "1900")
 	public Integer getYearFrom() {
-		return yearFrom;
-	}
-
-	public void setYearFrom(final Integer yearFrom) {
-		this.yearFrom = yearFrom;
+		return super.getYearFrom();
 	}
 
 	public PhotoParameters withYearFrom(final Integer yearFrom) {
@@ -65,12 +48,10 @@ public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 		return this;
 	}
 
+	@Override
+	@Schema(description = "Year to (inclusive); matched against the photo's time period (TIDIG–SENAST)", examples = "1950")
 	public Integer getYearTo() {
-		return yearTo;
-	}
-
-	public void setYearTo(final Integer yearTo) {
-		this.yearTo = yearTo;
+		return super.getYearTo();
 	}
 
 	public PhotoParameters withYearTo(final Integer yearTo) {
@@ -78,12 +59,10 @@ public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 		return this;
 	}
 
+	@Override
+	@Schema(description = "Location (substring, case-insensitive; resolved place name or free-text location)", examples = "Sundsvall")
 	public String getLocation() {
-		return location;
-	}
-
-	public void setLocation(final String location) {
-		this.location = location;
+		return super.getLocation();
 	}
 
 	public PhotoParameters withLocation(final String location) {
@@ -103,18 +82,15 @@ public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (o == null || getClass() != o.getClass())
-			return false;
 		if (!super.equals(o))
 			return false;
 		final PhotoParameters that = (PhotoParameters) o;
-		return Objects.equals(query, that.query) && Objects.equals(objectType, that.objectType) && Objects.equals(yearFrom, that.yearFrom)
-			&& Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location);
+		return Objects.equals(objectType, that.objectType);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, objectType, yearFrom, yearTo, location);
+		return Objects.hash(super.hashCode(), objectType);
 	}
 
 	@Override
