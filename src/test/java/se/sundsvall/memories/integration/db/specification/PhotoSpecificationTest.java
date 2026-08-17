@@ -20,6 +20,7 @@ import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.MARCH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
@@ -82,10 +83,6 @@ class PhotoSpecificationTest {
 		return subject;
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// published()
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void publishedMatchesRowsWithBitFourSet() {
 		persist(1, 4, "published", null, "Foto");
@@ -109,14 +106,10 @@ class PhotoSpecificationTest {
 		assertThat(findIds(PhotoSpecification.published())).isEmpty();
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// notDeleted()
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void notDeletedExcludesRowsWithADeletedDate() {
 		persist(1, 4, "kept", null, "Foto");
-		persist(2, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(2, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		photoRepository.flush();
 
 		assertThat(findIds(PhotoSpecification.notDeleted())).containsExactly(1);
@@ -125,16 +118,12 @@ class PhotoSpecificationTest {
 	@Test
 	void notDeletedIsIndependentOfThePublishedBit() {
 		// Deleting a row sets DELETEDDATE but leaves bit 4 set, which is why published() alone does not hide it.
-		persist(1, 4, "deleted but still published", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(1, 4, "deleted but still published", null, "Foto").setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		photoRepository.flush();
 
 		assertThat(findIds(PhotoSpecification.published())).containsExactly(1);
 		assertThat(findIds(Specification.allOf(PhotoSpecification.published(), PhotoSpecification.notDeleted()))).isEmpty();
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// hasId()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void hasIdMatchesTheSingleRow() {
@@ -146,7 +135,7 @@ class PhotoSpecificationTest {
 
 	@Test
 	void findOneByIdSkipsADeletedRow() {
-		persist(1, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(1, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		photoRepository.flush();
 
 		final var specification = Specification.allOf(
@@ -170,10 +159,6 @@ class PhotoSpecificationTest {
 		assertThat(photoRepository.findOne(specification)).isPresent();
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// hasObjectType()
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void hasObjectTypeFiltersOnExactValue() {
 		persist(1, 4, "a", null, "Foto");
@@ -189,10 +174,6 @@ class PhotoSpecificationTest {
 
 		assertThat(findIds(PhotoSpecification.hasObjectType(null))).containsExactly(1, 2);
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// FOTO_OCM subjects
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void subjectsAreReadThroughTheJunctionTableInIdOrder() {
@@ -241,10 +222,6 @@ class PhotoSpecificationTest {
 			.setParameter("ocmId", ocmId)
 			.executeUpdate();
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// matches()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void matchesFindsSubstringInTitle() {
@@ -325,15 +302,11 @@ class PhotoSpecificationTest {
 		assertThat(findIds(PhotoSpecification.matches("hamnen"))).isEmpty();
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// Composition — the repository methods the service calls
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void findAllByParametersHidesUnpublishedAndDeletedRows() {
 		persist(1, 4, "Hamnen i Sundsvall", null, "Foto");
 		persist(2, 0, "Hamnen opublicerad", null, "Foto");
-		persist(3, 4, "Hamnen raderad", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(3, 4, "Hamnen raderad", null, "Foto").setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(4, 4, "Storgatan", null, "Foto");
 		photoRepository.flush();
 
@@ -356,7 +329,7 @@ class PhotoSpecificationTest {
 
 	@Test
 	void findVisibleByIdSkipsADeletedRowButKeepsAnUnpublishedOne() {
-		persist(1, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(1, 4, "deleted", null, "Foto").setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(2, 0, "unpublished", null, "Foto");
 		photoRepository.flush();
 
@@ -392,10 +365,6 @@ class PhotoSpecificationTest {
 
 		assertThat(findIds(specification)).containsExactly(1);
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// fetchTopography()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void fetchTopographyResolvesTheAssociation() {

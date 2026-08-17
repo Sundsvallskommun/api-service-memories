@@ -19,6 +19,7 @@ import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.MARCH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
@@ -78,10 +79,6 @@ class TextSpecificationTest {
 		return subject;
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// published()
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void publishedMatchesRowsWithBitFourSet() {
 		persist(1, 4, "published", null);
@@ -105,14 +102,10 @@ class TextSpecificationTest {
 		assertThat(findIds(TextSpecification.published())).isEmpty();
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// notDeleted()
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void notDeletedExcludesRowsWithADeletedDate() {
 		persist(1, 4, "kept", null);
-		persist(2, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(2, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		textRepository.flush();
 
 		assertThat(findIds(TextSpecification.notDeleted())).containsExactly(1);
@@ -121,16 +114,12 @@ class TextSpecificationTest {
 	@Test
 	void notDeletedIsIndependentOfThePublishedBit() {
 		// TEXT has 33 such rows in production — deletion sets DELETEDDATE but leaves bit 4 set.
-		persist(1, 4, "deleted but still published", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(1, 4, "deleted but still published", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		textRepository.flush();
 
 		assertThat(findIds(TextSpecification.published())).containsExactly(1);
 		assertThat(findIds(Specification.allOf(TextSpecification.published(), TextSpecification.notDeleted()))).isEmpty();
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// hasId()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void hasIdMatchesTheSingleRow() {
@@ -139,10 +128,6 @@ class TextSpecificationTest {
 
 		assertThat(findIds(TextSpecification.hasId(2))).containsExactly(2);
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// fetchTopography()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void fetchTopographyResolvesTheAssociation() {
@@ -207,10 +192,6 @@ class TextSpecificationTest {
 		assertThat(entityManager.find(TopographyEntity.class, 999)).isNull();
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// fetchSubject()
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void fetchSubjectResolvesTheAssociation() {
 		final var subject = persistSubject(700, "Musik");
@@ -237,10 +218,6 @@ class TextSpecificationTest {
 
 		assertThat(row.getSubject()).isNull();
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// matches()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void matchesFindsSubstringInTitle() {
@@ -332,15 +309,11 @@ class TextSpecificationTest {
 		assertThat(findIds(TextSpecification.matches("protokoll"))).isEmpty();
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// Composition — the repository methods the service calls
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void findAllByParametersHidesUnpublishedAndDeletedRows() {
 		persist(1, 4, "Protokoll från Sundsvall", null);
 		persist(2, 0, "Protokoll opublicerat", null);
-		persist(3, 4, "Protokoll raderat", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(3, 4, "Protokoll raderat", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(4, 4, "Storgatan", null);
 		textRepository.flush();
 
@@ -361,7 +334,7 @@ class TextSpecificationTest {
 
 	@Test
 	void findVisibleByIdSkipsADeletedRowButKeepsAnUnpublishedOne() {
-		persist(1, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(1, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(2, 0, "unpublished", null);
 		textRepository.flush();
 
@@ -374,7 +347,7 @@ class TextSpecificationTest {
 	void allOfCombinesEveryFilter() {
 		persist(1, 4, "Protokoll från Sundsvall", null);
 		persist(2, 0, "Protokoll från Sundsvall", null);
-		persist(3, 4, "Protokoll från Sundsvall", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(3, 4, "Protokoll från Sundsvall", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(4, 4, "Storgatan", null);
 		textRepository.flush();
 

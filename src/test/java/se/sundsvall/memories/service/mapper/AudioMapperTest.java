@@ -12,6 +12,7 @@ import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -37,7 +38,7 @@ class AudioMapperTest {
 					.withAudioMimeType("audio/mpeg")
 					.withNodeId(6)
 					.withOptions(4)
-					.withDeletedDate(LocalDate.of(2026, 1, 15)),
+					.withDeletedDate(LocalDate.of(2026, JANUARY, 15)),
 				Audio.create()
 					.withAudioId(1)
 					.withFilename("test.mp3")
@@ -56,7 +57,7 @@ class AudioMapperTest {
 					.withAudioMimeType("audio/mpeg")
 					.withNodeId(6)
 					.withOptions(4)
-					.withDeletedDate(LocalDate.of(2026, 1, 15))));
+					.withDeletedDate(LocalDate.of(2026, JANUARY, 15))));
 	}
 
 	@ParameterizedTest

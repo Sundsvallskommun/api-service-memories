@@ -11,6 +11,7 @@ import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -36,7 +37,7 @@ class FilmMapperTest {
 					.withFilmMimeType("video/mp4")
 					.withNodeId(6)
 					.withOptions(0)
-					.withDeletedDate(LocalDate.of(2026, 1, 15)),
+					.withDeletedDate(LocalDate.of(2026, JANUARY, 15)),
 				Film.create()
 					.withFilmId(1)
 					.withFilename("test.mp4")
@@ -54,7 +55,7 @@ class FilmMapperTest {
 					.withFilmMimeType("video/mp4")
 					.withNodeId(6)
 					.withOptions(0)
-					.withDeletedDate(LocalDate.of(2026, 1, 15))));
+					.withDeletedDate(LocalDate.of(2026, JANUARY, 15))));
 	}
 
 	@ParameterizedTest

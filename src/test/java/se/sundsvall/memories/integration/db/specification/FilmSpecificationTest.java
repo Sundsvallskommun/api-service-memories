@@ -18,6 +18,7 @@ import se.sundsvall.memories.integration.db.FilmRepository;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.MARCH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
@@ -69,10 +70,6 @@ class FilmSpecificationTest {
 		return topography;
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// published()
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void publishedMatchesRowsWithBitFourSet() {
 		persist(1, 4, "published", null);
@@ -96,14 +93,10 @@ class FilmSpecificationTest {
 		assertThat(findIds(FilmSpecification.published())).isEmpty();
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// notDeleted()
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void notDeletedExcludesRowsWithADeletedDate() {
 		persist(1, 4, "kept", null);
-		persist(2, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(2, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		filmRepository.flush();
 
 		assertThat(findIds(FilmSpecification.notDeleted())).containsExactly(1);
@@ -113,16 +106,12 @@ class FilmSpecificationTest {
 	void notDeletedIsIndependentOfThePublishedBit() {
 		// FILM currently has no such rows in production, unlike FOTO, TEXT and PUBL — but deletion works the same way
 		// here, so the filter belongs on this service too.
-		persist(1, 4, "deleted but still published", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(1, 4, "deleted but still published", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		filmRepository.flush();
 
 		assertThat(findIds(FilmSpecification.published())).containsExactly(1);
 		assertThat(findIds(Specification.allOf(FilmSpecification.published(), FilmSpecification.notDeleted()))).isEmpty();
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// hasId()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void hasIdMatchesTheSingleRow() {
@@ -131,10 +120,6 @@ class FilmSpecificationTest {
 
 		assertThat(findIds(FilmSpecification.hasId(2))).containsExactly(2);
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// fetchTopography()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void fetchTopographyResolvesTheAssociation() {
@@ -198,10 +183,6 @@ class FilmSpecificationTest {
 			.isEqualTo(999L);
 		assertThat(entityManager.find(TopographyEntity.class, 999)).isNull();
 	}
-
-	// ---------------------------------------------------------------------------------------------
-	// matches()
-	// ---------------------------------------------------------------------------------------------
 
 	@Test
 	void matchesFindsSubstringInTitle() {
@@ -282,15 +263,11 @@ class FilmSpecificationTest {
 		assertThat(findIds(FilmSpecification.matches("midsommar"))).isEmpty();
 	}
 
-	// ---------------------------------------------------------------------------------------------
-	// Composition — the repository methods the service calls
-	// ---------------------------------------------------------------------------------------------
-
 	@Test
 	void findAllByParametersHidesUnpublishedAndDeletedRows() {
 		persist(1, 4, "Midsommar i Sundsvall", null);
 		persist(2, 0, "Midsommar opublicerad", null);
-		persist(3, 4, "Midsommar raderad", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(3, 4, "Midsommar raderad", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(4, 4, "Storgatan", null);
 		filmRepository.flush();
 
@@ -311,7 +288,7 @@ class FilmSpecificationTest {
 
 	@Test
 	void findVisibleByIdSkipsADeletedRowButKeepsAnUnpublishedOne() {
-		persist(1, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(1, 4, "deleted", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(2, 0, "unpublished", null);
 		filmRepository.flush();
 
@@ -324,7 +301,7 @@ class FilmSpecificationTest {
 	void allOfCombinesEveryFilter() {
 		persist(1, 4, "Midsommar i Sundsvall", null);
 		persist(2, 0, "Midsommar i Sundsvall", null);
-		persist(3, 4, "Midsommar i Sundsvall", null).setDeletedDate(LocalDate.of(2024, 3, 1));
+		persist(3, 4, "Midsommar i Sundsvall", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(4, 4, "Storgatan", null);
 		filmRepository.flush();
 
