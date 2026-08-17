@@ -3,6 +3,8 @@ truncate table FILM;
 truncate table FOTO;
 truncate table FOTO_FOTO;
 truncate table FOTO_OCM;
+truncate table JURPERS;
+truncate table KATEGORI;
 truncate table LJUD;
 truncate table OCM;
 truncate table PUBL;
