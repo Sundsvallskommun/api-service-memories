@@ -5,29 +5,36 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static se.sundsvall.memories.service.util.StringUtil.trimToNull;
 
 class StringUtilTest {
 
 	@Test
-	void trimToNullWithNull() {
-		assertThat(StringUtil.trimToNull(null)).isNull();
+	void trimToNullReturnsNullForNull() {
+		assertThat(trimToNull(null)).isNull();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-		"", " ", "   ", "\t", "\n"
+		"", " ", "   ", "\t", "\n", " \t\n "
 	})
-	void trimToNullWithBlank(final String value) {
-		assertThat(StringUtil.trimToNull(value)).isNull();
+	void trimToNullReturnsNullForBlank(final String value) {
+		assertThat(trimToNull(value)).isNull();
 	}
 
 	@Test
-	void trimToNullWithPaddedValue() {
-		assertThat(StringUtil.trimToNull("  Nordin  ")).isEqualTo("Nordin");
+	void trimToNullTrimsSurroundingWhitespace() {
+		assertThat(trimToNull("  Nordin  ")).isEqualTo("Nordin");
+		assertThat(trimToNull("\tNordin\n")).isEqualTo("Nordin");
 	}
 
 	@Test
-	void trimToNullWithValue() {
-		assertThat(StringUtil.trimToNull("Nordin")).isEqualTo("Nordin");
+	void trimToNullKeepsInnerWhitespace() {
+		assertThat(trimToNull("  Anton Nordin  ")).isEqualTo("Anton Nordin");
+	}
+
+	@Test
+	void trimToNullReturnsValueUnchangedWhenAlreadyTrimmed() {
+		assertThat(trimToNull("Nordin")).isEqualTo("Nordin");
 	}
 }
