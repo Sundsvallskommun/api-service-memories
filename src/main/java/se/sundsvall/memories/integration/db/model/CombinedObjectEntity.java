@@ -33,6 +33,15 @@ public class CombinedObjectEntity {
 	@Column(name = "TITLE")
 	private String title;
 
+	/**
+	 * Title and comment concatenated by the view, and the only column the free-text filter reads. It is mapped rather
+	 * than left to a native query so the filter can be a specification, which means it is also selected with every row:
+	 * a comment can be several kilobytes, so this is the one column worth revisiting if the endpoint ever shows up in
+	 * profiling.
+	 */
+	@Column(name = "SEARCH_TEXT")
+	private String searchText;
+
 	@Column(name = "SORT_YEAR")
 	private Integer year;
 
@@ -99,6 +108,19 @@ public class CombinedObjectEntity {
 		return this;
 	}
 
+	public String getSearchText() {
+		return searchText;
+	}
+
+	public void setSearchText(final String searchText) {
+		this.searchText = searchText;
+	}
+
+	public CombinedObjectEntity withSearchText(final String searchText) {
+		this.searchText = searchText;
+		return this;
+	}
+
 	public Integer getYear() {
 		return year;
 	}
@@ -144,12 +166,13 @@ public class CombinedObjectEntity {
 			return false;
 		final CombinedObjectEntity that = (CombinedObjectEntity) o;
 		return Objects.equals(objectKey, that.objectKey) && Objects.equals(sourceId, that.sourceId) && Objects.equals(objectType, that.objectType)
-			&& Objects.equals(title, that.title) && Objects.equals(year, that.year) && Objects.equals(locationText, that.locationText);
+			&& Objects.equals(title, that.title) && Objects.equals(searchText, that.searchText) && Objects.equals(year, that.year)
+			&& Objects.equals(locationText, that.locationText);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(objectKey, sourceId, objectType, title, year, locationText);
+		return Objects.hash(objectKey, sourceId, objectType, title, searchText, year, locationText);
 	}
 
 	@Override
@@ -159,6 +182,7 @@ public class CombinedObjectEntity {
 			", sourceId=" + sourceId +
 			", objectType='" + objectType + '\'' +
 			", title='" + title + '\'' +
+			", searchText='" + searchText + '\'' +
 			", year=" + year +
 			", locationText='" + locationText + '\'' +
 			'}';

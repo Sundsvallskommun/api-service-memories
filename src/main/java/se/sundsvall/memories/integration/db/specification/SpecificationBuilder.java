@@ -163,6 +163,28 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows where the attribute is at least the value. Unlike the year filters this one compares a real number,
+	 * so no digit guard is needed: a row whose value is {@code NULL} simply does not compare. Matches every row when the
+	 * value is {@code null}.
+	 */
+	public <Y extends Comparable<? super Y>> Specification<T> buildAtLeastFilter(final String attribute, final Y value) {
+		if (value == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> cb.greaterThanOrEqualTo(root.get(attribute), value);
+	}
+
+	/**
+	 * Matches rows where the attribute is at most the value. See {@link #buildAtLeastFilter(String, Comparable)}.
+	 */
+	public <Y extends Comparable<? super Y>> Specification<T> buildAtMostFilter(final String attribute, final Y value) {
+		if (value == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> cb.lessThanOrEqualTo(root.get(attribute), value);
+	}
+
+	/**
 	 * Matches rows whose association points at the given id. Reading the id through the association rather than through
 	 * a second mapping of the foreign key keeps the two from disagreeing; Hibernate resolves it to the foreign key
 	 * column, so this adds no join. Matches every row when the id is {@code null}.
