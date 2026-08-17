@@ -8,6 +8,7 @@ truncate table KATEGORI;
 truncate table LJUD;
 truncate table MANTAL;
 truncate table OCM;
+truncate table PERSON;
 truncate table PUBL;
 truncate table PUBL_TYP;
 truncate table SJOMAN;
