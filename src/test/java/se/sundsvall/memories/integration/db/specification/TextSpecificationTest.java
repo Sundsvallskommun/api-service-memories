@@ -130,6 +130,76 @@ class TextSpecificationTest {
 	}
 
 	@Test
+	void matchesLocationFindsThePlaceThroughTheAssociation() {
+		persist(1, 4, "a", null).setTopography(persistTopography(500, "Sundsvall"));
+		persist(2, 4, "b", null).setTopography(persistTopography(501, "Timrå"));
+		textRepository.flush();
+
+		assertThat(findIds(TextSpecification.matchesLocation("sundsvall"))).containsExactly(1);
+	}
+
+	/**
+	 * A document without topography still has its free-text place, so the association is joined with a left join.
+	 */
+	@Test
+	void matchesLocationFallsBackToTheFreeTextPlace() {
+		persist(1, 4, "a", null).setLocationText("Alnö");
+		textRepository.flush();
+
+		assertThat(findIds(TextSpecification.matchesLocation("alnö"))).containsExactly(1);
+	}
+
+	/**
+	 * A document covers a period from DOKDATUM to DOKDATUM_SLUT, and the filters keep the documents whose period
+	 * overlaps the requested range.
+	 */
+	@Test
+	void yearFiltersKeepDocumentsWhosePeriodOverlapsTheRange() {
+		persistPeriod(1, "1950", "1955");
+		persistPeriod(2, "1958", "1965");
+		persistPeriod(3, "1970", "1975");
+
+		assertThat(findIds(TextSpecification.yearAtLeast(1960))).containsExactly(2, 3);
+		assertThat(findIds(TextSpecification.yearAtMost(1960))).containsExactly(1, 2);
+		assertThat(findIds(Specification.allOf(TextSpecification.yearAtLeast(1958), TextSpecification.yearAtMost(1965)))).containsExactly(2);
+	}
+
+	/**
+	 * DOKDATUM_SLUT is empty for a document with a single date, so the period ends where it starts.
+	 */
+	@Test
+	void yearAtLeastFallsBackToTheStartOfThePeriod() {
+		persistPeriod(1, "1958", null);
+		persistPeriod(2, "1958", "");
+
+		assertThat(findIds(TextSpecification.yearAtLeast(1958))).containsExactly(1, 2);
+		assertThat(findIds(TextSpecification.yearAtLeast(1959))).isEmpty();
+	}
+
+	/**
+	 * DOKDATUM is free text: it holds blanks and words as well as dates. Such a document has no period at all, so it
+	 * must fall outside every range — including an upper bound, which it would satisfy if the value were read as year
+	 * zero.
+	 */
+	@Test
+	void yearFiltersExcludeRowsWithoutAParsableYear() {
+		persistPeriod(1, "1958", "1965");
+		persistPeriod(2, "okänt", null);
+		persistPeriod(3, "", null);
+		persistPeriod(4, null, null);
+
+		assertThat(findIds(TextSpecification.yearAtMost(2000))).containsExactly(1);
+		assertThat(findIds(TextSpecification.yearAtLeast(1900))).containsExactly(1);
+	}
+
+	private void persistPeriod(final Integer id, final String documentDate, final String documentEndDate) {
+		final var text = persist(id, 4, "dated " + id, null);
+		text.setDocumentDate(documentDate);
+		text.setDocumentEndDate(documentEndDate);
+		textRepository.flush();
+	}
+
+	@Test
 	void fetchTopographyResolvesTheAssociation() {
 		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);

@@ -1,0 +1,20 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"persons": [
+		{
+			"personId": 2,
+			"lastName": "Berg",
+			"firstName": "Anna",
+			"gender": "kvinna",
+			"birthDate": "1870-05-01",
+			"birthParish": "Selånger",
+			"options": 4
+		}
+	]
+}

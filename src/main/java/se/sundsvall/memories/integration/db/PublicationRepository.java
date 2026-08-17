@@ -12,8 +12,11 @@ import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.published;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.yearAtLeast;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.yearAtMost;
 
 @CircuitBreaker(name = "publicationRepository")
 public interface PublicationRepository extends JpaRepository<PublicationEntity, Integer>, JpaSpecificationExecutor<PublicationEntity> {
@@ -22,7 +25,10 @@ public interface PublicationRepository extends JpaRepository<PublicationEntity, 
 		return findAll(fetchTopography()
 			.and(notDeleted())
 			.and(published())
-			.and(matches(parameters.getQuery())),
+			.and(matches(parameters.getQuery()))
+			.and(matchesLocation(parameters.getLocation()))
+			.and(yearAtLeast(parameters.getYearFrom()))
+			.and(yearAtMost(parameters.getYearTo())),
 			pageable);
 	}
 

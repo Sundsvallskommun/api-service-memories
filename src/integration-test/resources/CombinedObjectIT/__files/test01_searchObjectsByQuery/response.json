@@ -1,0 +1,24 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"typeCounts": {
+		"Ljud": 1
+	},
+	"objects": [
+		{
+			"objectKey": "ljud-3",
+			"sourceId": 3,
+			"objectType": "Ljud",
+			"title": "Folkmusik från Timrå 1975",
+			"year": 1975,
+			"topographyId": 2,
+			"locationText": "Timrå",
+			"location": "Timrå"
+		}
+	]
+}

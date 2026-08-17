@@ -12,8 +12,11 @@ import se.sundsvall.memories.integration.db.model.FilmEntity;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.FilmSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.published;
+import static se.sundsvall.memories.integration.db.specification.FilmSpecification.yearAtLeast;
+import static se.sundsvall.memories.integration.db.specification.FilmSpecification.yearAtMost;
 
 @CircuitBreaker(name = "filmRepository")
 public interface FilmRepository extends JpaRepository<FilmEntity, Integer>, JpaSpecificationExecutor<FilmEntity> {
@@ -22,7 +25,10 @@ public interface FilmRepository extends JpaRepository<FilmEntity, Integer>, JpaS
 		return findAll(fetchTopography()
 			.and(notDeleted())
 			.and(published())
-			.and(matches(parameters.getQuery())),
+			.and(matches(parameters.getQuery()))
+			.and(matchesLocation(parameters.getLocation()))
+			.and(yearAtLeast(parameters.getYearFrom()))
+			.and(yearAtMost(parameters.getYearTo())),
 			pageable);
 	}
 

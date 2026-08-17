@@ -219,7 +219,33 @@ INSERT INTO FOTO_OCM (ID, F_ID, O_ID)
 VALUES (1, 1001, 1),
        (2, 1001, 20);
 
+-- Published photo with a dirty, non-numeric TIDIG — must never satisfy a year bound (regression: a yearTo-only
+-- search previously matched it because CAST('okänt') yields 0).
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, OBJTYP, `OPTIONS`)
+VALUES (1004, 'Odaterad bild', 'Bild utan känt datum', 'okänt', 'Foto', 6);
+
 --
+-- PERSON (personsök)
+-- id 1 & 2 published ((OPTIONS & 4) = 4); id 3 unpublished (bit 4 not set); id 0 placeholder ("ingen person")
+--
+INSERT INTO PERSON (P_ID, PNR, ENAMN, FNAMN, KON, FODDAT, FODFRS, DODDAT, YRKEE, YAGARE, YRKER, FRNFRS, TILFRS, KALLA,
+                    KOMMENT_PERS, BIOGRAFI, `OPTIONS`, DELETEDDATE)
+VALUES (1, '42', 'Nordin', 'Anton', 'man', '1852-03-14', 'Sundsvall', '1921-11-02', 'Handlare', 'Erik Nordin', 'Bonde',
+        'Selånger', 'Njurunda', 'Kyrkoarkiv', 'Flyttade till Sundsvall 1875', 'person_1_biografi.xml', 6, null);
+
+INSERT INTO PERSON (P_ID, ENAMN, FNAMN, KON, FODDAT, FODFRS, `OPTIONS`)
+VALUES (2, 'Berg', 'Anna', 'kvinna', '1870-05-01', 'Selånger', 4);
+
+INSERT INTO PERSON (P_ID, ENAMN, FNAMN, KON, FODDAT, FODFRS, `OPTIONS`)
+VALUES (3, 'Dold', 'Person', 'man', '1880-01-01', 'Sundsvall', 0);
+
+INSERT INTO PERSON (P_ID, ENAMN, `OPTIONS`)
+VALUES (0, 'Ingen', 6);
+
+-- Published person with a dirty, non-numeric FODDAT — must never satisfy a year bound (regression: a yearTo-only
+-- search previously matched it because CAST('okänt') yields 0).
+INSERT INTO PERSON (P_ID, ENAMN, FNAMN, KON, FODDAT, FODFRS, `OPTIONS`)
+VALUES (4, 'Okänd', 'Datum', 'man', 'okänt', 'Sundsvall', 6);
 -- KATEGORI (verksamhetskategorier – lookup)
 --
 INSERT INTO KATEGORI (KAT_ID, KATKOD, KATNAMN)
@@ -257,3 +283,17 @@ VALUES (2, 'Anna', 'Berg', '1870', 'Selånger');
 
 INSERT INTO SJOMAN (POSTNR, FORNAMN, EFTERNAMN1, EFTERNAMN2, FODDAT, FODFORS)
 VALUES (3, 'Erik', 'Holm', 'Nordin', '1889', 'Njurunda');
+
+--
+-- MANTAL (mantalslängder) — no OPTIONS/publish column, no parish
+--
+INSERT INTO MANTAL (ID, OBJEKTSNR, KALLA, MFSTNR1, FSTDEL1, HUSHNR, ORDNR, LOPNR, FNR, YRKREL, RELKOD, MNMNF, MNMNE,
+                    KON, FODAR, ANM)
+VALUES (1, 'SE/1234', 'MTL', 'Norrmalm 3', '1/2', '3', '1', '12', '7', 'Bonde', 'H', 'Anton', 'Nordin', 'man', '1852',
+        'Flyttade in 1875');
+
+INSERT INTO MANTAL (ID, MNMNF, MNMNE, KON, FODAR)
+VALUES (2, 'Anna', 'Berg', 'kvinna', '1870');
+
+INSERT INTO MANTAL (ID, MNMNF, MNMNE, KON, FODAR)
+VALUES (3, 'Erik', 'Nordin', 'man', '1889');

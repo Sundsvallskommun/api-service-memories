@@ -1,0 +1,30 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"audios": [
+		{
+			"audioId": 3,
+			"filename": "timra_folkmusik.mp3",
+			"objectFilePath": "/media/ljud/timra_folkmusik.mp3",
+			"objectType": "LJUD",
+			"date": "1975-09-10",
+			"documentTitle": "Folkmusik från Timrå 1975",
+			"topographyId": 2,
+			"locationText": "Timrå",
+			"location": "Timrå",
+			"subjectId": 20,
+			"subject": "Musik",
+			"authorPersonId": 0,
+			"authorEntityId": 1,
+			"comment": "Folkmusikinspelning från Timrå",
+			"audioMimeType": "audio/mpeg",
+			"nodeId": 202,
+			"options": 4
+		}
+	]
+}

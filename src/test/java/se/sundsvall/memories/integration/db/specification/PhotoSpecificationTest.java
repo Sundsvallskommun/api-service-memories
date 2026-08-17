@@ -367,6 +367,75 @@ class PhotoSpecificationTest {
 	}
 
 	@Test
+	void matchesLocationFindsThePlaceThroughTheAssociation() {
+		persist(1, 4, "a", null, "Foto").setTopography(persistTopography(500, "Sundsvall"));
+		persist(2, 4, "b", null, "Foto").setTopography(persistTopography(501, "Timrå"));
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesLocation("sundsvall"))).containsExactly(1);
+	}
+
+	/**
+	 * A photo without topography still has its free-text place, so the association is joined with a left join.
+	 */
+	@Test
+	void matchesLocationFallsBackToTheFreeTextPlace() {
+		persist(1, 4, "a", null, "Foto").setLocationText("Alnö");
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesLocation("alnö"))).containsExactly(1);
+	}
+
+	/**
+	 * A photo covers a period from TIDIG to SENAST, and the filters keep the photos whose period overlaps the requested
+	 * range: the period must not end before it starts, nor start after it ends.
+	 */
+	@Test
+	void yearFiltersKeepPhotosWhosePeriodOverlapsTheRange() {
+		persistPeriod(1, "1950", "1955");
+		persistPeriod(2, "1958", "1965");
+		persistPeriod(3, "1970", "1975");
+
+		assertThat(findIds(PhotoSpecification.yearAtLeast(1960))).containsExactly(2, 3);
+		assertThat(findIds(PhotoSpecification.yearAtMost(1960))).containsExactly(1, 2);
+		assertThat(findIds(Specification.allOf(PhotoSpecification.yearAtLeast(1958), PhotoSpecification.yearAtMost(1965)))).containsExactly(2);
+	}
+
+	/**
+	 * SENAST is empty for a photo taken at a single point in time, so the period ends where it starts.
+	 */
+	@Test
+	void yearAtLeastFallsBackToTheStartOfThePeriod() {
+		persistPeriod(1, "1958", null);
+		persistPeriod(2, "1958", "");
+
+		assertThat(findIds(PhotoSpecification.yearAtLeast(1958))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.yearAtLeast(1959))).isEmpty();
+	}
+
+	/**
+	 * TIDIG is free text: it holds blanks and words as well as dates. Such a photo has no period at all, so it must fall
+	 * outside every range — including an upper bound, which it would satisfy if the value were read as year zero.
+	 */
+	@Test
+	void yearFiltersExcludeRowsWithoutAParsableYear() {
+		persistPeriod(1, "1958", "1965");
+		persistPeriod(2, "okänt", null);
+		persistPeriod(3, "", null);
+		persistPeriod(4, null, null);
+
+		assertThat(findIds(PhotoSpecification.yearAtMost(2000))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.yearAtLeast(1900))).containsExactly(1);
+	}
+
+	private void persistPeriod(final Integer id, final String earliest, final String latest) {
+		final var photo = persist(id, 4, "dated " + id, null, "Foto");
+		photo.setEarliest(earliest);
+		photo.setLatest(latest);
+		photoRepository.flush();
+	}
+
+	@Test
 	void fetchTopographyResolvesTheAssociation() {
 		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null, "Foto").setTopography(topography);

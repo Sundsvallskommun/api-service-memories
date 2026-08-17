@@ -13,8 +13,11 @@ import static se.sundsvall.memories.integration.db.specification.TextSpecificati
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.TextSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.published;
+import static se.sundsvall.memories.integration.db.specification.TextSpecification.yearAtLeast;
+import static se.sundsvall.memories.integration.db.specification.TextSpecification.yearAtMost;
 
 @CircuitBreaker(name = "textRepository")
 public interface TextRepository extends JpaRepository<TextEntity, Integer>, JpaSpecificationExecutor<TextEntity> {
@@ -24,7 +27,10 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer>, JpaS
 			.and(fetchSubject())
 			.and(notDeleted())
 			.and(published())
-			.and(matches(parameters.getQuery())),
+			.and(matches(parameters.getQuery()))
+			.and(matchesLocation(parameters.getLocation()))
+			.and(yearAtLeast(parameters.getYearFrom()))
+			.and(yearAtMost(parameters.getYearTo())),
 			pageable);
 	}
 

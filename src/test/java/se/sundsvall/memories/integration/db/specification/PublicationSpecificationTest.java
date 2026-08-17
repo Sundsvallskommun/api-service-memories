@@ -122,6 +122,56 @@ class PublicationSpecificationTest {
 	}
 
 	@Test
+	void matchesLocationFindsThePlaceThroughTheAssociation() {
+		persist(1, 4, "a", null).setTopography(persistTopography(500, "Sundsvall"));
+		persist(2, 4, "b", null).setTopography(persistTopography(501, "Timrå"));
+		publicationRepository.flush();
+
+		assertThat(findIds(PublicationSpecification.matchesLocation("sundsvall"))).containsExactly(1);
+	}
+
+	/**
+	 * A publication without topography still has its free-text place, so the association is joined with a left join.
+	 */
+	@Test
+	void matchesLocationFallsBackToTheFreeTextPlace() {
+		persist(1, 4, "a", null).setLocationText("Alnö");
+		publicationRepository.flush();
+
+		assertThat(findIds(PublicationSpecification.matchesLocation("alnö"))).containsExactly(1);
+	}
+
+	@Test
+	void yearFiltersKeepRowsInsideTheRange() {
+		persistDated(1, "1969-12-31");
+		persistDated(2, "1970-05-01");
+		persistDated(3, "1990-01-01");
+
+		assertThat(findIds(PublicationSpecification.yearAtLeast(1970))).containsExactly(2, 3);
+		assertThat(findIds(PublicationSpecification.yearAtMost(1970))).containsExactly(1, 2);
+	}
+
+	/**
+	 * DATUM is free text: it holds blanks and words as well as dates. Such a row has no year at all, so it must fall
+	 * outside every range — including an upper bound, which it would satisfy if the value were read as year zero.
+	 */
+	@Test
+	void yearFiltersExcludeRowsWithoutAParsableYear() {
+		persistDated(1, "1970");
+		persistDated(2, "okänt");
+		persistDated(3, "");
+		persistDated(4, null);
+
+		assertThat(findIds(PublicationSpecification.yearAtMost(2000))).containsExactly(1);
+		assertThat(findIds(PublicationSpecification.yearAtLeast(1900))).containsExactly(1);
+	}
+
+	private void persistDated(final Integer id, final String date) {
+		persist(id, 4, "dated " + id, null).setDate(date);
+		publicationRepository.flush();
+	}
+
+	@Test
 	void fetchTopographyResolvesTheAssociation() {
 		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);

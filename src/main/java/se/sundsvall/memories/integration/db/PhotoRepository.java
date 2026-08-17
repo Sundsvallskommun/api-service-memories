@@ -16,8 +16,11 @@ import static se.sundsvall.memories.integration.db.specification.PhotoSpecificat
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasObjectType;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.published;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.yearAtLeast;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.yearAtMost;
 
 @CircuitBreaker(name = "photoRepository")
 public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, JpaSpecificationExecutor<PhotoEntity> {
@@ -27,7 +30,10 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, Jp
 			.and(notDeleted())
 			.and(published())
 			.and(matches(parameters.getQuery()))
-			.and(hasObjectType(parameters.getObjectType())),
+			.and(hasObjectType(parameters.getObjectType()))
+			.and(matchesLocation(parameters.getLocation()))
+			.and(yearAtLeast(parameters.getYearFrom()))
+			.and(yearAtMost(parameters.getYearTo())),
 			pageable);
 	}
 

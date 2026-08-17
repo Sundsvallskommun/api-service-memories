@@ -129,6 +129,89 @@ class AudioSpecificationTest {
 	}
 
 	@Test
+	void matchesLocationFindsThePlaceThroughTheAssociation() {
+		persist(1, 4, "a", null).setTopography(persistTopography(500, "Sundsvall"));
+		persist(2, 4, "b", null).setTopography(persistTopography(501, "Timrå"));
+		audioRepository.flush();
+
+		assertThat(findIds(AudioSpecification.matchesLocation("sundsvall"))).containsExactly(1);
+	}
+
+	/**
+	 * TOPNAMN is the primary place name, but a row can carry only PLATS. Both are searched, which is what the native
+	 * query this replaces did.
+	 */
+	@Test
+	void matchesLocationAlsoSearchesThePlaceColumn() {
+		final var topography = TopographyEntity.create().withId(500).withPlace("Njurunda");
+		entityManager.persist(topography);
+		entityManager.flush();
+		persist(1, 4, "a", null).setTopography(topography);
+		audioRepository.flush();
+
+		assertThat(findIds(AudioSpecification.matchesLocation("njurunda"))).containsExactly(1);
+	}
+
+	/**
+	 * A recording without topography still has its free-text place, so the association is joined with a left join.
+	 */
+	@Test
+	void matchesLocationFallsBackToTheFreeTextPlace() {
+		persist(1, 4, "a", null).setLocationText("Alnö");
+		audioRepository.flush();
+
+		assertThat(findIds(AudioSpecification.matchesLocation("alnö"))).containsExactly(1);
+	}
+
+	@Test
+	void matchesLocationMatchesEverythingWhenBlank() {
+		persist(1, 4, "a", null);
+		persist(2, 4, "b", null);
+
+		assertThat(findIds(AudioSpecification.matchesLocation("   "))).containsExactly(1, 2);
+	}
+
+	@Test
+	void yearFiltersKeepRowsInsideTheRange() {
+		persistDated(1, "1969-12-31");
+		persistDated(2, "1970-05-01");
+		persistDated(3, "1990-01-01");
+
+		assertThat(findIds(AudioSpecification.yearAtLeast(1970))).containsExactly(2, 3);
+		assertThat(findIds(AudioSpecification.yearAtMost(1970))).containsExactly(1, 2);
+		assertThat(findIds(Specification.allOf(AudioSpecification.yearAtLeast(1970), AudioSpecification.yearAtMost(1980)))).containsExactly(2);
+	}
+
+	/**
+	 * DATUM is free text: it holds blanks and words as well as dates. Such a row has no year at all, so it must fall
+	 * outside every range — including an upper bound, which it would satisfy if the value were read as year zero.
+	 */
+	@Test
+	void yearFiltersExcludeRowsWithoutAParsableYear() {
+		persistDated(1, "1970");
+		persistDated(2, "okänt");
+		persistDated(3, "");
+		persistDated(4, null);
+
+		assertThat(findIds(AudioSpecification.yearAtMost(2000))).containsExactly(1);
+		assertThat(findIds(AudioSpecification.yearAtLeast(1900))).containsExactly(1);
+	}
+
+	@Test
+	void yearFiltersMatchEverythingWhenTheBoundIsNull() {
+		persistDated(1, "1970");
+		persistDated(2, "okänt");
+
+		assertThat(findIds(AudioSpecification.yearAtLeast(null))).containsExactly(1, 2);
+		assertThat(findIds(AudioSpecification.yearAtMost(null))).containsExactly(1, 2);
+	}
+
+	private void persistDated(final Integer id, final String date) {
+		persist(id, 4, "dated " + id, null).setDate(date);
+		audioRepository.flush();
+	}
+
+	@Test
 	void fetchTopographyResolvesTheAssociation() {
 		final var topography = persistTopography(500, "Sundsvall");
 		persist(1, 4, "a", null).setTopography(topography);

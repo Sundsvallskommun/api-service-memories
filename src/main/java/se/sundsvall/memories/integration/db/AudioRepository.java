@@ -13,8 +13,11 @@ import static se.sundsvall.memories.integration.db.specification.AudioSpecificat
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.AudioSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.published;
+import static se.sundsvall.memories.integration.db.specification.AudioSpecification.yearAtLeast;
+import static se.sundsvall.memories.integration.db.specification.AudioSpecification.yearAtMost;
 
 @CircuitBreaker(name = "audioRepository")
 public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, JpaSpecificationExecutor<AudioEntity> {
@@ -24,7 +27,10 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, Jp
 			.and(fetchSubject())
 			.and(notDeleted())
 			.and(published())
-			.and(matches(parameters.getQuery())),
+			.and(matches(parameters.getQuery()))
+			.and(matchesLocation(parameters.getLocation()))
+			.and(yearAtLeast(parameters.getYearFrom()))
+			.and(yearAtMost(parameters.getYearTo())),
 			pageable);
 	}
 
