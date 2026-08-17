@@ -206,3 +206,18 @@ VALUES (0, 'Ingen', 6);
 -- search previously matched it because CAST('okänt') yields 0).
 INSERT INTO PERSON (P_ID, ENAMN, FNAMN, KON, FODDAT, FODFRS, `OPTIONS`)
 VALUES (4, 'Okänd', 'Datum', 'man', 'okänt', 'Sundsvall', 6);
+
+--
+-- SJOMAN (sjömanshusregistret) — no OPTIONS/publish column, no gender; PK is POSTNR
+--
+INSERT INTO SJOMAN (POSTNR, FORNAMN, EFTERNAMN1, EFTERNAMN2, IDNR, FODDAT, ALDER, FODFORS, SJOMANSHUS, INSKRNR,
+                    BEFATTN, FARTYG, HEMMAHAMN, REDARE, KAPTEN, DESTINATION, ANM, ARKIV, VOLYM, ARKISNR, SIDA)
+VALUES (1, 'Anton', 'Nordin', 'Sjöberg', 4711, '1852-03-14', '28', 'Sundsvall', 'Sundsvalls sjömanshus', '112',
+        'Matros', 'Briggen Freja', 'Sundsvall', 'Rederi AB Nord', 'Olof Berg', 'London', 'Avmönstrad',
+        'Sundsvalls sjömanshus arkiv', 'A1:3', 'SE/HLA/1234', '42');
+
+INSERT INTO SJOMAN (POSTNR, FORNAMN, EFTERNAMN1, FODDAT, FODFORS)
+VALUES (2, 'Anna', 'Berg', '1870', 'Selånger');
+
+INSERT INTO SJOMAN (POSTNR, FORNAMN, EFTERNAMN1, EFTERNAMN2, FODDAT, FODFORS)
+VALUES (3, 'Erik', 'Holm', 'Nordin', '1889', 'Njurunda');
