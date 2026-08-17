@@ -6,6 +6,7 @@ truncate table FOTO_OCM;
 truncate table JURPERS;
 truncate table KATEGORI;
 truncate table LJUD;
+truncate table MANTAL;
 truncate table OCM;
 truncate table PERSON;
 truncate table PUBL;
