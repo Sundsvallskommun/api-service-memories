@@ -1,29 +1,55 @@
 package se.sundsvall.memories.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Objects;
-import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Audio search parameters")
-public class AudioParameters extends AbstractParameterPagingAndSortingBase {
-
-	@Schema(description = "Free text search query", examples = "interview")
-	private String query;
+public class AudioParameters extends AbstractSearchParameters {
 
 	public static AudioParameters create() {
 		return new AudioParameters();
 	}
 
+	@Override
+	@Schema(description = "Free text search query", examples = "interview")
 	public String getQuery() {
-		return query;
-	}
-
-	public void setQuery(final String query) {
-		this.query = query;
+		return super.getQuery();
 	}
 
 	public AudioParameters withQuery(final String query) {
 		this.query = query;
+		return this;
+	}
+
+	@Override
+	@Schema(description = "Year from (inclusive), matched against the object's date", examples = "1970")
+	public Integer getYearFrom() {
+		return super.getYearFrom();
+	}
+
+	public AudioParameters withYearFrom(final Integer yearFrom) {
+		this.yearFrom = yearFrom;
+		return this;
+	}
+
+	@Override
+	@Schema(description = "Year to (inclusive), matched against the object's date", examples = "1990")
+	public Integer getYearTo() {
+		return super.getYearTo();
+	}
+
+	public AudioParameters withYearTo(final Integer yearTo) {
+		this.yearTo = yearTo;
+		return this;
+	}
+
+	@Override
+	@Schema(description = "Location (substring, case-insensitive; resolved place name or free-text location)", examples = "Sundsvall")
+	public String getLocation() {
+		return super.getLocation();
+	}
+
+	public AudioParameters withLocation(final String location) {
+		this.location = location;
 		return this;
 	}
 
@@ -35,31 +61,5 @@ public class AudioParameters extends AbstractParameterPagingAndSortingBase {
 	public AudioParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
-	}
-
-	@Override
-	public boolean equals(final Object o) {
-		if (o == null || getClass() != o.getClass())
-			return false;
-		if (!super.equals(o))
-			return false;
-		final AudioParameters that = (AudioParameters) o;
-		return Objects.equals(query, that.query);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(super.hashCode(), query);
-	}
-
-	@Override
-	public String toString() {
-		return "AudioParameters{" +
-			"query='" + query + '\'' +
-			", page=" + page +
-			", limit=" + limit +
-			", sortBy=" + sortBy +
-			", sortDirection=" + sortDirection +
-			'}';
 	}
 }

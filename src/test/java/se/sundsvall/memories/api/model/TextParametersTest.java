@@ -27,10 +27,16 @@ class TextParametersTest {
 	void testBuilderMethods() {
 		final var result = TextParameters.create()
 			.withQuery("stadshuset")
+			.withYearFrom(1900)
+			.withYearTo(1950)
+			.withLocation("Sundsvall")
 			.withPage(2)
 			.withLimit(50);
 
 		assertThat(result.getQuery()).isEqualTo("stadshuset");
+		assertThat(result.getYearFrom()).isEqualTo(1900);
+		assertThat(result.getYearTo()).isEqualTo(1950);
+		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getPage()).isEqualTo(2);
 		assertThat(result.getLimit()).isEqualTo(50);
 	}
@@ -40,6 +46,9 @@ class TextParametersTest {
 		final var result = TextParameters.create();
 
 		assertThat(result.getQuery()).isNull();
+		assertThat(result.getYearFrom()).isNull();
+		assertThat(result.getYearTo()).isNull();
+		assertThat(result.getLocation()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
 	}

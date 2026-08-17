@@ -2,13 +2,9 @@ package se.sundsvall.memories.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
-import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Photo search parameters")
-public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
-
-	@Schema(description = "Free text search query", examples = "Sundsvall")
-	private String query;
+public class PhotoParameters extends AbstractSearchParameters {
 
 	@Schema(description = "Filter by object type. Use 'Foto' for photographs or 'Föremål' for physical objects. Omit to return both.", examples = "Foto")
 	private String objectType;
@@ -17,12 +13,10 @@ public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 		return new PhotoParameters();
 	}
 
+	@Override
+	@Schema(description = "Free text search query", examples = "Sundsvall")
 	public String getQuery() {
-		return query;
-	}
-
-	public void setQuery(final String query) {
-		this.query = query;
+		return super.getQuery();
 	}
 
 	public PhotoParameters withQuery(final String query) {
@@ -43,6 +37,39 @@ public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 		return this;
 	}
 
+	@Override
+	@Schema(description = "Year from (inclusive); matched against the photo's time period (TIDIG–SENAST)", examples = "1900")
+	public Integer getYearFrom() {
+		return super.getYearFrom();
+	}
+
+	public PhotoParameters withYearFrom(final Integer yearFrom) {
+		this.yearFrom = yearFrom;
+		return this;
+	}
+
+	@Override
+	@Schema(description = "Year to (inclusive); matched against the photo's time period (TIDIG–SENAST)", examples = "1950")
+	public Integer getYearTo() {
+		return super.getYearTo();
+	}
+
+	public PhotoParameters withYearTo(final Integer yearTo) {
+		this.yearTo = yearTo;
+		return this;
+	}
+
+	@Override
+	@Schema(description = "Location (substring, case-insensitive; resolved place name or free-text location)", examples = "Sundsvall")
+	public String getLocation() {
+		return super.getLocation();
+	}
+
+	public PhotoParameters withLocation(final String location) {
+		this.location = location;
+		return this;
+	}
+
 	public PhotoParameters withPage(final int page) {
 		super.setPage(page);
 		return this;
@@ -55,17 +82,15 @@ public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (o == null || getClass() != o.getClass())
-			return false;
 		if (!super.equals(o))
 			return false;
 		final PhotoParameters that = (PhotoParameters) o;
-		return Objects.equals(query, that.query) && Objects.equals(objectType, that.objectType);
+		return Objects.equals(objectType, that.objectType);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, objectType);
+		return Objects.hash(super.hashCode(), objectType);
 	}
 
 	@Override
@@ -73,6 +98,9 @@ public class PhotoParameters extends AbstractParameterPagingAndSortingBase {
 		return "PhotoParameters{" +
 			"query='" + query + '\'' +
 			", objectType='" + objectType + '\'' +
+			", yearFrom=" + yearFrom +
+			", yearTo=" + yearTo +
+			", location='" + location + '\'' +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

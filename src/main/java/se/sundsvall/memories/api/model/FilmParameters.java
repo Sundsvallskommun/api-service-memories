@@ -1,29 +1,55 @@
 package se.sundsvall.memories.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Objects;
-import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Film search parameters")
-public class FilmParameters extends AbstractParameterPagingAndSortingBase {
-
-	@Schema(description = "Free text search query", examples = "midsummer")
-	private String query;
+public class FilmParameters extends AbstractSearchParameters {
 
 	public static FilmParameters create() {
 		return new FilmParameters();
 	}
 
+	@Override
+	@Schema(description = "Free text search query", examples = "midsummer")
 	public String getQuery() {
-		return query;
-	}
-
-	public void setQuery(final String query) {
-		this.query = query;
+		return super.getQuery();
 	}
 
 	public FilmParameters withQuery(final String query) {
 		this.query = query;
+		return this;
+	}
+
+	@Override
+	@Schema(description = "Year from (inclusive), matched against the object's date", examples = "1970")
+	public Integer getYearFrom() {
+		return super.getYearFrom();
+	}
+
+	public FilmParameters withYearFrom(final Integer yearFrom) {
+		this.yearFrom = yearFrom;
+		return this;
+	}
+
+	@Override
+	@Schema(description = "Year to (inclusive), matched against the object's date", examples = "1990")
+	public Integer getYearTo() {
+		return super.getYearTo();
+	}
+
+	public FilmParameters withYearTo(final Integer yearTo) {
+		this.yearTo = yearTo;
+		return this;
+	}
+
+	@Override
+	@Schema(description = "Location (substring, case-insensitive; resolved place name or free-text location)", examples = "Sundsvall")
+	public String getLocation() {
+		return super.getLocation();
+	}
+
+	public FilmParameters withLocation(final String location) {
+		this.location = location;
 		return this;
 	}
 
@@ -35,31 +61,5 @@ public class FilmParameters extends AbstractParameterPagingAndSortingBase {
 	public FilmParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
-	}
-
-	@Override
-	public boolean equals(final Object o) {
-		if (o == null || getClass() != o.getClass())
-			return false;
-		if (!super.equals(o))
-			return false;
-		final FilmParameters that = (FilmParameters) o;
-		return Objects.equals(query, that.query);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(super.hashCode(), query);
-	}
-
-	@Override
-	public String toString() {
-		return "FilmParameters{" +
-			"query='" + query + '\'' +
-			", page=" + page +
-			", limit=" + limit +
-			", sortBy=" + sortBy +
-			", sortDirection=" + sortDirection +
-			'}';
 	}
 }
