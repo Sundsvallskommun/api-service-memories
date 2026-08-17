@@ -74,14 +74,16 @@ class PersonServiceTest {
 	}
 
 	@Test
-	void searchTreatsBadaGenderAsNoFilter() {
-		final var parameters = PersonParameters.create().withGender("Båda");
-		when(repositoryMock.search(isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+	void searchTrimsFiltersBeforeDelegating() {
+		final var parameters = PersonParameters.create()
+			.withLastName("  Nordin  ")
+			.withGender("  man  ");
+		when(repositoryMock.search(eq("Nordin"), isNull(), isNull(), eq("man"), isNull(), isNull(), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of()));
 
 		service.search(parameters);
 
-		verify(repositoryMock).search(isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class));
+		verify(repositoryMock).search(eq("Nordin"), isNull(), isNull(), eq("man"), isNull(), isNull(), any(Pageable.class));
 	}
 
 	@Test

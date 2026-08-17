@@ -20,6 +20,20 @@ import se.sundsvall.memories.integration.db.model.PersonEntity;
 public interface PersonRepository extends JpaRepository<PersonEntity, Integer> {
 
 	/**
+	 * The filter predicate shared by {@link #search}'s result query and its count query, kept in one place so the two
+	 * can never drift apart.
+	 */
+	String SEARCH_WHERE_CLAUSE = """
+		WHERE (`OPTIONS` & 4) = 4 AND P_ID <> 0
+		  AND (:lastName IS NULL OR ENAMN LIKE CONCAT('%', :lastName, '%'))
+		  AND (:firstName IS NULL OR FNAMN LIKE CONCAT('%', :firstName, '%'))
+		  AND (:birthParish IS NULL OR FODFRS LIKE CONCAT('%', :birthParish, '%'))
+		  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+		""";
+
+	/**
 	 * Searches published person records with all filter parameters optional (a {@code null} parameter is ignored). A
 	 * record is considered published when bit {@code 4} of the {@code OPTIONS} bitmask is set, i.e.
 	 * {@code (OPTIONS & 4) = 4}; other status bits may be set simultaneously. The placeholder row {@code P_ID = 0}
@@ -41,26 +55,8 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer> {
 	 * @param  pageable    pagination and sorting criteria
 	 * @return             a page of matching {@link PersonEntity} records
 	 */
-	@Query(value = """
-		SELECT * FROM PERSON
-		WHERE (`OPTIONS` & 4) = 4 AND P_ID <> 0
-		  AND (:lastName IS NULL OR ENAMN LIKE CONCAT('%', :lastName, '%'))
-		  AND (:firstName IS NULL OR FNAMN LIKE CONCAT('%', :firstName, '%'))
-		  AND (:birthParish IS NULL OR FODFRS LIKE CONCAT('%', :birthParish, '%'))
-		  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
-		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
-		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) <= :yearTo)
-		""",
-		countQuery = """
-			SELECT COUNT(*) FROM PERSON
-			WHERE (`OPTIONS` & 4) = 4 AND P_ID <> 0
-			  AND (:lastName IS NULL OR ENAMN LIKE CONCAT('%', :lastName, '%'))
-			  AND (:firstName IS NULL OR FNAMN LIKE CONCAT('%', :firstName, '%'))
-			  AND (:birthParish IS NULL OR FODFRS LIKE CONCAT('%', :birthParish, '%'))
-			  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
-			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
-			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0) <= :yearTo)
-			""",
+	@Query(value = "SELECT * FROM PERSON " + SEARCH_WHERE_CLAUSE,
+		countQuery = "SELECT COUNT(*) FROM PERSON " + SEARCH_WHERE_CLAUSE,
 		nativeQuery = true)
 	Page<PersonEntity> search(
 		@Param("lastName") String lastName,

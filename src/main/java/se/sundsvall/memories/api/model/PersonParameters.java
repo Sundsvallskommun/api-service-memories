@@ -1,12 +1,21 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Person search parameters. All filters are optional and combined with AND. Sort on a physical "
 	+ "column: ENAMN, FNAMN, FODDAT or FODFRS.")
 public class PersonParameters extends AbstractParameterPagingAndSortingBase {
+
+	/**
+	 * {@link #getSortBy()} feeds a native query, so only physical {@code PERSON} column names are accepted. Anything else
+	 * would reach the database as an unknown column and fail as a 500, hence the up-front validation.
+	 */
+	private static final String SORTABLE_COLUMNS = "ENAMN|FNAMN|FODDAT|FODFRS";
 
 	@Schema(description = "Last name (substring, case-insensitive)", examples = "Nordin")
 	private String lastName;
@@ -106,6 +115,14 @@ public class PersonParameters extends AbstractParameterPagingAndSortingBase {
 	public PersonParameters withGender(final String gender) {
 		this.gender = gender;
 		return this;
+	}
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Physical column to sort on", examples = "ENAMN", allowableValues = {
+		"ENAMN", "FNAMN", "FODDAT", "FODFRS"
+	}))
+	public List<@Pattern(regexp = SORTABLE_COLUMNS, message = "must be one of: ENAMN, FNAMN, FODDAT, FODFRS") String> getSortBy() {
+		return super.getSortBy();
 	}
 
 	public PersonParameters withPage(final int page) {

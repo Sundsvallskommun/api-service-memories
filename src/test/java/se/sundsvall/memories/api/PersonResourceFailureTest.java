@@ -24,6 +24,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @ActiveProfiles("junit")
 class PersonResourceFailureTest {
 
+	private static final String MUNICIPALITY_ID = "2281";
 	private static final String INVALID_MUNICIPALITY_ID = "bad-municipality-id";
 	private static final String SEARCH_PATH = "/{municipalityId}/persons";
 	private static final String GET_PATH = "/{municipalityId}/persons/{id}";
@@ -51,6 +52,28 @@ class PersonResourceFailureTest {
 		assertThat(response.getViolations())
 			.extracting(Violation::field, Violation::message)
 			.containsExactlyInAnyOrder(tuple("searchPersons.municipalityId", "not a valid municipality ID"));
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	@Test
+	void searchPersonsWithInvalidSortBy() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("sortBy", "lastName")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getTitle()).isEqualTo("Constraint Violation");
+		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
+		assertThat(response.getViolations())
+			.extracting(Violation::field, Violation::message)
+			.containsExactlyInAnyOrder(tuple("sortBy[0]", "must be one of: ENAMN, FNAMN, FODDAT, FODFRS"));
 
 		verifyNoInteractions(serviceMock);
 	}

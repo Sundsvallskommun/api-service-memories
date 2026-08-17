@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.4"
 servers:
-- url: http://localhost:52064
+- url: http://localhost:55574
   description: Generated server url
 tags:
 - name: Audio
@@ -1635,9 +1635,14 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Physical column to sort on
+            enum:
+            - ENAMN
+            - FNAMN
+            - FODDAT
+            - FODFRS
             examples:
-            - propertyName
+            - ENAMN
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
