@@ -143,7 +143,7 @@ class AudioServiceTest {
 
 		service.streamFile(id, responseMock);
 
-		verify(fileStreamerMock).streamAttachment("/ljud//ljud/test.mp3", "audio/mpeg", "test.mp3", responseMock,
+		verify(fileStreamerMock).streamAttachment("/ljud//ljud/test.mp3", "audio/mpeg", "sundsvallsminnen-ljud-1.mp3", responseMock,
 			"IOException occurred when streaming file for audio with id '1'");
 	}
 
@@ -157,7 +157,7 @@ class AudioServiceTest {
 
 		service.streamFile(id, responseMock);
 
-		verify(fileStreamerMock).streamAttachment("/ljud/   ", "application/octet-stream", "audio-3", responseMock,
+		verify(fileStreamerMock).streamAttachment("/ljud/   ", "application/octet-stream", "sundsvallsminnen-ljud-3", responseMock,
 			"IOException occurred when streaming file for audio with id '3'");
 	}
 
@@ -165,10 +165,10 @@ class AudioServiceTest {
 	void openForPlaybackReturnsPayloadFromStreamer() {
 		final var id = 1;
 		final var entity = AudioEntity.create().withId(id).withObjectFilePath("/a/interview.mp3").withAudioMimeType("audio/mpeg");
-		final var expected = new StreamPayload(mock(Resource.class), "audio/mpeg", "interview.mp3");
+		final var expected = new StreamPayload(mock(Resource.class), "audio/mpeg", "sundsvallsminnen-ljud-1.mp3");
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
-		when(fileStreamerMock.openForPlayback("/ljud//a/interview.mp3", "audio/mpeg", "interview.mp3")).thenReturn(expected);
+		when(fileStreamerMock.openForPlayback("/ljud//a/interview.mp3", "audio/mpeg", "sundsvallsminnen-ljud-1.mp3")).thenReturn(expected);
 
 		assertThat(service.openForPlayback(id)).isSameAs(expected);
 	}
@@ -177,10 +177,10 @@ class AudioServiceTest {
 	void openForPlaybackFallsBackToOctetStreamWhenMimeMissing() {
 		final var id = 2;
 		final var entity = AudioEntity.create().withId(id).withObjectFilePath("   ");
-		final var expected = new StreamPayload(mock(Resource.class), "application/octet-stream", "audio-2");
+		final var expected = new StreamPayload(mock(Resource.class), "application/octet-stream", "sundsvallsminnen-ljud-2");
 
 		when(repositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
-		when(fileStreamerMock.openForPlayback("/ljud/   ", "application/octet-stream", "audio-2")).thenReturn(expected);
+		when(fileStreamerMock.openForPlayback("/ljud/   ", "application/octet-stream", "sundsvallsminnen-ljud-2")).thenReturn(expected);
 
 		assertThat(service.openForPlayback(id)).isSameAs(expected);
 	}

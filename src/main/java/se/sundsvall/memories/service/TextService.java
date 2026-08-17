@@ -21,6 +21,7 @@ import se.sundsvall.memories.service.util.FileVariants;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.TEXT;
 
 @Service
 public class TextService {
@@ -72,7 +73,9 @@ public class TextService {
 
 		final var path = FileStreamer.smbPath(sambaProperties.textFolder(), variant, filename);
 
-		fileStreamer.streamInline(path, filename, variant == FileVariant.TEXT, response,
+		final var downloadFilename = FileStreamer.downloadFilename(TEXT, id, filename);
+
+		fileStreamer.streamInline(path, filename, downloadFilename, variant == FileVariant.TEXT, response,
 			"IOException occurred when streaming file for text with id '%s'".formatted(id));
 	}
 
@@ -91,8 +94,10 @@ public class TextService {
 		// fil_liten/fil_stor/fil_original subfolders mirror the primary text layout.
 		final var path = FileStreamer.smbPath(sambaProperties.textMultiFolder(), variant, filename);
 
+		final var downloadFilename = FileStreamer.downloadFilename(TEXT, textId, mediaId, filename);
+
 		// Media files are images, never XML — no XSLT transform.
-		fileStreamer.streamInline(path, filename, false, response,
+		fileStreamer.streamInline(path, filename, downloadFilename, false, response,
 			"IOException occurred when streaming media file '%s' for text with id '%s'".formatted(mediaId, textId));
 	}
 

@@ -19,6 +19,7 @@ import se.sundsvall.memories.service.util.FileVariants;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.PHOTO;
 
 @Service
 public class PhotoService {
@@ -67,7 +68,9 @@ public class PhotoService {
 
 		final var path = FileStreamer.smbPath(sambaProperties.photoFolder(), variant, filename);
 
-		fileStreamer.streamInline(path, filename, false, response,
+		final var downloadFilename = FileStreamer.downloadFilename(PHOTO, id, filename);
+
+		fileStreamer.streamInline(path, filename, downloadFilename, false, response,
 			"IOException occurred when streaming file for photo with id '%s'".formatted(id));
 	}
 

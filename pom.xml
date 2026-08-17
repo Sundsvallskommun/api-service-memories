@@ -81,6 +81,31 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<!-- The inherited surefire argLine caps the forked JVM at -Xmx256m, which is not enough for the
+					@SpringBootTest classes in src/test: every distinct context configuration is cached in the same JVM,
+					so the heap is exhausted once enough of them accumulate. Raise the ceiling and bound the number of
+					cached contexts. The rest of the inherited argLine is repeated verbatim — dropping ${surefireArgLine}
+					would silently disable the JaCoCo agent, and dropping ${mockito.agent} breaks the Mockito inline agent. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-Dfile.encoding=${project.encoding} -Xmx1024m ${mockito.agent} ${surefireArgLine}</argLine>
+					<systemPropertyVariables>
+						<spring.test.context.cache.maxSize>8</spring.test.context.cache.maxSize>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<!-- Same context-cache bound for the integration tests. The inherited argLine is left untouched. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<spring.test.context.cache.maxSize>8</spring.test.context.cache.maxSize>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>

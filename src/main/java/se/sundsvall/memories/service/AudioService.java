@@ -19,6 +19,7 @@ import se.sundsvall.memories.service.util.FileStreamer;
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.AUDIO;
 
 @Service
 public class AudioService {
@@ -81,6 +82,6 @@ public class AudioService {
 	}
 
 	private static String deriveFilename(final AudioEntity entity) {
-		return FileStreamer.filenameFromPath(entity.getObjectFilePath(), "audio-" + entity.getId());
+		return FileStreamer.downloadFilename(AUDIO, entity.getId(), entity.getObjectFilePath());
 	}
 }
