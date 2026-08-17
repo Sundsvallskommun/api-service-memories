@@ -7,6 +7,7 @@ truncate table LJUD;
 truncate table OCM;
 truncate table PUBL;
 truncate table PUBL_TYP;
+truncate table SJOMAN;
 truncate table TEXT;
 truncate table TEXT_MULTI;
 truncate table TOPOGRAFI;
