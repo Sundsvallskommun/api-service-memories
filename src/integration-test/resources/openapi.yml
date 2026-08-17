@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.4"
 servers:
-- url: http://localhost:65503
+- url: http://localhost:55247
   description: Generated server url
 tags:
 - name: Audio
@@ -20,6 +20,8 @@ tags:
   description: Photo search and file operations
 - name: Publications
   description: Publication search and file operations
+- name: Seaman
+  description: Seaman (sjömanshus register) search and retrieval
 paths:
   /{municipalityId}/texts:
     get:
@@ -198,6 +200,92 @@ paths:
           description: Successful operation
           content:
             '*/*': {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/seamen:
+    get:
+      tags:
+      - Seaman
+      summary: Search seamen
+      description: "Search the seamen's register (SJOMAN) by name, birth parish and\
+        \ birth year range. Returns paginated results."
+      operationId: searchSeamen
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/SeamanParameters"
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedSeamanResponse"
+  /{municipalityId}/seamen/{id}:
+    get:
+      tags:
+      - Seaman
+      summary: Get seaman by ID
+      description: Get a specific seaman record by its ID
+      operationId: getSeaman
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seaman"
         "404":
           description: Not found
           content:
@@ -942,9 +1030,9 @@ components:
     Problem:
       type: object
       properties:
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
         instance:
           type: string
@@ -1171,6 +1259,256 @@ components:
           description: Original file name
           examples:
           - TEXT.id_1001.multi_1.fil_original.jpeg
+    SeamanParameters:
+      type: object
+      description: "Seaman (sjömanshus) search parameters. All filters are optional\
+        \ and combined with AND. Sort on a physical column: EFTERNAMN1, FORNAMN, FODDAT\
+        \ or FODFORS."
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 1
+          description: Page number
+          examples:
+          - 1
+          minimum: 1
+        limit:
+          type: integer
+          format: int32
+          description: Result size per page. Maximum allowed value is dynamically
+            configured
+          examples:
+          - 15
+          minimum: 1
+        sortBy:
+          type: array
+          items:
+            type: string
+            description: The properties to sort on
+            examples:
+            - propertyName
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+          description: The sort order direction
+          examples:
+          - ASC
+        lastName:
+          type: string
+          description: "Last name (substring, case-insensitive; matches either surname\
+            \ column)"
+          examples:
+          - Nordin
+        firstName:
+          type: string
+          description: "First name (substring, case-insensitive)"
+          examples:
+          - Anton
+        birthParish:
+          type: string
+          description: "Birth parish (substring, case-insensitive)"
+          examples:
+          - Sundsvall
+        yearFrom:
+          type: integer
+          format: int32
+          description: Birth year from (inclusive)
+          examples:
+          - 1850
+        yearTo:
+          type: integer
+          format: int32
+          description: Birth year to (inclusive)
+          examples:
+          - 1900
+    PagedSeamanResponse:
+      type: object
+      description: Paged seaman response
+      properties:
+        seamen:
+          type: array
+          items:
+            $ref: "#/components/schemas/Seaman"
+            readOnly: true
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+          readOnly: true
+    Seaman:
+      type: object
+      description: Seaman (sjömanshus register) model
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Record number (POSTNR)
+          examples:
+          - 123
+        firstName:
+          type: string
+          description: First name
+          examples:
+          - Anton
+        lastName1:
+          type: string
+          description: Last name (primary)
+          examples:
+          - Nordin
+        lastName2:
+          type: string
+          description: Last name (alternate)
+          examples:
+          - Sjöberg
+        idNumber:
+          type: integer
+          format: int32
+          description: Register id number
+          examples:
+          - 4711
+        birthDate:
+          type: string
+          description: Birth date (stored as free text)
+          examples:
+          - 1852-03-14
+        age:
+          type: string
+          description: Age
+          examples:
+          - "28"
+        birthParish:
+          type: string
+          description: Birth parish
+          examples:
+          - Sundsvall
+        birthPlace:
+          type: string
+          description: Birth place
+          examples:
+          - Sundsvall
+        homeParish:
+          type: string
+          description: Home parish
+          examples:
+          - Njurunda
+        homePlace:
+          type: string
+          description: Home place
+          examples:
+          - Njurunda
+        civilStatus:
+          type: string
+          description: Civil status
+          examples:
+          - Gift
+        father:
+          type: string
+          description: Father
+          examples:
+          - Erik Nordin
+        mother:
+          type: string
+          description: Mother
+          examples:
+          - Anna Nordin
+        seamensHouse:
+          type: string
+          description: Seamen's house
+          examples:
+          - Sundsvalls sjömanshus
+        enrollmentNumber:
+          type: string
+          description: Enrollment number
+          examples:
+          - "112"
+        enrollmentDate:
+          type: string
+          description: Enrollment date
+          examples:
+          - 1875-04-01
+        rank:
+          type: string
+          description: Rank / position
+          examples:
+          - Matros
+        signOnPlace:
+          type: string
+          description: Sign-on place
+          examples:
+          - Sundsvall
+        signOnDate:
+          type: string
+          description: Sign-on date
+          examples:
+          - 1876-05-01
+        signOffPlace:
+          type: string
+          description: Sign-off place
+          examples:
+          - Göteborg
+        signOffDate:
+          type: string
+          description: Sign-off date
+          examples:
+          - 1877-09-01
+        ship:
+          type: string
+          description: Ship
+          examples:
+          - Briggen Freja
+        homePort:
+          type: string
+          description: Home port
+          examples:
+          - Sundsvall
+        shipType:
+          type: string
+          description: Ship type
+          examples:
+          - Brigg
+        shipOwner:
+          type: string
+          description: Ship owner (redare)
+          examples:
+          - Rederi AB Nord
+        captain:
+          type: string
+          description: Captain
+          examples:
+          - Olof Berg
+        destination:
+          type: string
+          description: Destination
+          examples:
+          - London
+        other:
+          type: string
+          description: Other
+          examples:
+          - Övrig anteckning
+        note:
+          type: string
+          description: Note (anmärkning)
+          examples:
+          - Avmönstrad
+        archive:
+          type: string
+          description: Archive
+          examples:
+          - Sundsvalls sjömanshus arkiv
+        volume:
+          type: string
+          description: Volume
+          examples:
+          - A1:3
+        archiveNumber:
+          type: string
+          description: Archive number
+          examples:
+          - SE/HLA/1234
+        page:
+          type: string
+          description: Page
+          examples:
+          - "42"
     PublicationParameters:
       type: object
       description: Publication search parameters
