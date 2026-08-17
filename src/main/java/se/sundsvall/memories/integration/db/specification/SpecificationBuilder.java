@@ -2,6 +2,7 @@ package se.sundsvall.memories.integration.db.specification;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -72,7 +73,7 @@ public class SpecificationBuilder<T> {
 		}
 		final var pattern = "%" + escapeWildcards(location.trim()) + "%";
 		return (root, _, cb) -> {
-			final var topography = root.join(association, JoinType.LEFT);
+			final var topography = reuseFetchOrJoin(root, association);
 			final var matches = Stream.concat(
 				associationAttributes.stream().map(attribute -> cb.like(topography.<String>get(attribute), pattern, LIKE_ESCAPE)),
 				Stream.of(cb.like(root.<String>get(textAttribute), pattern, LIKE_ESCAPE)));
@@ -122,6 +123,21 @@ public class SpecificationBuilder<T> {
 			}
 			return cb.conjunction();
 		};
+	}
+
+	/**
+	 * Reuses the join a fetch of the same association already created, so that filtering on it does not add a second
+	 * {@code LEFT JOIN}. A fetch and a join are separate nodes in the criteria tree, but the same Hibernate object
+	 * implements both. There is no fetch in the count query, where the specification falls back to a plain join.
+	 */
+	@SuppressWarnings("unchecked")
+	private Join<T, ?> reuseFetchOrJoin(final Root<T> root, final String association) {
+		return root.getFetches().stream()
+			.filter(fetch -> fetch.getAttribute().getName().equals(association))
+			.filter(Join.class::isInstance)
+			.map(fetch -> (Join<T, ?>) fetch)
+			.findFirst()
+			.orElseGet(() -> root.join(association, JoinType.LEFT));
 	}
 
 	/**

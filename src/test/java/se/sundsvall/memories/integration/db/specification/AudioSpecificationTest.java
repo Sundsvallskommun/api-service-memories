@@ -206,6 +206,26 @@ class AudioSpecificationTest {
 		assertThat(findIds(AudioSpecification.yearAtMost(null))).containsExactly(1, 2);
 	}
 
+	/**
+	 * The location filter reuses the join the fetch already created rather than adding a second one. Composed with the
+	 * fetch it must still match, still count right, and never return the same row twice.
+	 */
+	@Test
+	void matchesLocationComposesWithTheFetchJoin() {
+		persist(1, 4, "a", null).setTopography(persistTopography(500, "Sundsvall"));
+		persist(2, 4, "b", null).setTopography(persistTopography(501, "Timrå"));
+		audioRepository.flush();
+
+		final var page = audioRepository.findAll(
+			Specification.allOf(AudioSpecification.fetchTopography(), AudioSpecification.matchesLocation("sundsvall")),
+			Pageable.unpaged());
+
+		assertThat(page.getTotalElements()).isEqualTo(1);
+		assertThat(page.getContent()).singleElement()
+			.extracting(audio -> audio.getTopography().getDisplayName())
+			.isEqualTo("Sundsvall");
+	}
+
 	private void persistDated(final Integer id, final String date) {
 		persist(id, 4, "dated " + id, null).setDate(date);
 		audioRepository.flush();
