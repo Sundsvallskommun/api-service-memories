@@ -73,9 +73,9 @@ class TextServiceTest {
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of(FileVariant.THUMBNAIL, "/text/fil_liten/TEXT.id_1001_fil_liten.jpeg", "TEXT.id_1001_fil_liten.jpeg", "sundsvallsminnen-1001.jpeg", false),
-			Arguments.of(FileVariant.LARGE, "/text/fil_stor/TEXT.id_1001_fil_stor.jpeg", "TEXT.id_1001_fil_stor.jpeg", "sundsvallsminnen-1001.jpeg", false),
-			Arguments.of(FileVariant.TEXT, "/text/fil_txt/TEXT.id_1001_fil_txt.xml", "TEXT.id_1001_fil_txt.xml", "sundsvallsminnen-1001.xml", true));
+			Arguments.of(FileVariant.THUMBNAIL, "/text/fil_liten/TEXT.id_1001_fil_liten.jpeg", "TEXT.id_1001_fil_liten.jpeg", "sundsvallsminnen-text-1001.jpeg", false),
+			Arguments.of(FileVariant.LARGE, "/text/fil_stor/TEXT.id_1001_fil_stor.jpeg", "TEXT.id_1001_fil_stor.jpeg", "sundsvallsminnen-text-1001.jpeg", false),
+			Arguments.of(FileVariant.TEXT, "/text/fil_txt/TEXT.id_1001_fil_txt.xml", "TEXT.id_1001_fil_txt.xml", "sundsvallsminnen-text-1001.xml", true));
 	}
 
 	private static TextMediaEntity mediaEntity() {
@@ -89,9 +89,9 @@ class TextServiceTest {
 
 	static Stream<Arguments> mediaFileVariants() {
 		return Stream.of(
-			Arguments.of(MediaFileVariant.THUMBNAIL, "/text_multi/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg", "sundsvallsminnen-1001-1.jpeg"),
-			Arguments.of(MediaFileVariant.LARGE, "/text_multi/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg", "sundsvallsminnen-1001-1.jpeg"),
-			Arguments.of(MediaFileVariant.ORIGINAL, "/text_multi/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg", "sundsvallsminnen-1001-1.jpeg"));
+			Arguments.of(MediaFileVariant.THUMBNAIL, "/text_multi/fil_liten/TEXT.id_1001.multi_1.fil_liten.jpeg", "TEXT.id_1001.multi_1.fil_liten.jpeg", "sundsvallsminnen-text-1001-1.jpeg"),
+			Arguments.of(MediaFileVariant.LARGE, "/text_multi/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg", "TEXT.id_1001.multi_1.fil_stor.jpeg", "sundsvallsminnen-text-1001-1.jpeg"),
+			Arguments.of(MediaFileVariant.ORIGINAL, "/text_multi/fil_original/TEXT.id_1001.multi_1.fil_original.jpeg", "TEXT.id_1001.multi_1.fil_original.jpeg", "sundsvallsminnen-text-1001-1.jpeg"));
 	}
 
 	@BeforeEach

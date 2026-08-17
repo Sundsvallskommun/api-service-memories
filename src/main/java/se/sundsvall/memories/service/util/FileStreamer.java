@@ -28,6 +28,8 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 @Component
 public class FileStreamer {
 
+	private static final String FILENAME_PREFIX = "sundsvallsminnen";
+
 	private final SambaIntegration sambaIntegration;
 	private final FileTypeDetector fileTypeDetector;
 	private final XsltTransformer xsltTransformer;
@@ -40,15 +42,45 @@ public class FileStreamer {
 	}
 
 	/**
-	 * Builds a human-friendly download filename of the form {@code <stem>.<extension>}, keeping only the file extension
-	 * of {@code sourcePath} (an internal, non-user-facing SMB filename) and discarding its stem. Handles both {@code /}
-	 * and {@code \} separators. When no extension can be derived the bare {@code stem} is returned.
+	 * Builds a human-friendly download filename of the form
+	 * {@code sundsvallsminnen-<material type>-<id>.<extension>} (e.g. {@code "sundsvallsminnen-foto-2757.jpg"}), keeping
+	 * only the file extension of {@code sourcePath} (an internal, non-user-facing SMB filename) and discarding its stem.
+	 * Handles both {@code /} and {@code \} separators. When no extension can be derived the bare stem is returned.
 	 *
-	 * @param  stem       the user-facing name stem (e.g. {@code "sundsvallsminnen-2757"})
-	 * @param  sourcePath the internal SMB object path or filename to take the extension from (nullable)
-	 * @return            the download filename, never blank
+	 * <p>
+	 * The material type is part of the stem because ids are only unique within their own material type — a photo and a
+	 * film can share id {@code 207}.
+	 *
+	 * @param  materialType the material type the file belongs to
+	 * @param  id           the material id
+	 * @param  sourcePath   the internal SMB object path or filename to take the extension from (nullable)
+	 * @return              the download filename, never blank
 	 */
-	public static String downloadFilename(final String stem, final String sourcePath) {
+	public static String downloadFilename(final MaterialType materialType, final Integer id, final String sourcePath) {
+		return withExtension(filenameStem(materialType, String.valueOf(id)), sourcePath);
+	}
+
+	/**
+	 * Builds a human-friendly download filename for a media file belonging to a parent material, of the form
+	 * {@code sundsvallsminnen-<material type>-<id>-<mediaId>.<extension>} (e.g.
+	 * {@code "sundsvallsminnen-text-1001-1.jpeg"}). See
+	 * {@link #downloadFilename(MaterialType, Integer, String)} for the extension handling.
+	 *
+	 * @param  materialType the material type the parent material belongs to
+	 * @param  id           the parent material id
+	 * @param  mediaId      the media file id within the parent material
+	 * @param  sourcePath   the internal SMB object path or filename to take the extension from (nullable)
+	 * @return              the download filename, never blank
+	 */
+	public static String downloadFilename(final MaterialType materialType, final Integer id, final Integer mediaId, final String sourcePath) {
+		return withExtension(filenameStem(materialType, id + "-" + mediaId), sourcePath);
+	}
+
+	private static String filenameStem(final MaterialType materialType, final String idSegment) {
+		return FILENAME_PREFIX + "-" + materialType.getSegment() + "-" + idSegment;
+	}
+
+	private static String withExtension(final String stem, final String sourcePath) {
 		return ofNullable(sourcePath)
 			.filter(path -> !path.isBlank())
 			.map(path -> path.replace('\\', '/'))
@@ -155,5 +187,29 @@ public class FileStreamer {
 			return filename.substring(dot + 1);
 		}
 		return "";
+	}
+
+	/**
+	 * The archive material types, with the lowercase Swedish segment used in user-facing download filenames. Single
+	 * source for these segments — ids are only unique per material type, so the segment is what keeps a photo and a film
+	 * with the same id from producing identical filenames.
+	 */
+	public enum MaterialType {
+
+		PHOTO("foto"),
+		FILM("film"),
+		AUDIO("ljud"),
+		TEXT("text"),
+		PUBLICATION("publikation");
+
+		private final String segment;
+
+		MaterialType(final String segment) {
+			this.segment = segment;
+		}
+
+		public String getSegment() {
+			return segment;
+		}
 	}
 }

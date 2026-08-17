@@ -18,6 +18,7 @@ import se.sundsvall.memories.service.util.FileStreamer;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.PUBLICATION;
 
 @Service
 public class PublicationService {
@@ -67,7 +68,7 @@ public class PublicationService {
 		// preferred over a literal "/" concatenation.
 		final var path = String.join("/", sambaProperties.publicationFolder() + variant.getSubfolder(), filename);
 
-		final var downloadFilename = FileStreamer.downloadFilename("sundsvallsminnen-" + id, filename);
+		final var downloadFilename = FileStreamer.downloadFilename(PUBLICATION, id, filename);
 
 		fileStreamer.streamInline(path, filename, downloadFilename, variant == FileVariant.TEXT, response,
 			"IOException occurred when streaming file for publication with id '%s'".formatted(id));

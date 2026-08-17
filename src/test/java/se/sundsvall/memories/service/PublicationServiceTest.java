@@ -62,9 +62,9 @@ class PublicationServiceTest {
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of(FileVariant.THUMBNAIL, "/publ/fil_liten/PUBL.id_207_fil_liten.jpeg", "PUBL.id_207_fil_liten.jpeg", "sundsvallsminnen-207.jpeg", false),
-			Arguments.of(FileVariant.LARGE, "/publ/fil_stor/PUBL.id_207_fil_stor.jpeg", "PUBL.id_207_fil_stor.jpeg", "sundsvallsminnen-207.jpeg", false),
-			Arguments.of(FileVariant.TEXT, "/publ/fil_txt/PUBL.id_207_fil_txt.xml", "PUBL.id_207_fil_txt.xml", "sundsvallsminnen-207.xml", true));
+			Arguments.of(FileVariant.THUMBNAIL, "/publ/fil_liten/PUBL.id_207_fil_liten.jpeg", "PUBL.id_207_fil_liten.jpeg", "sundsvallsminnen-publikation-207.jpeg", false),
+			Arguments.of(FileVariant.LARGE, "/publ/fil_stor/PUBL.id_207_fil_stor.jpeg", "PUBL.id_207_fil_stor.jpeg", "sundsvallsminnen-publikation-207.jpeg", false),
+			Arguments.of(FileVariant.TEXT, "/publ/fil_txt/PUBL.id_207_fil_txt.xml", "PUBL.id_207_fil_txt.xml", "sundsvallsminnen-publikation-207.xml", true));
 	}
 
 	@BeforeEach

@@ -67,8 +67,8 @@ class PhotoServiceTest {
 
 	static Stream<Arguments> fileVariants() {
 		return Stream.of(
-			Arguments.of(FileVariant.THUMBNAIL, "/foto/fil_liten/FOTO.id_1234_fil_liten.jpg", "FOTO.id_1234_fil_liten.jpg", "sundsvallsminnen-1234.jpg"),
-			Arguments.of(FileVariant.LARGE, "/foto/fil_stor/FOTO.id_1234_fil_stor.jpg", "FOTO.id_1234_fil_stor.jpg", "sundsvallsminnen-1234.jpg"));
+			Arguments.of(FileVariant.THUMBNAIL, "/foto/fil_liten/FOTO.id_1234_fil_liten.jpg", "FOTO.id_1234_fil_liten.jpg", "sundsvallsminnen-foto-1234.jpg"),
+			Arguments.of(FileVariant.LARGE, "/foto/fil_stor/FOTO.id_1234_fil_stor.jpg", "FOTO.id_1234_fil_stor.jpg", "sundsvallsminnen-foto-1234.jpg"));
 	}
 
 	@BeforeEach

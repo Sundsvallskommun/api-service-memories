@@ -5,15 +5,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
+import se.sundsvall.memories.service.util.FileStreamer.MaterialType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,6 +31,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.AUDIO;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.FILM;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.PHOTO;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.PUBLICATION;
+import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.TEXT;
 
 @ExtendWith(MockitoExtension.class)
 class FileStreamerTest {
@@ -62,10 +72,10 @@ class FileStreamerTest {
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
 		when(sambaIntegrationMock.openResource("/publ/fil_liten/img.jpeg")).thenReturn(new ByteArrayResource(JPEG_BYTES));
 
-		fileStreamer.streamInline("/publ/fil_liten/img.jpeg", "img.jpeg", "sundsvallsminnen-42.jpeg", false, responseMock, "ctx");
+		fileStreamer.streamInline("/publ/fil_liten/img.jpeg", "img.jpeg", "sundsvallsminnen-publikation-42.jpeg", false, responseMock, "ctx");
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "image/jpeg");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-42.jpeg\"");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-publikation-42.jpeg\"");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -79,10 +89,10 @@ class FileStreamerTest {
 			0x00, 0x00, 0x00, 0x00
 		}));
 
-		fileStreamer.streamInline("/foto/fil_liten/odd.q9z", "odd.q9z", "sundsvallsminnen-7.q9z", false, responseMock, "ctx");
+		fileStreamer.streamInline("/foto/fil_liten/odd.q9z", "odd.q9z", "sundsvallsminnen-foto-7.q9z", false, responseMock, "ctx");
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-7.q9z\"");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-foto-7.q9z\"");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -100,10 +110,10 @@ class FileStreamerTest {
 			return null;
 		}).when(xsltTransformerMock).transform(any(InputStream.class), any(OutputStream.class));
 
-		fileStreamer.streamInline("/publ/fil_txt/doc.xml", "doc.xml", "sundsvallsminnen-9.xml", true, responseMock, "ctx");
+		fileStreamer.streamInline("/publ/fil_txt/doc.xml", "doc.xml", "sundsvallsminnen-publikation-9.xml", true, responseMock, "ctx");
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "text/html;charset=UTF-8");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-9.html\"");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-publikation-9.html\"");
 		verify(xsltTransformerMock).transform(any(InputStream.class), any(OutputStream.class));
 	}
 
@@ -116,10 +126,10 @@ class FileStreamerTest {
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
 		when(sambaIntegrationMock.openResource("/publ/fil_txt/doc.xml")).thenReturn(new ByteArrayResource(PDF_BYTES));
 
-		fileStreamer.streamInline("/publ/fil_txt/doc.xml", "doc.xml", "sundsvallsminnen-11.xml", true, responseMock, "ctx");
+		fileStreamer.streamInline("/publ/fil_txt/doc.xml", "doc.xml", "sundsvallsminnen-publikation-11.xml", true, responseMock, "ctx");
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/pdf");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-11.xml\"");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-publikation-11.xml\"");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -131,10 +141,10 @@ class FileStreamerTest {
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
 		when(sambaIntegrationMock.openResource("/foto/fil_liten/doc.xml")).thenReturn(new ByteArrayResource(XML.getBytes()));
 
-		fileStreamer.streamInline("/foto/fil_liten/doc.xml", "doc.xml", "sundsvallsminnen-13.xml", false, responseMock, "ctx");
+		fileStreamer.streamInline("/foto/fil_liten/doc.xml", "doc.xml", "sundsvallsminnen-foto-13.xml", false, responseMock, "ctx");
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/xml");
-		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-13.xml\"");
+		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-foto-13.xml\"");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -151,7 +161,7 @@ class FileStreamerTest {
 			});
 
 		final var exception = assertThrows(ThrowableProblem.class,
-			() -> fileStreamer.streamInline("/publ/fil_liten/img.jpeg", "img.jpeg", "sundsvallsminnen-42.jpeg", false, responseMock, "boom-context"));
+			() -> fileStreamer.streamInline("/publ/fil_liten/img.jpeg", "img.jpeg", "sundsvallsminnen-publikation-42.jpeg", false, responseMock, "boom-context"));
 
 		assertThat(exception.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
 		assertThat(exception.getMessage()).contains("boom-context").contains("smb-down");
@@ -202,33 +212,59 @@ class FileStreamerTest {
 
 	@Test
 	void downloadFilenameKeepsExtensionFromForwardSlashPath() {
-		assertThat(FileStreamer.downloadFilename("sundsvallsminnen-1", "/media/film/movie.mp4")).isEqualTo("sundsvallsminnen-1.mp4");
+		assertThat(FileStreamer.downloadFilename(FILM, 1, "/media/film/movie.mp4")).isEqualTo("sundsvallsminnen-film-1.mp4");
 	}
 
 	@Test
 	void downloadFilenameKeepsExtensionFromBackslashPath() {
-		assertThat(FileStreamer.downloadFilename("sundsvallsminnen-2", "\\\\server\\share\\clip.avi")).isEqualTo("sundsvallsminnen-2.avi");
+		assertThat(FileStreamer.downloadFilename(AUDIO, 2, "\\\\server\\share\\clip.avi")).isEqualTo("sundsvallsminnen-ljud-2.avi");
 	}
 
 	@Test
 	void downloadFilenameHandlesBareFilename() {
-		assertThat(FileStreamer.downloadFilename("sundsvallsminnen-3", "movie.mp4")).isEqualTo("sundsvallsminnen-3.mp4");
+		assertThat(FileStreamer.downloadFilename(PHOTO, 3, "movie.mp4")).isEqualTo("sundsvallsminnen-foto-3.mp4");
 	}
 
 	@Test
 	void downloadFilenameWithoutExtensionReturnsBareStem() {
-		assertThat(FileStreamer.downloadFilename("sundsvallsminnen-4", "/media/film/movie")).isEqualTo("sundsvallsminnen-4");
+		assertThat(FileStreamer.downloadFilename(PUBLICATION, 4, "/media/film/movie")).isEqualTo("sundsvallsminnen-publikation-4");
 	}
 
 	@Test
 	void downloadFilenameBlankOrNullSourceReturnsBareStem() {
-		assertThat(FileStreamer.downloadFilename("sundsvallsminnen-5", "   ")).isEqualTo("sundsvallsminnen-5");
-		assertThat(FileStreamer.downloadFilename("sundsvallsminnen-6", null)).isEqualTo("sundsvallsminnen-6");
+		assertThat(FileStreamer.downloadFilename(TEXT, 5, "   ")).isEqualTo("sundsvallsminnen-text-5");
+		assertThat(FileStreamer.downloadFilename(TEXT, 6, (String) null)).isEqualTo("sundsvallsminnen-text-6");
 	}
 
 	@Test
 	void downloadFilenameTreatsLeadingDotAsNoExtension() {
 		// dot at index 0 (".hidden") is not an extension separator — bare stem is returned
-		assertThat(FileStreamer.downloadFilename("sundsvallsminnen-7", "/media/.hidden")).isEqualTo("sundsvallsminnen-7");
+		assertThat(FileStreamer.downloadFilename(PHOTO, 7, "/media/.hidden")).isEqualTo("sundsvallsminnen-foto-7");
+	}
+
+	@ParameterizedTest
+	@MethodSource("materialTypeSegments")
+	void downloadFilenameUsesMaterialTypeSegment(final MaterialType materialType, final String expected) {
+		assertThat(FileStreamer.downloadFilename(materialType, 207, "/archive/FILE.id_207.jpeg")).isEqualTo(expected);
+	}
+
+	static Stream<Arguments> materialTypeSegments() {
+		return Stream.of(
+			Arguments.of(PHOTO, "sundsvallsminnen-foto-207.jpeg"),
+			Arguments.of(FILM, "sundsvallsminnen-film-207.jpeg"),
+			Arguments.of(AUDIO, "sundsvallsminnen-ljud-207.jpeg"),
+			Arguments.of(TEXT, "sundsvallsminnen-text-207.jpeg"),
+			Arguments.of(PUBLICATION, "sundsvallsminnen-publikation-207.jpeg"));
+	}
+
+	@Test
+	void downloadFilenameForMediaFileIncludesBothIds() {
+		assertThat(FileStreamer.downloadFilename(TEXT, 1001, 1, "/text_multi/fil_stor/TEXT.id_1001.multi_1.fil_stor.jpeg"))
+			.isEqualTo("sundsvallsminnen-text-1001-1.jpeg");
+	}
+
+	@Test
+	void downloadFilenameForMediaFileWithoutExtensionReturnsBareStem() {
+		assertThat(FileStreamer.downloadFilename(TEXT, 1001, 2, null)).isEqualTo("sundsvallsminnen-text-1001-2");
 	}
 }
