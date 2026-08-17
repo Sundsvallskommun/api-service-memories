@@ -1,0 +1,18 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"censusRecords": [
+		{
+			"id": 2,
+			"firstName": "Anna",
+			"lastName": "Berg",
+			"gender": "kvinna",
+			"birthYear": "1870"
+		}
+	]
+}
