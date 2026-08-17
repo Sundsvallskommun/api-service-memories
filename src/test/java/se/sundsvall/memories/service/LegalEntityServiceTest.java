@@ -13,7 +13,9 @@ import org.springframework.data.domain.Pageable;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.LegalEntityParameters;
 import se.sundsvall.memories.integration.db.LegalEntityRepository;
+import se.sundsvall.memories.integration.db.model.CategoryEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,17 +32,11 @@ class LegalEntityServiceTest {
 	@Mock
 	private LegalEntityRepository repositoryMock;
 
-	@Mock
-	private TopographyLookup topographyLookupMock;
-
-	@Mock
-	private CategoryLookup categoryLookupMock;
-
 	@InjectMocks
 	private LegalEntityService service;
 
 	@Test
-	void searchDelegatesAndResolvesLookups() {
+	void searchDelegatesAndResolvesAssociations() {
 		final var parameters = LegalEntityParameters.create()
 			.withName("Nödhjälp")
 			.withLocation("Sundsvall")
@@ -49,11 +45,11 @@ class LegalEntityServiceTest {
 			.withYearTo(1920)
 			.withPage(1)
 			.withLimit(100);
-		final var entity = LegalEntityEntity.create().withLegalEntityId(1).withName("Nödhjälpskommittén").withTopographyId(42).withCategoryId(5);
+		final var entity = LegalEntityEntity.create().withLegalEntityId(1).withName("Nödhjälpskommittén")
+			.withTopography(TopographyEntity.create().withId(42).withName("Sundsvalls kommun"))
+			.withCategory(CategoryEntity.create().withCategoryId(5).withName("Kommitté"));
 		when(repositoryMock.search(eq("Nödhjälp"), eq("Sundsvall"), eq(5), eq(1880), eq(1920), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of(entity), PageRequest.of(0, 100), 1));
-		when(topographyLookupMock.resolve(42)).thenReturn("Sundsvalls kommun");
-		when(categoryLookupMock.resolve(5)).thenReturn("Kommitté");
 
 		final var result = service.search(parameters);
 
@@ -77,9 +73,9 @@ class LegalEntityServiceTest {
 
 	@Test
 	void getByIdFound() {
-		when(repositoryMock.findVisibleById(1)).thenReturn(Optional.of(LegalEntityEntity.create().withLegalEntityId(1).withName("Berg AB").withTopographyId(7).withCategoryId(2)));
-		when(topographyLookupMock.resolve(7)).thenReturn("Sundsvall");
-		when(categoryLookupMock.resolve(2)).thenReturn("Aktiebolag");
+		when(repositoryMock.findVisibleById(1)).thenReturn(Optional.of(LegalEntityEntity.create().withLegalEntityId(1).withName("Berg AB")
+			.withTopography(TopographyEntity.create().withId(7).withName("Sundsvall"))
+			.withCategory(CategoryEntity.create().withCategoryId(2).withName("Aktiebolag"))));
 
 		final var result = service.getById(1);
 

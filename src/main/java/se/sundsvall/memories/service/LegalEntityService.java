@@ -2,6 +2,7 @@ package se.sundsvall.memories.service;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.LegalEntity;
@@ -19,15 +20,12 @@ public class LegalEntityService {
 	private static final String LEGAL_ENTITY_NOT_FOUND = "Legal entity with id '%s' not found";
 
 	private final LegalEntityRepository legalEntityRepository;
-	private final TopographyLookup topographyLookup;
-	private final CategoryLookup categoryLookup;
 
-	public LegalEntityService(final LegalEntityRepository legalEntityRepository, final TopographyLookup topographyLookup, final CategoryLookup categoryLookup) {
+	public LegalEntityService(final LegalEntityRepository legalEntityRepository) {
 		this.legalEntityRepository = legalEntityRepository;
-		this.topographyLookup = topographyLookup;
-		this.categoryLookup = categoryLookup;
 	}
 
+	@Transactional(readOnly = true)
 	public PagedLegalEntityResponse search(final LegalEntityParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
@@ -40,13 +38,14 @@ public class LegalEntityService {
 			pageable);
 
 		return PagedLegalEntityResponse.create()
-			.withLegalEntities(LegalEntityMapper.toLegalEntityList(page.getContent(), topographyLookup::resolve, categoryLookup::resolve))
+			.withLegalEntities(LegalEntityMapper.toLegalEntityList(page.getContent()))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
+	@Transactional(readOnly = true)
 	public LegalEntity getById(final Integer id) {
 		return legalEntityRepository.findVisibleById(id)
-			.map(entity -> LegalEntityMapper.toLegalEntity(entity, topographyLookup.resolve(entity.getTopographyId()), categoryLookup.resolve(entity.getCategoryId())))
+			.map(LegalEntityMapper::toLegalEntity)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, LEGAL_ENTITY_NOT_FOUND.formatted(id)));
 	}
 

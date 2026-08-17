@@ -2,7 +2,10 @@ package se.sundsvall.memories.integration.db.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -21,8 +24,9 @@ public class LegalEntityEntity {
 	@Column(name = "ALTNAMN", length = 256)
 	private String alternativeNames;
 
-	@Column(name = "T_ID")
-	private Integer topographyId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "T_ID")
+	private TopographyEntity topography;
 
 	@Column(name = "OPLATS", length = 64)
 	private String locationText;
@@ -42,8 +46,9 @@ public class LegalEntityEntity {
 	@Column(name = "HISTORIA", length = 256)
 	private String historyFilename;
 
-	@Column(name = "KAT_ID")
-	private Integer categoryId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "KAT_ID")
+	private CategoryEntity category;
 
 	@Column(name = "OPTIONS")
 	private Integer options;
@@ -94,16 +99,16 @@ public class LegalEntityEntity {
 		return this;
 	}
 
-	public Integer getTopographyId() {
-		return topographyId;
+	public TopographyEntity getTopography() {
+		return topography;
 	}
 
-	public void setTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public void setTopography(final TopographyEntity topography) {
+		this.topography = topography;
 	}
 
-	public LegalEntityEntity withTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public LegalEntityEntity withTopography(final TopographyEntity topography) {
+		this.topography = topography;
 		return this;
 	}
 
@@ -185,16 +190,16 @@ public class LegalEntityEntity {
 		return this;
 	}
 
-	public Integer getCategoryId() {
-		return categoryId;
+	public CategoryEntity getCategory() {
+		return category;
 	}
 
-	public void setCategoryId(final Integer categoryId) {
-		this.categoryId = categoryId;
+	public void setCategory(final CategoryEntity category) {
+		this.category = category;
 	}
 
-	public LegalEntityEntity withCategoryId(final Integer categoryId) {
-		this.categoryId = categoryId;
+	public LegalEntityEntity withCategory(final CategoryEntity category) {
+		this.category = category;
 		return this;
 	}
 
@@ -230,15 +235,15 @@ public class LegalEntityEntity {
 			return false;
 		final LegalEntityEntity that = (LegalEntityEntity) o;
 		return Objects.equals(legalEntityId, that.legalEntityId) && Objects.equals(name, that.name) && Objects.equals(alternativeNames, that.alternativeNames)
-			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(startDate, that.startDate)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(startDate, that.startDate)
 			&& Objects.equals(endDate, that.endDate) && Objects.equals(principal, that.principal) && Objects.equals(comment, that.comment)
-			&& Objects.equals(historyFilename, that.historyFilename) && Objects.equals(categoryId, that.categoryId) && Objects.equals(options, that.options)
+			&& Objects.equals(historyFilename, that.historyFilename) && Objects.equals(options, that.options)
 			&& Objects.equals(deletedDate, that.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(legalEntityId, name, alternativeNames, topographyId, locationText, startDate, endDate, principal, comment, historyFilename, categoryId, options, deletedDate);
+		return Objects.hash(legalEntityId, name, alternativeNames, locationText, startDate, endDate, principal, comment, historyFilename, options, deletedDate);
 	}
 
 	@Override
@@ -247,14 +252,12 @@ public class LegalEntityEntity {
 			"legalEntityId=" + legalEntityId +
 			", name='" + name + '\'' +
 			", alternativeNames='" + alternativeNames + '\'' +
-			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", startDate='" + startDate + '\'' +
 			", endDate='" + endDate + '\'' +
 			", principal='" + principal + '\'' +
 			", comment='" + comment + '\'' +
 			", historyFilename='" + historyFilename + '\'' +
-			", categoryId=" + categoryId +
 			", options=" + options +
 			", deletedDate=" + deletedDate +
 			'}';
