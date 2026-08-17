@@ -10,8 +10,8 @@ import se.sundsvall.memories.api.model.PagedCensusRecordResponse;
 import se.sundsvall.memories.integration.db.CensusRecordRepository;
 import se.sundsvall.memories.service.mapper.CensusRecordMapper;
 
-import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.service.util.StringUtil.trimToNull;
 
 @Service
 public class CensusRecordService {
@@ -28,9 +28,9 @@ public class CensusRecordService {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
 		final var page = censusRecordRepository.search(
-			blankToNull(parameters.getLastName()),
-			blankToNull(parameters.getFirstName()),
-			gender(parameters.getGender()),
+			trimToNull(parameters.getLastName()),
+			trimToNull(parameters.getFirstName()),
+			trimToNull(parameters.getGender()),
 			parameters.getYearFrom(),
 			parameters.getYearTo(),
 			pageable);
@@ -44,22 +44,5 @@ public class CensusRecordService {
 		return censusRecordRepository.findById(id)
 			.map(CensusRecordMapper::toCensusRecord)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, CENSUS_RECORD_NOT_FOUND.formatted(id)));
-	}
-
-	private static String blankToNull(final String value) {
-		return ofNullable(value)
-			.map(String::trim)
-			.filter(v -> !v.isEmpty())
-			.orElse(null);
-	}
-
-	/**
-	 * Normalises the gender filter: blank and the "both sources" sentinel ("båda") mean "no filter" and map to
-	 * {@code null}; any other value is passed through and matched case-insensitively against the stored {@code KON}.
-	 */
-	private static String gender(final String value) {
-		return ofNullable(blankToNull(value))
-			.filter(v -> !"båda".equalsIgnoreCase(v))
-			.orElse(null);
 	}
 }

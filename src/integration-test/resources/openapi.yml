@@ -1782,9 +1782,13 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Physical column to sort on
+            enum:
+            - MNMNE
+            - MNMNF
+            - FODAR
             examples:
-            - propertyName
+            - MNMNE
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction

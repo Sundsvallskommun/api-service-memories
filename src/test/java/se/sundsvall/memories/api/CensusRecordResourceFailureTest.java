@@ -24,6 +24,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @ActiveProfiles("junit")
 class CensusRecordResourceFailureTest {
 
+	private static final String MUNICIPALITY_ID = "2281";
 	private static final String INVALID_MUNICIPALITY_ID = "bad-municipality-id";
 	private static final String SEARCH_PATH = "/{municipalityId}/census-records";
 	private static final String GET_PATH = "/{municipalityId}/census-records/{id}";
@@ -51,6 +52,28 @@ class CensusRecordResourceFailureTest {
 		assertThat(response.getViolations())
 			.extracting(Violation::field, Violation::message)
 			.containsExactlyInAnyOrder(tuple("searchCensusRecords.municipalityId", "not a valid municipality ID"));
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	@Test
+	void searchCensusRecordsWithInvalidSortBy() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("sortBy", "lastName")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getTitle()).isEqualTo("Constraint Violation");
+		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
+		assertThat(response.getViolations())
+			.extracting(Violation::message)
+			.containsExactly("must be one of: MNMNE, MNMNF, FODAR");
 
 		verifyNoInteractions(serviceMock);
 	}

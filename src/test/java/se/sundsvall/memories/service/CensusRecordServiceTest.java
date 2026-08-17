@@ -58,14 +58,25 @@ class CensusRecordServiceTest {
 	}
 
 	@Test
-	void searchNormalizesBlankFiltersAndBadaGenderToNull() {
-		final var parameters = CensusRecordParameters.create().withLastName("  ").withFirstName("").withGender("Båda");
+	void searchNormalizesBlankFiltersToNull() {
+		final var parameters = CensusRecordParameters.create().withLastName("  ").withFirstName("").withGender("   ");
 		when(repositoryMock.search(isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of()));
 
 		service.search(parameters);
 
 		verify(repositoryMock).search(isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class));
+	}
+
+	@Test
+	void searchTrimsFilters() {
+		final var parameters = CensusRecordParameters.create().withLastName(" Nordin ").withFirstName(" Anton ").withGender(" kvinna ");
+		when(repositoryMock.search(eq("Nordin"), eq("Anton"), eq("kvinna"), isNull(), isNull(), any(Pageable.class)))
+			.thenReturn(new PageImpl<>(List.of()));
+
+		service.search(parameters);
+
+		verify(repositoryMock).search(eq("Nordin"), eq("Anton"), eq("kvinna"), isNull(), isNull(), any(Pageable.class));
 	}
 
 	@Test

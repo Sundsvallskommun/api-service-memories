@@ -1,12 +1,19 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Census record (mantal) search parameters. All filters are optional and combined with AND. Sort "
 	+ "on a physical column: MNMNE, MNMNF or FODAR.")
 public class CensusRecordParameters extends AbstractParameterPagingAndSortingBase {
+
+	private static final String SORTABLE_COLUMNS = "MNMNE|MNMNF|FODAR";
+
+	private static final String SORTABLE_COLUMNS_MESSAGE = "must be one of: MNMNE, MNMNF, FODAR";
 
 	@Schema(description = "Last name (substring, case-insensitive)", examples = "Nordin")
 	private String lastName;
@@ -100,6 +107,19 @@ public class CensusRecordParameters extends AbstractParameterPagingAndSortingBas
 	public CensusRecordParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
+	}
+
+	/**
+	 * The search is a native query, so a sort property has to be a physical column of the {@code MANTAL} table.
+	 * Restricting the accepted values here turns an unknown column into a {@code 400 Constraint Violation} instead of
+	 * the {@code 500} an invalid SQL identifier would otherwise cause.
+	 */
+	@Override
+	@ArraySchema(schema = @Schema(description = "Physical column to sort on", examples = "MNMNE", allowableValues = {
+		"MNMNE", "MNMNF", "FODAR"
+	}))
+	public List<@Pattern(regexp = SORTABLE_COLUMNS, message = SORTABLE_COLUMNS_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
 	}
 
 	@Override

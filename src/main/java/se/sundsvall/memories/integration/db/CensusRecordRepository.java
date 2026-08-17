@@ -20,6 +20,17 @@ import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
 public interface CensusRecordRepository extends JpaRepository<CensusRecordEntity, Integer> {
 
 	/**
+	 * Shared filter predicate for {@link #search}, so that the result query and the count query can never drift apart.
+	 */
+	String WHERE_CLAUSE = """
+		WHERE (:lastName IS NULL OR MNMNE LIKE CONCAT('%', :lastName, '%'))
+		  AND (:firstName IS NULL OR MNMNF LIKE CONCAT('%', :firstName, '%'))
+		  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
+		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
+		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) <= :yearTo)
+		""";
+
+	/**
 	 * Searches census records with all filter parameters optional (a {@code null} parameter is ignored). Name filters
 	 * are case-insensitive substring matches; the year filter compares against the four leading characters of the
 	 * {@code FODAR} varchar column (birth year). {@code FODAR} is dirty free text, so the derived year is guarded with
@@ -34,22 +45,8 @@ public interface CensusRecordRepository extends JpaRepository<CensusRecordEntity
 	 * @param  pageable  pagination and sorting criteria
 	 * @return           a page of matching {@link CensusRecordEntity} records
 	 */
-	@Query(value = """
-		SELECT * FROM MANTAL
-		WHERE (:lastName IS NULL OR MNMNE LIKE CONCAT('%', :lastName, '%'))
-		  AND (:firstName IS NULL OR MNMNF LIKE CONCAT('%', :firstName, '%'))
-		  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
-		  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
-		  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) <= :yearTo)
-		""",
-		countQuery = """
-			SELECT COUNT(*) FROM MANTAL
-			WHERE (:lastName IS NULL OR MNMNE LIKE CONCAT('%', :lastName, '%'))
-			  AND (:firstName IS NULL OR MNMNF LIKE CONCAT('%', :firstName, '%'))
-			  AND (:gender IS NULL OR LOWER(KON) = LOWER(:gender))
-			  AND (:yearFrom IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) >= :yearFrom)
-			  AND (:yearTo IS NULL OR NULLIF(CAST(LEFT(NULLIF(FODAR, ''), 4) AS UNSIGNED), 0) <= :yearTo)
-			""",
+	@Query(value = "SELECT * FROM MANTAL " + WHERE_CLAUSE,
+		countQuery = "SELECT COUNT(*) FROM MANTAL " + WHERE_CLAUSE,
 		nativeQuery = true)
 	Page<CensusRecordEntity> search(
 		@Param("lastName") String lastName,
