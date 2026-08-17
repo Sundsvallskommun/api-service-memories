@@ -134,6 +134,47 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Like {@link #buildYearAtLeastFilter(List, Integer)}, except that a missing or unreadable year is treated as an
+	 * open period rather than as no period. {@code JURPERS} needs this: a legal entity without an end date has not
+	 * ended, so it is still active in every range that starts after it did.
+	 */
+	public Specification<T> buildYearAtLeastOrOpenFilter(final List<String> attributes, final Integer yearFrom) {
+		if (yearFrom == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> {
+			final var year = leadingYear(root, cb, attributes);
+			return cb.or(isOpen(cb, year), cb.greaterThanOrEqualTo(year, asYearString(yearFrom)));
+		};
+	}
+
+	/**
+	 * Like {@link #buildYearAtMostFilter(List, Integer)}, except that a missing or unreadable year is treated as an open
+	 * period. See {@link #buildYearAtLeastOrOpenFilter(List, Integer)}.
+	 */
+	public Specification<T> buildYearAtMostOrOpenFilter(final List<String> attributes, final Integer yearTo) {
+		if (yearTo == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> {
+			final var year = leadingYear(root, cb, attributes);
+			return cb.or(isOpen(cb, year), cb.lessThanOrEqualTo(year, asYearString(yearTo)));
+		};
+	}
+
+	/**
+	 * Matches rows whose association points at the given id. Reading the id through the association rather than through
+	 * a second mapping of the foreign key keeps the two from disagreeing; Hibernate resolves it to the foreign key
+	 * column, so this adds no join. Matches every row when the id is {@code null}.
+	 */
+	public Specification<T> buildAssociationEqualFilter(final String association, final String attribute, final Object value) {
+		if (value == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> cb.equal(root.get(association).get(attribute), value);
+	}
+
+	/**
 	 * Matches rows whose year is at most {@code yearTo}, read the same way as in
 	 * {@link #buildYearAtLeastFilter(List, Integer)}.
 	 */
@@ -191,6 +232,14 @@ public class SpecificationBuilder<T> {
 	 */
 	private static Predicate isFourDigits(final CriteriaBuilder cb, final Expression<String> year) {
 		return cb.between(year, "0000", "9999");
+	}
+
+	/**
+	 * The opposite of {@link #isFourDigits}, with the {@code NULL} case spelled out: a missing value is not a year
+	 * either, and {@code NOT NULL-predicate} is {@code NULL} rather than true.
+	 */
+	private static Predicate isOpen(final CriteriaBuilder cb, final Expression<String> year) {
+		return cb.or(cb.isNull(year), cb.not(isFourDigits(cb, year)));
 	}
 
 	private static String asYearString(final Integer year) {

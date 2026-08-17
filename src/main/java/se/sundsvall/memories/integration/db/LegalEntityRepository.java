@@ -5,83 +5,60 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import se.sundsvall.memories.api.model.LegalEntityParameters;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
+
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.activeFrom;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.activeUntil;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.fetchCategory;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.fetchTopography;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasCategory;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasId;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasName;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.matchesLocation;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.notPlaceholder;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.published;
 
 /**
  * Repository for the {@code JURPERS} legal-entity table.
- *
- * <p>
- * <strong>Sorting:</strong> {@link #search} is a native query, so a sort property supplied via {@link Pageable} must be
- * a physical DB column name on {@code JURPERS} (e.g. {@code JURPERS}, {@code KAT_ID}, {@code STARTDATUM}).
  */
 @CircuitBreaker(name = "legalEntityRepository")
-public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, Integer> {
+public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, Integer>, JpaSpecificationExecutor<LegalEntityEntity> {
 
 	/**
-	 * Searches published legal entities with all filter parameters optional (a {@code null} parameter is ignored). A
-	 * record is considered published when bit {@code 4} of the {@code OPTIONS} bitmask is set, i.e.
-	 * {@code (OPTIONS & 4) = 4}; the placeholder row {@code J_ID = 1} ("ingen") is always excluded.
-	 *
-	 * <p>
-	 * The name filter matches {@code JURPERS} or {@code ALTNAMN}. The location filter matches the resolved place name
-	 * (TOPOGRAFI {@code TOPNAMN}/{@code PLATS}, joined via {@code T_ID}) or the free-text {@code OPLATS}. The year filter
-	 * treats {@code STARTDATUM}/{@code SLUTDATUM} (varchar) as an activity period and keeps entities whose period
-	 * overlaps the requested range, comparing on the four leading year characters and treating missing/non-numeric
-	 * bounds as open.
-	 *
-	 * @param  name       substring to match against {@code JURPERS} or {@code ALTNAMN} (nullable)
-	 * @param  location   substring to match against the resolved place name or {@code OPLATS} (nullable)
-	 * @param  categoryId exact match against {@code KAT_ID} (nullable)
-	 * @param  yearFrom   inclusive lower bound of the activity period (nullable)
-	 * @param  yearTo     inclusive upper bound of the activity period (nullable)
-	 * @param  pageable   pagination and sorting criteria
-	 * @return            a page of matching {@link LegalEntityEntity} records
+	 * Searches published legal entities with all filter parameters optional (a blank or {@code null} parameter is
+	 * ignored). The name filter matches the registered name or any alternative one; the location filter matches the
+	 * place name reached through the topography association or the free-text place. The year filters treat
+	 * {@code STARTDATUM}/{@code SLUTDATUM} as an activity period and keep the entities whose period overlaps the
+	 * requested range, with a missing bound read as an open period rather than as no period.
 	 */
-	@Query(value = """
-		SELECT j.* FROM JURPERS j
-		LEFT JOIN TOPOGRAFI t ON t.T_ID = j.T_ID
-		WHERE (j.`OPTIONS` & 4) = 4 AND j.J_ID <> 1
-		  AND (:name IS NULL OR j.JURPERS LIKE CONCAT('%', :name, '%') OR j.ALTNAMN LIKE CONCAT('%', :name, '%'))
-		  AND (:location IS NULL OR t.TOPNAMN LIKE CONCAT('%', :location, '%') OR t.PLATS LIKE CONCAT('%', :location, '%') OR j.OPLATS LIKE CONCAT('%', :location, '%'))
-		  AND (:categoryId IS NULL OR j.KAT_ID = :categoryId)
-		  AND (:yearFrom IS NULL OR j.SLUTDATUM IS NULL OR j.SLUTDATUM = '' OR CAST(LEFT(j.SLUTDATUM, 4) AS UNSIGNED) = 0 OR CAST(LEFT(j.SLUTDATUM, 4) AS UNSIGNED) >= :yearFrom)
-		  AND (:yearTo IS NULL OR j.STARTDATUM IS NULL OR j.STARTDATUM = '' OR CAST(LEFT(j.STARTDATUM, 4) AS UNSIGNED) = 0 OR CAST(LEFT(j.STARTDATUM, 4) AS UNSIGNED) <= :yearTo)
-		""",
-		countQuery = """
-			SELECT COUNT(*) FROM JURPERS j
-			LEFT JOIN TOPOGRAFI t ON t.T_ID = j.T_ID
-			WHERE (j.`OPTIONS` & 4) = 4 AND j.J_ID <> 1
-			  AND (:name IS NULL OR j.JURPERS LIKE CONCAT('%', :name, '%') OR j.ALTNAMN LIKE CONCAT('%', :name, '%'))
-			  AND (:location IS NULL OR t.TOPNAMN LIKE CONCAT('%', :location, '%') OR t.PLATS LIKE CONCAT('%', :location, '%') OR j.OPLATS LIKE CONCAT('%', :location, '%'))
-			  AND (:categoryId IS NULL OR j.KAT_ID = :categoryId)
-			  AND (:yearFrom IS NULL OR j.SLUTDATUM IS NULL OR j.SLUTDATUM = '' OR CAST(LEFT(j.SLUTDATUM, 4) AS UNSIGNED) = 0 OR CAST(LEFT(j.SLUTDATUM, 4) AS UNSIGNED) >= :yearFrom)
-			  AND (:yearTo IS NULL OR j.STARTDATUM IS NULL OR j.STARTDATUM = '' OR CAST(LEFT(j.STARTDATUM, 4) AS UNSIGNED) = 0 OR CAST(LEFT(j.STARTDATUM, 4) AS UNSIGNED) <= :yearTo)
-			""",
-		nativeQuery = true)
-	Page<LegalEntityEntity> search(
-		@Param("name") String name,
-		@Param("location") String location,
-		@Param("categoryId") Integer categoryId,
-		@Param("yearFrom") Integer yearFrom,
-		@Param("yearTo") Integer yearTo,
-		Pageable pageable);
+	default Page<LegalEntityEntity> findAllByParameters(final LegalEntityParameters parameters, final Pageable pageable) {
+		return findAll(fetchTopography()
+			.and(fetchCategory())
+			.and(published())
+			.and(notPlaceholder())
+			.and(hasName(parameters.getName()))
+			.and(matchesLocation(parameters.getLocation()))
+			.and(hasCategory(parameters.getCategoryId()))
+			.and(activeFrom(parameters.getYearFrom()))
+			.and(activeUntil(parameters.getYearTo())),
+			pageable);
+	}
 
 	/**
-	 * Looks up a single legal entity by its {@code J_ID}, excluding the placeholder row {@code J_ID = 1} ("ingen"). That
-	 * row is not a legal entity at all — it is the sentinel other tables point at to express "no legal entity" — so it
-	 * must never be retrievable through the API.
+	 * Looks up a single legal entity by id, excluding the placeholder row {@code J_ID = 1} ("ingen").
 	 *
 	 * <p>
-	 * <strong>The published bit is deliberately NOT applied here.</strong> Unlike {@link #search}, this lookup returns
-	 * unpublished records ({@code (OPTIONS & 4) <> 4}) as well. That is an intentional decision, not an oversight: a
-	 * planned administrative interface needs to reach unpublished records by id. Do not add a published-bit filter to
-	 * this query — hiding unpublished records here would break that use case.
-	 *
-	 * @param  id the {@code J_ID} to look up
-	 * @return    the matching {@link LegalEntityEntity}, or empty if no such row exists or the id is the placeholder
+	 * <strong>The published bit is deliberately NOT applied here.</strong> Unlike
+	 * {@link #findAllByParameters(LegalEntityParameters, Pageable)}, this lookup returns unpublished records as well.
+	 * That is an intentional decision, not an oversight: a planned administrative interface needs to reach unpublished
+	 * records by id. Do not add a published filter here.
 	 */
-	@Query(value = "SELECT * FROM JURPERS WHERE J_ID = :id AND J_ID <> 1", nativeQuery = true)
-	Optional<LegalEntityEntity> findVisibleById(@Param("id") Integer id);
+	default Optional<LegalEntityEntity> findVisibleById(final Integer id) {
+		return findOne(fetchTopography()
+			.and(fetchCategory())
+			.and(hasId(id))
+			.and(notPlaceholder()));
+	}
 }
