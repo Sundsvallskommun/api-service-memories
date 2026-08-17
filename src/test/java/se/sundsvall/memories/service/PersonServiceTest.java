@@ -88,23 +88,38 @@ class PersonServiceTest {
 
 	@Test
 	void getByIdFound() {
-		when(repositoryMock.findById(1)).thenReturn(Optional.of(PersonEntity.create().withPersonId(1).withFirstName("Anton")));
+		when(repositoryMock.findVisibleById(1)).thenReturn(Optional.of(PersonEntity.create().withPersonId(1).withFirstName("Anton")));
 
 		final var result = service.getById(1);
 
 		assertThat(result.getPersonId()).isEqualTo(1);
 		assertThat(result.getFirstName()).isEqualTo("Anton");
-		verify(repositoryMock).findById(1);
+		verify(repositoryMock).findVisibleById(1);
 	}
 
 	@Test
 	void getByIdNotFound() {
-		when(repositoryMock.findById(999)).thenReturn(Optional.empty());
+		when(repositoryMock.findVisibleById(999)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.getById(999))
 			.isInstanceOf(ThrowableProblem.class)
 			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
 			.hasMessageContaining("Person with id '999' not found");
-		verify(repositoryMock).findById(999);
+		verify(repositoryMock).findVisibleById(999);
+	}
+
+	/**
+	 * The placeholder row ("ingen person") is filtered out by the repository, so the service must surface it as a plain
+	 * 404 rather than returning a person-shaped payload for a non-person.
+	 */
+	@Test
+	void getByIdPlaceholderNotFound() {
+		when(repositoryMock.findVisibleById(0)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.getById(0))
+			.isInstanceOf(ThrowableProblem.class)
+			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
+			.hasMessageContaining("Person with id '0' not found");
+		verify(repositoryMock).findVisibleById(0);
 	}
 }

@@ -41,8 +41,16 @@ public class PersonService {
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
+	/**
+	 * Fetches a single person by id. Unpublished persons are intentionally still returned here even though
+	 * {@link #search} hides them; only the {@code P_ID = 0} placeholder row is unreachable. See
+	 * {@link PersonRepository#findVisibleById} for the reasoning.
+	 *
+	 * @param  id the person id to look up
+	 * @return    the matching {@link Person}
+	 */
 	public Person getById(final Integer id) {
-		return personRepository.findById(id)
+		return personRepository.findVisibleById(id)
 			.map(PersonMapper::toPerson)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, PERSON_NOT_FOUND.formatted(id)));
 	}

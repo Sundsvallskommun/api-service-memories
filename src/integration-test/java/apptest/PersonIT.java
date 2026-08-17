@@ -84,4 +84,34 @@ class PersonIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * P_ID = 0 is the "ingen person" placeholder that other tables point at, not an archive record — it must not be
+	 * retrievable by id. Note it carries OPTIONS = 6 (published), so a published-bit filter would not have hidden it;
+	 * only the explicit P_ID &lt;&gt; 0 exclusion does.
+	 */
+	@Test
+	void test07_getPersonByIdPlaceholderNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/0")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Person 3 is unpublished (OPTIONS = 0) and is therefore hidden from search, but must still be retrievable by id —
+	 * a planned administrative interface depends on it. This locks the decision in so it cannot be silently reversed by
+	 * adding a published-bit filter to the detail lookup.
+	 */
+	@Test
+	void test08_getUnpublishedPersonById() {
+		setupCall()
+			.withServicePath(PATH + "/3")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

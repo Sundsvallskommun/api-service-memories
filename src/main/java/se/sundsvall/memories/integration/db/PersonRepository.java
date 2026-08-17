@@ -1,6 +1,7 @@
 package se.sundsvall.memories.integration.db;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -66,4 +67,27 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer> {
 		@Param("yearFrom") Integer yearFrom,
 		@Param("yearTo") Integer yearTo,
 		Pageable pageable);
+
+	/**
+	 * Looks up a single person by id, excluding only the placeholder row {@code P_ID = 0} ("ingen person"). That row is
+	 * not a person at all — it is the sentinel other tables point at to mean "no person linked" — so it must never be
+	 * retrievable as if it were an archive record.
+	 *
+	 * <p>
+	 * <strong>The published bit is deliberately NOT applied here, unlike in {@link #search}.</strong> Unpublished
+	 * persons (those without bit {@code 4} of {@code OPTIONS} set) must remain reachable by id: a planned administrative
+	 * interface needs to fetch them directly. Hiding them from {@link #search} while keeping them addressable by id is
+	 * the intended behaviour, not an oversight — do not add an {@code (OPTIONS & 4) = 4} filter to this query.
+	 *
+	 * <p>
+	 * Note that the placeholder row cannot be filtered out by the published bit anyway: it carries
+	 * {@code OPTIONS = 6}, i.e. it is itself flagged as published. Excluding it requires the explicit
+	 * {@code P_ID <> 0} predicate.
+	 *
+	 * @param  id the person id to look up
+	 * @return    the matching {@link PersonEntity}, or an empty {@link Optional} if no such person exists or the id
+	 *            refers to the placeholder row
+	 */
+	@Query(value = "SELECT * FROM PERSON WHERE P_ID = :id AND P_ID <> 0", nativeQuery = true)
+	Optional<PersonEntity> findVisibleById(@Param("id") Integer id);
 }
