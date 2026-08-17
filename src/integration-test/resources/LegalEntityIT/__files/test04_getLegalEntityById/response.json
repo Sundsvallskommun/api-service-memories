@@ -1,0 +1,15 @@
+{
+	"legalEntityId": 10,
+	"name": "Nödhjälpskommittén 1888-1889",
+	"alternativeNames": "Nödhjälpskommittén",
+	"topographyId": 1,
+	"location": "Sundsvall",
+	"startDate": "1888",
+	"endDate": "1889",
+	"principal": "Sundsvalls stad",
+	"comment": "Bildad efter branden 1888",
+	"historyFilename": "jurpers_10_historia.xml",
+	"categoryId": 5,
+	"category": "Kommitté",
+	"options": 6
+}
