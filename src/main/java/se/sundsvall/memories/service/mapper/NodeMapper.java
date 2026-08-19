@@ -2,6 +2,7 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import se.sundsvall.memories.api.model.Node;
+import se.sundsvall.memories.api.model.NodeDetail;
 import se.sundsvall.memories.integration.db.model.NodeEntity;
 import se.sundsvall.memories.integration.db.model.NodeTypeEntity;
 
@@ -47,6 +48,21 @@ public final class NodeMapper {
 		return ofNullable(entities).orElse(emptyList()).stream()
 			.map(NodeMapper::toNode)
 			.toList();
+	}
+
+	/**
+	 * Map a {@link NodeEntity} and its ancestors to a {@link NodeDetail}.
+	 *
+	 * @param  entity    the node itself
+	 * @param  ancestors the nodes above it, root first, excluding the node itself
+	 * @return           the mapped {@link NodeDetail}, or {@code null} if {@code entity} is null
+	 */
+	public static NodeDetail toNodeDetail(final NodeEntity entity, final List<NodeEntity> ancestors) {
+		return ofNullable(entity)
+			.map(e -> NodeDetail.create()
+				.withNode(toNode(e))
+				.withPath(toNodeList(ancestors)))
+			.orElse(null);
 	}
 
 	private static Integer nodeTypeId(final NodeEntity entity) {

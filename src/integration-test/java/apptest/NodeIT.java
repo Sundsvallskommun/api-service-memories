@@ -7,6 +7,7 @@ import se.sundsvall.dept44.test.annotation.wiremock.WireMockAppTestSuite;
 import se.sundsvall.memories.Application;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 @WireMockAppTestSuite(files = "classpath:/NodeIT/", classes = Application.class)
@@ -78,6 +79,70 @@ class NodeIT extends AbstractAppTest {
 	void test05_searchNodesExcludesUnpublished() {
 		setupCall()
 			.withServicePath(PATH + "?query=Dolt")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Node 111 sits two levels down, so the detail carries the whole path root first: the archive, then the series.
+	 */
+	@Test
+	void test06_getNodeById() {
+		setupCall()
+			.withServicePath(PATH + "/111")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test07_getNodeByIdNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/999")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * The children come back in the archive's own order (SORT), not in the order the rows happen to be stored.
+	 */
+	@Test
+	void test08_getNodeChildren() {
+		setupCall()
+			.withServicePath(PATH + "/100/children")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Listing the children of a node that does not exist is a 404, not an empty page — the two mean different things to
+	 * a client walking the tree.
+	 */
+	@Test
+	void test09_getNodeChildrenNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/999/children")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Node 300 is unpublished and hidden from search, but must stay retrievable by id — the same decision the person
+	 * and legal entity lookups document for their administrative interface.
+	 */
+	@Test
+	void test10_getUnpublishedNodeById() {
+		setupCall()
+			.withServicePath(PATH + "/300")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)

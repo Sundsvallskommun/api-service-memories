@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
+import se.sundsvall.memories.api.model.NodeDetail;
 import se.sundsvall.memories.api.model.NodeParameters;
 import se.sundsvall.memories.api.model.PagedNodeResponse;
 import se.sundsvall.memories.service.NodeService;
@@ -50,5 +51,28 @@ class NodeResource {
 		@Valid final NodeParameters parameters) {
 
 		return ok(nodeService.search(parameters));
+	}
+
+	@GetMapping(path = "/{id}", produces = APPLICATION_JSON_VALUE)
+	@Operation(summary = "Get node by ID", description = "Get a specific archive or collection node together with the path from the root down to it, for a breadcrumb.")
+	@ApiResponse(responseCode = "200", description = "Successful operation")
+	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	ResponseEntity<NodeDetail> getNode(
+		@PathVariable @ValidMunicipalityId final String municipalityId,
+		@PathVariable final Integer id) {
+
+		return ok(nodeService.getById(id));
+	}
+
+	@GetMapping(path = "/{id}/children", produces = APPLICATION_JSON_VALUE)
+	@Operation(summary = "Get the children of a node", description = "List the nodes directly below a node, in the archive's own order unless another sort is requested. Takes the same filters as the search.")
+	@ApiResponse(responseCode = "200", description = "Successful operation")
+	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	ResponseEntity<PagedNodeResponse> getNodeChildren(
+		@PathVariable @ValidMunicipalityId final String municipalityId,
+		@PathVariable final Integer id,
+		@Valid final NodeParameters parameters) {
+
+		return ok(nodeService.searchChildren(id, parameters));
 	}
 }

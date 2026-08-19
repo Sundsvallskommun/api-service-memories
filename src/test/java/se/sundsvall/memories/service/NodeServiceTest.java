@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -9,17 +10,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.NodeParameters;
 import se.sundsvall.memories.integration.db.NodeRepository;
 import se.sundsvall.memories.integration.db.model.NodeEntity;
 import se.sundsvall.memories.integration.db.model.NodeTypeEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 // Which rows the filters select is verified against a real database in NodeSpecificationTest. These tests cover what
 // the service itself does: build the pageable, forward the parameters, and map the resulting page.
@@ -77,6 +82,138 @@ class NodeServiceTest {
 		verify(repositoryMock).findAllByParameters(parametersCaptor.capture(), eq(pageable));
 		assertThat(parametersCaptor.getValue()).isSameAs(parameters);
 		verifyNoMoreInteractions(repositoryMock);
+	}
+
+	@Test
+	void getByIdReturnsTheNodeWithItsPathRootFirst() {
+		final var node = node(111, 110);
+		when(repositoryMock.findDetailById(111)).thenReturn(Optional.of(node));
+		when(repositoryMock.findDetailById(110)).thenReturn(Optional.of(node(110, 100)));
+		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, null)));
+
+		final var result = service.getById(111);
+
+		assertThat(result.getNode().getId()).isEqualTo(111);
+		assertThat(result.getPath()).extracting("id").containsExactly(100, 110);
+	}
+
+	@Test
+	void getByIdReturnsAnEmptyPathForARootNode() {
+		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, null)));
+
+		final var result = service.getById(100);
+
+		assertThat(result.getPath()).isEmpty();
+		verify(repositoryMock).findDetailById(100);
+		verifyNoMoreInteractions(repositoryMock);
+	}
+
+	/**
+	 * The legacy schema writes "no parent" as 0 as well as NULL, and a node pointing at 0 is a root, not a child of a
+	 * node with id 0.
+	 */
+	@Test
+	void getByIdTreatsParentZeroAsARoot() {
+		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, 0)));
+
+		final var result = service.getById(100);
+
+		assertThat(result.getPath()).isEmpty();
+		verify(repositoryMock).findDetailById(100);
+		verifyNoMoreInteractions(repositoryMock);
+	}
+
+	/**
+	 * PARENTID carries no foreign key, so it can point at a node that does not exist. The walk stops there and returns
+	 * the part of the path it could resolve.
+	 */
+	@Test
+	void getByIdStopsAtAParentThatDoesNotExist() {
+		when(repositoryMock.findDetailById(111)).thenReturn(Optional.of(node(111, 110)));
+		when(repositoryMock.findDetailById(110)).thenReturn(Optional.empty());
+
+		final var result = service.getById(111);
+
+		assertThat(result.getPath()).isEmpty();
+	}
+
+	/**
+	 * A cyclic parent chain in the data must not hang the request. The walk stops the first time it meets a node it has
+	 * already seen.
+	 */
+	@Test
+	void getByIdStopsOnACyclicParentChain() {
+		when(repositoryMock.findDetailById(1)).thenReturn(Optional.of(node(1, 2)));
+		when(repositoryMock.findDetailById(2)).thenReturn(Optional.of(node(2, 1)));
+
+		final var result = service.getById(1);
+
+		assertThat(result.getNode().getId()).isEqualTo(1);
+		assertThat(result.getPath()).extracting("id").containsExactly(2);
+	}
+
+	@Test
+	void getByIdNotFound() {
+		when(repositoryMock.findDetailById(999)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.getById(999))
+			.isInstanceOf(ThrowableProblem.class)
+			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
+			.hasMessageContaining("Node with id '999' not found");
+	}
+
+	/**
+	 * Siblings default to the archive's own order, which is what SORT is for, with the name breaking its ties.
+	 */
+	@Test
+	void searchChildrenFallsBackToTheArchiveOrder() {
+		final var pageable = PageRequest.of(0, 100, Sort.by("sortOrder", "name"));
+		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, null)));
+		when(repositoryMock.findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(node(110, 100)), pageable, 1));
+
+		final var result = service.searchChildren(100, NodeParameters.create());
+
+		assertThat(result.getNodes()).extracting("id").containsExactly(110);
+		verify(repositoryMock).findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable));
+	}
+
+	@Test
+	void searchChildrenKeepsARequestedSort() {
+		final var requested = Sort.by(Sort.Direction.DESC, "name");
+		final var pageable = PageRequest.of(0, 100, requested);
+		final var parameters = NodeParameters.create();
+		parameters.setSortBy(List.of("name"));
+		parameters.setSortDirection(Sort.Direction.DESC);
+
+		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, null)));
+		when(repositoryMock.findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+		service.searchChildren(100, parameters);
+
+		verify(repositoryMock).findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable));
+	}
+
+	/**
+	 * The children of a node that does not exist is a 404, not an empty page: the two mean different things to a client
+	 * walking the tree.
+	 */
+	@Test
+	void searchChildrenOfUnknownNode() {
+		when(repositoryMock.findDetailById(999)).thenReturn(Optional.empty());
+
+		final var parameters = NodeParameters.create();
+		assertThatThrownBy(() -> service.searchChildren(999, parameters))
+			.isInstanceOf(ThrowableProblem.class)
+			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
+			.hasMessageContaining("Node with id '999' not found");
+		verify(repositoryMock).findDetailById(999);
+		verifyNoMoreInteractions(repositoryMock);
+	}
+
+	private static NodeEntity node(final Integer id, final Integer parentId) {
+		return NodeEntity.create().withId(id).withParentId(parentId).withName("Nod " + id);
 	}
 
 	@Test
