@@ -44,10 +44,9 @@ class PhotoMapperTest {
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getLargeImageFilename()).isEqualTo("FOTO.id_1234_fil_stor.jpg");
 		assertThat(result.getRights()).isEqualTo("Free use");
-		assertThat(result.getCreatorPersonId()).isEqualTo(1);
-		assertThat(result.getCreatorPerson()).isEqualTo("Anton Nordin");
-		assertThat(result.getCreatorLegalEntityId()).isEqualTo(10);
-		assertThat(result.getCreatorLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
+		assertThat(result.getCreator().getPersonId()).isEqualTo(1);
+		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getRelatedPhotoIds()).isNull();
 		assertThat(result.getSubjects()).isNull();
 	}

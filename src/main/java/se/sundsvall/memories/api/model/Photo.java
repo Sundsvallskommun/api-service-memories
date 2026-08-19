@@ -31,17 +31,8 @@ public class Photo {
 	@Schema(description = "Subject keyword")
 	private String subjectKeyword;
 
-	@Schema(description = "ID of the originator (upphovsman) when it is a person", examples = "1")
-	private Integer creatorPersonId;
-
-	@Schema(description = "Name of the originator when it is a person", examples = "Anton Nordin")
-	private String creatorPerson;
-
-	@Schema(description = "ID of the originator (upphovsman) when it is a legal entity", examples = "10")
-	private Integer creatorLegalEntityId;
-
-	@Schema(description = "Name of the originator when it is a legal entity", examples = "Nödhjälpskommittén 1888-1889")
-	private String creatorLegalEntity;
+	@Schema(implementation = Creator.class)
+	private Creator creator;
 
 	@Schema(description = "Comment / description")
 	private String comment;
@@ -679,55 +670,16 @@ public class Photo {
 		return this;
 	}
 
-	public Integer getCreatorPersonId() {
-		return creatorPersonId;
+	public Creator getCreator() {
+		return creator;
 	}
 
-	public void setCreatorPersonId(final Integer creatorPersonId) {
-		this.creatorPersonId = creatorPersonId;
+	public void setCreator(final Creator creator) {
+		this.creator = creator;
 	}
 
-	public Photo withCreatorPersonId(final Integer creatorPersonId) {
-		this.creatorPersonId = creatorPersonId;
-		return this;
-	}
-
-	public String getCreatorPerson() {
-		return creatorPerson;
-	}
-
-	public void setCreatorPerson(final String creatorPerson) {
-		this.creatorPerson = creatorPerson;
-	}
-
-	public Photo withCreatorPerson(final String creatorPerson) {
-		this.creatorPerson = creatorPerson;
-		return this;
-	}
-
-	public Integer getCreatorLegalEntityId() {
-		return creatorLegalEntityId;
-	}
-
-	public void setCreatorLegalEntityId(final Integer creatorLegalEntityId) {
-		this.creatorLegalEntityId = creatorLegalEntityId;
-	}
-
-	public Photo withCreatorLegalEntityId(final Integer creatorLegalEntityId) {
-		this.creatorLegalEntityId = creatorLegalEntityId;
-		return this;
-	}
-
-	public String getCreatorLegalEntity() {
-		return creatorLegalEntity;
-	}
-
-	public void setCreatorLegalEntity(final String creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
-	}
-
-	public Photo withCreatorLegalEntity(final String creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
+	public Photo withCreator(final Creator creator) {
+		this.creator = creator;
 		return this;
 	}
 
@@ -750,10 +702,7 @@ public class Photo {
 			&& Objects.equals(restricted, that.restricted) && Objects.equals(restrictionNote, that.restrictionNote) && Objects.equals(provenance, that.provenance)
 			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(relatedPhotoIds, that.relatedPhotoIds) && Objects.equals(subjects, that.subjects)
-			&& Objects.equals(creatorPersonId, that.creatorPersonId)
-			&& Objects.equals(creatorPerson, that.creatorPerson)
-			&& Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId)
-			&& Objects.equals(creatorLegalEntity, that.creatorLegalEntity);
+			&& Objects.equals(creator, that.creator);
 	}
 
 	@Override
@@ -762,7 +711,7 @@ public class Photo {
 			earliest, latest, observationDate, locationText, location, storageLocation, objectType, colorMode, negativePositive, transmissiveReflective,
 			imageCarrier, material, technique, function, height, width, diameter, framed, conditionCategory, conditionAssessment,
 			observerName, treatment, treatmentDate, signature, rights, restricted, restrictionNote, provenance,
-			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects, creatorPersonId, creatorPerson, creatorLegalEntityId, creatorLegalEntity);
+			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects, creator);
 	}
 
 	@Override
@@ -809,10 +758,7 @@ public class Photo {
 			", largeImageFilename='" + largeImageFilename + '\'' +
 			", relatedPhotoIds=" + relatedPhotoIds +
 			", subjects=" + subjects +
-			", creatorPersonId=" + creatorPersonId +
-			", creatorPerson='" + creatorPerson + '\'' +
-			", creatorLegalEntityId=" + creatorLegalEntityId +
-			", creatorLegalEntity='" + creatorLegalEntity + '\'' +
+			", creator=" + creator +
 			'}';
 	}
 }

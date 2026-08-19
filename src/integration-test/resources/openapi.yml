@@ -1455,6 +1455,33 @@ components:
           type: string
         message:
           type: string
+    Creator:
+      type: object
+      description: "The originator (upphovsman) of an object — a person, a legal entity,\
+        \ or both. Absent when the object has none."
+      properties:
+        personId:
+          type: integer
+          format: int32
+          description: ID of the originator when it is a person
+          examples:
+          - 1
+        person:
+          type: string
+          description: Name of the originator when it is a person
+          examples:
+          - Anton Nordin
+        legalEntityId:
+          type: integer
+          format: int32
+          description: ID of the originator when it is a legal entity
+          examples:
+          - 10
+        legalEntity:
+          type: string
+          description: Name of the originator when it is a legal entity
+          examples:
+          - Nödhjälpskommittén 1888-1889
     PagedTextResponse:
       type: object
       description: Paged text response
@@ -1571,28 +1598,8 @@ components:
           description: Resolved subject label from OCM (Ämne)
           examples:
           - Musik
-        creatorPersonId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a person
-          examples:
-          - 1
-        creatorPerson:
-          type: string
-          description: Name of the originator when it is a person
-          examples:
-          - Anton Nordin
-        creatorLegalEntityId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a legal entity
-          examples:
-          - 10
-        creatorLegalEntity:
-          type: string
-          description: Name of the originator when it is a legal entity
-          examples:
-          - Nödhjälpskommittén 1888-1889
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -2025,28 +2032,8 @@ components:
             locationText when set)
           examples:
           - Sundsvall
-        creatorPersonId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a person
-          examples:
-          - 1
-        creatorPerson:
-          type: string
-          description: Name of the originator when it is a person
-          examples:
-          - Anton Nordin
-        creatorLegalEntityId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a legal entity
-          examples:
-          - 10
-        creatorLegalEntity:
-          type: string
-          description: Name of the originator when it is a legal entity
-          examples:
-          - Nödhjälpskommittén 1888-1889
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -2176,28 +2163,8 @@ components:
         subjectKeyword:
           type: string
           description: Subject keyword
-        creatorPersonId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a person
-          examples:
-          - 1
-        creatorPerson:
-          type: string
-          description: Name of the originator when it is a person
-          examples:
-          - Anton Nordin
-        creatorLegalEntityId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a legal entity
-          examples:
-          - 10
-        creatorLegalEntity:
-          type: string
-          description: Name of the originator when it is a legal entity
-          examples:
-          - Nödhjälpskommittén 1888-1889
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -2918,28 +2885,8 @@ components:
           description: Film organization ID
           examples:
           - 1
-        creatorPersonId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a person
-          examples:
-          - 1
-        creatorPerson:
-          type: string
-          description: Name of the originator when it is a person
-          examples:
-          - Anton Nordin
-        creatorLegalEntityId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a legal entity
-          examples:
-          - 10
-        creatorLegalEntity:
-          type: string
-          description: Name of the originator when it is a legal entity
-          examples:
-          - Nödhjälpskommittén 1888-1889
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment
@@ -3299,28 +3246,8 @@ components:
           description: Resolved subject label from OCM (Ämne)
           examples:
           - Intervju
-        creatorPersonId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a person
-          examples:
-          - 1
-        creatorPerson:
-          type: string
-          description: Name of the originator when it is a person
-          examples:
-          - Anton Nordin
-        creatorLegalEntityId:
-          type: integer
-          format: int32
-          description: ID of the originator (upphovsman) when it is a legal entity
-          examples:
-          - 10
-        creatorLegalEntity:
-          type: string
-          description: Name of the originator when it is a legal entity
-          examples:
-          - Nödhjälpskommittén 1888-1889
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment

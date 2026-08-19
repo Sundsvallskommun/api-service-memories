@@ -45,10 +45,9 @@ class PublicationMapperTest {
 		final var result = PublicationMapper.toPublicationSummary(sampleEntity());
 
 		assertThat(result).isNotNull();
-		assertThat(result.getCreatorPersonId()).isEqualTo(1);
-		assertThat(result.getCreatorPerson()).isEqualTo("Anton Nordin");
-		assertThat(result.getCreatorLegalEntityId()).isEqualTo(10);
-		assertThat(result.getCreatorLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
+		assertThat(result.getCreator().getPersonId()).isEqualTo(1);
+		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getPublicationId()).isEqualTo(207);
 		assertThat(result.getPublicationType()).isEqualTo("Tidningar");
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");

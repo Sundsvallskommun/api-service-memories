@@ -40,17 +40,8 @@ public class Audio {
 	@Schema(description = "Resolved subject label from OCM (Ämne)", examples = "Intervju")
 	private String subject;
 
-	@Schema(description = "ID of the originator (upphovsman) when it is a person", examples = "1")
-	private Integer creatorPersonId;
-
-	@Schema(description = "Name of the originator when it is a person", examples = "Anton Nordin")
-	private String creatorPerson;
-
-	@Schema(description = "ID of the originator (upphovsman) when it is a legal entity", examples = "10")
-	private Integer creatorLegalEntityId;
-
-	@Schema(description = "Name of the originator when it is a legal entity", examples = "Nödhjälpskommittén 1888-1889")
-	private String creatorLegalEntity;
+	@Schema(implementation = Creator.class)
+	private Creator creator;
 
 	@Schema(description = "Comment", examples = "Audio recording of an interview")
 	private String comment;
@@ -279,55 +270,16 @@ public class Audio {
 		return this;
 	}
 
-	public Integer getCreatorPersonId() {
-		return creatorPersonId;
+	public Creator getCreator() {
+		return creator;
 	}
 
-	public void setCreatorPersonId(final Integer creatorPersonId) {
-		this.creatorPersonId = creatorPersonId;
+	public void setCreator(final Creator creator) {
+		this.creator = creator;
 	}
 
-	public Audio withCreatorPersonId(final Integer creatorPersonId) {
-		this.creatorPersonId = creatorPersonId;
-		return this;
-	}
-
-	public String getCreatorPerson() {
-		return creatorPerson;
-	}
-
-	public void setCreatorPerson(final String creatorPerson) {
-		this.creatorPerson = creatorPerson;
-	}
-
-	public Audio withCreatorPerson(final String creatorPerson) {
-		this.creatorPerson = creatorPerson;
-		return this;
-	}
-
-	public Integer getCreatorLegalEntityId() {
-		return creatorLegalEntityId;
-	}
-
-	public void setCreatorLegalEntityId(final Integer creatorLegalEntityId) {
-		this.creatorLegalEntityId = creatorLegalEntityId;
-	}
-
-	public Audio withCreatorLegalEntityId(final Integer creatorLegalEntityId) {
-		this.creatorLegalEntityId = creatorLegalEntityId;
-		return this;
-	}
-
-	public String getCreatorLegalEntity() {
-		return creatorLegalEntity;
-	}
-
-	public void setCreatorLegalEntity(final String creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
-	}
-
-	public Audio withCreatorLegalEntity(final String creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
+	public Audio withCreator(final Creator creator) {
+		this.creator = creator;
 		return this;
 	}
 
@@ -342,16 +294,13 @@ public class Audio {
 			&& Objects.equals(subjectId, audio.subjectId) && Objects.equals(subject, audio.subject)
 			&& Objects.equals(comment, audio.comment) && Objects.equals(audioMimeType, audio.audioMimeType)
 			&& Objects.equals(nodeId, audio.nodeId) && Objects.equals(options, audio.options) && Objects.equals(deletedDate, audio.deletedDate)
-			&& Objects.equals(creatorPersonId, audio.creatorPersonId)
-			&& Objects.equals(creatorPerson, audio.creatorPerson)
-			&& Objects.equals(creatorLegalEntityId, audio.creatorLegalEntityId)
-			&& Objects.equals(creatorLegalEntity, audio.creatorLegalEntity);
+			&& Objects.equals(creator, audio.creator);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, subjectId, subject, comment,
-			audioMimeType, nodeId, options, deletedDate, creatorPersonId, creatorPerson, creatorLegalEntityId, creatorLegalEntity);
+			audioMimeType, nodeId, options, deletedDate, creator);
 	}
 
 	@Override
@@ -373,10 +322,7 @@ public class Audio {
 			", nodeId=" + nodeId +
 			", options=" + options +
 			", deletedDate=" + deletedDate +
-			", creatorPersonId=" + creatorPersonId +
-			", creatorPerson='" + creatorPerson + '\'' +
-			", creatorLegalEntityId=" + creatorLegalEntityId +
-			", creatorLegalEntity='" + creatorLegalEntity + '\'' +
+			", creator=" + creator +
 			'}';
 	}
 }

@@ -18,10 +18,12 @@
 			"locationText": "Sundsvall",
 			"location": "Sundsvall",
 			"organizationId": 1,
-			"creatorPersonId": 1,
-			"creatorPerson": "Anton Nordin",
-			"creatorLegalEntityId": 10,
-			"creatorLegalEntity": "Nödhjälpskommittén 1888-1889",
+			"creator": {
+				"personId": 1,
+				"person": "Anton Nordin",
+				"legalEntityId": 10,
+				"legalEntity": "Nödhjälpskommittén 1888-1889"
+			},
 			"comment": "Film om midsommarfirande på Stora torget",
 			"filmMimeType": "video/mp4",
 			"nodeId": 100,

@@ -63,20 +63,15 @@ class FilmTest {
 			.withLocation(location)
 			.withOrganizationId(organizationId)
 			.withComment(comment)
-			.withCreatorPersonId(1)
-			.withCreatorPerson("Anton Nordin")
-			.withCreatorLegalEntityId(10)
-			.withCreatorLegalEntity("Nödhjälpskommittén 1888-1889")
+			.withCreator(Creator.create().withPersonId(1).withPerson("Anton Nordin").withLegalEntityId(10).withLegalEntity("Nödhjälpskommittén 1888-1889"))
 			.withFilmMimeType(filmMimeType)
 			.withNodeId(nodeId)
 			.withOptions(options)
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getCreatorPersonId()).isEqualTo(1);
-		assertThat(result.getCreatorPerson()).isEqualTo("Anton Nordin");
-		assertThat(result.getCreatorLegalEntityId()).isEqualTo(10);
-		assertThat(result.getCreatorLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
+		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getFilmId()).isEqualTo(filmId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getObjectFilePath()).isEqualTo(objectFilePath);

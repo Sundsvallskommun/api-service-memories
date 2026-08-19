@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.util.Optional;
+import se.sundsvall.memories.api.model.Creator;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 
@@ -22,6 +23,24 @@ final class CreatorMapper {
 	private static final Integer LEGAL_ENTITY_PLACEHOLDER_ID = 1;
 
 	private CreatorMapper() {}
+
+	/**
+	 * The originator of an object, or {@code null} when it has none — which is the common case, since both columns
+	 * default to a sentinel.
+	 *
+	 * @param  person      the association behind {@code U_E_ID}
+	 * @param  legalEntity the association behind {@code U_J_ID}
+	 * @return             the mapped {@link Creator}, or {@code null} when neither points at a real row
+	 */
+	static Creator toCreator(final PersonEntity person, final LegalEntityEntity legalEntity) {
+		final var creator = Creator.create()
+			.withPersonId(personId(person))
+			.withPerson(personName(person))
+			.withLegalEntityId(legalEntityId(legalEntity))
+			.withLegalEntity(legalEntityName(legalEntity));
+
+		return creator.equals(Creator.create()) ? null : creator;
+	}
 
 	static Integer personId(final PersonEntity person) {
 		return realPerson(person)

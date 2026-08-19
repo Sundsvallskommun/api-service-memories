@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import se.sundsvall.memories.api.model.Audio;
+import se.sundsvall.memories.api.model.Creator;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
@@ -54,10 +55,7 @@ class AudioMapperTest {
 					.withSubjectId(7)
 					.withSubject("Intervju")
 					.withComment("A comment")
-					.withCreatorPersonId(1)
-					.withCreatorPerson("Anton Nordin")
-					.withCreatorLegalEntityId(10)
-					.withCreatorLegalEntity("Nödhjälpskommittén 1888-1889")
+					.withCreator(Creator.create().withPersonId(1).withPerson("Anton Nordin").withLegalEntityId(10).withLegalEntity("Nödhjälpskommittén 1888-1889"))
 					.withAudioMimeType("audio/mpeg")
 					.withNodeId(6)
 					.withOptions(4)

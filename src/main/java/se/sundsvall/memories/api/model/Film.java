@@ -37,17 +37,8 @@ public class Film {
 	@Schema(description = "Film organization ID", examples = "1")
 	private Integer organizationId;
 
-	@Schema(description = "ID of the originator (upphovsman) when it is a person", examples = "1")
-	private Integer creatorPersonId;
-
-	@Schema(description = "Name of the originator when it is a person", examples = "Anton Nordin")
-	private String creatorPerson;
-
-	@Schema(description = "ID of the originator (upphovsman) when it is a legal entity", examples = "10")
-	private Integer creatorLegalEntityId;
-
-	@Schema(description = "Name of the originator when it is a legal entity", examples = "Nödhjälpskommittén 1888-1889")
-	private String creatorLegalEntity;
+	@Schema(implementation = Creator.class)
+	private Creator creator;
 
 	@Schema(description = "Comment", examples = "A film about midsummer celebrations")
 	private String comment;
@@ -263,55 +254,16 @@ public class Film {
 		return this;
 	}
 
-	public Integer getCreatorPersonId() {
-		return creatorPersonId;
+	public Creator getCreator() {
+		return creator;
 	}
 
-	public void setCreatorPersonId(final Integer creatorPersonId) {
-		this.creatorPersonId = creatorPersonId;
+	public void setCreator(final Creator creator) {
+		this.creator = creator;
 	}
 
-	public Film withCreatorPersonId(final Integer creatorPersonId) {
-		this.creatorPersonId = creatorPersonId;
-		return this;
-	}
-
-	public String getCreatorPerson() {
-		return creatorPerson;
-	}
-
-	public void setCreatorPerson(final String creatorPerson) {
-		this.creatorPerson = creatorPerson;
-	}
-
-	public Film withCreatorPerson(final String creatorPerson) {
-		this.creatorPerson = creatorPerson;
-		return this;
-	}
-
-	public Integer getCreatorLegalEntityId() {
-		return creatorLegalEntityId;
-	}
-
-	public void setCreatorLegalEntityId(final Integer creatorLegalEntityId) {
-		this.creatorLegalEntityId = creatorLegalEntityId;
-	}
-
-	public Film withCreatorLegalEntityId(final Integer creatorLegalEntityId) {
-		this.creatorLegalEntityId = creatorLegalEntityId;
-		return this;
-	}
-
-	public String getCreatorLegalEntity() {
-		return creatorLegalEntity;
-	}
-
-	public void setCreatorLegalEntity(final String creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
-	}
-
-	public Film withCreatorLegalEntity(final String creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
+	public Film withCreator(final Creator creator) {
+		this.creator = creator;
 		return this;
 	}
 
@@ -326,16 +278,13 @@ public class Film {
 			&& Objects.equals(organizationId, film.organizationId)
 			&& Objects.equals(comment, film.comment) && Objects.equals(filmMimeType, film.filmMimeType)
 			&& Objects.equals(nodeId, film.nodeId) && Objects.equals(options, film.options) && Objects.equals(deletedDate, film.deletedDate)
-			&& Objects.equals(creatorPersonId, film.creatorPersonId)
-			&& Objects.equals(creatorPerson, film.creatorPerson)
-			&& Objects.equals(creatorLegalEntityId, film.creatorLegalEntityId)
-			&& Objects.equals(creatorLegalEntity, film.creatorLegalEntity);
+			&& Objects.equals(creator, film.creator);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, organizationId, comment, filmMimeType, nodeId, options,
-			deletedDate, creatorPersonId, creatorPerson, creatorLegalEntityId, creatorLegalEntity);
+			deletedDate, creator);
 	}
 
 	@Override
@@ -356,10 +305,7 @@ public class Film {
 			", nodeId=" + nodeId +
 			", options=" + options +
 			", deletedDate=" + deletedDate +
-			", creatorPersonId=" + creatorPersonId +
-			", creatorPerson='" + creatorPerson + '\'' +
-			", creatorLegalEntityId=" + creatorLegalEntityId +
-			", creatorLegalEntity='" + creatorLegalEntity + '\'' +
+			", creator=" + creator +
 			'}';
 	}
 }
