@@ -1,0 +1,73 @@
+{
+	"_meta": {
+		"count": 5,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 5
+	},
+	"nodes": [
+		{
+			"id": 100,
+			"name": "Sundsvalls stads arkiv",
+			"nodeTypeId": 1,
+			"nodeType": "Arkiv",
+			"startYear": 1862,
+			"stopYear": 1951,
+			"description": "Handlingar från stadsfullmäktige",
+			"sortOrder": 10,
+			"subItemCount": 3,
+			"publishedSubItemCount": 2,
+			"options": 6
+		},
+		{
+			"id": 110,
+			"parentId": 100,
+			"name": "Protokoll",
+			"nodeTypeId": 2,
+			"nodeType": "Serie",
+			"startYear": 1862,
+			"stopYear": 1900,
+			"description": "Stadsfullmäktiges protokoll",
+			"sortOrder": 20,
+			"subItemCount": 2,
+			"publishedSubItemCount": 2,
+			"options": 6
+		},
+		{
+			"id": 120,
+			"parentId": 100,
+			"name": "Räkenskaper",
+			"nodeTypeId": 2,
+			"nodeType": "Serie",
+			"startYear": 1900,
+			"stopYear": 0,
+			"description": "Huvudböcker, pågående serie",
+			"sortOrder": 30,
+			"subItemCount": 1,
+			"publishedSubItemCount": 0,
+			"options": 4
+		},
+		{
+			"id": 200,
+			"name": "Fotosamlingen",
+			"nodeTypeId": 3,
+			"nodeType": "Samling",
+			"startYear": 1900,
+			"description": "Glasplåtar från stadens fotografer",
+			"sortOrder": 40,
+			"subItemCount": 5,
+			"publishedSubItemCount": 5,
+			"options": 6
+		},
+		{
+			"id": 400,
+			"name": "Nod utan typ",
+			"description": "Pekar på en nodtyp som saknas",
+			"sortOrder": 60,
+			"subItemCount": 0,
+			"publishedSubItemCount": 0,
+			"options": 6
+		}
+	]
+}
