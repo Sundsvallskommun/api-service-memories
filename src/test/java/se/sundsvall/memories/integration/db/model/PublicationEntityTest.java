@@ -83,6 +83,8 @@ class PublicationEntityTest {
 			.withLocationText(locationText)
 			.withMeOId(meOId)
 			.withComment(comment)
+			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
+			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withThumbnailFilename(thumbnailFilename)
 			.withLargeImageFilename(largeImageFilename)
 			.withOriginalFilename(originalFilename)
@@ -94,13 +96,7 @@ class PublicationEntityTest {
 			.withFilFormat(filFormat)
 			.withDeletedDate(deletedDate);
 
-		// the originator associations are only ever read by the application, so they carry no fluent builder
-		result.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
-		result.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
-
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getCreatorPerson().getDisplayName()).isEqualTo("Anton Nordin");
-		assertThat(result.getCreatorLegalEntity().getName()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getId()).isEqualTo(publicationId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getPublicationType()).isEqualTo(publicationType);

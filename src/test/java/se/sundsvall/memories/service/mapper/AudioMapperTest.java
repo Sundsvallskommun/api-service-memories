@@ -9,8 +9,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import se.sundsvall.memories.api.model.Audio;
+import se.sundsvall.memories.api.model.Creator;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +36,8 @@ class AudioMapperTest {
 					.withLocationText("Sundsvall")
 					.withSubject(OcmEntity.create().withId(7).withText("Intervju"))
 					.withComment("A comment")
+					.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
+					.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 					.withAudioMimeType("audio/mpeg")
 					.withNodeId(6)
 					.withOptions(4)
@@ -50,6 +55,7 @@ class AudioMapperTest {
 					.withSubjectId(7)
 					.withSubject("Intervju")
 					.withComment("A comment")
+					.withCreator(Creator.create().withPersonId(1).withPerson("Anton Nordin").withLegalEntityId(10).withLegalEntity("Nödhjälpskommittén 1888-1889"))
 					.withAudioMimeType("audio/mpeg")
 					.withNodeId(6)
 					.withOptions(4)

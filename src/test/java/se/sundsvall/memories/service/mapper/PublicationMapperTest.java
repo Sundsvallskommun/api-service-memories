@@ -15,7 +15,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 class PublicationMapperTest {
 
 	private static PublicationEntity sampleEntity() {
-		final var entity = PublicationEntity.create()
+		return PublicationEntity.create()
 			.withId(207)
 			.withFilename("alfwar-1841.xml")
 			.withPublicationType("Tidningar")
@@ -28,6 +28,8 @@ class PublicationMapperTest {
 			.withTopography(TopographyEntity.create().withId(4).withName("Sundsvall"))
 			.withLocationText("Sundsvall")
 			.withComment("Archive comment")
+			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
+			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withThumbnailFilename("PUBL.id_207_fil_liten.jpeg")
 			.withLargeImageFilename("PUBL.id_207_fil_stor.jpeg")
 			.withOcrFilename("PUBL.id_207_fil_txt.xml")
@@ -36,12 +38,6 @@ class PublicationMapperTest {
 			.withOptions(4)
 			.withFilFormat("text")
 			.withDeletedDate(LocalDate.of(2026, Month.JANUARY, 15));
-
-		// the originator associations carry no fluent builder: the application only ever reads them
-		entity.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
-		entity.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
-
-		return entity;
 	}
 
 	@Test
