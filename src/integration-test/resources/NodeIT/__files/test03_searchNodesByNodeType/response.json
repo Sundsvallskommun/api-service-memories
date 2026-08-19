@@ -1,0 +1,39 @@
+{
+	"_meta": {
+		"count": 2,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 2
+	},
+	"nodes": [
+		{
+			"id": 110,
+			"parentId": 100,
+			"name": "Protokoll",
+			"nodeTypeId": 2,
+			"nodeType": "Serie",
+			"startYear": 1862,
+			"stopYear": 1900,
+			"description": "Stadsfullmäktiges protokoll",
+			"sortOrder": 20,
+			"subItemCount": 2,
+			"publishedSubItemCount": 2,
+			"options": 6
+		},
+		{
+			"id": 120,
+			"parentId": 100,
+			"name": "Räkenskaper",
+			"nodeTypeId": 2,
+			"nodeType": "Serie",
+			"startYear": 1900,
+			"stopYear": 0,
+			"description": "Huvudböcker, pågående serie",
+			"sortOrder": 30,
+			"subItemCount": 1,
+			"publishedSubItemCount": 0,
+			"options": 4
+		}
+	]
+}
