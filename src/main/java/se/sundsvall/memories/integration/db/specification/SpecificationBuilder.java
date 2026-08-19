@@ -211,6 +211,29 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows whose number is at least the value, treating a row without one as an open period rather than as no
+	 * period. The archive nodes need this: a series that has not ended carries no stop year, so it is still running in
+	 * every range that starts after it did. The legacy schema expresses "unknown" as both {@code NULL} and {@code 0},
+	 * so both count as open. Matches every row when the value is {@code null}.
+	 */
+	public Specification<T> buildNumberAtLeastOrOpenFilter(final String attribute, final Integer value) {
+		if (value == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> cb.or(isOpenNumber(cb, root.get(attribute)), cb.greaterThanOrEqualTo(root.get(attribute), value));
+	}
+
+	/**
+	 * Matches rows whose number is at most the value. See {@link #buildNumberAtLeastOrOpenFilter(String, Integer)}.
+	 */
+	public Specification<T> buildNumberAtMostOrOpenFilter(final String attribute, final Integer value) {
+		if (value == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> cb.or(isOpenNumber(cb, root.get(attribute)), cb.lessThanOrEqualTo(root.get(attribute), value));
+	}
+
+	/**
 	 * Left-fetches an association, adding no restriction of its own. The fetch is skipped for the count query Spring
 	 * Data derives from the same specification, where a fetch join is invalid.
 	 */
@@ -221,6 +244,14 @@ public class SpecificationBuilder<T> {
 			}
 			return cb.conjunction();
 		};
+	}
+
+	/**
+	 * A number that carries no information: the legacy schema leaves an unknown year as {@code NULL} in some rows and as
+	 * {@code 0} in others, and neither bounds a period.
+	 */
+	private Predicate isOpenNumber(final CriteriaBuilder cb, final Expression<Integer> number) {
+		return cb.or(cb.isNull(number), cb.equal(number, 0));
 	}
 
 	/**

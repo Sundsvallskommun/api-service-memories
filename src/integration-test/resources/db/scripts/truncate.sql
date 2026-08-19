@@ -12,6 +12,8 @@ truncate table PERSON;
 truncate table PUBL;
 truncate table PUBL_TYP;
 truncate table SJOMAN;
+truncate table TBL_NODES;
+truncate table TBL_NODETYPES;
 truncate table TEXT;
 truncate table TEXT_MULTI;
 truncate table TOPOGRAFI;
