@@ -59,10 +59,6 @@ public interface FilmSpecification {
 	}
 
 	/**
-	 * Fetches both originator associations, which the mapper reads a name from on every row. Without this each row
-	 * costs two more queries.
-	 */
-	/**
 	 * The attributes an originator can be found by: a person's two name columns, a legal entity's name and its
 	 * alternative names. Each association also names its sentinel row, which never counts as a match.
 	 */
@@ -83,6 +79,10 @@ public interface FilmSpecification {
 		return BUILDER.buildAssociationEqualFilter(CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, creatorLegalEntityId);
 	}
 
+	/**
+	 * Fetches both originator associations, which the mapper reads a name from on every row. Without this each row
+	 * costs two more queries.
+	 */
 	static Specification<FilmEntity> fetchCreators() {
 		return BUILDER.buildFetchJoin(CREATOR_PERSON)
 			.and(BUILDER.buildFetchJoin(CREATOR_LEGAL_ENTITY));
