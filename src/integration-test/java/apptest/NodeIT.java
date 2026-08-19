@@ -21,7 +21,8 @@ class NodeIT extends AbstractAppTest {
 	private static final String PATH = "/" + MUNICIPALITY_ID + "/nodes";
 
 	/**
-	 * Node 400 points at a node type that does not exist, so it comes back without a type rather than not at all.
+	 * Node 400 points at a node type that does not exist, so it comes back without a type rather than not at all. Node
+	 * 500 is soft-deleted and node 300 unpublished, and neither may appear.
 	 */
 	@Test
 	void test01_searchNodes() {

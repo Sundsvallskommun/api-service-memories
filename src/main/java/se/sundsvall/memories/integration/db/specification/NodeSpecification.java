@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.NodeEntity;
 import se.sundsvall.memories.integration.db.model.NodeTypeEntity_;
 
+import static se.sundsvall.memories.integration.db.model.NodeEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.DESCRIPTION;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.NAME;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.NODE_TYPE;
@@ -38,6 +39,14 @@ public interface NodeSpecification {
 
 	static Specification<NodeEntity> activeUntil(final Integer yearTo) {
 		return BUILDER.buildNumberAtMostOrOpenFilter(START_YEAR, yearTo);
+	}
+
+	/**
+	 * Deletion sets {@code DELETEDDATE} but leaves the published bit set, so {@link #published()} alone does not hide
+	 * the row.
+	 */
+	static Specification<NodeEntity> notDeleted() {
+		return BUILDER.buildIsNullFilter(DELETED_DATE);
 	}
 
 	static Specification<NodeEntity> published() {

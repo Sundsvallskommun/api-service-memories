@@ -13,6 +13,7 @@ import static se.sundsvall.memories.integration.db.specification.NodeSpecificati
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.fetchNodeType;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasNodeType;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.NodeSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.published;
 
 @CircuitBreaker(name = "nodeRepository")
@@ -20,6 +21,7 @@ public interface NodeRepository extends JpaRepository<NodeEntity, Integer>, JpaS
 
 	default Page<NodeEntity> findAllByParameters(final NodeParameters parameters, final Pageable pageable) {
 		return findAll(fetchNodeType()
+			.and(notDeleted())
 			.and(published())
 			.and(matches(parameters.getQuery()))
 			.and(hasNodeType(parameters.getNodeTypeId()))
