@@ -8,11 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import se.sundsvall.memories.api.model.Creator;
 import se.sundsvall.memories.api.model.Film;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
-import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
-import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,8 +32,6 @@ class FilmMapperTest {
 					.withLocationText("Sundsvall")
 					.withOrganizationId(3)
 					.withComment("A comment")
-					.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
-					.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 					.withFilmMimeType("video/mp4")
 					.withNodeId(6)
 					.withOptions(0)
@@ -53,7 +48,6 @@ class FilmMapperTest {
 					.withLocation("Sundsvall kommun")
 					.withOrganizationId(3)
 					.withComment("A comment")
-					.withCreator(Creator.create().withPersonId(1).withPerson("Anton Nordin").withLegalEntityId(10).withLegalEntity("Nödhjälpskommittén 1888-1889"))
 					.withFilmMimeType("video/mp4")
 					.withNodeId(6)
 					.withOptions(0)

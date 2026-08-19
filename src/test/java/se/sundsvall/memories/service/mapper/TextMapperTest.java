@@ -16,7 +16,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 class TextMapperTest {
 
 	private static TextEntity sampleEntity() {
-		return TextEntity.create()
+		final var entity = TextEntity.create()
 			.withId(1001)
 			.withFilename("minne.xml")
 			.withDocumentDate("1920-01-01")
@@ -26,13 +26,17 @@ class TextMapperTest {
 			.withLocationText("Sundsvall")
 			.withSubject(OcmEntity.create().withId(20).withText("Musik"))
 			.withComment("Memoir")
-			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
-			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withThumbnailFilename("TEXT.id_1001_fil_liten.jpeg")
 			.withLargeImageFilename("TEXT.id_1001_fil_stor.jpeg")
 			.withOcrFilename("TEXT.id_1001_fil_txt.xml")
 			.withXmltext("<text>OCR content</text>")
 			.withOptions(4);
+
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		entity.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		entity.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
+
+		return entity;
 	}
 
 	@Test

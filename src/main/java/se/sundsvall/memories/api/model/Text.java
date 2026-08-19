@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Schema(description = "Text model")
-public class Text {
+public class Text extends AbstractCreatedObject<Text> {
 
 	@Schema(description = "Text ID", examples = "1001")
 	private Integer textId;
@@ -33,9 +33,6 @@ public class Text {
 
 	@Schema(description = "Resolved subject label from OCM (Ämne)", examples = "Musik")
 	private String subject;
-
-	@Schema(implementation = Creator.class)
-	private Creator creator;
 
 	@Schema(description = "Comment / description", examples = "Memoir transcribed from handwritten notes")
 	private String comment;
@@ -251,19 +248,6 @@ public class Text {
 
 	public Text withMediaFiles(final List<TextMediaFile> mediaFiles) {
 		this.mediaFiles = mediaFiles;
-		return this;
-	}
-
-	public Creator getCreator() {
-		return creator;
-	}
-
-	public void setCreator(final Creator creator) {
-		this.creator = creator;
-	}
-
-	public Text withCreator(final Creator creator) {
-		this.creator = creator;
 		return this;
 	}
 

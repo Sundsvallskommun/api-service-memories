@@ -13,7 +13,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "TEXT")
-public class TextEntity {
+public class TextEntity extends AbstractCreatedEntity {
 
 	@Id
 	@Column(name = "ID_ID")
@@ -38,18 +38,6 @@ public class TextEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "D_O_ID")
 	private OcmEntity subject;
-
-	/**
-	 * The upphovsman (originator) — a person, a legal entity, or neither. Both columns default to a sentinel row rather
-	 * than to {@code NULL}, which {@link se.sundsvall.memories.service.mapper.CreatorMapper} reads as absent.
-	 */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "U_E_ID")
-	private PersonEntity creatorPerson;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "U_J_ID")
-	private LegalEntityEntity creatorLegalEntity;
 
 	@Column(name = "KOMMENT_DOC", length = 4000)
 	private String comment;
@@ -336,32 +324,6 @@ public class TextEntity {
 
 	public TextEntity withDeletedDate(final LocalDate deletedDate) {
 		this.deletedDate = deletedDate;
-		return this;
-	}
-
-	public PersonEntity getCreatorPerson() {
-		return creatorPerson;
-	}
-
-	public void setCreatorPerson(final PersonEntity creatorPerson) {
-		this.creatorPerson = creatorPerson;
-	}
-
-	public TextEntity withCreatorPerson(final PersonEntity creatorPerson) {
-		this.creatorPerson = creatorPerson;
-		return this;
-	}
-
-	public LegalEntityEntity getCreatorLegalEntity() {
-		return creatorLegalEntity;
-	}
-
-	public void setCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
-	}
-
-	public TextEntity withCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
 		return this;
 	}
 

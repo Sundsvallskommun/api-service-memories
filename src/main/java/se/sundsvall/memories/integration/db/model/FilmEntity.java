@@ -1,5 +1,6 @@
 package se.sundsvall.memories.integration.db.model;
 
+import jakarta.persistence.AssociationOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,7 +13,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "FILM")
-public class FilmEntity {
+@AssociationOverride(name = "creatorPerson", joinColumns = @JoinColumn(name = "FILM_U_E_ID"))
+@AssociationOverride(name = "creatorLegalEntity", joinColumns = @JoinColumn(name = "FILM_U_J_ID"))
+public class FilmEntity extends AbstractCreatedEntity {
 
 	@Id
 	@Column(name = "FILM_ID")
@@ -42,18 +45,6 @@ public class FilmEntity {
 
 	@Column(name = "FILM_O_ID")
 	private Integer organizationId;
-
-	/**
-	 * The upphovsman (originator) — a person, a legal entity, or neither. Both columns default to a sentinel row rather
-	 * than to {@code NULL}, which {@link se.sundsvall.memories.service.mapper.CreatorMapper} reads as absent.
-	 */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "FILM_U_E_ID")
-	private PersonEntity creatorPerson;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "FILM_U_J_ID")
-	private LegalEntityEntity creatorLegalEntity;
 
 	@Column(name = "KOMMENT_FILM", length = 4000)
 	private String comment;
@@ -253,32 +244,6 @@ public class FilmEntity {
 
 	public FilmEntity withDeletedDate(final LocalDate deletedDate) {
 		this.deletedDate = deletedDate;
-		return this;
-	}
-
-	public PersonEntity getCreatorPerson() {
-		return creatorPerson;
-	}
-
-	public void setCreatorPerson(final PersonEntity creatorPerson) {
-		this.creatorPerson = creatorPerson;
-	}
-
-	public FilmEntity withCreatorPerson(final PersonEntity creatorPerson) {
-		this.creatorPerson = creatorPerson;
-		return this;
-	}
-
-	public LegalEntityEntity getCreatorLegalEntity() {
-		return creatorLegalEntity;
-	}
-
-	public void setCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
-	}
-
-	public FilmEntity withCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
 		return this;
 	}
 
