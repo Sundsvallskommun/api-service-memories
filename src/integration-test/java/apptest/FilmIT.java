@@ -84,4 +84,28 @@ class FilmIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * Film 1 is the one row with a real originator; every other row carries the sentinels that mean "no originator",
+	 * so a name search must return exactly one film.
+	 */
+	@Test
+	void test09_searchFilmsByCreator() {
+		setupCall()
+			.withServicePath(PATH + "?creator=Nordin")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test10_searchFilmsByCreatorLegalEntityId() {
+		setupCall()
+			.withServicePath(PATH + "?creatorLegalEntityId=10")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

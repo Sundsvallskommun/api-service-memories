@@ -20,6 +20,15 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 	@Schema(description = "Location (substring, case-insensitive; resolved place name or free-text location)", examples = "Sundsvall")
 	private String location;
 
+	@Schema(description = "Originator (upphovsman) name (substring, case-insensitive; matches a person or a legal entity). Only object types carry an originator, so this filter also excludes the register types.", examples = "Nordin")
+	private String creator;
+
+	@Schema(description = "ID of the originator, when it is a person", examples = "1")
+	private Integer creatorPersonId;
+
+	@Schema(description = "ID of the originator, when it is a legal entity", examples = "10")
+	private Integer creatorLegalEntityId;
+
 	public static CombinedObjectParameters create() {
 		return new CombinedObjectParameters();
 	}
@@ -76,6 +85,30 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		return this;
 	}
 
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(final String creator) {
+		this.creator = creator;
+	}
+
+	public Integer getCreatorPersonId() {
+		return creatorPersonId;
+	}
+
+	public void setCreatorPersonId(final Integer creatorPersonId) {
+		this.creatorPersonId = creatorPersonId;
+	}
+
+	public Integer getCreatorLegalEntityId() {
+		return creatorLegalEntityId;
+	}
+
+	public void setCreatorLegalEntityId(final Integer creatorLegalEntityId) {
+		this.creatorLegalEntityId = creatorLegalEntityId;
+	}
+
 	public CombinedObjectParameters withPage(final int page) {
 		super.setPage(page);
 		return this;
@@ -93,12 +126,13 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		if (!super.equals(o))
 			return false;
 		final CombinedObjectParameters that = (CombinedObjectParameters) o;
-		return Objects.equals(query, that.query) && Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location);
+		return Objects.equals(query, that.query) && Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location)
+			&& Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId) && Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location);
+		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, creator, creatorPersonId, creatorLegalEntityId);
 	}
 
 	@Override
@@ -108,6 +142,9 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
 			", location='" + location + '\'' +
+			", creator='" + creator + '\'' +
+			", creatorPersonId=" + creatorPersonId +
+			", creatorLegalEntityId=" + creatorLegalEntityId +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

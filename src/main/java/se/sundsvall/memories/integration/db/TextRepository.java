@@ -12,8 +12,11 @@ import se.sundsvall.memories.integration.db.model.TextEntity;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.fetchCreators;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.fetchSubject;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.fetchTopography;
+import static se.sundsvall.memories.integration.db.specification.TextSpecification.hasCreatorLegalEntity;
+import static se.sundsvall.memories.integration.db.specification.TextSpecification.hasCreatorPerson;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.TextSpecification.matchesCreator;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.TextSpecification.published;
@@ -32,7 +35,10 @@ public interface TextRepository extends JpaRepository<TextEntity, Integer>, JpaS
 			.and(matches(parameters.getQuery()))
 			.and(matchesLocation(parameters.getLocation()))
 			.and(yearAtLeast(parameters.getYearFrom()))
-			.and(yearAtMost(parameters.getYearTo())),
+			.and(yearAtMost(parameters.getYearTo()))
+			.and(matchesCreator(parameters.getCreator()))
+			.and(hasCreatorPerson(parameters.getCreatorPersonId()))
+			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId())),
 			pageable);
 	}
 

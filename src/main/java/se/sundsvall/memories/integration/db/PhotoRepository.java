@@ -14,9 +14,12 @@ import se.sundsvall.memories.integration.db.model.PhotoEntity;
 
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.fetchCreators;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.fetchTopography;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasCreatorLegalEntity;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasCreatorPerson;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasObjectType;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.matchesCreator;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.published;
@@ -35,7 +38,10 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, Jp
 			.and(hasObjectType(parameters.getObjectType()))
 			.and(matchesLocation(parameters.getLocation()))
 			.and(yearAtLeast(parameters.getYearFrom()))
-			.and(yearAtMost(parameters.getYearTo())),
+			.and(yearAtMost(parameters.getYearTo()))
+			.and(matchesCreator(parameters.getCreator()))
+			.and(hasCreatorPerson(parameters.getCreatorPersonId()))
+			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId())),
 			pageable);
 	}
 

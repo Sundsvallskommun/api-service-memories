@@ -11,8 +11,11 @@ import se.sundsvall.memories.integration.db.model.PublicationEntity;
 
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.fetchCreators;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.fetchTopography;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.hasCreatorLegalEntity;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.hasCreatorPerson;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.matchesCreator;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.published;
@@ -30,7 +33,10 @@ public interface PublicationRepository extends JpaRepository<PublicationEntity, 
 			.and(matches(parameters.getQuery()))
 			.and(matchesLocation(parameters.getLocation()))
 			.and(yearAtLeast(parameters.getYearFrom()))
-			.and(yearAtMost(parameters.getYearTo())),
+			.and(yearAtMost(parameters.getYearTo()))
+			.and(matchesCreator(parameters.getCreator()))
+			.and(hasCreatorPerson(parameters.getCreatorPersonId()))
+			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId())),
 			pageable);
 	}
 

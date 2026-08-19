@@ -69,6 +69,42 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows where the value occurs in at least one attribute of at least one of the given associations, skipping
+	 * the sentinel row each association may point at. The originator filters need this: an object names its upphovsman
+	 * through either a person or a legal entity, and both foreign keys default to a placeholder row rather than to
+	 * {@code NULL} — a placeholder is called "Ingen", so without the guard a search for that word would return
+	 * everything. Matches every row when the value is blank.
+	 */
+	public Specification<T> buildAssociationLikeAnyFilter(final List<AssociationAttributes> associations, final String value) {
+		if (value == null || value.isBlank()) {
+			return Specification.unrestricted();
+		}
+		final var pattern = "%" + escapeWildcards(value.trim()) + "%";
+		return (root, _, cb) -> cb.or(associations.stream()
+			.map(association -> matchesAssociation(root, cb, association, pattern))
+			.toArray(Predicate[]::new));
+	}
+
+	private Predicate matchesAssociation(final Root<T> root, final CriteriaBuilder cb, final AssociationAttributes association, final String pattern) {
+		final var join = reuseFetchOrJoin(root, association.association());
+		final var matches = association.attributes().stream()
+			.map(attribute -> cb.like(join.<String>get(attribute), pattern, LIKE_ESCAPE));
+		return cb.and(
+			cb.notEqual(join.get(association.idAttribute()), association.placeholderId()),
+			cb.or(matches.toArray(Predicate[]::new)));
+	}
+
+	/**
+	 * The attributes of one association a value may match, together with the sentinel row that never counts as a match.
+	 *
+	 * @param association   name of the association attribute
+	 * @param attributes    attributes on the associated entity to match against
+	 * @param idAttribute   name of the associated entity's id attribute
+	 * @param placeholderId id of the sentinel row
+	 */
+	public record AssociationAttributes(String association, List<String> attributes, String idAttribute, Object placeholderId) {}
+
+	/**
 	 * Matches rows where the attribute is {@code NULL}.
 	 */
 	public Specification<T> buildIsNullFilter(final String attribute) {

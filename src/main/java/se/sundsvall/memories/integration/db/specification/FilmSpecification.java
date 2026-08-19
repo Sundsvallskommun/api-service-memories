@@ -3,6 +3,8 @@ package se.sundsvall.memories.integration.db.specification;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity_;
+import se.sundsvall.memories.integration.db.model.PersonEntity_;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static se.sundsvall.memories.integration.db.model.FilmEntity_.COMMENT;
@@ -60,6 +62,27 @@ public interface FilmSpecification {
 	 * Fetches both originator associations, which the mapper reads a name from on every row. Without this each row
 	 * costs two more queries.
 	 */
+	/**
+	 * The attributes an originator can be found by: a person's two name columns, a legal entity's name and its
+	 * alternative names. Each association also names its sentinel row, which never counts as a match.
+	 */
+	List<SpecificationBuilder.AssociationAttributes> CREATOR_ATTRIBUTES = List.of(
+		new SpecificationBuilder.AssociationAttributes(CREATOR_PERSON, List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME), PersonEntity_.PERSON_ID, PersonSpecification.PLACEHOLDER_ID),
+		new SpecificationBuilder.AssociationAttributes(CREATOR_LEGAL_ENTITY, List.of(LegalEntityEntity_.NAME, LegalEntityEntity_.ALTERNATIVE_NAMES), LegalEntityEntity_.LEGAL_ENTITY_ID,
+			LegalEntitySpecification.PLACEHOLDER_ID));
+
+	static Specification<FilmEntity> matchesCreator(final String creator) {
+		return BUILDER.buildAssociationLikeAnyFilter(CREATOR_ATTRIBUTES, creator);
+	}
+
+	static Specification<FilmEntity> hasCreatorPerson(final Integer creatorPersonId) {
+		return BUILDER.buildAssociationEqualFilter(CREATOR_PERSON, PersonEntity_.PERSON_ID, creatorPersonId);
+	}
+
+	static Specification<FilmEntity> hasCreatorLegalEntity(final Integer creatorLegalEntityId) {
+		return BUILDER.buildAssociationEqualFilter(CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, creatorLegalEntityId);
+	}
+
 	static Specification<FilmEntity> fetchCreators() {
 		return BUILDER.buildFetchJoin(CREATOR_PERSON)
 			.and(BUILDER.buildFetchJoin(CREATOR_LEGAL_ENTITY));

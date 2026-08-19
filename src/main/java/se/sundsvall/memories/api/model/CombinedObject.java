@@ -30,6 +30,9 @@ public class CombinedObject {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
+	@Schema(implementation = Creator.class)
+	private Creator creator;
+
 	public static CombinedObject create() {
 		return new CombinedObject();
 	}
@@ -138,6 +141,19 @@ public class CombinedObject {
 		return this;
 	}
 
+	public Creator getCreator() {
+		return creator;
+	}
+
+	public void setCreator(final Creator creator) {
+		this.creator = creator;
+	}
+
+	public CombinedObject withCreator(final Creator creator) {
+		this.creator = creator;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -145,12 +161,13 @@ public class CombinedObject {
 		final CombinedObject that = (CombinedObject) o;
 		return Objects.equals(objectKey, that.objectKey) && Objects.equals(sourceId, that.sourceId) && Objects.equals(objectType, that.objectType)
 			&& Objects.equals(title, that.title) && Objects.equals(year, that.year) && Objects.equals(topographyId, that.topographyId)
-			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location);
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location)
+			&& Objects.equals(creator, that.creator);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(objectKey, sourceId, objectType, title, year, topographyId, locationText, location);
+		return Objects.hash(objectKey, sourceId, objectType, title, year, topographyId, locationText, location, creator);
 	}
 
 	@Override
@@ -164,6 +181,7 @@ public class CombinedObject {
 			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", creator=" + creator +
 			'}';
 	}
 }
