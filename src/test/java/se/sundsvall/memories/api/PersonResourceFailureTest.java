@@ -60,7 +60,7 @@ class PersonResourceFailureTest {
 	void searchPersonsWithInvalidSortBy() {
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(SEARCH_PATH)
-				.queryParam("sortBy", "lastName")
+				.queryParam("sortBy", "ENAMN")
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isBadRequest()
@@ -73,7 +73,7 @@ class PersonResourceFailureTest {
 		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
 		assertThat(response.getViolations())
 			.extracting(Violation::field, Violation::message)
-			.containsExactlyInAnyOrder(tuple("sortBy[0]", "must be one of: ENAMN, FNAMN, FODDAT, FODFRS"));
+			.containsExactlyInAnyOrder(tuple("sortBy[0]", "must be one of: lastName, firstName, birthDate, birthParish"));
 
 		verifyNoInteractions(serviceMock);
 	}
