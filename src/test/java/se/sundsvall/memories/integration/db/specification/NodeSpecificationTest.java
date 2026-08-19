@@ -1,6 +1,7 @@
 package se.sundsvall.memories.integration.db.specification;
 
 import jakarta.persistence.EntityManager;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import se.sundsvall.memories.integration.db.NodeRepository;
 import se.sundsvall.memories.integration.db.model.NodeEntity;
 import se.sundsvall.memories.integration.db.model.NodeTypeEntity;
 
+import static java.time.Month.MARCH;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -120,6 +122,20 @@ class NodeSpecificationTest {
 
 		assertThat(findIds(NodeSpecification.hasNodeType(2))).containsExactly(2);
 		assertThat(findIds(NodeSpecification.hasNodeType(null))).containsExactly(1, 2);
+	}
+
+	/**
+	 * Deletion sets DELETEDDATE but leaves the published bit set, so the published filter alone does not hide the row.
+	 */
+	@Test
+	void notDeletedExcludesSoftDeletedRows() {
+		final var type = persistType(1, "Arkiv");
+		persist(1, "Kvar", null, type, null, null, PUBLISHED);
+		persist(2, "Raderad", null, type, null, null, PUBLISHED);
+		nodeRepository.findById(2).ifPresent(node -> nodeRepository.saveAndFlush(node.withDeletedDate(LocalDate.of(2024, MARCH, 1))));
+
+		assertThat(findIds(NodeSpecification.notDeleted())).containsExactly(1);
+		assertThat(findIds(NodeSpecification.published())).containsExactly(1, 2);
 	}
 
 	@Test

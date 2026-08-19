@@ -317,3 +317,8 @@ VALUES (100, null, 'Sundsvalls stads arkiv', 1, 1862, 1951, 'Handlingar från st
        (200, null, 'Fotosamlingen', 3, 1900, null, 'Glasplåtar från stadens fotografer', 6, 40, 5, 5),
        (300, null, 'Dolt arkiv', 1, 1900, 1950, 'Ska inte synas i sökningen', 1, 50, 0, 0),
        (400, null, 'Nod utan typ', 999, null, null, 'Pekar på en nodtyp som saknas', 6, 60, 0, 0);
+
+-- Soft-deleted node. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not hide it.
+INSERT INTO TBL_NODES (ID, PARENTID, NAME, NODETYPEID, STARTYEAR, STOPYEAR, DESCRIPTION, `OPTIONS`, SORT, SUBITEMS,
+                       SUBITEMS_4, DELETEDDATE)
+VALUES (500, 100, 'Raderad serie', 2, 1900, 1950, 'Serie som raderats', 6, 70, 0, 0, '2024-03-01');

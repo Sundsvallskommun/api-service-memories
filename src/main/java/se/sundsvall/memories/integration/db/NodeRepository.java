@@ -17,6 +17,7 @@ import static se.sundsvall.memories.integration.db.specification.NodeSpecificati
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasNodeType;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasParent;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.NodeSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.published;
 
 @CircuitBreaker(name = "nodeRepository")
@@ -36,15 +37,18 @@ public interface NodeRepository extends JpaRepository<NodeEntity, Integer>, JpaS
 
 	/**
 	 * A node by id, with its type fetched. Unlike the search this keeps unpublished nodes, the same decision the person
-	 * and legal entity lookups document: an administrative interface has to be able to reach them by id.
+	 * and legal entity lookups document: an administrative interface has to be able to reach them by id. A deleted node
+	 * is gone for good, though, so it is hidden here as well.
 	 */
 	default Optional<NodeEntity> findDetailById(final Integer id) {
 		return findOne(fetchNodeType()
+			.and(notDeleted())
 			.and(hasId(id)));
 	}
 
 	private static Specification<NodeEntity> byParameters(final NodeParameters parameters) {
 		return fetchNodeType()
+			.and(notDeleted())
 			.and(published())
 			.and(matches(parameters.getQuery()))
 			.and(hasNodeType(parameters.getNodeTypeId()))

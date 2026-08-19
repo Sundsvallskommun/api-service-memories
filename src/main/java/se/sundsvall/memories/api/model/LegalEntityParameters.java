@@ -5,7 +5,7 @@ import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Legal entity (juridisk person) search parameters. All filters are optional and combined with "
-	+ "AND. Sort on a physical column: JURPERS, KAT_ID or STARTDATUM.")
+	+ "AND. Sort on one of: name, startDate or endDate.")
 public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Name (substring, case-insensitive; matches name or alternative names)", examples = "Nödhjälpskommittén")

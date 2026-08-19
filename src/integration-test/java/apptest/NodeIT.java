@@ -22,7 +22,8 @@ class NodeIT extends AbstractAppTest {
 	private static final String PATH = "/" + MUNICIPALITY_ID + "/nodes";
 
 	/**
-	 * Node 400 points at a node type that does not exist, so it comes back without a type rather than not at all.
+	 * Node 400 points at a node type that does not exist, so it comes back without a type rather than not at all. Node
+	 * 500 is soft-deleted and node 300 unpublished, and neither may appear.
 	 */
 	@Test
 	void test01_searchNodes() {
@@ -109,7 +110,8 @@ class NodeIT extends AbstractAppTest {
 	}
 
 	/**
-	 * The children come back in the archive's own order (SORT), not in the order the rows happen to be stored.
+	 * The children come back in the archive's own order (SORT), not in the order the rows happen to be stored. Node 500
+	 * is a soft-deleted child of the same node and must not be listed.
 	 */
 	@Test
 	void test08_getNodeChildren() {
@@ -139,6 +141,19 @@ class NodeIT extends AbstractAppTest {
 	 * Node 300 is unpublished and hidden from search, but must stay retrievable by id — the same decision the person
 	 * and legal entity lookups document for their administrative interface.
 	 */
+	/**
+	 * A deleted node is gone for good, so unlike an unpublished one it is not reachable by id either.
+	 */
+	@Test
+	void test11_getDeletedNodeById() {
+		setupCall()
+			.withServicePath(PATH + "/500")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
 	@Test
 	void test10_getUnpublishedNodeById() {
 		setupCall()

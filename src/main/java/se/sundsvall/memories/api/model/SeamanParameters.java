@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
-@Schema(description = "Seaman (sjömanshus) search parameters. All filters are optional and combined with AND. Sort on a "
-	+ "physical column: EFTERNAMN1, FORNAMN, FODDAT or FODFORS.")
+@Schema(description = "Seaman (sjömanshus) search parameters. All filters are optional and combined with AND. Sort on "
+	+ "one of: lastName1, firstName, birthDate or birthParish.")
 public class SeamanParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Last name (substring, case-insensitive; matches either surname column)", examples = "Nordin")
