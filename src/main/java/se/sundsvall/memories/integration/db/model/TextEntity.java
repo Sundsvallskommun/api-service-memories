@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -15,7 +17,7 @@ public class TextEntity {
 
 	@Id
 	@Column(name = "ID_ID")
-	private Integer textId;
+	private Integer id;
 
 	@Column(name = "DOKDATUM", length = 10)
 	private String documentDate;
@@ -32,14 +34,16 @@ public class TextEntity {
 	@Column(name = "U_J_ID")
 	private Integer ujId;
 
-	@Column(name = "D_T_ID")
-	private Integer topographyId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "D_T_ID")
+	private TopographyEntity topography;
 
 	@Column(name = "D_OPLATS", length = 64)
 	private String locationText;
 
-	@Column(name = "D_O_ID")
-	private Integer subjectId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "D_O_ID")
+	private OcmEntity subject;
 
 	@Column(name = "KOMMENT_DOC", length = 4000)
 	private String comment;
@@ -82,16 +86,16 @@ public class TextEntity {
 		return new TextEntity();
 	}
 
-	public Integer getTextId() {
-		return textId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setTextId(final Integer textId) {
-		this.textId = textId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public TextEntity withTextId(final Integer textId) {
-		this.textId = textId;
+	public TextEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -160,16 +164,16 @@ public class TextEntity {
 		return this;
 	}
 
-	public Integer getTopographyId() {
-		return topographyId;
+	public TopographyEntity getTopography() {
+		return topography;
 	}
 
-	public void setTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public void setTopography(final TopographyEntity topography) {
+		this.topography = topography;
 	}
 
-	public TextEntity withTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public TextEntity withTopography(final TopographyEntity topography) {
+		this.topography = topography;
 		return this;
 	}
 
@@ -186,16 +190,16 @@ public class TextEntity {
 		return this;
 	}
 
-	public Integer getSubjectId() {
-		return subjectId;
+	public OcmEntity getSubject() {
+		return subject;
 	}
 
-	public void setSubjectId(final Integer subjectId) {
-		this.subjectId = subjectId;
+	public void setSubject(final OcmEntity subject) {
+		this.subject = subject;
 	}
 
-	public TextEntity withSubjectId(final Integer subjectId) {
-		this.subjectId = subjectId;
+	public TextEntity withSubject(final OcmEntity subject) {
+		this.subject = subject;
 		return this;
 	}
 
@@ -360,9 +364,9 @@ public class TextEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final TextEntity that = (TextEntity) o;
-		return Objects.equals(textId, that.textId) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentEndDate, that.documentEndDate)
+		return Objects.equals(id, that.id) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentEndDate, that.documentEndDate)
 			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(ueId, that.ueId) && Objects.equals(ujId, that.ujId)
-			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(subjectId, that.subjectId) && Objects.equals(comment, that.comment)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(comment, that.comment)
 			&& Objects.equals(filename, that.filename) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(originalFilename, that.originalFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(filXtra, that.filXtra) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options)
@@ -371,22 +375,20 @@ public class TextEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(textId, documentDate, documentEndDate, documentTitle, ueId, ujId, topographyId, locationText, subjectId, comment, filename,
+		return Objects.hash(id, documentDate, documentEndDate, documentTitle, ueId, ujId, locationText, comment, filename,
 			thumbnailFilename, largeImageFilename, originalFilename, ocrFilename, xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
 
 	@Override
 	public String toString() {
 		return "TextEntity{" +
-			"textId=" + textId +
+			"id=" + id +
 			", documentDate='" + documentDate + '\'' +
 			", documentEndDate='" + documentEndDate + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
 			", ueId=" + ueId +
 			", ujId=" + ujId +
-			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
-			", subjectId=" + subjectId +
 			", comment='" + comment + '\'' +
 			", filename='" + filename + '\'' +
 			", thumbnailFilename='" + thumbnailFilename + '\'' +

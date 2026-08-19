@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 @Table(name = "TOPOGRAFI")
@@ -12,7 +13,7 @@ public class TopographyEntity {
 
 	@Id
 	@Column(name = "T_ID")
-	private Integer tId;
+	private Integer id;
 
 	@Column(name = "TOPNAMN", length = 64)
 	private String name;
@@ -30,16 +31,16 @@ public class TopographyEntity {
 		return new TopographyEntity();
 	}
 
-	public Integer getTId() {
-		return tId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setTId(final Integer tId) {
-		this.tId = tId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public TopographyEntity withTId(final Integer tId) {
-		this.tId = tId;
+	public TopographyEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -95,24 +96,38 @@ public class TopographyEntity {
 		return this;
 	}
 
+	/**
+	 * Resolves this entry to the string used to present a place. Prefers {@code TOPNAMN}, falls back to {@code PLATS},
+	 * then {@code TOPKOD}. Blank values are treated as absent, since the legacy data uses empty strings rather than
+	 * {@code NULL}.
+	 *
+	 * @return the display name, or {@code null} if all three columns are missing or blank
+	 */
+	public String getDisplayName() {
+		return Optional.ofNullable(name).filter(s -> !s.isBlank())
+			.or(() -> Optional.ofNullable(place).filter(s -> !s.isBlank()))
+			.or(() -> Optional.ofNullable(code).filter(s -> !s.isBlank()))
+			.orElse(null);
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final TopographyEntity that = (TopographyEntity) o;
-		return Objects.equals(tId, that.tId) && Objects.equals(name, that.name) && Objects.equals(code, that.code) && Objects.equals(place, that.place)
+		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(code, that.code) && Objects.equals(place, that.place)
 			&& Objects.equals(country, that.country);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(tId, name, code, place, country);
+		return Objects.hash(id, name, code, place, country);
 	}
 
 	@Override
 	public String toString() {
 		return "TopographyEntity{" +
-			"TId=" + tId +
+			"id=" + id +
 			", name='" + name + '\'' +
 			", code='" + code + '\'' +
 			", place='" + place + '\'' +

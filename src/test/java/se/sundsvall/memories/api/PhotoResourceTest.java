@@ -19,7 +19,7 @@ import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PagedPhotoResponse;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.service.PhotoService;
-import se.sundsvall.memories.service.PhotoService.FileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

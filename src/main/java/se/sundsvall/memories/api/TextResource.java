@@ -23,8 +23,7 @@ import se.sundsvall.memories.api.model.PagedTextResponse;
 import se.sundsvall.memories.api.model.Text;
 import se.sundsvall.memories.api.model.TextParameters;
 import se.sundsvall.memories.service.TextService;
-import se.sundsvall.memories.service.TextService.FileVariant;
-import se.sundsvall.memories.service.TextService.MediaFileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 
 import static org.springframework.http.MediaType.ALL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -100,6 +99,6 @@ class TextResource {
 		}) final String variant,
 		final HttpServletResponse response) {
 
-		textService.streamMediaFile(id, mediaId, MediaFileVariant.valueOf(variant.toUpperCase()), response);
+		textService.streamMediaFile(id, mediaId, FileVariant.valueOf(variant.toUpperCase()), response);
 	}
 }

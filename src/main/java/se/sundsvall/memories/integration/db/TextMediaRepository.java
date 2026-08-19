@@ -4,7 +4,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
-import se.sundsvall.memories.integration.db.model.TextMediaEntity.TextMediaId;
+import se.sundsvall.memories.integration.db.model.TextMediaId;
 
 @CircuitBreaker(name = "textMediaRepository")
 public interface TextMediaRepository extends JpaRepository<TextMediaEntity, TextMediaId> {

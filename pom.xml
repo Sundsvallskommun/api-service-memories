@@ -31,6 +31,13 @@
 			<groupId>se.sundsvall.dept44</groupId>
 			<artifactId>dept44-starter-jpa</artifactId>
 		</dependency>
+		<!-- Generates the JPA static metamodel (XxxEntity_), so specifications address attributes through
+				compile-checked constants instead of string literals -->
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-processor</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<!-- SMB -->
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
@@ -63,6 +70,17 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+					<!-- The JPA static metamodel is generated, holds only constants and is never executed, so it would
+							always report zero coverage and fail the inherited per-class threshold -->
+					<excludes>
+						<exclude>**/*Entity_.class</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 			<!-- The inherited surefire argLine caps the forked JVM at -Xmx256m, which is not enough for the
 					@SpringBootTest classes in src/test: every distinct context configuration is cached in the same JVM,
 					so the heap is exhausted once enough of them accumulate. Raise the ceiling and bound the number of

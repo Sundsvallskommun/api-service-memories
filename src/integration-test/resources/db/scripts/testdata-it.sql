@@ -32,6 +32,13 @@ INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_
                   FILM_U_E_ID, FILM_U_J_ID, KOMMENT_FILM, FILM_MIME_TYPE, ASV, NODEID, `OPTIONS`, DELETEDDATE)
 VALUES (4, 'unpublished.mp4', '/media/film/unpublished.mp4', 'VIDEO', '2000-01-01', 'Unpublished film', 1, 'Sundsvall',
         1, 0, 1, 'This film is not published', 'video/mp4', 'ASV004', 103, 0, null);
+
+-- Soft-deleted film. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not hide
+-- it — it must never appear in any response.
+INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_T_ID, FILM_OPLATS, FILM_O_ID,
+                  FILM_U_E_ID, FILM_U_J_ID, KOMMENT_FILM, FILM_MIME_TYPE, ASV, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (5, 'raderad.mp4', '/media/film/raderad.mp4', 'VIDEO', '1985-06-21', 'Midsommarfirande raderad', 1, 'Sundsvall',
+        1, 0, 1, 'Film som raderats', 'video/mp4', 'ASV005', 104, 4, '2024-03-01');
 --
 -- PUBL
 --
@@ -76,6 +83,17 @@ VALUES (500, 'draft.xml', '', '2024-01-01', null, null, null, 1, 1, 'Sundsvall',
         'Draft unpublished publication', 0, 0, 1, 0, 4, 'Sundsvall', 1, 'Not yet published', null, null, null, null,
         'Drunkningsolycka draft not published', null, 18700, 0, 'text', null);
 
+-- Soft-deleted publication. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not
+-- hide it. Its XMLTEXT carries the same word the query test searches for, so the row surfaces if the filter
+-- regresses — it must never appear in any response.
+INSERT INTO PUBL (P_ID, FILNAMN, PUBLIKTYP, DATUM, TIDTITEL, TIDNR, TIDSIDA, BF_J_ID, FORLAG_T_ID, FORLAG_OPLATS,
+                  DOKDATUM, DOKTITEL, F_E_ID, R_E_ID, U_J_ID, U_E_ID, P_T_ID, P_OPLATS, ME_O_ID, KOMMENT_PUBL,
+                  FIL_LITEN, FIL_STOR, FIL_ORIGINAL, FIL_TXT, XMLTEXT, FIL_XTRA, NODEID, `OPTIONS`, FIL_FORMAT,
+                  DELETEDDATE)
+VALUES (600, 'raderad.xml', '', '1841-02-18', null, null, null, 1, 1, 'Sundsvall', '1841-02-18',
+        'Raderad publikation', 0, 0, 1, 0, 16, 'Sundsvall', 1, 'Publikation som raderats', null, null, null, null,
+        'Drunkningsolycka i en raderad publikation', null, 18800, 4, 'text', '2024-03-01');
+
 --
 -- FOTO
 --
@@ -100,6 +118,11 @@ VALUES (1003, 'Industribild från Timrå', 'Sågverk i Timrå', '1960', '1962', 
 -- Unpublished photo that must never appear in any response
 INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, FIL_LITEN, NODEID, `OPTIONS`)
 VALUES (1099, 'Draft unpublished photo', 'Stadsvy not yet published', '2024', null, 19099, 0);
+
+-- Soft-deleted photo. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not
+-- hide it — it must never appear in any response.
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, FIL_LITEN, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (1098, 'Hamnen i Sundsvall raderad', 'Stadsvy som raderats', '1950', null, 19098, 4, '2024-03-01');
 
 --
 -- OCM (subject / ämne lookup)
@@ -137,6 +160,13 @@ INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_
 VALUES (4, 'unpublished.mp3', '/media/ljud/unpublished.mp3', 'LJUD', '2000-01-01', 'Unpublished audio', 1, 'Sundsvall',
         1, 0, 1, 'This audio is not published', 'audio/mpeg', 203, 0, null);
 
+-- Soft-deleted audio. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not hide
+-- it — it must never appear in any response.
+INSERT INTO LJUD (LJUD_ID, FILNAMN, LJUD_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, LJUD_T_ID, LJUD_OPLATS, LJUD_O_ID,
+                  LJUD_U_E_ID, LJUD_U_J_ID, KOMMENT_LJUD, LJUD_MIME_TYPE, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (5, 'raderad.mp3', '/media/ljud/raderad.mp3', 'LJUD', '1980-04-12', 'Intervju raderad', 1, 'Sundsvall',
+        10, 0, 1, 'Ljudupptagning som raderats', 'audio/mpeg', 204, 4, '2024-03-01');
+
 --
 -- TEXT (textarkiv — fjärde mediatypen)
 --
@@ -161,6 +191,11 @@ VALUES (1002, '1950-06-15', '1950-06-15', 'Brev från Timrå', 0, 1, 2, 'Timrå'
 -- Unpublished text that must never appear in any response
 INSERT INTO TEXT (ID_ID, DOKTITEL, KOMMENT_DOC, NODEID, `OPTIONS`)
 VALUES (1099, 'Draft unpublished text', 'Stadshuset ej publicerad', 20099, 0);
+
+-- Soft-deleted text. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not hide
+-- it — it must never appear in any response.
+INSERT INTO TEXT (ID_ID, DOKTITEL, KOMMENT_DOC, NODEID, `OPTIONS`, DELETEDDATE)
+VALUES (1098, 'Minne från stadshuset raderat', 'Handling som raderats', 20098, 4, '2024-03-01');
 
 --
 -- TEXT_MULTI (extra mediafiler kopplade till TEXT)

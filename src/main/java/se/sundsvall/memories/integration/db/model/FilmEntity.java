@@ -2,7 +2,10 @@ package se.sundsvall.memories.integration.db.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -13,7 +16,7 @@ public class FilmEntity {
 
 	@Id
 	@Column(name = "FILM_ID")
-	private Integer filmId;
+	private Integer id;
 
 	@Column(name = "FILNAMN", length = 256)
 	private String filename;
@@ -30,8 +33,9 @@ public class FilmEntity {
 	@Column(name = "DOKTITEL", length = 2256)
 	private String documentTitle;
 
-	@Column(name = "FILM_T_ID")
-	private Integer topographyId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "FILM_T_ID")
+	private TopographyEntity topography;
 
 	@Column(name = "FILM_OPLATS", length = 64)
 	private String locationText;
@@ -64,16 +68,16 @@ public class FilmEntity {
 		return new FilmEntity();
 	}
 
-	public Integer getFilmId() {
-		return filmId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setFilmId(final Integer filmId) {
-		this.filmId = filmId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public FilmEntity withFilmId(final Integer filmId) {
-		this.filmId = filmId;
+	public FilmEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -142,16 +146,16 @@ public class FilmEntity {
 		return this;
 	}
 
-	public Integer getTopographyId() {
-		return topographyId;
+	public TopographyEntity getTopography() {
+		return topography;
 	}
 
-	public void setTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public void setTopography(final TopographyEntity topography) {
+		this.topography = topography;
 	}
 
-	public FilmEntity withTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public FilmEntity withTopography(final TopographyEntity topography) {
+		this.topography = topography;
 		return this;
 	}
 
@@ -277,29 +281,28 @@ public class FilmEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final FilmEntity that = (FilmEntity) o;
-		return Objects.equals(filmId, that.filmId) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
+		return Objects.equals(id, that.id) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
 			&& Objects.equals(objectType, that.objectType) && Objects.equals(date, that.date) && Objects.equals(documentTitle, that.documentTitle)
-			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(organizationId, that.organizationId)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(organizationId, that.organizationId)
 			&& Objects.equals(subEntityId, that.subEntityId) && Objects.equals(unitId, that.unitId) && Objects.equals(comment, that.comment)
 			&& Objects.equals(filmMimeType, that.filmMimeType) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, organizationId, subEntityId, unitId, comment, filmMimeType, nodeId, options,
+		return Objects.hash(id, filename, objectFilePath, objectType, date, documentTitle, locationText, organizationId, subEntityId, unitId, comment, filmMimeType, nodeId, options,
 			deletedDate);
 	}
 
 	@Override
 	public String toString() {
 		return "FilmEntity{" +
-			"filmId=" + filmId +
+			"id=" + id +
 			", filename='" + filename + '\'' +
 			", objectFilePath='" + objectFilePath + '\'' +
 			", objectType='" + objectType + '\'' +
 			", date='" + date + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
-			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", organizationId=" + organizationId +
 			", subEntityId=" + subEntityId +

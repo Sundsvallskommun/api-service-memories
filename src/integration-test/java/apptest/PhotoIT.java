@@ -61,8 +61,22 @@ class PhotoIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
+	/**
+	 * Photo 1098 is soft-deleted but still carries the published bit, which is exactly the state that used to leak it
+	 * through both search and get-by-id.
+	 */
 	@Test
-	void test05_searchPhotosByLocationYearAndObjectType() {
+	void test05_getSoftDeletedPhotoByIdNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/1098")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test06_searchPhotosByLocationYearAndObjectType() {
 		setupCall()
 			.withServicePath(PATH + "?location=Timrå&yearFrom=1958&yearTo=1965&objectType=Foto")
 			.withHttpMethod(GET)
@@ -76,7 +90,7 @@ class PhotoIT extends AbstractAppTest {
 	 * would otherwise satisfy every upper bound.
 	 */
 	@Test
-	void test06_searchPhotosByYearToExcludesUndated() {
+	void test07_searchPhotosByYearToExcludesUndated() {
 		setupCall()
 			.withServicePath(PATH + "?yearTo=1930")
 			.withHttpMethod(GET)
