@@ -347,22 +347,12 @@ public class TextEntity {
 		this.creatorPerson = creatorPerson;
 	}
 
-	public TextEntity withCreatorPerson(final PersonEntity creatorPerson) {
-		this.creatorPerson = creatorPerson;
-		return this;
-	}
-
 	public LegalEntityEntity getCreatorLegalEntity() {
 		return creatorLegalEntity;
 	}
 
 	public void setCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
 		this.creatorLegalEntity = creatorLegalEntity;
-	}
-
-	public TextEntity withCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
-		return this;
 	}
 
 	@Override

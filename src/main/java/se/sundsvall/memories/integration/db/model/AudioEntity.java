@@ -265,22 +265,12 @@ public class AudioEntity {
 		this.creatorPerson = creatorPerson;
 	}
 
-	public AudioEntity withCreatorPerson(final PersonEntity creatorPerson) {
-		this.creatorPerson = creatorPerson;
-		return this;
-	}
-
 	public LegalEntityEntity getCreatorLegalEntity() {
 		return creatorLegalEntity;
 	}
 
 	public void setCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
 		this.creatorLegalEntity = creatorLegalEntity;
-	}
-
-	public AudioEntity withCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
-		return this;
 	}
 
 	@Override
