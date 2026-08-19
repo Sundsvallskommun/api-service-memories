@@ -9,8 +9,8 @@ import org.hibernate.annotations.Immutable;
 
 /**
  * Read-only entity mapped to the {@code VW_MEMORY_OBJECTS} view — the union of the five object tables (FOTO incl.
- * Föremål, FILM, LJUD, TEXT, PUBL). Backs the combined {@code /objects} search so sorting and pagination happen
- * globally on the server side.
+ * Föremål, FILM, LJUD, TEXT, PUBL) and the three registers (PERSON, JURPERS, SJOMAN). Backs the combined
+ * {@code /objects} search so sorting and pagination happen globally on the server side.
  */
 @Entity
 @Immutable

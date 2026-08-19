@@ -10,16 +10,22 @@ import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 
 /**
- * Repository for the {@code VW_MEMORY_OBJECTS} view — the combined object search across all object types.
+ * Repository for the {@code VW_MEMORY_OBJECTS} view — the combined search across every base item type: the object
+ * tables (FOTO incl. Föremål, FILM, LJUD, TEXT, PUBL) and the registers (PERSON, JURPERS, SJOMAN).
  *
  * <p>
  * <strong>Sorting:</strong> {@link #search} is a native query, so a sort property supplied via {@link Pageable} must be
  * a view column name: {@code TITLE}, {@code SORT_YEAR} or {@code OBJECT_TYPE}.
  *
  * <p>
- * The free-text {@code query} is a case-insensitive substring match against the pre-concatenated title+comment
- * ({@code SEARCH_TEXT}) — the combined endpoint trades the per-type fulltext relevance for a single, cleanly paginated
- * union. (A per-branch {@code MATCH … AGAINST} union is a possible future optimization.)
+ * The free-text {@code query} is a case-insensitive substring match against the pre-concatenated {@code SEARCH_TEXT}
+ * (title+comment for objects, names plus parishes and other identifying fields for the registers) — the combined
+ * endpoint trades the per-type fulltext relevance for a single, cleanly paginated union. (A per-branch
+ * {@code MATCH … AGAINST} union is a possible future optimization.)
+ *
+ * <p>
+ * The register branches carry no topography reference except {@code JURPERS}, so a {@code location} filter reaches
+ * PERSON and SJOMAN through {@code LOCATION_TEXT}, which holds their birth parish.
  */
 @CircuitBreaker(name = "combinedObjectRepository")
 public interface CombinedObjectRepository extends JpaRepository<CombinedObjectEntity, String> {
