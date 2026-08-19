@@ -1,0 +1,23 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"nodes": [
+		{
+			"id": 200,
+			"name": "Fotosamlingen",
+			"nodeTypeId": 3,
+			"nodeType": "Samling",
+			"startYear": 1900,
+			"description": "Glasplåtar från stadens fotografer",
+			"sortOrder": 40,
+			"subItemCount": 5,
+			"publishedSubItemCount": 5,
+			"options": 6
+		}
+	]
+}

@@ -297,3 +297,26 @@ VALUES (2, 'Anna', 'Berg', 'kvinna', '1870');
 
 INSERT INTO MANTAL (ID, MNMNF, MNMNE, KON, FODAR)
 VALUES (3, 'Erik', 'Nordin', 'man', '1889');
+
+--
+-- TBL_NODETYPES / TBL_NODES (arkiv och samlingar) — node 300 is unpublished (bit 4 of OPTIONS not set) and node 400
+-- points at a node type that does not exist, which the schema allows since NODETYPEID carries no foreign key
+--
+INSERT INTO TBL_NODETYPES (ID, PARENTID, NAME, NODETYPEIDS)
+VALUES (1, null, 'Arkiv', '2'),
+       (2, 1, 'Serie', null),
+       (3, null, 'Samling', null);
+
+INSERT INTO TBL_NODES (ID, PARENTID, NAME, NODETYPEID, STARTYEAR, STOPYEAR, DESCRIPTION, `OPTIONS`, SORT, SUBITEMS,
+                       SUBITEMS_4)
+VALUES (100, null, 'Sundsvalls stads arkiv', 1, 1862, 1951, 'Handlingar från stadsfullmäktige', 6, 10, 3, 2),
+       (110, 100, 'Protokoll', 2, 1862, 1900, 'Stadsfullmäktiges protokoll', 6, 20, 2, 2),
+       (120, 100, 'Räkenskaper', 2, 1900, 0, 'Huvudböcker, pågående serie', 4, 30, 1, 0),
+       (200, null, 'Fotosamlingen', 3, 1900, null, 'Glasplåtar från stadens fotografer', 6, 40, 5, 5),
+       (300, null, 'Dolt arkiv', 1, 1900, 1950, 'Ska inte synas i sökningen', 1, 50, 0, 0),
+       (400, null, 'Nod utan typ', 999, null, null, 'Pekar på en nodtyp som saknas', 6, 60, 0, 0);
+
+-- Soft-deleted node. Deletion sets DELETEDDATE but leaves bit 4 set, so the published check alone does not hide it.
+INSERT INTO TBL_NODES (ID, PARENTID, NAME, NODETYPEID, STARTYEAR, STOPYEAR, DESCRIPTION, `OPTIONS`, SORT, SUBITEMS,
+                       SUBITEMS_4, DELETEDDATE)
+VALUES (500, 100, 'Raderad serie', 2, 1900, 1950, 'Serie som raderats', 6, 70, 0, 0, '2024-03-01');
