@@ -19,18 +19,9 @@ import static se.sundsvall.memories.integration.db.specification.PersonSpecifica
 import static se.sundsvall.memories.integration.db.specification.PersonSpecification.notPlaceholder;
 import static se.sundsvall.memories.integration.db.specification.PersonSpecification.published;
 
-/**
- * Repository for the {@code PERSON} table.
- */
 @CircuitBreaker(name = "personRepository")
 public interface PersonRepository extends JpaRepository<PersonEntity, Integer>, JpaSpecificationExecutor<PersonEntity> {
 
-	/**
-	 * Searches published persons with all filter parameters optional (a blank or {@code null} parameter is ignored). The
-	 * birth year is read from {@code FODDAT}, which is dirty free text; see
-	 * {@link se.sundsvall.memories.integration.db.specification.SpecificationBuilder#buildYearAtLeastFilter} for how a
-	 * value without a readable year is treated.
-	 */
 	default Page<PersonEntity> findAllByParameters(final PersonParameters parameters, final Pageable pageable) {
 		return findAll(published()
 			.and(notPlaceholder())
@@ -43,14 +34,6 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer>, 
 			pageable);
 	}
 
-	/**
-	 * Looks up a single person by id, excluding only the placeholder row {@code P_ID = 0} ("ingen person").
-	 *
-	 * <p>
-	 * <strong>The published bit is deliberately NOT applied here, unlike in {@link #findAllByParameters}.</strong>
-	 * Unpublished persons must remain reachable by id: a planned administrative interface needs to fetch them directly.
-	 * Hiding them from the search while keeping them addressable by id is the intended behaviour, not an oversight.
-	 */
 	default Optional<PersonEntity> findVisibleById(final Integer id) {
 		return findOne(hasId(id)
 			.and(notPlaceholder()));

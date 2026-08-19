@@ -14,21 +14,9 @@ import static se.sundsvall.memories.integration.db.specification.SeamanSpecifica
 import static se.sundsvall.memories.integration.db.specification.SeamanSpecification.hasFirstName;
 import static se.sundsvall.memories.integration.db.specification.SeamanSpecification.hasLastName;
 
-/**
- * Repository for the {@code SJOMAN} seamen's-register table.
- *
- * <p>
- * The {@code SJOMAN} table has no publish ({@code OPTIONS}) or gender column, so neither filter is applied.
- */
 @CircuitBreaker(name = "seamanRepository")
 public interface SeamanRepository extends JpaRepository<SeamanEntity, Integer>, JpaSpecificationExecutor<SeamanEntity> {
 
-	/**
-	 * Searches seamen with all filter parameters optional (a blank or {@code null} parameter is ignored). The last-name
-	 * filter matches either surname column. The birth year is read from {@code FODDAT}, which is dirty free text; see
-	 * {@link se.sundsvall.memories.integration.db.specification.SpecificationBuilder#buildYearAtLeastFilter} for how a
-	 * value without a readable year is treated.
-	 */
 	default Page<SeamanEntity> findAllByParameters(final SeamanParameters parameters, final Pageable pageable) {
 		return findAll(hasLastName(parameters.getLastName())
 			.and(hasFirstName(parameters.getFirstName()))
