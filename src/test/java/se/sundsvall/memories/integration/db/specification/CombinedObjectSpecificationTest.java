@@ -2,7 +2,9 @@ package se.sundsvall.memories.integration.db.specification;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +16,17 @@ import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
+import se.sundsvall.memories.integration.db.CombinedObjectRepository.TypeCount;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static se.sundsvall.memories.service.util.StringUtil.trimToNull;
 
 /**
  * Exercises {@link CombinedObjectSpecification} against a real MariaDB instance (Testcontainers). The subject is the
@@ -138,8 +143,9 @@ class CombinedObjectSpecificationTest {
 	}
 
 	/**
-	 * The counters must see exactly the filters the search sees, otherwise a chip claims more hits than the list can
-	 * show.
+	 * The counters are the one query left in handwritten SQL, so its filter is written twice: once as SQL and once as
+	 * the specification the search uses. These tests are what keeps the two honest — a chip that disagrees with the
+	 * list claims more hits than the list can show.
 	 */
 	@Test
 	void countByTypeGroupsTheSameRowsTheSearchReturns() {
@@ -150,16 +156,66 @@ class CombinedObjectSpecificationTest {
 
 		final var parameters = CombinedObjectParameters.create().withQuery("sundsvall");
 
-		assertThat(combinedObjectRepository.countByType(parameters))
-			.containsExactly(entry("Foto", 2L), entry("Ljud", 1L));
+		assertThat(countByType(parameters)).containsExactly(entry("Foto", 2L), entry("Ljud", 1L));
 		assertThat(findKeys(parameters)).hasSize(3);
+	}
+
+	/**
+	 * Every filter, on both paths, over rows that differ in exactly one respect each.
+	 */
+	@Test
+	void countByTypeAgreesWithTheSearchOnEveryFilter() {
+		final var sundsvall = persistTopography(500, "Sundsvall");
+		persistPhoto(1, "Stadsvy", "Sundsvall", "1920", sundsvall);
+		persistPhoto(2, "Stadsvy", "Sundsvall", "1990", sundsvall);
+		persistPhoto(3, "Hamnen", "Timrå", "1920", null);
+		persistAudio(4, "Stadsvy intervju", "1920", "Sundsvall");
+
+		final var parameters = CombinedObjectParameters.create()
+			.withQuery("stadsvy")
+			.withLocation("sundsvall")
+			.withYearFrom(1900)
+			.withYearTo(1950);
+
+		assertThat(findKeys(parameters)).containsExactly("foto-1", "ljud-4");
+		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L), entry("Ljud", 1L));
+	}
+
+	/**
+	 * A blank parameter means "no filter" on both paths. The specifications trim; the native query is handed trimmed
+	 * values by the service, which is the seam this pins.
+	 */
+	@Test
+	void countByTypeAgreesWithTheSearchOnBlankAndUntrimmedInput() {
+		persistPhoto(1, "Sundsvall stadsvy", null, "1920", null);
+		persistAudio(2, "Timrå intervju", "1975", null);
+
+		final var blank = CombinedObjectParameters.create().withQuery("   ").withLocation("");
+		assertThat(findKeys(blank)).containsExactly("foto-1", "ljud-2");
+		assertThat(countByType(blank)).containsExactly(entry("Foto", 1L), entry("Ljud", 1L));
+
+		final var untrimmed = CombinedObjectParameters.create().withQuery("  sundsvall  ");
+		assertThat(findKeys(untrimmed)).containsExactly("foto-1");
+		assertThat(countByType(untrimmed)).containsExactly(entry("Foto", 1L));
 	}
 
 	@Test
 	void countByTypeIsEmptyWhenNothingMatches() {
 		persistPhoto(1, "Stadsvy", null, "1920", null);
 
-		assertThat(combinedObjectRepository.countByType(CombinedObjectParameters.create().withQuery("saknas"))).isEmpty();
+		assertThat(countByType(CombinedObjectParameters.create().withQuery("saknas"))).isEmpty();
+	}
+
+	/**
+	 * Calls the counters the way the service does, so the trimming it applies is part of what these tests exercise.
+	 */
+	private Map<String, Long> countByType(final CombinedObjectParameters parameters) {
+		return combinedObjectRepository.countByType(
+			trimToNull(parameters.getQuery()),
+			parameters.getYearFrom(),
+			parameters.getYearTo(),
+			trimToNull(parameters.getLocation())).stream()
+			.collect(toMap(TypeCount::getObjectType, TypeCount::getTotal, (first, _) -> first, LinkedHashMap::new));
 	}
 
 	@Test

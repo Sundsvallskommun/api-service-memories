@@ -2,7 +2,6 @@ package se.sundsvall.memories.integration.db.specification;
 
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
-import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
@@ -43,15 +42,5 @@ public interface CombinedObjectSpecification {
 
 	static Specification<CombinedObjectEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
-	}
-
-	/**
-	 * The filter shared by the search and the per-type counters, so the two can never disagree about what matches.
-	 */
-	static Specification<CombinedObjectEntity> matchesParameters(final CombinedObjectParameters parameters) {
-		return matches(parameters.getQuery())
-			.and(matchesLocation(parameters.getLocation()))
-			.and(yearAtLeast(parameters.getYearFrom()))
-			.and(yearAtMost(parameters.getYearTo()));
 	}
 }
