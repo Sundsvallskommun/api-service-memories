@@ -490,12 +490,22 @@ public class PublicationEntity {
 		this.creatorPerson = creatorPerson;
 	}
 
+	public PublicationEntity withCreatorPerson(final PersonEntity creatorPerson) {
+		this.creatorPerson = creatorPerson;
+		return this;
+	}
+
 	public LegalEntityEntity getCreatorLegalEntity() {
 		return creatorLegalEntity;
 	}
 
 	public void setCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
 		this.creatorLegalEntity = creatorLegalEntity;
+	}
+
+	public PublicationEntity withCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
+		return this;
 	}
 
 	@Override
