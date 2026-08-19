@@ -114,4 +114,19 @@ class PersonIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * The search sorts through a specification, so a sort property is an entity attribute. This walks the whole
+	 * request — validation, property resolution and the ordering itself — since a property that only fails once it
+	 * reaches Spring Data is a 500 that no unit test would catch.
+	 */
+	@Test
+	void test09_searchPersonsSortedByLastName() {
+		setupCall()
+			.withServicePath(PATH + "?sortBy=lastName&sortDirection=DESC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

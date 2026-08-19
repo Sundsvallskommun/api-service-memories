@@ -1670,8 +1670,8 @@ components:
     SeamanParameters:
       type: object
       description: "Seaman (sjömanshus) search parameters. All filters are optional\
-        \ and combined with AND. Sort on a physical column: EFTERNAMN1, FORNAMN, FODDAT\
-        \ or FODFORS."
+        \ and combined with AND. Sort on one of: lastName1, firstName, birthDate or\
+        \ birthParish."
       properties:
         page:
           type: integer
@@ -2309,7 +2309,7 @@ components:
     PersonParameters:
       type: object
       description: "Person search parameters. All filters are optional and combined\
-        \ with AND. Sort on a physical column: ENAMN, FNAMN, FODDAT or FODFRS."
+        \ with AND. Sort on one of: lastName, firstName, birthDate or birthParish."
       properties:
         page:
           type: integer
@@ -2331,14 +2331,14 @@ components:
           type: array
           items:
             type: string
-            description: Physical column to sort on
+            description: Property to sort on
             enum:
-            - ENAMN
-            - FNAMN
-            - FODDAT
-            - FODFRS
+            - lastName
+            - firstName
+            - birthDate
+            - birthParish
             examples:
-            - ENAMN
+            - lastName
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -2771,8 +2771,7 @@ components:
     LegalEntityParameters:
       type: object
       description: "Legal entity (juridisk person) search parameters. All filters\
-        \ are optional and combined with AND. Sort on a physical column: JURPERS,\
-        \ KAT_ID or STARTDATUM."
+        \ are optional and combined with AND. Sort on one of: name, startDate or endDate."
       properties:
         page:
           type: integer
@@ -3098,7 +3097,7 @@ components:
     CensusRecordParameters:
       type: object
       description: "Census record (mantal) search parameters. All filters are optional\
-        \ and combined with AND. Sort on a physical column: MNMNE, MNMNF or FODAR."
+        \ and combined with AND. Sort on one of: lastName, firstName or birthYear."
       properties:
         page:
           type: integer
@@ -3120,13 +3119,13 @@ components:
           type: array
           items:
             type: string
-            description: Physical column to sort on
+            description: Property to sort on
             enum:
-            - MNMNE
-            - MNMNF
-            - FODAR
+            - lastName
+            - firstName
+            - birthYear
             examples:
-            - MNMNE
+            - lastName
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction

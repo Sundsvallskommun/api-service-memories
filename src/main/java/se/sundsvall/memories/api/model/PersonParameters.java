@@ -6,16 +6,17 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 
-@Schema(description = "Person search parameters. All filters are optional and combined with AND. Sort on a physical "
-	+ "column: ENAMN, FNAMN, FODDAT or FODFRS.")
+@Schema(description = "Person search parameters. All filters are optional and combined with AND. Sort on one of: "
+	+ "lastName, firstName, birthDate or birthParish.")
 public class PersonParameters extends AbstractParameterPagingAndSortingBase {
 
 	/**
-	 * {@link #getSortBy()} feeds a native query, so only physical {@code PERSON} column names are accepted. Anything else
-	 * would reach the database as an unknown column and fail as a 500, hence the up-front validation.
+	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of {@link PersonEntity} rather than
+	 * a {@code PERSON} column. Anything else fails to resolve and comes back as a 500, hence the up-front validation.
 	 */
-	private static final String SORTABLE_COLUMNS = "ENAMN|FNAMN|FODDAT|FODFRS";
+	private static final String SORTABLE_PROPERTIES = "lastName|firstName|birthDate|birthParish";
 
 	@Schema(description = "Last name (substring, case-insensitive)", examples = "Nordin")
 	private String lastName;
@@ -118,10 +119,10 @@ public class PersonParameters extends AbstractParameterPagingAndSortingBase {
 	}
 
 	@Override
-	@ArraySchema(schema = @Schema(description = "Physical column to sort on", examples = "ENAMN", allowableValues = {
-		"ENAMN", "FNAMN", "FODDAT", "FODFRS"
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "lastName", allowableValues = {
+		"lastName", "firstName", "birthDate", "birthParish"
 	}))
-	public List<@Pattern(regexp = SORTABLE_COLUMNS, message = "must be one of: ENAMN, FNAMN, FODDAT, FODFRS") String> getSortBy() {
+	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = "must be one of: lastName, firstName, birthDate, birthParish") String> getSortBy() {
 		return super.getSortBy();
 	}
 

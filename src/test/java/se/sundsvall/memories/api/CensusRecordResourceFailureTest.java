@@ -60,7 +60,7 @@ class CensusRecordResourceFailureTest {
 	void searchCensusRecordsWithInvalidSortBy() {
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(SEARCH_PATH)
-				.queryParam("sortBy", "lastName")
+				.queryParam("sortBy", "MNMNE")
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isBadRequest()
@@ -73,7 +73,7 @@ class CensusRecordResourceFailureTest {
 		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
 		assertThat(response.getViolations())
 			.extracting(Violation::message)
-			.containsExactly("must be one of: MNMNE, MNMNF, FODAR");
+			.containsExactly("must be one of: lastName, firstName, birthYear");
 
 		verifyNoInteractions(serviceMock);
 	}
