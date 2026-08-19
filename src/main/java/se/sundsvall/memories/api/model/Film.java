@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Schema(description = "Film model")
-public class Film {
+public class Film extends AbstractCreatedObject<Film> {
 
 	@Schema(description = "Film ID", examples = "123")
 	private Integer filmId;
@@ -36,9 +36,6 @@ public class Film {
 
 	@Schema(description = "Film organization ID", examples = "1")
 	private Integer organizationId;
-
-	@Schema(implementation = Creator.class)
-	private Creator creator;
 
 	@Schema(description = "Comment", examples = "A film about midsummer celebrations")
 	private String comment;
@@ -251,19 +248,6 @@ public class Film {
 
 	public Film withDeletedDate(final LocalDate deletedDate) {
 		this.deletedDate = deletedDate;
-		return this;
-	}
-
-	public Creator getCreator() {
-		return creator;
-	}
-
-	public void setCreator(final Creator creator) {
-		this.creator = creator;
-	}
-
-	public Film withCreator(final Creator creator) {
-		this.creator = creator;
 		return this;
 	}
 

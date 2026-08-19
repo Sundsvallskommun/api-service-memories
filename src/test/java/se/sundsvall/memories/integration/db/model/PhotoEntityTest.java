@@ -52,8 +52,6 @@ class PhotoEntityTest {
 			.withDocumentTitle("Stadsvy")
 			.withSubjectKeyword("Stad")
 			.withComment("Kommentar")
-			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
-			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withEarliest("1920")
 			.withLatest("1925")
 			.withObservationDate("1980-01-01")
@@ -87,6 +85,10 @@ class PhotoEntityTest {
 			.withNodeId(19000)
 			.withOptions(4)
 			.withDeletedDate(deletedDate);
+
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		result.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		result.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getId()).isEqualTo(1234);

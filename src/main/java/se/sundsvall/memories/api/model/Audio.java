@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Schema(description = "Audio model")
-public class Audio {
+public class Audio extends AbstractCreatedObject<Audio> {
 
 	@Schema(description = "Audio ID", examples = "123")
 	private Integer audioId;
@@ -39,9 +39,6 @@ public class Audio {
 
 	@Schema(description = "Resolved subject label from OCM (Ämne)", examples = "Intervju")
 	private String subject;
-
-	@Schema(implementation = Creator.class)
-	private Creator creator;
 
 	@Schema(description = "Comment", examples = "Audio recording of an interview")
 	private String comment;
@@ -267,19 +264,6 @@ public class Audio {
 
 	public Audio withDeletedDate(final LocalDate deletedDate) {
 		this.deletedDate = deletedDate;
-		return this;
-	}
-
-	public Creator getCreator() {
-		return creator;
-	}
-
-	public void setCreator(final Creator creator) {
-		this.creator = creator;
-	}
-
-	public Audio withCreator(final Creator creator) {
-		this.creator = creator;
 		return this;
 	}
 

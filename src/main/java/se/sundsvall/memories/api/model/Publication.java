@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 
 @Schema(description = "Publication model")
-public class Publication {
+public class Publication extends AbstractCreatedObject<Publication> {
 
 	@Schema(description = "Publication ID", examples = "207")
 	private Integer publicationId;
@@ -38,9 +38,6 @@ public class Publication {
 
 	@Schema(description = "Resolved place name from TOPOGRAFI (via P_T_ID; preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
-
-	@Schema(implementation = Creator.class)
-	private Creator creator;
 
 	@Schema(description = "Comment / description", examples = "Newspaper issue from 1841")
 	private String comment;
@@ -266,19 +263,6 @@ public class Publication {
 
 	public Publication withXmltext(final String xmltext) {
 		this.xmltext = xmltext;
-		return this;
-	}
-
-	public Creator getCreator() {
-		return creator;
-	}
-
-	public void setCreator(final Creator creator) {
-		this.creator = creator;
-	}
-
-	public Publication withCreator(final Creator creator) {
-		this.creator = creator;
 		return this;
 	}
 

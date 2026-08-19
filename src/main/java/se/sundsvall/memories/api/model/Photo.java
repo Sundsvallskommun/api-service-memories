@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Schema(description = "Photo model")
-public class Photo {
+public class Photo extends AbstractCreatedObject<Photo> {
 
 	@Schema(description = "Photo ID", examples = "1234")
 	private Integer photoId;
@@ -30,9 +30,6 @@ public class Photo {
 
 	@Schema(description = "Subject keyword")
 	private String subjectKeyword;
-
-	@Schema(implementation = Creator.class)
-	private Creator creator;
 
 	@Schema(description = "Comment / description")
 	private String comment;
@@ -667,19 +664,6 @@ public class Photo {
 
 	public Photo withSubjects(final List<Subject> subjects) {
 		this.subjects = subjects;
-		return this;
-	}
-
-	public Creator getCreator() {
-		return creator;
-	}
-
-	public void setCreator(final Creator creator) {
-		this.creator = creator;
-	}
-
-	public Photo withCreator(final Creator creator) {
-		this.creator = creator;
 		return this;
 	}
 

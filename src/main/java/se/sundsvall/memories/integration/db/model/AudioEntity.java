@@ -1,5 +1,6 @@
 package se.sundsvall.memories.integration.db.model;
 
+import jakarta.persistence.AssociationOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,7 +13,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "LJUD")
-public class AudioEntity {
+@AssociationOverride(name = "creatorPerson", joinColumns = @JoinColumn(name = "LJUD_U_E_ID"))
+@AssociationOverride(name = "creatorLegalEntity", joinColumns = @JoinColumn(name = "LJUD_U_J_ID"))
+public class AudioEntity extends AbstractCreatedEntity {
 
 	@Id
 	@Column(name = "LJUD_ID")
@@ -43,18 +46,6 @@ public class AudioEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "LJUD_O_ID")
 	private OcmEntity subject;
-
-	/**
-	 * The upphovsman (originator) — a person, a legal entity, or neither. Both columns default to a sentinel row rather
-	 * than to {@code NULL}, which {@link se.sundsvall.memories.service.mapper.CreatorMapper} reads as absent.
-	 */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "LJUD_U_E_ID")
-	private PersonEntity creatorPerson;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "LJUD_U_J_ID")
-	private LegalEntityEntity creatorLegalEntity;
 
 	@Column(name = "KOMMENT_LJUD", length = 4000)
 	private String comment;
@@ -254,32 +245,6 @@ public class AudioEntity {
 
 	public AudioEntity withDeletedDate(final LocalDate deletedDate) {
 		this.deletedDate = deletedDate;
-		return this;
-	}
-
-	public PersonEntity getCreatorPerson() {
-		return creatorPerson;
-	}
-
-	public void setCreatorPerson(final PersonEntity creatorPerson) {
-		this.creatorPerson = creatorPerson;
-	}
-
-	public AudioEntity withCreatorPerson(final PersonEntity creatorPerson) {
-		this.creatorPerson = creatorPerson;
-		return this;
-	}
-
-	public LegalEntityEntity getCreatorLegalEntity() {
-		return creatorLegalEntity;
-	}
-
-	public void setCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
-	}
-
-	public AudioEntity withCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
-		this.creatorLegalEntity = creatorLegalEntity;
 		return this;
 	}
 
