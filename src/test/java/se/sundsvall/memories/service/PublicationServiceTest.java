@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
@@ -18,11 +19,15 @@ import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.PublicationRepository;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
-import se.sundsvall.memories.service.PublicationService.FileVariant;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
+import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -40,18 +45,15 @@ class PublicationServiceTest {
 	private PublicationRepository publicationRepositoryMock;
 
 	@Mock
-	private TopographyLookup topographyLookupMock;
-
-	@Mock
 	private FileStreamer fileStreamerMock;
 
 	private PublicationService service;
 
 	private static PublicationEntity entity() {
 		return PublicationEntity.create()
-			.withPublicationId(207)
+			.withId(207)
 			.withDocumentTitle("Alfwar och Skämt")
-			.withTopographyId(4)
+			.withTopography(TopographyEntity.create().withId(4).withName("Sundsvall"))
 			.withPublicationType("Broschyrer")
 			.withThumbnailFilename("PUBL.id_207_fil_liten.jpeg")
 			.withLargeImageFilename("PUBL.id_207_fil_stor.jpeg")
@@ -69,14 +71,17 @@ class PublicationServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new PublicationService(publicationRepositoryMock, SAMBA_PROPERTIES, topographyLookupMock, fileStreamerMock);
+		service = new PublicationService(publicationRepositoryMock, SAMBA_PROPERTIES, fileStreamerMock);
 	}
 
+	// Which rows the filters select is verified against a real database in PublicationSpecificationTest. These tests
+	// cover what the service itself does: build the pageable, forward the parameters, and map the resulting page.
+
 	@Test
-	void searchWithQueryUsesFulltextRepository() {
+	void searchDelegatesToRepositoryAndMapsThePage() {
 		final var pageable = PageRequest.of(0, 100);
-		when(publicationRepositoryMock.searchPublished("+Drowning*", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
-		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvall");
+		when(publicationRepositoryMock.findAllByParameters(any(PublicationParameters.class), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
 		final var result = service.search(PublicationParameters.create().withQuery("Drowning"));
 
@@ -86,63 +91,44 @@ class PublicationServiceTest {
 		assertThat(result.getPublications().getFirst().getXmltext()).isNull();
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(publicationRepositoryMock).searchPublished("+Drowning*", pageable);
+		verify(publicationRepositoryMock).findAllByParameters(any(PublicationParameters.class), eq(pageable));
 		verifyNoMoreInteractions(publicationRepositoryMock);
 	}
 
 	@Test
-	void searchWithFiltersRoutesToSearchFiltered() {
+	void searchForwardsTheParametersUnchanged() {
 		final var pageable = PageRequest.of(0, 100);
-		when(publicationRepositoryMock.searchFiltered(null, 1970, 1990, "Sundsvall", pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
-		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvall");
+		final var parameters = PublicationParameters.create();
+		when(publicationRepositoryMock.findAllByParameters(any(PublicationParameters.class), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
-		final var result = service.search(PublicationParameters.create().withYearFrom(1970).withYearTo(1990).withLocation("Sundsvall"));
-
-		assertThat(result.getPublications()).hasSize(1);
-		verify(publicationRepositoryMock).searchFiltered(null, 1970, 1990, "Sundsvall", pageable);
-		verifyNoMoreInteractions(publicationRepositoryMock);
-	}
-
-	@Test
-	void searchWithNullQueryUsesFindAllPublished() {
-		final var pageable = PageRequest.of(0, 100);
-		when(publicationRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
-
-		final var result = service.search(PublicationParameters.create());
-
-		assertThat(result.getPublications()).hasSize(1);
-		verify(publicationRepositoryMock).findAllPublished(pageable);
-		verifyNoMoreInteractions(publicationRepositoryMock);
-	}
-
-	@Test
-	void searchWithBlankQueryUsesFindAllPublished() {
-		final var pageable = PageRequest.of(0, 100);
-		when(publicationRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
-
-		final var result = service.search(PublicationParameters.create().withQuery("   "));
+		final var result = service.search(parameters);
 
 		assertThat(result.getPublications()).isEmpty();
-		verify(publicationRepositoryMock).findAllPublished(pageable);
+		final var parametersCaptor = ArgumentCaptor.forClass(PublicationParameters.class);
+		verify(publicationRepositoryMock).findAllByParameters(parametersCaptor.capture(), eq(pageable));
+		assertThat(parametersCaptor.getValue()).isSameAs(parameters);
 		verifyNoMoreInteractions(publicationRepositoryMock);
 	}
 
 	@Test
-	void searchWithOperatorOnlyQueryFallsBackToFindAll() {
-		final var pageable = PageRequest.of(0, 100);
-		when(publicationRepositoryMock.findAllPublished(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
+	void searchAppliesRequestedPaging() {
+		final var pageable = PageRequest.of(2, 25);
+		when(publicationRepositoryMock.findAllByParameters(any(PublicationParameters.class), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 51));
 
-		final var result = service.search(PublicationParameters.create().withQuery("+-*"));
+		final var result = service.search(PublicationParameters.create().withPage(3).withLimit(25));
 
-		assertThat(result.getPublications()).isEmpty();
-		verify(publicationRepositoryMock).findAllPublished(pageable);
+		assertThat(result.getMetaData().getPage()).isEqualTo(3);
+		assertThat(result.getMetaData().getLimit()).isEqualTo(25);
+		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(51);
+		verify(publicationRepositoryMock).findAllByParameters(any(PublicationParameters.class), eq(pageable));
 		verifyNoMoreInteractions(publicationRepositoryMock);
 	}
 
 	@Test
 	void getByIdIncludesXmltextAndLocation() {
-		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
-		when(topographyLookupMock.resolve(4)).thenReturn("Sundsvall");
+		when(publicationRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity()));
 
 		final var result = service.getById(207);
 
@@ -155,7 +141,7 @@ class PublicationServiceTest {
 
 	@Test
 	void getByIdNotFound() {
-		when(publicationRepositoryMock.findById(999)).thenReturn(Optional.empty());
+		when(publicationRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.getById(999));
 
@@ -167,7 +153,7 @@ class PublicationServiceTest {
 	@MethodSource("fileVariants")
 	void streamFileDelegatesToFileStreamer(final FileVariant variant, final String expectedPath, final String expectedFilename, final String expectedDownloadFilename, final boolean expectedTransform) {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entity()));
+		when(publicationRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity()));
 
 		service.streamFile(207, variant, responseMock);
 
@@ -177,7 +163,7 @@ class PublicationServiceTest {
 	@Test
 	void streamFileNotFoundPublication() {
 		final var responseMock = mock(HttpServletResponse.class);
-		when(publicationRepositoryMock.findById(999)).thenReturn(Optional.empty());
+		when(publicationRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(999, FileVariant.THUMBNAIL, responseMock));
@@ -191,7 +177,7 @@ class PublicationServiceTest {
 	void streamFileWhenVariantIsBlank() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withOcrFilename("   ");
-		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entityMissingFile));
+		when(publicationRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(207, FileVariant.TEXT, responseMock));
@@ -205,7 +191,7 @@ class PublicationServiceTest {
 	void streamFileWhenVariantIsNull() {
 		final var responseMock = mock(HttpServletResponse.class);
 		final var entityMissingFile = entity().withThumbnailFilename(null);
-		when(publicationRepositoryMock.findById(207)).thenReturn(Optional.of(entityMissingFile));
+		when(publicationRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entityMissingFile));
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> service.streamFile(207, FileVariant.THUMBNAIL, responseMock));

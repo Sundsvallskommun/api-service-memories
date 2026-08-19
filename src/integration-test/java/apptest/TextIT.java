@@ -60,4 +60,18 @@ class TextIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * Text 1098 is soft-deleted but still carries the published bit, which is exactly the state that leaked 33 rows
+	 * through both search and get-by-id.
+	 */
+	@Test
+	void test05_getSoftDeletedTextByIdNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/1098")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

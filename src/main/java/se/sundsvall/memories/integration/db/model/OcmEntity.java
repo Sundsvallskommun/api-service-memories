@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 @Table(name = "OCM")
@@ -77,6 +78,20 @@ public class OcmEntity {
 	public OcmEntity withDescription(final String description) {
 		this.description = description;
 		return this;
+	}
+
+	/**
+	 * Resolves this entry to the string used to present a subject. Prefers {@code OCMTEXT}, falls back to
+	 * {@code OCMDESC}, then {@code OCMKOD}. Blank values are treated as absent, since the legacy data uses empty
+	 * strings rather than {@code NULL}.
+	 *
+	 * @return the display name, or {@code null} if all three columns are missing or blank
+	 */
+	public String getDisplayName() {
+		return Optional.ofNullable(text).filter(s -> !s.isBlank())
+			.or(() -> Optional.ofNullable(description).filter(s -> !s.isBlank()))
+			.or(() -> Optional.ofNullable(code).filter(s -> !s.isBlank()))
+			.orElse(null);
 	}
 
 	@Override

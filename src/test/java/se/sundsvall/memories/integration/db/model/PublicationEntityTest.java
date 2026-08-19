@@ -8,9 +8,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToStringExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -28,9 +28,9 @@ class PublicationEntityTest {
 		assertThat(PublicationEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCode(),
-			hasValidBeanEquals(),
-			hasValidBeanToString()));
+			hasValidBeanHashCodeExcluding("topography"),
+			hasValidBeanEqualsExcluding("topography"),
+			hasValidBeanToStringExcluding("topography")));
 	}
 
 	@Test
@@ -67,7 +67,7 @@ class PublicationEntityTest {
 		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = PublicationEntity.create()
-			.withPublicationId(publicationId)
+			.withId(publicationId)
 			.withFilename(filename)
 			.withPublicationType(publicationType)
 			.withDate(date)
@@ -83,7 +83,7 @@ class PublicationEntityTest {
 			.withReId(reId)
 			.withUjId(ujId)
 			.withUeId(ueId)
-			.withTopographyId(topographyId)
+			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withMeOId(meOId)
 			.withComment(comment)
@@ -99,7 +99,7 @@ class PublicationEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getPublicationId()).isEqualTo(publicationId);
+		assertThat(result.getId()).isEqualTo(publicationId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getPublicationType()).isEqualTo(publicationType);
 		assertThat(result.getDate()).isEqualTo(date);
@@ -115,7 +115,7 @@ class PublicationEntityTest {
 		assertThat(result.getReId()).isEqualTo(reId);
 		assertThat(result.getUjId()).isEqualTo(ujId);
 		assertThat(result.getUeId()).isEqualTo(ueId);
-		assertThat(result.getTopographyId()).isEqualTo(topographyId);
+		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getMeOId()).isEqualTo(meOId);
 		assertThat(result.getComment()).isEqualTo(comment);

@@ -1,7 +1,6 @@
 package se.sundsvall.memories.integration.db.model;
 
 import org.junit.jupiter.api.Test;
-import se.sundsvall.memories.integration.db.model.TextMediaEntity.TextMediaId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,16 +1,15 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.Audio;
 import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.api.model.PagedAudioResponse;
 import se.sundsvall.memories.integration.db.AudioRepository;
-import se.sundsvall.memories.integration.db.FulltextQuery;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.AudioMapper;
@@ -29,49 +28,34 @@ public class AudioService {
 
 	private final AudioRepository audioRepository;
 	private final SambaIntegrationProperties sambaProperties;
-	private final TopographyLookup topographyLookup;
-	private final OcmLookup ocmLookup;
 	private final FileStreamer fileStreamer;
 
 	public AudioService(final AudioRepository audioRepository, final SambaIntegrationProperties sambaProperties,
-		final TopographyLookup topographyLookup, final OcmLookup ocmLookup, final FileStreamer fileStreamer) {
+		final FileStreamer fileStreamer) {
 		this.audioRepository = audioRepository;
 		this.sambaProperties = sambaProperties;
-		this.topographyLookup = topographyLookup;
-		this.ocmLookup = ocmLookup;
 		this.fileStreamer = fileStreamer;
 	}
 
+	@Transactional(readOnly = true)
 	public PagedAudioResponse search(final AudioParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
-		final var sanitized = FulltextQuery.sanitize(parameters.getQuery());
-		final var location = blankToNull(parameters.getLocation());
 
-		final Page<AudioEntity> page;
-		if (parameters.getYearFrom() != null || parameters.getYearTo() != null || location != null) {
-			page = audioRepository.searchFiltered(sanitized, parameters.getYearFrom(), parameters.getYearTo(), location, pageable);
-		} else {
-			page = ofNullable(sanitized)
-				.map(query -> audioRepository.searchPublished(query, pageable))
-				.orElseGet(() -> audioRepository.findAllPublished(pageable));
-		}
+		final var page = audioRepository.findAllByParameters(parameters, pageable);
 
 		return PagedAudioResponse.create()
-			.withAudios(AudioMapper.toAudioList(page.getContent(), topographyLookup::resolve, ocmLookup::resolve))
+			.withAudios(AudioMapper.toAudioList(page.getContent()))
 			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
 	}
 
-	private static String blankToNull(final String value) {
-		return ofNullable(value)
-			.map(String::trim)
-			.filter(v -> !v.isEmpty())
-			.orElse(null);
+	private AudioEntity findVisible(final Integer id) {
+		return audioRepository.findVisibleById(id)
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
 	}
 
+	@Transactional(readOnly = true)
 	public Audio getById(final Integer id) {
-		return audioRepository.findById(id)
-			.map(entity -> AudioMapper.toAudio(entity, topographyLookup.resolve(entity.getTopographyId()), ocmLookup.resolve(entity.getSubjectId())))
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
+		return AudioMapper.toAudio(findVisible(id));
 	}
 
 	/**
@@ -83,16 +67,14 @@ public class AudioService {
 	 * @return    the payload (resource, mime type, filename)
 	 */
 	public StreamPayload openForPlayback(final Integer id) {
-		final var entity = audioRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
+		final var entity = findVisible(id);
 
 		final var mimeType = ofNullable(entity.getAudioMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
 		return fileStreamer.openForPlayback(sambaProperties.audioFolder() + entity.getObjectFilePath(), mimeType, deriveFilename(entity));
 	}
 
 	public void streamFile(final Integer id, final HttpServletResponse response) {
-		final var entity = audioRepository.findById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, AUDIO_NOT_FOUND.formatted(id)));
+		final var entity = findVisible(id);
 
 		final var mimeType = ofNullable(entity.getAudioMimeType()).orElse(APPLICATION_OCTET_STREAM_VALUE);
 		fileStreamer.streamAttachment(sambaProperties.audioFolder() + entity.getObjectFilePath(), mimeType, deriveFilename(entity), response,
@@ -100,6 +82,6 @@ public class AudioService {
 	}
 
 	private static String deriveFilename(final AudioEntity entity) {
-		return FileStreamer.downloadFilename(AUDIO, entity.getAudioId(), entity.getObjectFilePath());
+		return FileStreamer.downloadFilename(AUDIO, entity.getId(), entity.getObjectFilePath());
 	}
 }

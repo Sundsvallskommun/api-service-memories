@@ -60,4 +60,18 @@ class PublicationIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * Publication 600 is soft-deleted but still carries the published bit, which is exactly the state that leaked 4
+	 * rows through both search and get-by-id.
+	 */
+	@Test
+	void test05_getSoftDeletedPublicationByIdNotFound() {
+		setupCall()
+			.withServicePath(PATH + "/600")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

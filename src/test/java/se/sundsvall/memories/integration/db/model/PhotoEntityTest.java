@@ -4,13 +4,14 @@ import com.google.code.beanmatchers.BeanMatchers;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Random;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToStringExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -25,12 +26,14 @@ class PhotoEntityTest {
 
 	@Test
 	void testBean() {
+		// Both associations are excluded: including them in equals/hashCode/toString would initialise the lazy proxy or
+		// collection and turn every comparison or log line into a database round trip.
 		assertThat(PhotoEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCode(),
-			hasValidBeanEquals(),
-			hasValidBeanToString()));
+			hasValidBeanHashCodeExcluding("topography", "subjects"),
+			hasValidBeanEqualsExcluding("topography", "subjects"),
+			hasValidBeanToStringExcluding("topography", "subjects")));
 	}
 
 	@Test
@@ -38,8 +41,9 @@ class PhotoEntityTest {
 		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = PhotoEntity.create()
-			.withPhotoId(1234)
-			.withTopographyId(42)
+			.withId(1234)
+			.withTopography(TopographyEntity.create().withId(42).withName("Sundsvall"))
+			.withSubjects(Set.of(OcmEntity.create().withId(7).withText("Musik")))
 			.withFilename("original.jpg")
 			.withAccessionNumber("ACC-1")
 			.withReferenceCode("REF-1")
@@ -83,8 +87,9 @@ class PhotoEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getPhotoId()).isEqualTo(1234);
-		assertThat(result.getTopographyId()).isEqualTo(42);
+		assertThat(result.getId()).isEqualTo(1234);
+		assertThat(result.getTopography().getId()).isEqualTo(42);
+		assertThat(result.getSubjects()).extracting(OcmEntity::getId).containsExactly(7);
 		assertThat(result.getFilename()).isEqualTo("original.jpg");
 		assertThat(result.getAccessionNumber()).isEqualTo("ACC-1");
 		assertThat(result.getReferenceCode()).isEqualTo("REF-1");
@@ -130,7 +135,9 @@ class PhotoEntityTest {
 
 	@Test
 	void testNoDirtOnCreatedBean() {
-		assertThat(PhotoEntity.create()).hasAllNullFieldsOrProperties();
-		assertThat(new PhotoEntity()).hasAllNullFieldsOrProperties();
+		// subjects is initialised to an empty set, as a JPA collection field should be.
+		assertThat(PhotoEntity.create()).hasAllNullFieldsOrPropertiesExcept("subjects");
+		assertThat(PhotoEntity.create().getSubjects()).isEmpty();
+		assertThat(new PhotoEntity()).hasAllNullFieldsOrPropertiesExcept("subjects");
 	}
 }

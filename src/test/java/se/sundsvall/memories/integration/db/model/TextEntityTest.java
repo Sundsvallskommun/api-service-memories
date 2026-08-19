@@ -8,9 +8,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToStringExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -28,9 +28,9 @@ class TextEntityTest {
 		assertThat(TextEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCode(),
-			hasValidBeanEquals(),
-			hasValidBeanToString()));
+			hasValidBeanHashCodeExcluding("topography", "subject"),
+			hasValidBeanEqualsExcluding("topography", "subject"),
+			hasValidBeanToStringExcluding("topography", "subject")));
 	}
 
 	@Test
@@ -58,15 +58,15 @@ class TextEntityTest {
 		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = TextEntity.create()
-			.withTextId(textId)
+			.withId(textId)
 			.withDocumentDate(documentDate)
 			.withDocumentEndDate(documentEndDate)
 			.withDocumentTitle(documentTitle)
 			.withUeId(ueId)
 			.withUjId(ujId)
-			.withTopographyId(topographyId)
+			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
-			.withSubjectId(subjectId)
+			.withSubject(OcmEntity.create().withId(subjectId).withText("Musik"))
 			.withComment(comment)
 			.withFilename(filename)
 			.withThumbnailFilename(thumbnailFilename)
@@ -81,15 +81,15 @@ class TextEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getTextId()).isEqualTo(textId);
+		assertThat(result.getId()).isEqualTo(textId);
 		assertThat(result.getDocumentDate()).isEqualTo(documentDate);
 		assertThat(result.getDocumentEndDate()).isEqualTo(documentEndDate);
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
 		assertThat(result.getUeId()).isEqualTo(ueId);
 		assertThat(result.getUjId()).isEqualTo(ujId);
-		assertThat(result.getTopographyId()).isEqualTo(topographyId);
+		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
-		assertThat(result.getSubjectId()).isEqualTo(subjectId);
+		assertThat(result.getSubject().getId()).isEqualTo(subjectId);
 		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getThumbnailFilename()).isEqualTo(thumbnailFilename);

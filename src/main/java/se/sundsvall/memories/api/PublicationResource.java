@@ -23,7 +23,7 @@ import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
 import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.service.PublicationService;
-import se.sundsvall.memories.service.PublicationService.FileVariant;
+import se.sundsvall.memories.service.model.FileVariant;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;

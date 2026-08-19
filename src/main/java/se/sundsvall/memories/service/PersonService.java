@@ -11,7 +11,6 @@ import se.sundsvall.memories.integration.db.PersonRepository;
 import se.sundsvall.memories.service.mapper.PersonMapper;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static se.sundsvall.memories.service.util.StringUtil.trimToNull;
 
 @Service
 public class PersonService {
@@ -27,14 +26,7 @@ public class PersonService {
 	public PagedPersonResponse search(final PersonParameters parameters) {
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
 
-		final var page = personRepository.search(
-			trimToNull(parameters.getLastName()),
-			trimToNull(parameters.getFirstName()),
-			trimToNull(parameters.getBirthParish()),
-			trimToNull(parameters.getGender()),
-			parameters.getYearFrom(),
-			parameters.getYearTo(),
-			pageable);
+		final var page = personRepository.findAllByParameters(parameters, pageable);
 
 		return PagedPersonResponse.create()
 			.withPersons(PersonMapper.toPersonList(page.getContent()))

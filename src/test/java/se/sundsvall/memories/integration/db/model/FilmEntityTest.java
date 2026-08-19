@@ -8,9 +8,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToStringExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -28,9 +28,9 @@ class FilmEntityTest {
 		assertThat(FilmEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCode(),
-			hasValidBeanEquals(),
-			hasValidBeanToString()));
+			hasValidBeanHashCodeExcluding("topography"),
+			hasValidBeanEqualsExcluding("topography"),
+			hasValidBeanToStringExcluding("topography")));
 	}
 
 	@Test
@@ -53,13 +53,13 @@ class FilmEntityTest {
 		final var deletedDate = LocalDate.of(2026, Month.JANUARY, 15);
 
 		final var result = FilmEntity.create()
-			.withFilmId(filmId)
+			.withId(filmId)
 			.withFilename(filename)
 			.withObjectFilePath(objectFilePath)
 			.withObjectType(objectType)
 			.withDate(date)
 			.withDocumentTitle(documentTitle)
-			.withTopographyId(topographyId)
+			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withOrganizationId(organizationId)
 			.withSubEntityId(subEntityId)
@@ -71,13 +71,13 @@ class FilmEntityTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getFilmId()).isEqualTo(filmId);
+		assertThat(result.getId()).isEqualTo(filmId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getObjectFilePath()).isEqualTo(objectFilePath);
 		assertThat(result.getObjectType()).isEqualTo(objectType);
 		assertThat(result.getDate()).isEqualTo(date);
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
-		assertThat(result.getTopographyId()).isEqualTo(topographyId);
+		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getOrganizationId()).isEqualTo(organizationId);
 		assertThat(result.getSubEntityId()).isEqualTo(subEntityId);

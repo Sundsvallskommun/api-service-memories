@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -15,7 +17,7 @@ public class PublicationEntity {
 
 	@Id
 	@Column(name = "P_ID")
-	private Integer publicationId;
+	private Integer id;
 
 	@Column(name = "FILNAMN", length = 256)
 	private String filename;
@@ -62,8 +64,9 @@ public class PublicationEntity {
 	@Column(name = "U_E_ID")
 	private Integer ueId;
 
-	@Column(name = "P_T_ID")
-	private Integer topographyId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "P_T_ID")
+	private TopographyEntity topography;
 
 	@Column(name = "P_OPLATS", length = 64)
 	private String locationText;
@@ -109,16 +112,16 @@ public class PublicationEntity {
 		return new PublicationEntity();
 	}
 
-	public Integer getPublicationId() {
-		return publicationId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setPublicationId(final Integer publicationId) {
-		this.publicationId = publicationId;
+	public void setId(final Integer id) {
+		this.id = id;
 	}
 
-	public PublicationEntity withPublicationId(final Integer publicationId) {
-		this.publicationId = publicationId;
+	public PublicationEntity withId(final Integer id) {
+		this.id = id;
 		return this;
 	}
 
@@ -317,16 +320,16 @@ public class PublicationEntity {
 		return this;
 	}
 
-	public Integer getTopographyId() {
-		return topographyId;
+	public TopographyEntity getTopography() {
+		return topography;
 	}
 
-	public void setTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public void setTopography(final TopographyEntity topography) {
+		this.topography = topography;
 	}
 
-	public PublicationEntity withTopographyId(final Integer topographyId) {
-		this.topographyId = topographyId;
+	public PublicationEntity withTopography(final TopographyEntity topography) {
+		this.topography = topography;
 		return this;
 	}
 
@@ -504,12 +507,12 @@ public class PublicationEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final PublicationEntity that = (PublicationEntity) o;
-		return Objects.equals(publicationId, that.publicationId) && Objects.equals(filename, that.filename) && Objects.equals(publicationType, that.publicationType)
+		return Objects.equals(id, that.id) && Objects.equals(filename, that.filename) && Objects.equals(publicationType, that.publicationType)
 			&& Objects.equals(date, that.date) && Objects.equals(periodicalTitle, that.periodicalTitle) && Objects.equals(issueNumber, that.issueNumber)
 			&& Objects.equals(pageNumber, that.pageNumber) && Objects.equals(bfJId, that.bfJId) && Objects.equals(publisherTopographyId, that.publisherTopographyId)
 			&& Objects.equals(publisherLocation, that.publisherLocation) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(feId, that.feId) && Objects.equals(reId, that.reId) && Objects.equals(ujId, that.ujId) && Objects.equals(ueId, that.ueId)
-			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(meOId, that.meOId)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(meOId, that.meOId)
 			&& Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(originalFilename, that.originalFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(filXtra, that.filXtra) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options)
@@ -518,15 +521,15 @@ public class PublicationEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, bfJId, publisherTopographyId, publisherLocation, documentDate,
-			documentTitle, feId, reId, ujId, ueId, topographyId, locationText, meOId, comment, thumbnailFilename, largeImageFilename, originalFilename, ocrFilename,
+		return Objects.hash(id, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, bfJId, publisherTopographyId, publisherLocation, documentDate,
+			documentTitle, feId, reId, ujId, ueId, locationText, meOId, comment, thumbnailFilename, largeImageFilename, originalFilename, ocrFilename,
 			xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
 
 	@Override
 	public String toString() {
 		return "PublicationEntity{" +
-			"publicationId=" + publicationId +
+			"id=" + id +
 			", filename='" + filename + '\'' +
 			", publicationType='" + publicationType + '\'' +
 			", date='" + date + '\'' +
@@ -542,7 +545,6 @@ public class PublicationEntity {
 			", reId=" + reId +
 			", ujId=" + ujId +
 			", ueId=" + ueId +
-			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", meOId=" + meOId +
 			", comment='" + comment + '\'' +
