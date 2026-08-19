@@ -37,7 +37,7 @@ class CombinedObjectIT extends AbstractAppTest {
 	@Test
 	void test02_searchObjectsIncludesRegisters() {
 		setupCall()
-			.withServicePath(PATH + "?query=Nordin&sortBy=OBJECT_KEY&sortDirection=ASC")
+			.withServicePath(PATH + "?query=Nordin&sortBy=objectKey&sortDirection=ASC")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)

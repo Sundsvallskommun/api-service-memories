@@ -1424,10 +1424,10 @@ components:
             $ref: "#/components/schemas/Violation"
         title:
           type: string
-        causeAsProblem:
-          $ref: "#/components/schemas/ThrowableProblem"
         detail:
           type: string
+        causeAsProblem:
+          $ref: "#/components/schemas/ThrowableProblem"
         instance:
           type: string
           format: uri
@@ -2447,8 +2447,8 @@ components:
     CombinedObjectParameters:
       type: object
       description: "Combined object search parameters (across all object and register\
-        \ types). All filters are optional and combined with AND. Sort on a view column:\
-        \ TITLE, SORT_YEAR or OBJECT_TYPE."
+        \ types). All filters are optional and combined with AND. Sort on one of:\
+        \ objectKey, title, year or objectType."
       properties:
         page:
           type: integer

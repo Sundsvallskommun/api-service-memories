@@ -6,7 +6,7 @@
 		"totalPages": 1,
 		"totalRecords": 3,
 		"sortBy": [
-			"OBJECT_KEY"
+			"objectKey"
 		],
 		"sortDirection": "ASC"
 	},

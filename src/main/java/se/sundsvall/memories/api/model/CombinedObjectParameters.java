@@ -5,7 +5,7 @@ import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = "Combined object search parameters (across all object and register types). All filters are optional "
-	+ "and combined with AND. Sort on a view column: TITLE, SORT_YEAR or OBJECT_TYPE.")
+	+ "and combined with AND. Sort on one of: objectKey, title, year or objectType.")
 public class CombinedObjectParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Free text search (substring, case-insensitive) across title and comment, and for the register types also across names, parishes and other identifying fields", examples = "Sundsvall")
