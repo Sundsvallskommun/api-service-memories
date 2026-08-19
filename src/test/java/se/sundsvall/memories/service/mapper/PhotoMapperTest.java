@@ -17,7 +17,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 class PhotoMapperTest {
 
 	private static PhotoEntity sampleEntity() {
-		return PhotoEntity.create()
+		final var entity = PhotoEntity.create()
 			.withId(1234)
 			.withTopography(TopographyEntity.create().withId(42).withName("Sundsvall"))
 			.withDocumentTitle("Stadsvy från Norra berget")
@@ -28,9 +28,13 @@ class PhotoMapperTest {
 			.withLargeImageFilename("FOTO.id_1234_fil_stor.jpg")
 			.withRights("Free use")
 			.withRestricted("Nej")
-			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
-			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withOptions(4);
+
+		// the originator associations carry no fluent builder: the application only ever reads them
+		entity.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		entity.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
+
+		return entity;
 	}
 
 	@Test

@@ -64,8 +64,6 @@ class TextEntityTest {
 			.withLocationText(locationText)
 			.withSubject(OcmEntity.create().withId(subjectId).withText("Musik"))
 			.withComment(comment)
-			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
-			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withFilename(filename)
 			.withThumbnailFilename(thumbnailFilename)
 			.withLargeImageFilename(largeImageFilename)
@@ -78,7 +76,13 @@ class TextEntityTest {
 			.withFilFormat(filFormat)
 			.withDeletedDate(deletedDate);
 
+		// the originator associations are only ever read by the application, so they carry no fluent builder
+		result.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		result.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
+
 		assertThat(result).hasNoNullFieldsOrProperties();
+		assertThat(result.getCreatorPerson().getDisplayName()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreatorLegalEntity().getName()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getId()).isEqualTo(textId);
 		assertThat(result.getDocumentDate()).isEqualTo(documentDate);
 		assertThat(result.getDocumentEndDate()).isEqualTo(documentEndDate);
