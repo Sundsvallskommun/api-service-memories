@@ -3,7 +3,7 @@ package se.sundsvall.memories.api.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 
-@Schema(description = "Combined object search hit (any object type)")
+@Schema(description = "Combined object search hit (any object or register type)")
 public class CombinedObject {
 
 	@Schema(description = "Stable key across types ({type}-{id})", examples = "foto-1001")
@@ -12,19 +12,19 @@ public class CombinedObject {
 	@Schema(description = "Source id within its own type", examples = "1001")
 	private Integer sourceId;
 
-	@Schema(description = "Object type", examples = "Foto")
+	@Schema(description = "Object type (Foto, Föremål, Film, Ljud, Text, Publikation, Person, Juridisk person or Sjöman)", examples = "Foto")
 	private String objectType;
 
-	@Schema(description = "Title", examples = "Stadsvy från Norra berget")
+	@Schema(description = "Title — the document title for objects, the composed name for Person, Juridisk person and Sjöman", examples = "Stadsvy från Norra berget")
 	private String title;
 
-	@Schema(description = "Year (derived from the object's date; used for sorting and display)", examples = "1920")
+	@Schema(description = "Year (derived from the object's date, the birth year for Person and Sjöman, or the start of the activity period for Juridisk person; used for sorting and display)", examples = "1920")
 	private Integer year;
 
 	@Schema(description = "Topography ID", examples = "1")
 	private Integer topographyId;
 
-	@Schema(description = "Free-text location", examples = "Sundsvall")
+	@Schema(description = "Free-text location (the birth parish for Person and Sjöman)", examples = "Sundsvall")
 	private String locationText;
 
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
