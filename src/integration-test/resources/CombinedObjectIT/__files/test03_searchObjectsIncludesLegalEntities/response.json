@@ -1,0 +1,23 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"typeCounts": {
+		"Juridisk person": 1
+	},
+	"objects": [
+		{
+			"objectKey": "jurpers-10",
+			"sourceId": 10,
+			"objectType": "Juridisk person",
+			"title": "Nödhjälpskommittén 1888-1889",
+			"year": 1888,
+			"topographyId": 1,
+			"location": "Sundsvall"
+		}
+	]
+}

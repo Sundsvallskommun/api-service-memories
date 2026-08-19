@@ -5,7 +5,7 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.4"
+  version: "3.5"
 servers:
 - url: http://localhost:56801
   description: Generated server url
@@ -17,7 +17,7 @@ tags:
 - name: Person
   description: Person search and retrieval
 - name: Object
-  description: Combined object search across all object types
+  description: Combined object search across all object and register types
 - name: Texts
   description: Text search and file operations
 - name: Census record
@@ -685,7 +685,8 @@ paths:
       - Object
       summary: Search objects
       description: "Search across all object types (Foto, Föremål, Film, Ljud, Text,\
-        \ Publikation) in one call, with global sorting, pagination and per-type counts."
+        \ Publikation) and registers (Person, Juridisk person, Sjöman) in one call,\
+        \ with global sorting, pagination and per-type counts."
       operationId: searchObjects
       parameters:
       - name: municipalityId
@@ -1423,10 +1424,10 @@ components:
             $ref: "#/components/schemas/Violation"
         title:
           type: string
-        causeAsProblem:
-          $ref: "#/components/schemas/ThrowableProblem"
         detail:
           type: string
+        causeAsProblem:
+          $ref: "#/components/schemas/ThrowableProblem"
         instance:
           type: string
           format: uri
@@ -2445,9 +2446,9 @@ components:
           - 2026-01-15
     CombinedObjectParameters:
       type: object
-      description: "Combined object search parameters (across all object types). All\
-        \ filters are optional and combined with AND. Sort on a view column: TITLE,\
-        \ SORT_YEAR or OBJECT_TYPE."
+      description: "Combined object search parameters (across all object and register\
+        \ types). All filters are optional and combined with AND. Sort on one of:\
+        \ objectKey, title, year or objectType."
       properties:
         page:
           type: integer
@@ -2480,7 +2481,8 @@ components:
         query:
           type: string
           description: "Free text search (substring, case-insensitive) across title\
-            \ and comment"
+            \ and comment, and for the register types also across names, parishes\
+            \ and other identifying fields"
           examples:
           - Sundsvall
         yearFrom:
@@ -2503,7 +2505,7 @@ components:
           - Sundsvall
     CombinedObject:
       type: object
-      description: Combined object search hit (any object type)
+      description: Combined object search hit (any object or register type)
       properties:
         objectKey:
           type: string
@@ -2518,19 +2520,22 @@ components:
           - 1001
         objectType:
           type: string
-          description: Object type
+          description: "Object type (Foto, Föremål, Film, Ljud, Text, Publikation,\
+            \ Person, Juridisk person or Sjöman)"
           examples:
           - Foto
         title:
           type: string
-          description: Title
+          description: "Title — the document title for objects, the composed name\
+            \ for Person, Juridisk person and Sjöman"
           examples:
           - Stadsvy från Norra berget
         year:
           type: integer
           format: int32
-          description: Year (derived from the object's date; used for sorting and
-            display)
+          description: "Year (derived from the object's date, the birth year for Person\
+            \ and Sjöman, or the start of the activity period for Juridisk person;\
+            \ used for sorting and display)"
           examples:
           - 1920
         topographyId:
@@ -2541,7 +2546,7 @@ components:
           - 1
         locationText:
           type: string
-          description: Free-text location
+          description: Free-text location (the birth parish for Person and Sjöman)
           examples:
           - Sundsvall
         location:

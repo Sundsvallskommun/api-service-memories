@@ -27,7 +27,7 @@ import static org.springframework.http.ResponseEntity.ok;
 @RestController
 @Validated
 @RequestMapping("/{municipalityId}/objects")
-@Tag(name = "Object", description = "Combined object search across all object types")
+@Tag(name = "Object", description = "Combined object search across all object and register types")
 @ApiResponses(value = {
 	@ApiResponse(responseCode = "400", description = "Bad request", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(oneOf = {
 		Problem.class, ConstraintViolationProblem.class
@@ -43,7 +43,7 @@ class CombinedObjectResource {
 	}
 
 	@GetMapping(produces = APPLICATION_JSON_VALUE)
-	@Operation(summary = "Search objects", description = "Search across all object types (Foto, Föremål, Film, Ljud, Text, Publikation) in one call, with global sorting, pagination and per-type counts.")
+	@Operation(summary = "Search objects", description = "Search across all object types (Foto, Föremål, Film, Ljud, Text, Publikation) and registers (Person, Juridisk person, Sjöman) in one call, with global sorting, pagination and per-type counts.")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
 	ResponseEntity<PagedCombinedObjectResponse> searchObjects(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
