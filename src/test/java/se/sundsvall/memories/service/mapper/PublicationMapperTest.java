@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -26,6 +28,8 @@ class PublicationMapperTest {
 			.withTopography(TopographyEntity.create().withId(4).withName("Sundsvall"))
 			.withLocationText("Sundsvall")
 			.withComment("Archive comment")
+			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
+			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withThumbnailFilename("PUBL.id_207_fil_liten.jpeg")
 			.withLargeImageFilename("PUBL.id_207_fil_stor.jpeg")
 			.withOcrFilename("PUBL.id_207_fil_txt.xml")
@@ -41,6 +45,10 @@ class PublicationMapperTest {
 		final var result = PublicationMapper.toPublicationSummary(sampleEntity());
 
 		assertThat(result).isNotNull();
+		assertThat(result.getCreatorPersonId()).isEqualTo(1);
+		assertThat(result.getCreatorPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreatorLegalEntityId()).isEqualTo(10);
+		assertThat(result.getCreatorLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getPublicationId()).isEqualTo(207);
 		assertThat(result.getPublicationType()).isEqualTo("Tidningar");
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");

@@ -19,8 +19,6 @@
 			"location": "Timrå",
 			"subjectId": 20,
 			"subject": "Musik",
-			"authorPersonId": 0,
-			"authorEntityId": 1,
 			"comment": "Folkmusikinspelning från Timrå",
 			"audioMimeType": "audio/mpeg",
 			"nodeId": 202,

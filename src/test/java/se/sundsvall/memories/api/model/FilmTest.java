@@ -45,8 +45,6 @@ class FilmTest {
 		final var locationText = "Sundsvall";
 		final var location = "Sundsvall";
 		final var organizationId = 3;
-		final var subEntityId = 4;
-		final var unitId = 5;
 		final var comment = "A film about midsummer celebrations";
 		final var filmMimeType = "video/mp4";
 		final var nodeId = 6;
@@ -64,15 +62,21 @@ class FilmTest {
 			.withLocationText(locationText)
 			.withLocation(location)
 			.withOrganizationId(organizationId)
-			.withSubEntityId(subEntityId)
-			.withUnitId(unitId)
 			.withComment(comment)
+			.withCreatorPersonId(1)
+			.withCreatorPerson("Anton Nordin")
+			.withCreatorLegalEntityId(10)
+			.withCreatorLegalEntity("Nödhjälpskommittén 1888-1889")
 			.withFilmMimeType(filmMimeType)
 			.withNodeId(nodeId)
 			.withOptions(options)
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
+		assertThat(result.getCreatorPersonId()).isEqualTo(1);
+		assertThat(result.getCreatorPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreatorLegalEntityId()).isEqualTo(10);
+		assertThat(result.getCreatorLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getFilmId()).isEqualTo(filmId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getObjectFilePath()).isEqualTo(objectFilePath);
@@ -83,8 +87,6 @@ class FilmTest {
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getLocation()).isEqualTo(location);
 		assertThat(result.getOrganizationId()).isEqualTo(organizationId);
-		assertThat(result.getSubEntityId()).isEqualTo(subEntityId);
-		assertThat(result.getUnitId()).isEqualTo(unitId);
 		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getFilmMimeType()).isEqualTo(filmMimeType);
 		assertThat(result.getNodeId()).isEqualTo(nodeId);

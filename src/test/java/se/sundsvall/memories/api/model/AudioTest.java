@@ -46,8 +46,6 @@ class AudioTest {
 		final var location = "Sundsvall";
 		final var subjectId = 3;
 		final var subject = "Intervju";
-		final var authorPersonId = 4;
-		final var authorEntityId = 5;
 		final var comment = "Audio recording";
 		final var audioMimeType = "audio/mpeg";
 		final var nodeId = 6;
@@ -66,15 +64,21 @@ class AudioTest {
 			.withLocation(location)
 			.withSubjectId(subjectId)
 			.withSubject(subject)
-			.withAuthorPersonId(authorPersonId)
-			.withAuthorEntityId(authorEntityId)
 			.withComment(comment)
+			.withCreatorPersonId(1)
+			.withCreatorPerson("Anton Nordin")
+			.withCreatorLegalEntityId(10)
+			.withCreatorLegalEntity("Nödhjälpskommittén 1888-1889")
 			.withAudioMimeType(audioMimeType)
 			.withNodeId(nodeId)
 			.withOptions(options)
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
+		assertThat(result.getCreatorPersonId()).isEqualTo(1);
+		assertThat(result.getCreatorPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreatorLegalEntityId()).isEqualTo(10);
+		assertThat(result.getCreatorLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getAudioId()).isEqualTo(audioId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getObjectFilePath()).isEqualTo(objectFilePath);
@@ -86,8 +90,6 @@ class AudioTest {
 		assertThat(result.getLocation()).isEqualTo(location);
 		assertThat(result.getSubjectId()).isEqualTo(subjectId);
 		assertThat(result.getSubject()).isEqualTo(subject);
-		assertThat(result.getAuthorPersonId()).isEqualTo(authorPersonId);
-		assertThat(result.getAuthorEntityId()).isEqualTo(authorEntityId);
 		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getAudioMimeType()).isEqualTo(audioMimeType);
 		assertThat(result.getNodeId()).isEqualTo(nodeId);

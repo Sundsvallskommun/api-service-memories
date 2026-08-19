@@ -37,11 +37,17 @@ public class Film {
 	@Schema(description = "Film organization ID", examples = "1")
 	private Integer organizationId;
 
-	@Schema(description = "Film sub-entity ID", examples = "0")
-	private Integer subEntityId;
+	@Schema(description = "ID of the originator (upphovsman) when it is a person", examples = "1")
+	private Integer creatorPersonId;
 
-	@Schema(description = "Film unit ID", examples = "1")
-	private Integer unitId;
+	@Schema(description = "Name of the originator when it is a person", examples = "Anton Nordin")
+	private String creatorPerson;
+
+	@Schema(description = "ID of the originator (upphovsman) when it is a legal entity", examples = "10")
+	private Integer creatorLegalEntityId;
+
+	@Schema(description = "Name of the originator when it is a legal entity", examples = "Nödhjälpskommittén 1888-1889")
+	private String creatorLegalEntity;
 
 	@Schema(description = "Comment", examples = "A film about midsummer celebrations")
 	private String comment;
@@ -192,32 +198,6 @@ public class Film {
 		return this;
 	}
 
-	public Integer getSubEntityId() {
-		return subEntityId;
-	}
-
-	public void setSubEntityId(final Integer subEntityId) {
-		this.subEntityId = subEntityId;
-	}
-
-	public Film withSubEntityId(final Integer subEntityId) {
-		this.subEntityId = subEntityId;
-		return this;
-	}
-
-	public Integer getUnitId() {
-		return unitId;
-	}
-
-	public void setUnitId(final Integer unitId) {
-		this.unitId = unitId;
-	}
-
-	public Film withUnitId(final Integer unitId) {
-		this.unitId = unitId;
-		return this;
-	}
-
 	public String getComment() {
 		return comment;
 	}
@@ -283,6 +263,58 @@ public class Film {
 		return this;
 	}
 
+	public Integer getCreatorPersonId() {
+		return creatorPersonId;
+	}
+
+	public void setCreatorPersonId(final Integer creatorPersonId) {
+		this.creatorPersonId = creatorPersonId;
+	}
+
+	public Film withCreatorPersonId(final Integer creatorPersonId) {
+		this.creatorPersonId = creatorPersonId;
+		return this;
+	}
+
+	public String getCreatorPerson() {
+		return creatorPerson;
+	}
+
+	public void setCreatorPerson(final String creatorPerson) {
+		this.creatorPerson = creatorPerson;
+	}
+
+	public Film withCreatorPerson(final String creatorPerson) {
+		this.creatorPerson = creatorPerson;
+		return this;
+	}
+
+	public Integer getCreatorLegalEntityId() {
+		return creatorLegalEntityId;
+	}
+
+	public void setCreatorLegalEntityId(final Integer creatorLegalEntityId) {
+		this.creatorLegalEntityId = creatorLegalEntityId;
+	}
+
+	public Film withCreatorLegalEntityId(final Integer creatorLegalEntityId) {
+		this.creatorLegalEntityId = creatorLegalEntityId;
+		return this;
+	}
+
+	public String getCreatorLegalEntity() {
+		return creatorLegalEntity;
+	}
+
+	public void setCreatorLegalEntity(final String creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
+	}
+
+	public Film withCreatorLegalEntity(final String creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -291,15 +323,19 @@ public class Film {
 		return Objects.equals(filmId, film.filmId) && Objects.equals(filename, film.filename) && Objects.equals(objectFilePath, film.objectFilePath)
 			&& Objects.equals(objectType, film.objectType) && Objects.equals(date, film.date) && Objects.equals(documentTitle, film.documentTitle)
 			&& Objects.equals(topographyId, film.topographyId) && Objects.equals(locationText, film.locationText) && Objects.equals(location, film.location)
-			&& Objects.equals(organizationId, film.organizationId) && Objects.equals(subEntityId, film.subEntityId) && Objects.equals(unitId, film.unitId)
+			&& Objects.equals(organizationId, film.organizationId)
 			&& Objects.equals(comment, film.comment) && Objects.equals(filmMimeType, film.filmMimeType)
-			&& Objects.equals(nodeId, film.nodeId) && Objects.equals(options, film.options) && Objects.equals(deletedDate, film.deletedDate);
+			&& Objects.equals(nodeId, film.nodeId) && Objects.equals(options, film.options) && Objects.equals(deletedDate, film.deletedDate)
+			&& Objects.equals(creatorPersonId, film.creatorPersonId)
+			&& Objects.equals(creatorPerson, film.creatorPerson)
+			&& Objects.equals(creatorLegalEntityId, film.creatorLegalEntityId)
+			&& Objects.equals(creatorLegalEntity, film.creatorLegalEntity);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, organizationId, subEntityId, unitId, comment, filmMimeType, nodeId, options,
-			deletedDate);
+		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, organizationId, comment, filmMimeType, nodeId, options,
+			deletedDate, creatorPersonId, creatorPerson, creatorLegalEntityId, creatorLegalEntity);
 	}
 
 	@Override
@@ -315,13 +351,15 @@ public class Film {
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
 			", organizationId=" + organizationId +
-			", subEntityId=" + subEntityId +
-			", unitId=" + unitId +
 			", comment='" + comment + '\'' +
 			", filmMimeType='" + filmMimeType + '\'' +
 			", nodeId=" + nodeId +
 			", options=" + options +
 			", deletedDate=" + deletedDate +
+			", creatorPersonId=" + creatorPersonId +
+			", creatorPerson='" + creatorPerson + '\'' +
+			", creatorLegalEntityId=" + creatorLegalEntityId +
+			", creatorLegalEntity='" + creatorLegalEntity + '\'' +
 			'}';
 	}
 }

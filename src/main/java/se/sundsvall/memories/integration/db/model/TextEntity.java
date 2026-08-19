@@ -28,12 +28,6 @@ public class TextEntity {
 	@Column(name = "DOKTITEL", length = 256)
 	private String documentTitle;
 
-	@Column(name = "U_E_ID")
-	private Integer ueId;
-
-	@Column(name = "U_J_ID")
-	private Integer ujId;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "D_T_ID")
 	private TopographyEntity topography;
@@ -44,6 +38,18 @@ public class TextEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "D_O_ID")
 	private OcmEntity subject;
+
+	/**
+	 * The upphovsman (originator) — a person, a legal entity, or neither. Both columns default to a sentinel row rather
+	 * than to {@code NULL}, which {@link se.sundsvall.memories.service.mapper.CreatorMapper} reads as absent.
+	 */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "U_E_ID")
+	private PersonEntity creatorPerson;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "U_J_ID")
+	private LegalEntityEntity creatorLegalEntity;
 
 	@Column(name = "KOMMENT_DOC", length = 4000)
 	private String comment;
@@ -135,32 +141,6 @@ public class TextEntity {
 
 	public TextEntity withDocumentTitle(final String documentTitle) {
 		this.documentTitle = documentTitle;
-		return this;
-	}
-
-	public Integer getUeId() {
-		return ueId;
-	}
-
-	public void setUeId(final Integer ueId) {
-		this.ueId = ueId;
-	}
-
-	public TextEntity withUeId(final Integer ueId) {
-		this.ueId = ueId;
-		return this;
-	}
-
-	public Integer getUjId() {
-		return ujId;
-	}
-
-	public void setUjId(final Integer ujId) {
-		this.ujId = ujId;
-	}
-
-	public TextEntity withUjId(final Integer ujId) {
-		this.ujId = ujId;
 		return this;
 	}
 
@@ -359,13 +339,39 @@ public class TextEntity {
 		return this;
 	}
 
+	public PersonEntity getCreatorPerson() {
+		return creatorPerson;
+	}
+
+	public void setCreatorPerson(final PersonEntity creatorPerson) {
+		this.creatorPerson = creatorPerson;
+	}
+
+	public TextEntity withCreatorPerson(final PersonEntity creatorPerson) {
+		this.creatorPerson = creatorPerson;
+		return this;
+	}
+
+	public LegalEntityEntity getCreatorLegalEntity() {
+		return creatorLegalEntity;
+	}
+
+	public void setCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
+	}
+
+	public TextEntity withCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final TextEntity that = (TextEntity) o;
 		return Objects.equals(id, that.id) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentEndDate, that.documentEndDate)
-			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(ueId, that.ueId) && Objects.equals(ujId, that.ujId)
+			&& Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(comment, that.comment)
 			&& Objects.equals(filename, that.filename) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(originalFilename, that.originalFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
@@ -375,7 +381,7 @@ public class TextEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, documentDate, documentEndDate, documentTitle, ueId, ujId, locationText, comment, filename,
+		return Objects.hash(id, documentDate, documentEndDate, documentTitle, locationText, comment, filename,
 			thumbnailFilename, largeImageFilename, originalFilename, ocrFilename, xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
 
@@ -386,8 +392,6 @@ public class TextEntity {
 			", documentDate='" + documentDate + '\'' +
 			", documentEndDate='" + documentEndDate + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
-			", ueId=" + ueId +
-			", ujId=" + ujId +
 			", locationText='" + locationText + '\'' +
 			", comment='" + comment + '\'' +
 			", filename='" + filename + '\'' +

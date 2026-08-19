@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import se.sundsvall.memories.api.model.PublicationParameters;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 
+import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.fetchCreators;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.PublicationSpecification.matches;
@@ -23,6 +24,7 @@ public interface PublicationRepository extends JpaRepository<PublicationEntity, 
 
 	default Page<PublicationEntity> findAllByParameters(final PublicationParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
+			.and(fetchCreators())
 			.and(notDeleted())
 			.and(published())
 			.and(matches(parameters.getQuery()))
@@ -35,6 +37,7 @@ public interface PublicationRepository extends JpaRepository<PublicationEntity, 
 	// Unpublished publications stay reachable by id — a planned administrative interface needs them.
 	default Optional<PublicationEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
+			.and(fetchCreators())
 			.and(hasId(id))
 			.and(notDeleted()));
 	}

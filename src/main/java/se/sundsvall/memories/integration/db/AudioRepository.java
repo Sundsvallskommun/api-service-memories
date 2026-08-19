@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import se.sundsvall.memories.api.model.AudioParameters;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 
+import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchCreators;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchSubject;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.hasId;
@@ -24,6 +25,7 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, Jp
 
 	default Page<AudioEntity> findAllByParameters(final AudioParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
+			.and(fetchCreators())
 			.and(fetchSubject())
 			.and(notDeleted())
 			.and(published())
@@ -37,6 +39,7 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, Jp
 	// Unpublished recordings stay reachable by id — a planned administrative interface needs them.
 	default Optional<AudioEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
+			.and(fetchCreators())
 			.and(fetchSubject())
 			.and(hasId(id))
 			.and(notDeleted()));

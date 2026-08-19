@@ -35,7 +35,11 @@ class PhotoTest {
 			.withThumbnailFilename("FOTO.id_1234_fil_liten.jpg")
 			.withLargeImageFilename("FOTO.id_1234_fil_stor.jpg")
 			.withRights("Free")
-			.withRestricted("Nej");
+			.withRestricted("Nej")
+			.withCreatorPersonId(1)
+			.withCreatorPerson("Anton Nordin")
+			.withCreatorLegalEntityId(10)
+			.withCreatorLegalEntity("Nödhjälpskommittén 1888-1889");
 
 		assertThat(result.getPhotoId()).isEqualTo(1234);
 		assertThat(result.getDocumentTitle()).isEqualTo("Stadsvy");
@@ -46,6 +50,10 @@ class PhotoTest {
 		assertThat(result.getThumbnailFilename()).isEqualTo("FOTO.id_1234_fil_liten.jpg");
 		assertThat(result.getRights()).isEqualTo("Free");
 		assertThat(result.getRestricted()).isEqualTo("Nej");
+		assertThat(result.getCreatorPersonId()).isEqualTo(1);
+		assertThat(result.getCreatorPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreatorLegalEntityId()).isEqualTo(10);
+		assertThat(result.getCreatorLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 	}
 
 	@Test

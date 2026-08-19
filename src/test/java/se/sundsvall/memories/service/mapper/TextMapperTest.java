@@ -2,7 +2,9 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -24,6 +26,8 @@ class TextMapperTest {
 			.withLocationText("Sundsvall")
 			.withSubject(OcmEntity.create().withId(20).withText("Musik"))
 			.withComment("Memoir")
+			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
+			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withThumbnailFilename("TEXT.id_1001_fil_liten.jpeg")
 			.withLargeImageFilename("TEXT.id_1001_fil_stor.jpeg")
 			.withOcrFilename("TEXT.id_1001_fil_txt.xml")
@@ -40,6 +44,10 @@ class TextMapperTest {
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getSubjectId()).isEqualTo(20);
 		assertThat(result.getSubject()).isEqualTo("Musik");
+		assertThat(result.getCreatorPersonId()).isEqualTo(1);
+		assertThat(result.getCreatorPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreatorLegalEntityId()).isEqualTo(10);
+		assertThat(result.getCreatorLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getXmltext()).isNull();
 		assertThat(result.getMediaFiles()).isNull();
 	}

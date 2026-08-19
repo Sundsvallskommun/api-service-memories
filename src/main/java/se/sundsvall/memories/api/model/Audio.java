@@ -40,11 +40,17 @@ public class Audio {
 	@Schema(description = "Resolved subject label from OCM (Ämne)", examples = "Intervju")
 	private String subject;
 
-	@Schema(description = "Author (individual person) ID", examples = "0")
-	private Integer authorPersonId;
+	@Schema(description = "ID of the originator (upphovsman) when it is a person", examples = "1")
+	private Integer creatorPersonId;
 
-	@Schema(description = "Author (legal entity) ID", examples = "1")
-	private Integer authorEntityId;
+	@Schema(description = "Name of the originator when it is a person", examples = "Anton Nordin")
+	private String creatorPerson;
+
+	@Schema(description = "ID of the originator (upphovsman) when it is a legal entity", examples = "10")
+	private Integer creatorLegalEntityId;
+
+	@Schema(description = "Name of the originator when it is a legal entity", examples = "Nödhjälpskommittén 1888-1889")
+	private String creatorLegalEntity;
 
 	@Schema(description = "Comment", examples = "Audio recording of an interview")
 	private String comment;
@@ -208,32 +214,6 @@ public class Audio {
 		return this;
 	}
 
-	public Integer getAuthorPersonId() {
-		return authorPersonId;
-	}
-
-	public void setAuthorPersonId(final Integer authorPersonId) {
-		this.authorPersonId = authorPersonId;
-	}
-
-	public Audio withAuthorPersonId(final Integer authorPersonId) {
-		this.authorPersonId = authorPersonId;
-		return this;
-	}
-
-	public Integer getAuthorEntityId() {
-		return authorEntityId;
-	}
-
-	public void setAuthorEntityId(final Integer authorEntityId) {
-		this.authorEntityId = authorEntityId;
-	}
-
-	public Audio withAuthorEntityId(final Integer authorEntityId) {
-		this.authorEntityId = authorEntityId;
-		return this;
-	}
-
 	public String getComment() {
 		return comment;
 	}
@@ -299,6 +279,58 @@ public class Audio {
 		return this;
 	}
 
+	public Integer getCreatorPersonId() {
+		return creatorPersonId;
+	}
+
+	public void setCreatorPersonId(final Integer creatorPersonId) {
+		this.creatorPersonId = creatorPersonId;
+	}
+
+	public Audio withCreatorPersonId(final Integer creatorPersonId) {
+		this.creatorPersonId = creatorPersonId;
+		return this;
+	}
+
+	public String getCreatorPerson() {
+		return creatorPerson;
+	}
+
+	public void setCreatorPerson(final String creatorPerson) {
+		this.creatorPerson = creatorPerson;
+	}
+
+	public Audio withCreatorPerson(final String creatorPerson) {
+		this.creatorPerson = creatorPerson;
+		return this;
+	}
+
+	public Integer getCreatorLegalEntityId() {
+		return creatorLegalEntityId;
+	}
+
+	public void setCreatorLegalEntityId(final Integer creatorLegalEntityId) {
+		this.creatorLegalEntityId = creatorLegalEntityId;
+	}
+
+	public Audio withCreatorLegalEntityId(final Integer creatorLegalEntityId) {
+		this.creatorLegalEntityId = creatorLegalEntityId;
+		return this;
+	}
+
+	public String getCreatorLegalEntity() {
+		return creatorLegalEntity;
+	}
+
+	public void setCreatorLegalEntity(final String creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
+	}
+
+	public Audio withCreatorLegalEntity(final String creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -307,15 +339,19 @@ public class Audio {
 		return Objects.equals(audioId, audio.audioId) && Objects.equals(filename, audio.filename) && Objects.equals(objectFilePath, audio.objectFilePath)
 			&& Objects.equals(objectType, audio.objectType) && Objects.equals(date, audio.date) && Objects.equals(documentTitle, audio.documentTitle)
 			&& Objects.equals(topographyId, audio.topographyId) && Objects.equals(locationText, audio.locationText) && Objects.equals(location, audio.location)
-			&& Objects.equals(subjectId, audio.subjectId) && Objects.equals(subject, audio.subject) && Objects.equals(authorPersonId, audio.authorPersonId)
-			&& Objects.equals(authorEntityId, audio.authorEntityId) && Objects.equals(comment, audio.comment) && Objects.equals(audioMimeType, audio.audioMimeType)
-			&& Objects.equals(nodeId, audio.nodeId) && Objects.equals(options, audio.options) && Objects.equals(deletedDate, audio.deletedDate);
+			&& Objects.equals(subjectId, audio.subjectId) && Objects.equals(subject, audio.subject)
+			&& Objects.equals(comment, audio.comment) && Objects.equals(audioMimeType, audio.audioMimeType)
+			&& Objects.equals(nodeId, audio.nodeId) && Objects.equals(options, audio.options) && Objects.equals(deletedDate, audio.deletedDate)
+			&& Objects.equals(creatorPersonId, audio.creatorPersonId)
+			&& Objects.equals(creatorPerson, audio.creatorPerson)
+			&& Objects.equals(creatorLegalEntityId, audio.creatorLegalEntityId)
+			&& Objects.equals(creatorLegalEntity, audio.creatorLegalEntity);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, subjectId, subject, authorPersonId, authorEntityId, comment,
-			audioMimeType, nodeId, options, deletedDate);
+		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, subjectId, subject, comment,
+			audioMimeType, nodeId, options, deletedDate, creatorPersonId, creatorPerson, creatorLegalEntityId, creatorLegalEntity);
 	}
 
 	@Override
@@ -332,13 +368,15 @@ public class Audio {
 			", location='" + location + '\'' +
 			", subjectId=" + subjectId +
 			", subject='" + subject + '\'' +
-			", authorPersonId=" + authorPersonId +
-			", authorEntityId=" + authorEntityId +
 			", comment='" + comment + '\'' +
 			", audioMimeType='" + audioMimeType + '\'' +
 			", nodeId=" + nodeId +
 			", options=" + options +
 			", deletedDate=" + deletedDate +
+			", creatorPersonId=" + creatorPersonId +
+			", creatorPerson='" + creatorPerson + '\'' +
+			", creatorLegalEntityId=" + creatorLegalEntityId +
+			", creatorLegalEntity='" + creatorLegalEntity + '\'' +
 			'}';
 	}
 }

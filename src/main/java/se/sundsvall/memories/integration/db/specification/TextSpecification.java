@@ -6,6 +6,8 @@ import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static se.sundsvall.memories.integration.db.model.TextEntity_.COMMENT;
+import static se.sundsvall.memories.integration.db.model.TextEntity_.CREATOR_LEGAL_ENTITY;
+import static se.sundsvall.memories.integration.db.model.TextEntity_.CREATOR_PERSON;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.DOCUMENT_DATE;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.DOCUMENT_END_DATE;
@@ -61,6 +63,15 @@ public interface TextSpecification {
 	// A text whose period starts after the requested range falls outside it.
 	static Specification<TextEntity> yearAtMost(final Integer yearTo) {
 		return BUILDER.buildYearAtMostFilter(PERIOD_START_ATTRIBUTES, yearTo);
+	}
+
+	/**
+	 * Fetches both originator associations, which the mapper reads a name from on every row. Without this each row
+	 * costs two more queries.
+	 */
+	static Specification<TextEntity> fetchCreators() {
+		return BUILDER.buildFetchJoin(CREATOR_PERSON)
+			.and(BUILDER.buildFetchJoin(CREATOR_LEGAL_ENTITY));
 	}
 
 	static Specification<TextEntity> fetchTopography() {

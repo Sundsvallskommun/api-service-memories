@@ -14,7 +14,7 @@ INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_
                   FILM_U_E_ID, FILM_U_J_ID, KOMMENT_FILM, FILM_MIME_TYPE, ASV, NODEID, `OPTIONS`, DELETEDDATE)
 -- OPTIONS = 6 (bit 4 published + bit 2 set) — exercises the bitwise check, must still match `(OPTIONS & 4) = 4`
 VALUES (1, 'midsommar1985.mp4', '/media/film/midsommar1985.mp4', 'VIDEO', '1985-06-21',
-        'Midsommarfirande i Sundsvall 1985', 1, 'Sundsvall', 1, 0, 1, 'Film om midsommarfirande på Stora torget',
+        'Midsommarfirande i Sundsvall 1985', 1, 'Sundsvall', 1, 1, 10, 'Film om midsommarfirande på Stora torget',
         'video/mp4', 'ASV001', 100, 6, null);
 
 INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_T_ID, FILM_OPLATS, FILM_O_ID,

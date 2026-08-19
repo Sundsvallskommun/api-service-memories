@@ -31,9 +31,9 @@ class PhotoEntityTest {
 		assertThat(PhotoEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography", "subjects"),
-			hasValidBeanEqualsExcluding("topography", "subjects"),
-			hasValidBeanToStringExcluding("topography", "subjects")));
+			hasValidBeanHashCodeExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanEqualsExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanToStringExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity")));
 	}
 
 	@Test
@@ -52,6 +52,8 @@ class PhotoEntityTest {
 			.withDocumentTitle("Stadsvy")
 			.withSubjectKeyword("Stad")
 			.withComment("Kommentar")
+			.withCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"))
+			.withCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"))
 			.withEarliest("1920")
 			.withLatest("1925")
 			.withObservationDate("1980-01-01")

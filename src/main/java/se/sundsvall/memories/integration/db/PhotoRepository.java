@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.fetchCreators;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasObjectType;
@@ -27,6 +28,7 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, Jp
 
 	default Page<PhotoEntity> findAllByParameters(final PhotoParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()
+			.and(fetchCreators())
 			.and(notDeleted())
 			.and(published())
 			.and(matches(parameters.getQuery()))
@@ -40,6 +42,7 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, Jp
 	// Unpublished photos stay reachable by id — a planned administrative interface needs them.
 	default Optional<PhotoEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
+			.and(fetchCreators())
 			.and(hasId(id))
 			.and(notDeleted()));
 	}

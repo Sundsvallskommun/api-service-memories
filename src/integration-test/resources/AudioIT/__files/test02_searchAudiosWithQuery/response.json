@@ -19,8 +19,6 @@
 			"location": "Sundsvall",
 			"subjectId": 10,
 			"subject": "Intervju",
-			"authorPersonId": 0,
-			"authorEntityId": 1,
 			"comment": "Ljudupptagning av intervju med dåvarande borgmästaren",
 			"audioMimeType": "audio/mpeg",
 			"nodeId": 200,
