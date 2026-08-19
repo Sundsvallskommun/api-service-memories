@@ -11,6 +11,7 @@ import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExclud
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToStringExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
+import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,7 +36,7 @@ class NodeEntityTest {
 	@Test
 	void testBuilderMethods() {
 		final var nodeType = NodeTypeEntity.create().withId(1).withName("Arkiv");
-		final var deletedDate = LocalDate.of(2026, 1, 15);
+		final var deletedDate = LocalDate.of(2026, JANUARY, 15);
 
 		final var result = NodeEntity.create()
 			.withId(100)
