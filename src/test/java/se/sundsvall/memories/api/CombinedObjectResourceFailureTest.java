@@ -24,6 +24,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @ActiveProfiles("junit")
 class CombinedObjectResourceFailureTest {
 
+	private static final String MUNICIPALITY_ID = "2281";
 	private static final String INVALID_MUNICIPALITY_ID = "bad-municipality-id";
 	private static final String SEARCH_PATH = "/{municipalityId}/objects";
 
@@ -49,6 +50,32 @@ class CombinedObjectResourceFailureTest {
 		assertThat(response.getViolations())
 			.extracting(Violation::field, Violation::message)
 			.containsExactlyInAnyOrder(tuple("searchObjects.municipalityId", "not a valid municipality ID"));
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	/**
+	 * The sort property is an entity attribute, not a column of the view. A column name used to reach Spring Data and
+	 * fail there as a 500; it is a 400 that names the alternatives instead.
+	 */
+	@Test
+	void searchObjectsWithInvalidSortBy() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("sortBy", "SORT_YEAR")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getTitle()).isEqualTo("Constraint Violation");
+		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
+		assertThat(response.getViolations())
+			.extracting(Violation::message)
+			.containsExactly("must be one of: objectKey, title, year, objectType");
 
 		verifyNoInteractions(serviceMock);
 	}
