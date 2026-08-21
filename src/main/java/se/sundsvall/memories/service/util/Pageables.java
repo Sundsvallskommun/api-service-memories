@@ -1,5 +1,6 @@
 package se.sundsvall.memories.service.util;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -60,13 +61,22 @@ public final class Pageables {
 	 * @return             the metadata to put under {@code _meta}
 	 */
 	public static PagingAndSortingMetaData metaDataOf(final Page<?> page, final String idAttribute) {
-		final var reported = page.getSort().stream()
+		final var ordered = page.getSort().stream()
 			.map(Sort.Order::getProperty)
 			.toList();
+		final var reported = endsWithTiebreaker(ordered, idAttribute) ? ordered.subList(0, ordered.size() - 1) : ordered;
 
 		return PagingAndSortingMetaData.create()
 			.withPageData(page)
-			.withSortBy(reported.size() <= 1 ? null : reported.subList(0, reported.size() - 1))
-			.withSortDirection(reported.size() <= 1 ? null : page.getSort().stream().findFirst().map(Sort.Order::getDirection).orElse(null));
+			.withSortBy(reported.isEmpty() ? null : reported)
+			.withSortDirection(reported.isEmpty() ? null : page.getSort().stream().findFirst().map(Sort.Order::getDirection).orElse(null));
+	}
+
+	/**
+	 * Whether the last property is the tiebreaker this class appends. A caller who sorts on the id themselves still
+	 * sees it, since their own property comes first and only the appended one is dropped.
+	 */
+	private static boolean endsWithTiebreaker(final List<String> ordered, final String idAttribute) {
+		return !ordered.isEmpty() && ordered.getLast().equals(idAttribute);
 	}
 }

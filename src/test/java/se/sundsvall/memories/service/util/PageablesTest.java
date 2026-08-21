@@ -68,4 +68,17 @@ class PageablesTest {
 		assertThat(metaData.getSortBy()).containsExactly("lastName");
 		assertThat(metaData.getSortDirection()).isEqualTo(DESC);
 	}
+
+	/**
+	 * A page ordered by something else entirely is reported as it is: only the tiebreaker this class appends is
+	 * dropped, and it is recognised by name.
+	 */
+	@Test
+	void metaDataLeavesAnUnrelatedOrderAlone() {
+		final var page = new PageImpl<>(List.of("a"), PageRequest.of(0, 100, Sort.by("lastName", "firstName")), 1);
+
+		final var metaData = Pageables.metaDataOf(page, "personId");
+
+		assertThat(metaData.getSortBy()).containsExactly("lastName", "firstName");
+	}
 }
