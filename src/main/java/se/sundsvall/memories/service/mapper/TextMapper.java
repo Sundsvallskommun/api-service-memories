@@ -91,6 +91,7 @@ public final class TextMapper {
 				.withSubjectId(subjectId(e))
 				.withSubject(subject(e))
 				.withComment(e.getComment())
+				.withCreator(CreatorMapper.toCreator(e.getCreatorPerson(), e.getCreatorLegalEntity()))
 				.withThumbnailFilename(e.getThumbnailFilename())
 				.withLargeImageFilename(e.getLargeImageFilename())
 				.withOcrFilename(e.getOcrFilename()))

@@ -1,5 +1,6 @@
 package se.sundsvall.memories.integration.db.model;
 
+import jakarta.persistence.AssociationOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,7 +13,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "LJUD")
-public class AudioEntity {
+@AssociationOverride(name = "creatorPerson", joinColumns = @JoinColumn(name = "LJUD_U_E_ID"))
+@AssociationOverride(name = "creatorLegalEntity", joinColumns = @JoinColumn(name = "LJUD_U_J_ID"))
+public class AudioEntity extends AbstractCreatedEntity {
 
 	@Id
 	@Column(name = "LJUD_ID")
@@ -43,12 +46,6 @@ public class AudioEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "LJUD_O_ID")
 	private OcmEntity subject;
-
-	@Column(name = "LJUD_U_E_ID")
-	private Integer authorPersonId;
-
-	@Column(name = "LJUD_U_J_ID")
-	private Integer authorEntityId;
 
 	@Column(name = "KOMMENT_LJUD", length = 4000)
 	private String comment;
@@ -186,32 +183,6 @@ public class AudioEntity {
 		return this;
 	}
 
-	public Integer getAuthorPersonId() {
-		return authorPersonId;
-	}
-
-	public void setAuthorPersonId(final Integer authorPersonId) {
-		this.authorPersonId = authorPersonId;
-	}
-
-	public AudioEntity withAuthorPersonId(final Integer authorPersonId) {
-		this.authorPersonId = authorPersonId;
-		return this;
-	}
-
-	public Integer getAuthorEntityId() {
-		return authorEntityId;
-	}
-
-	public void setAuthorEntityId(final Integer authorEntityId) {
-		this.authorEntityId = authorEntityId;
-	}
-
-	public AudioEntity withAuthorEntityId(final Integer authorEntityId) {
-		this.authorEntityId = authorEntityId;
-		return this;
-	}
-
 	public String getComment() {
 		return comment;
 	}
@@ -285,13 +256,13 @@ public class AudioEntity {
 		return Objects.equals(id, that.id) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
 			&& Objects.equals(objectType, that.objectType) && Objects.equals(date, that.date) && Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(locationText, that.locationText)
-			&& Objects.equals(authorPersonId, that.authorPersonId) && Objects.equals(authorEntityId, that.authorEntityId) && Objects.equals(comment, that.comment)
+			&& Objects.equals(comment, that.comment)
 			&& Objects.equals(audioMimeType, that.audioMimeType) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, filename, objectFilePath, objectType, date, documentTitle, locationText, authorPersonId, authorEntityId, comment, audioMimeType, nodeId,
+		return Objects.hash(id, filename, objectFilePath, objectType, date, documentTitle, locationText, comment, audioMimeType, nodeId,
 			options, deletedDate);
 	}
 
@@ -305,8 +276,6 @@ public class AudioEntity {
 			", date='" + date + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
 			", locationText='" + locationText + '\'' +
-			", authorPersonId=" + authorPersonId +
-			", authorEntityId=" + authorEntityId +
 			", comment='" + comment + '\'' +
 			", audioMimeType='" + audioMimeType + '\'' +
 			", nodeId=" + nodeId +

@@ -17,7 +17,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "FOTO")
-public class PhotoEntity {
+public class PhotoEntity extends AbstractCreatedEntity {
 
 	@Id
 	@Column(name = "F_ID")

@@ -6,6 +6,8 @@ import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.COMMENT;
+import static se.sundsvall.memories.integration.db.model.AudioEntity_.CREATOR_LEGAL_ENTITY;
+import static se.sundsvall.memories.integration.db.model.AudioEntity_.CREATOR_PERSON;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.DATE;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.AudioEntity_.DOCUMENT_TITLE;
@@ -53,6 +55,15 @@ public interface AudioSpecification {
 
 	static Specification<AudioEntity> yearAtMost(final Integer yearTo) {
 		return BUILDER.buildYearAtMostFilter(PERIOD_ATTRIBUTES, yearTo);
+	}
+
+	/**
+	 * Fetches both originator associations, which the mapper reads a name from on every row. Without this each row
+	 * costs two more queries.
+	 */
+	static Specification<AudioEntity> fetchCreators() {
+		return BUILDER.buildFetchJoin(CREATOR_PERSON)
+			.and(BUILDER.buildFetchJoin(CREATOR_LEGAL_ENTITY));
 	}
 
 	static Specification<AudioEntity> fetchTopography() {

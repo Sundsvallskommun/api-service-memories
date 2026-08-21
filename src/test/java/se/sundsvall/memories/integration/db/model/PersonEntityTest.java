@@ -8,10 +8,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToStringExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSettersExcluding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,10 +27,10 @@ class PersonEntityTest {
 	void testBean() {
 		assertThat(PersonEntity.class, allOf(
 			hasValidBeanConstructor(),
-			hasValidGettersAndSetters(),
-			hasValidBeanHashCode(),
-			hasValidBeanEquals(),
-			hasValidBeanToString()));
+			hasValidGettersAndSettersExcluding("displayName"),
+			hasValidBeanHashCodeExcluding("displayName"),
+			hasValidBeanEqualsExcluding("displayName"),
+			hasValidBeanToStringExcluding("displayName")));
 	}
 
 	@Test
@@ -75,6 +75,18 @@ class PersonEntityTest {
 		assertThat(result.getBiographyFilename()).isEqualTo("person_123_biografi.xml");
 		assertThat(result.getOptions()).isEqualTo(6);
 		assertThat(result.getDeletedDate()).isEqualTo(deletedDate);
+	}
+
+	/**
+	 * The display name joins the two halves the archive stores separately, and either half can be missing.
+	 */
+	@Test
+	void testDisplayName() {
+		assertThat(PersonEntity.create().withFirstName("Anton").withLastName("Nordin").getDisplayName()).isEqualTo("Anton Nordin");
+		assertThat(PersonEntity.create().withLastName("Nordin").getDisplayName()).isEqualTo("Nordin");
+		assertThat(PersonEntity.create().withFirstName("Anton").getDisplayName()).isEqualTo("Anton");
+		assertThat(PersonEntity.create().withFirstName(" ").withLastName("").getDisplayName()).isNull();
+		assertThat(PersonEntity.create().getDisplayName()).isNull();
 	}
 
 	@Test

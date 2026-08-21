@@ -13,7 +13,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "TEXT")
-public class TextEntity {
+public class TextEntity extends AbstractCreatedEntity {
 
 	@Id
 	@Column(name = "ID_ID")
@@ -27,12 +27,6 @@ public class TextEntity {
 
 	@Column(name = "DOKTITEL", length = 256)
 	private String documentTitle;
-
-	@Column(name = "U_E_ID")
-	private Integer ueId;
-
-	@Column(name = "U_J_ID")
-	private Integer ujId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "D_T_ID")
@@ -135,32 +129,6 @@ public class TextEntity {
 
 	public TextEntity withDocumentTitle(final String documentTitle) {
 		this.documentTitle = documentTitle;
-		return this;
-	}
-
-	public Integer getUeId() {
-		return ueId;
-	}
-
-	public void setUeId(final Integer ueId) {
-		this.ueId = ueId;
-	}
-
-	public TextEntity withUeId(final Integer ueId) {
-		this.ueId = ueId;
-		return this;
-	}
-
-	public Integer getUjId() {
-		return ujId;
-	}
-
-	public void setUjId(final Integer ujId) {
-		this.ujId = ujId;
-	}
-
-	public TextEntity withUjId(final Integer ujId) {
-		this.ujId = ujId;
 		return this;
 	}
 
@@ -365,7 +333,7 @@ public class TextEntity {
 			return false;
 		final TextEntity that = (TextEntity) o;
 		return Objects.equals(id, that.id) && Objects.equals(documentDate, that.documentDate) && Objects.equals(documentEndDate, that.documentEndDate)
-			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(ueId, that.ueId) && Objects.equals(ujId, that.ujId)
+			&& Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(comment, that.comment)
 			&& Objects.equals(filename, that.filename) && Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(originalFilename, that.originalFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
@@ -375,7 +343,7 @@ public class TextEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, documentDate, documentEndDate, documentTitle, ueId, ujId, locationText, comment, filename,
+		return Objects.hash(id, documentDate, documentEndDate, documentTitle, locationText, comment, filename,
 			thumbnailFilename, largeImageFilename, originalFilename, ocrFilename, xmltext, filXtra, nodeId, options, filFormat, deletedDate);
 	}
 
@@ -386,8 +354,6 @@ public class TextEntity {
 			", documentDate='" + documentDate + '\'' +
 			", documentEndDate='" + documentEndDate + '\'' +
 			", documentTitle='" + documentTitle + '\'' +
-			", ueId=" + ueId +
-			", ujId=" + ujId +
 			", locationText='" + locationText + '\'' +
 			", comment='" + comment + '\'' +
 			", filename='" + filename + '\'' +

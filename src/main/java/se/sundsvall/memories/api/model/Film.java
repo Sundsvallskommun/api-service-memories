@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Schema(description = "Film model")
-public class Film {
+public class Film extends AbstractCreatedObject<Film> {
 
 	@Schema(description = "Film ID", examples = "123")
 	private Integer filmId;
@@ -36,12 +36,6 @@ public class Film {
 
 	@Schema(description = "Film organization ID", examples = "1")
 	private Integer organizationId;
-
-	@Schema(description = "Film sub-entity ID", examples = "0")
-	private Integer subEntityId;
-
-	@Schema(description = "Film unit ID", examples = "1")
-	private Integer unitId;
 
 	@Schema(description = "Comment", examples = "A film about midsummer celebrations")
 	private String comment;
@@ -192,32 +186,6 @@ public class Film {
 		return this;
 	}
 
-	public Integer getSubEntityId() {
-		return subEntityId;
-	}
-
-	public void setSubEntityId(final Integer subEntityId) {
-		this.subEntityId = subEntityId;
-	}
-
-	public Film withSubEntityId(final Integer subEntityId) {
-		this.subEntityId = subEntityId;
-		return this;
-	}
-
-	public Integer getUnitId() {
-		return unitId;
-	}
-
-	public void setUnitId(final Integer unitId) {
-		this.unitId = unitId;
-	}
-
-	public Film withUnitId(final Integer unitId) {
-		this.unitId = unitId;
-		return this;
-	}
-
 	public String getComment() {
 		return comment;
 	}
@@ -291,15 +259,16 @@ public class Film {
 		return Objects.equals(filmId, film.filmId) && Objects.equals(filename, film.filename) && Objects.equals(objectFilePath, film.objectFilePath)
 			&& Objects.equals(objectType, film.objectType) && Objects.equals(date, film.date) && Objects.equals(documentTitle, film.documentTitle)
 			&& Objects.equals(topographyId, film.topographyId) && Objects.equals(locationText, film.locationText) && Objects.equals(location, film.location)
-			&& Objects.equals(organizationId, film.organizationId) && Objects.equals(subEntityId, film.subEntityId) && Objects.equals(unitId, film.unitId)
+			&& Objects.equals(organizationId, film.organizationId)
 			&& Objects.equals(comment, film.comment) && Objects.equals(filmMimeType, film.filmMimeType)
-			&& Objects.equals(nodeId, film.nodeId) && Objects.equals(options, film.options) && Objects.equals(deletedDate, film.deletedDate);
+			&& Objects.equals(nodeId, film.nodeId) && Objects.equals(options, film.options) && Objects.equals(deletedDate, film.deletedDate)
+			&& Objects.equals(creator, film.creator);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, organizationId, subEntityId, unitId, comment, filmMimeType, nodeId, options,
-			deletedDate);
+		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, organizationId, comment, filmMimeType, nodeId, options,
+			deletedDate, creator);
 	}
 
 	@Override
@@ -315,13 +284,12 @@ public class Film {
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
 			", organizationId=" + organizationId +
-			", subEntityId=" + subEntityId +
-			", unitId=" + unitId +
 			", comment='" + comment + '\'' +
 			", filmMimeType='" + filmMimeType + '\'' +
 			", nodeId=" + nodeId +
 			", options=" + options +
 			", deletedDate=" + deletedDate +
+			", creator=" + creator +
 			'}';
 	}
 }

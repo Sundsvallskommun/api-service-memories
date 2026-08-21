@@ -28,9 +28,9 @@ class AudioEntityTest {
 		assertThat(AudioEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography", "subject"),
-			hasValidBeanEqualsExcluding("topography", "subject"),
-			hasValidBeanToStringExcluding("topography", "subject")));
+			hasValidBeanHashCodeExcluding("topography", "subject", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanEqualsExcluding("topography", "subject", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanToStringExcluding("topography", "subject", "creatorPerson", "creatorLegalEntity")));
 	}
 
 	@Test
@@ -44,8 +44,6 @@ class AudioEntityTest {
 		final var topographyId = 2;
 		final var locationText = "Sundsvall";
 		final var subjectId = 3;
-		final var authorPersonId = 4;
-		final var authorEntityId = 5;
 		final var comment = "Ljudupptagning från intervju";
 		final var audioMimeType = "audio/mpeg";
 		final var nodeId = 6;
@@ -62,13 +60,15 @@ class AudioEntityTest {
 			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withSubject(OcmEntity.create().withId(subjectId).withText("Musik"))
-			.withAuthorPersonId(authorPersonId)
-			.withAuthorEntityId(authorEntityId)
 			.withComment(comment)
 			.withAudioMimeType(audioMimeType)
 			.withNodeId(nodeId)
 			.withOptions(options)
 			.withDeletedDate(deletedDate);
+
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		result.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		result.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getId()).isEqualTo(audioId);
@@ -80,8 +80,6 @@ class AudioEntityTest {
 		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getSubject().getId()).isEqualTo(subjectId);
-		assertThat(result.getAuthorPersonId()).isEqualTo(authorPersonId);
-		assertThat(result.getAuthorEntityId()).isEqualTo(authorEntityId);
 		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getAudioMimeType()).isEqualTo(audioMimeType);
 		assertThat(result.getNodeId()).isEqualTo(nodeId);

@@ -2,7 +2,9 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.TextEntity;
 import se.sundsvall.memories.integration.db.model.TextMediaEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -14,7 +16,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 class TextMapperTest {
 
 	private static TextEntity sampleEntity() {
-		return TextEntity.create()
+		final var entity = TextEntity.create()
 			.withId(1001)
 			.withFilename("minne.xml")
 			.withDocumentDate("1920-01-01")
@@ -29,6 +31,12 @@ class TextMapperTest {
 			.withOcrFilename("TEXT.id_1001_fil_txt.xml")
 			.withXmltext("<text>OCR content</text>")
 			.withOptions(4);
+
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		entity.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		entity.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
+
+		return entity;
 	}
 
 	@Test
@@ -40,6 +48,9 @@ class TextMapperTest {
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getSubjectId()).isEqualTo(20);
 		assertThat(result.getSubject()).isEqualTo("Musik");
+		assertThat(result.getCreator().getPersonId()).isEqualTo(1);
+		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getXmltext()).isNull();
 		assertThat(result.getMediaFiles()).isNull();
 	}

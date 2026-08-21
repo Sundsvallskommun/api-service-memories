@@ -4,7 +4,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.api.model.Subject;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -15,7 +17,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 class PhotoMapperTest {
 
 	private static PhotoEntity sampleEntity() {
-		return PhotoEntity.create()
+		final var entity = PhotoEntity.create()
 			.withId(1234)
 			.withTopography(TopographyEntity.create().withId(42).withName("Sundsvall"))
 			.withDocumentTitle("Stadsvy från Norra berget")
@@ -27,6 +29,12 @@ class PhotoMapperTest {
 			.withRights("Free use")
 			.withRestricted("Nej")
 			.withOptions(4);
+
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		entity.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		entity.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
+
+		return entity;
 	}
 
 	@Test
@@ -40,6 +48,9 @@ class PhotoMapperTest {
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getLargeImageFilename()).isEqualTo("FOTO.id_1234_fil_stor.jpg");
 		assertThat(result.getRights()).isEqualTo("Free use");
+		assertThat(result.getCreator().getPersonId()).isEqualTo(1);
+		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getRelatedPhotoIds()).isNull();
 		assertThat(result.getSubjects()).isNull();
 	}

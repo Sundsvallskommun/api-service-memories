@@ -7,6 +7,8 @@ import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static java.util.Optional.ofNullable;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.COMMENT;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.CREATOR_LEGAL_ENTITY;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.CREATOR_PERSON;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DOCUMENT_TITLE;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.EARLIEST;
@@ -65,6 +67,15 @@ public interface PhotoSpecification {
 	// A photo whose period starts after the requested range falls outside it.
 	static Specification<PhotoEntity> yearAtMost(final Integer yearTo) {
 		return BUILDER.buildYearAtMostFilter(PERIOD_START_ATTRIBUTES, yearTo);
+	}
+
+	/**
+	 * Fetches both originator associations, which the mapper reads a name from on every row. Without this each row
+	 * costs two more queries.
+	 */
+	static Specification<PhotoEntity> fetchCreators() {
+		return BUILDER.buildFetchJoin(CREATOR_PERSON)
+			.and(BUILDER.buildFetchJoin(CREATOR_LEGAL_ENTITY));
 	}
 
 	static Specification<PhotoEntity> fetchTopography() {

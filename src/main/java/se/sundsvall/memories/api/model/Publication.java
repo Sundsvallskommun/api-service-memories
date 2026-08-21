@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 
 @Schema(description = "Publication model")
-public class Publication {
+public class Publication extends AbstractCreatedObject<Publication> {
 
 	@Schema(description = "Publication ID", examples = "207")
 	private Integer publicationId;
@@ -276,13 +276,14 @@ public class Publication {
 			&& Objects.equals(pageNumber, that.pageNumber) && Objects.equals(publisherLocation, that.publisherLocation) && Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location) && Objects.equals(comment, that.comment)
 			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
-			&& Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext);
+			&& Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
+			&& Objects.equals(creator, that.creator);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, publisherLocation, documentTitle,
-			locationText, location, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext);
+			locationText, location, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext, creator);
 	}
 
 	@Override
@@ -304,6 +305,7 @@ public class Publication {
 			", largeImageFilename='" + largeImageFilename + '\'' +
 			", ocrFilename='" + ocrFilename + '\'' +
 			", xmltext='" + xmltext + '\'' +
+			", creator=" + creator +
 			'}';
 	}
 }

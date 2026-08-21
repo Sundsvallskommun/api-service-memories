@@ -5,7 +5,7 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.5"
+  version: "3.6"
 servers:
 - url: http://localhost:56801
   description: Generated server url
@@ -1596,6 +1596,33 @@ components:
           type: string
         message:
           type: string
+    Creator:
+      type: object
+      description: "The originator (upphovsman) of an object — a person, a legal entity,\
+        \ or both. Absent when the object has none."
+      properties:
+        personId:
+          type: integer
+          format: int32
+          description: ID of the originator when it is a person
+          examples:
+          - 1
+        person:
+          type: string
+          description: Name of the originator when it is a person
+          examples:
+          - Anton Nordin
+        legalEntityId:
+          type: integer
+          format: int32
+          description: ID of the originator when it is a legal entity
+          examples:
+          - 10
+        legalEntity:
+          type: string
+          description: Name of the originator when it is a legal entity
+          examples:
+          - Nödhjälpskommittén 1888-1889
     PagedTextResponse:
       type: object
       description: Paged text response
@@ -1712,6 +1739,8 @@ components:
           description: Resolved subject label from OCM (Ämne)
           examples:
           - Musik
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -2144,6 +2173,8 @@ components:
             locationText when set)
           examples:
           - Sundsvall
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -2273,6 +2304,8 @@ components:
         subjectKeyword:
           type: string
           description: Subject keyword
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -3161,18 +3194,8 @@ components:
           description: Film organization ID
           examples:
           - 1
-        subEntityId:
-          type: integer
-          format: int32
-          description: Film sub-entity ID
-          examples:
-          - 0
-        unitId:
-          type: integer
-          format: int32
-          description: Film unit ID
-          examples:
-          - 1
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment
@@ -3532,18 +3555,8 @@ components:
           description: Resolved subject label from OCM (Ämne)
           examples:
           - Intervju
-        authorPersonId:
-          type: integer
-          format: int32
-          description: Author (individual person) ID
-          examples:
-          - 0
-        authorEntityId:
-          type: integer
-          format: int32
-          description: Author (legal entity) ID
-          examples:
-          - 1
+        creator:
+          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment

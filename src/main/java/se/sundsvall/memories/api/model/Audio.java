@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Schema(description = "Audio model")
-public class Audio {
+public class Audio extends AbstractCreatedObject<Audio> {
 
 	@Schema(description = "Audio ID", examples = "123")
 	private Integer audioId;
@@ -39,12 +39,6 @@ public class Audio {
 
 	@Schema(description = "Resolved subject label from OCM (Ämne)", examples = "Intervju")
 	private String subject;
-
-	@Schema(description = "Author (individual person) ID", examples = "0")
-	private Integer authorPersonId;
-
-	@Schema(description = "Author (legal entity) ID", examples = "1")
-	private Integer authorEntityId;
 
 	@Schema(description = "Comment", examples = "Audio recording of an interview")
 	private String comment;
@@ -208,32 +202,6 @@ public class Audio {
 		return this;
 	}
 
-	public Integer getAuthorPersonId() {
-		return authorPersonId;
-	}
-
-	public void setAuthorPersonId(final Integer authorPersonId) {
-		this.authorPersonId = authorPersonId;
-	}
-
-	public Audio withAuthorPersonId(final Integer authorPersonId) {
-		this.authorPersonId = authorPersonId;
-		return this;
-	}
-
-	public Integer getAuthorEntityId() {
-		return authorEntityId;
-	}
-
-	public void setAuthorEntityId(final Integer authorEntityId) {
-		this.authorEntityId = authorEntityId;
-	}
-
-	public Audio withAuthorEntityId(final Integer authorEntityId) {
-		this.authorEntityId = authorEntityId;
-		return this;
-	}
-
 	public String getComment() {
 		return comment;
 	}
@@ -307,15 +275,16 @@ public class Audio {
 		return Objects.equals(audioId, audio.audioId) && Objects.equals(filename, audio.filename) && Objects.equals(objectFilePath, audio.objectFilePath)
 			&& Objects.equals(objectType, audio.objectType) && Objects.equals(date, audio.date) && Objects.equals(documentTitle, audio.documentTitle)
 			&& Objects.equals(topographyId, audio.topographyId) && Objects.equals(locationText, audio.locationText) && Objects.equals(location, audio.location)
-			&& Objects.equals(subjectId, audio.subjectId) && Objects.equals(subject, audio.subject) && Objects.equals(authorPersonId, audio.authorPersonId)
-			&& Objects.equals(authorEntityId, audio.authorEntityId) && Objects.equals(comment, audio.comment) && Objects.equals(audioMimeType, audio.audioMimeType)
-			&& Objects.equals(nodeId, audio.nodeId) && Objects.equals(options, audio.options) && Objects.equals(deletedDate, audio.deletedDate);
+			&& Objects.equals(subjectId, audio.subjectId) && Objects.equals(subject, audio.subject)
+			&& Objects.equals(comment, audio.comment) && Objects.equals(audioMimeType, audio.audioMimeType)
+			&& Objects.equals(nodeId, audio.nodeId) && Objects.equals(options, audio.options) && Objects.equals(deletedDate, audio.deletedDate)
+			&& Objects.equals(creator, audio.creator);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, subjectId, subject, authorPersonId, authorEntityId, comment,
-			audioMimeType, nodeId, options, deletedDate);
+		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, subjectId, subject, comment,
+			audioMimeType, nodeId, options, deletedDate, creator);
 	}
 
 	@Override
@@ -332,13 +301,12 @@ public class Audio {
 			", location='" + location + '\'' +
 			", subjectId=" + subjectId +
 			", subject='" + subject + '\'' +
-			", authorPersonId=" + authorPersonId +
-			", authorEntityId=" + authorEntityId +
 			", comment='" + comment + '\'' +
 			", audioMimeType='" + audioMimeType + '\'' +
 			", nodeId=" + nodeId +
 			", options=" + options +
 			", deletedDate=" + deletedDate +
+			", creator=" + creator +
 			'}';
 	}
 }

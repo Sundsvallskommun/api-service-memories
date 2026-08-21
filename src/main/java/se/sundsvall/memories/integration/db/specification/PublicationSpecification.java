@@ -6,6 +6,8 @@ import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.COMMENT;
+import static se.sundsvall.memories.integration.db.model.PublicationEntity_.CREATOR_LEGAL_ENTITY;
+import static se.sundsvall.memories.integration.db.model.PublicationEntity_.CREATOR_PERSON;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.DATE;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.PublicationEntity_.DOCUMENT_TITLE;
@@ -58,6 +60,15 @@ public interface PublicationSpecification {
 	}
 
 	// Only P_T_ID is modelled — FORLAG_T_ID is mapped but read nowhere.
+	/**
+	 * Fetches both originator associations, which the mapper reads a name from on every row. Without this each row
+	 * costs two more queries.
+	 */
+	static Specification<PublicationEntity> fetchCreators() {
+		return BUILDER.buildFetchJoin(CREATOR_PERSON)
+			.and(BUILDER.buildFetchJoin(CREATOR_LEGAL_ENTITY));
+	}
+
 	static Specification<PublicationEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
 	}

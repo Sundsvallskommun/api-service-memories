@@ -55,12 +55,15 @@ class PublicationTest {
 			.withLocationText(locationText)
 			.withLocation(location)
 			.withComment(comment)
+			.withCreator(Creator.create().withPersonId(1).withPerson("Anton Nordin").withLegalEntityId(10).withLegalEntity("Nödhjälpskommittén 1888-1889"))
 			.withThumbnailFilename(thumbnailFilename)
 			.withLargeImageFilename(largeImageFilename)
 			.withOcrFilename(ocrFilename)
 			.withXmltext(xmltext);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
+		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getPublicationId()).isEqualTo(publicationId);
 		assertThat(result.getFilename()).isEqualTo(filename);
 		assertThat(result.getPublicationType()).isEqualTo(publicationType);

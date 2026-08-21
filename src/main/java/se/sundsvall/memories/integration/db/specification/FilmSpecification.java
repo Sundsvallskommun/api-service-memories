@@ -6,6 +6,8 @@ import se.sundsvall.memories.integration.db.model.FilmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static se.sundsvall.memories.integration.db.model.FilmEntity_.COMMENT;
+import static se.sundsvall.memories.integration.db.model.FilmEntity_.CREATOR_LEGAL_ENTITY;
+import static se.sundsvall.memories.integration.db.model.FilmEntity_.CREATOR_PERSON;
 import static se.sundsvall.memories.integration.db.model.FilmEntity_.DATE;
 import static se.sundsvall.memories.integration.db.model.FilmEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.FilmEntity_.DOCUMENT_TITLE;
@@ -52,6 +54,15 @@ public interface FilmSpecification {
 
 	static Specification<FilmEntity> yearAtMost(final Integer yearTo) {
 		return BUILDER.buildYearAtMostFilter(PERIOD_ATTRIBUTES, yearTo);
+	}
+
+	/**
+	 * Fetches both originator associations, which the mapper reads a name from on every row. Without this each row
+	 * costs two more queries.
+	 */
+	static Specification<FilmEntity> fetchCreators() {
+		return BUILDER.buildFetchJoin(CREATOR_PERSON)
+			.and(BUILDER.buildFetchJoin(CREATOR_LEGAL_ENTITY));
 	}
 
 	static Specification<FilmEntity> fetchTopography() {

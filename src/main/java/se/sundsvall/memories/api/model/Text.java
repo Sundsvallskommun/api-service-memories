@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Schema(description = "Text model")
-public class Text {
+public class Text extends AbstractCreatedObject<Text> {
 
 	@Schema(description = "Text ID", examples = "1001")
 	private Integer textId;
@@ -261,13 +261,14 @@ public class Text {
 			&& Objects.equals(location, that.location) && Objects.equals(subjectId, that.subjectId) && Objects.equals(subject, that.subject)
 			&& Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename)
 			&& Objects.equals(largeImageFilename, that.largeImageFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
-			&& Objects.equals(mediaFiles, that.mediaFiles);
+			&& Objects.equals(mediaFiles, that.mediaFiles)
+			&& Objects.equals(creator, that.creator);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(textId, filename, documentDate, documentEndDate, documentTitle, locationText, location, subjectId, subject, comment,
-			thumbnailFilename, largeImageFilename, ocrFilename, xmltext, mediaFiles);
+			thumbnailFilename, largeImageFilename, ocrFilename, xmltext, mediaFiles, creator);
 	}
 
 	@Override
@@ -288,6 +289,7 @@ public class Text {
 			", ocrFilename='" + ocrFilename + '\'' +
 			", xmltext='" + xmltext + '\'' +
 			", mediaFiles=" + mediaFiles +
+			", creator=" + creator +
 			'}';
 	}
 }

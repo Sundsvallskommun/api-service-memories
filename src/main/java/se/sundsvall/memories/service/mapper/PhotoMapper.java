@@ -74,6 +74,7 @@ public final class PhotoMapper {
 				.withDocumentTitle(e.getDocumentTitle())
 				.withSubjectKeyword(e.getSubjectKeyword())
 				.withComment(e.getComment())
+				.withCreator(CreatorMapper.toCreator(e.getCreatorPerson(), e.getCreatorLegalEntity()))
 				.withEarliest(e.getEarliest())
 				.withLatest(e.getLatest())
 				.withObservationDate(e.getObservationDate())

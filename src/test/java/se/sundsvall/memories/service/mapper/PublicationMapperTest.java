@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -13,7 +15,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 class PublicationMapperTest {
 
 	private static PublicationEntity sampleEntity() {
-		return PublicationEntity.create()
+		final var entity = PublicationEntity.create()
 			.withId(207)
 			.withFilename("alfwar-1841.xml")
 			.withPublicationType("Tidningar")
@@ -34,6 +36,12 @@ class PublicationMapperTest {
 			.withOptions(4)
 			.withFilFormat("text")
 			.withDeletedDate(LocalDate.of(2026, Month.JANUARY, 15));
+
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		entity.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		entity.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
+
+		return entity;
 	}
 
 	@Test
@@ -41,6 +49,9 @@ class PublicationMapperTest {
 		final var result = PublicationMapper.toPublicationSummary(sampleEntity());
 
 		assertThat(result).isNotNull();
+		assertThat(result.getCreator().getPersonId()).isEqualTo(1);
+		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
+		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getPublicationId()).isEqualTo(207);
 		assertThat(result.getPublicationType()).isEqualTo("Tidningar");
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");

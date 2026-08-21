@@ -31,9 +31,9 @@ class PhotoEntityTest {
 		assertThat(PhotoEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography", "subjects"),
-			hasValidBeanEqualsExcluding("topography", "subjects"),
-			hasValidBeanToStringExcluding("topography", "subjects")));
+			hasValidBeanHashCodeExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanEqualsExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanToStringExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity")));
 	}
 
 	@Test
@@ -85,6 +85,10 @@ class PhotoEntityTest {
 			.withNodeId(19000)
 			.withOptions(4)
 			.withDeletedDate(deletedDate);
+
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		result.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		result.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getId()).isEqualTo(1234);

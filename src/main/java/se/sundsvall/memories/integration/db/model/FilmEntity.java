@@ -1,5 +1,6 @@
 package se.sundsvall.memories.integration.db.model;
 
+import jakarta.persistence.AssociationOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,7 +13,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "FILM")
-public class FilmEntity {
+@AssociationOverride(name = "creatorPerson", joinColumns = @JoinColumn(name = "FILM_U_E_ID"))
+@AssociationOverride(name = "creatorLegalEntity", joinColumns = @JoinColumn(name = "FILM_U_J_ID"))
+public class FilmEntity extends AbstractCreatedEntity {
 
 	@Id
 	@Column(name = "FILM_ID")
@@ -42,12 +45,6 @@ public class FilmEntity {
 
 	@Column(name = "FILM_O_ID")
 	private Integer organizationId;
-
-	@Column(name = "FILM_U_E_ID")
-	private Integer subEntityId;
-
-	@Column(name = "FILM_U_J_ID")
-	private Integer unitId;
 
 	@Column(name = "KOMMENT_FILM", length = 4000)
 	private String comment;
@@ -185,32 +182,6 @@ public class FilmEntity {
 		return this;
 	}
 
-	public Integer getSubEntityId() {
-		return subEntityId;
-	}
-
-	public void setSubEntityId(final Integer subEntityId) {
-		this.subEntityId = subEntityId;
-	}
-
-	public FilmEntity withSubEntityId(final Integer subEntityId) {
-		this.subEntityId = subEntityId;
-		return this;
-	}
-
-	public Integer getUnitId() {
-		return unitId;
-	}
-
-	public void setUnitId(final Integer unitId) {
-		this.unitId = unitId;
-	}
-
-	public FilmEntity withUnitId(final Integer unitId) {
-		this.unitId = unitId;
-		return this;
-	}
-
 	public String getComment() {
 		return comment;
 	}
@@ -284,13 +255,13 @@ public class FilmEntity {
 		return Objects.equals(id, that.id) && Objects.equals(filename, that.filename) && Objects.equals(objectFilePath, that.objectFilePath)
 			&& Objects.equals(objectType, that.objectType) && Objects.equals(date, that.date) && Objects.equals(documentTitle, that.documentTitle)
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(organizationId, that.organizationId)
-			&& Objects.equals(subEntityId, that.subEntityId) && Objects.equals(unitId, that.unitId) && Objects.equals(comment, that.comment)
+			&& Objects.equals(comment, that.comment)
 			&& Objects.equals(filmMimeType, that.filmMimeType) && Objects.equals(nodeId, that.nodeId) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, filename, objectFilePath, objectType, date, documentTitle, locationText, organizationId, subEntityId, unitId, comment, filmMimeType, nodeId, options,
+		return Objects.hash(id, filename, objectFilePath, objectType, date, documentTitle, locationText, organizationId, comment, filmMimeType, nodeId, options,
 			deletedDate);
 	}
 
@@ -305,8 +276,6 @@ public class FilmEntity {
 			", documentTitle='" + documentTitle + '\'' +
 			", locationText='" + locationText + '\'' +
 			", organizationId=" + organizationId +
-			", subEntityId=" + subEntityId +
-			", unitId=" + unitId +
 			", comment='" + comment + '\'' +
 			", filmMimeType='" + filmMimeType + '\'' +
 			", nodeId=" + nodeId +

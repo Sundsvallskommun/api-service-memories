@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Schema(description = "Photo model")
-public class Photo {
+public class Photo extends AbstractCreatedObject<Photo> {
 
 	@Schema(description = "Photo ID", examples = "1234")
 	private Integer photoId;
@@ -685,7 +685,8 @@ public class Photo {
 			&& Objects.equals(treatmentDate, that.treatmentDate) && Objects.equals(signature, that.signature) && Objects.equals(rights, that.rights)
 			&& Objects.equals(restricted, that.restricted) && Objects.equals(restrictionNote, that.restrictionNote) && Objects.equals(provenance, that.provenance)
 			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
-			&& Objects.equals(relatedPhotoIds, that.relatedPhotoIds) && Objects.equals(subjects, that.subjects);
+			&& Objects.equals(relatedPhotoIds, that.relatedPhotoIds) && Objects.equals(subjects, that.subjects)
+			&& Objects.equals(creator, that.creator);
 	}
 
 	@Override
@@ -694,7 +695,7 @@ public class Photo {
 			earliest, latest, observationDate, locationText, location, storageLocation, objectType, colorMode, negativePositive, transmissiveReflective,
 			imageCarrier, material, technique, function, height, width, diameter, framed, conditionCategory, conditionAssessment,
 			observerName, treatment, treatmentDate, signature, rights, restricted, restrictionNote, provenance,
-			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects);
+			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects, creator);
 	}
 
 	@Override
@@ -741,6 +742,7 @@ public class Photo {
 			", largeImageFilename='" + largeImageFilename + '\'' +
 			", relatedPhotoIds=" + relatedPhotoIds +
 			", subjects=" + subjects +
+			", creator=" + creator +
 			'}';
 	}
 }

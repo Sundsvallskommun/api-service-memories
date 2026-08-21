@@ -6,6 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Table(name = "PERSON")
@@ -302,6 +304,18 @@ public class PersonEntity {
 	public PersonEntity withDeletedDate(final LocalDate deletedDate) {
 		this.deletedDate = deletedDate;
 		return this;
+	}
+
+	/**
+	 * The person's name as one string, given name first. Either half can be missing in the archive, so a person with
+	 * only a surname is named by it rather than by a string with a stray space in it.
+	 */
+	public String getDisplayName() {
+		return Stream.of(firstName, lastName)
+			.filter(Objects::nonNull)
+			.map(String::trim)
+			.filter(part -> !part.isEmpty())
+			.collect(Collectors.collectingAndThen(Collectors.joining(" "), name -> name.isEmpty() ? null : name));
 	}
 
 	@Override

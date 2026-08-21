@@ -28,9 +28,9 @@ class FilmEntityTest {
 		assertThat(FilmEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography"),
-			hasValidBeanEqualsExcluding("topography"),
-			hasValidBeanToStringExcluding("topography")));
+			hasValidBeanHashCodeExcluding("topography", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanEqualsExcluding("topography", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanToStringExcluding("topography", "creatorPerson", "creatorLegalEntity")));
 	}
 
 	@Test
@@ -44,8 +44,6 @@ class FilmEntityTest {
 		final var topographyId = 2;
 		final var locationText = "Sundsvall";
 		final var organizationId = 3;
-		final var subEntityId = 4;
-		final var unitId = 5;
 		final var comment = "A film about midsummer celebrations";
 		final var filmMimeType = "video/mp4";
 		final var nodeId = 6;
@@ -62,13 +60,15 @@ class FilmEntityTest {
 			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withOrganizationId(organizationId)
-			.withSubEntityId(subEntityId)
-			.withUnitId(unitId)
 			.withComment(comment)
 			.withFilmMimeType(filmMimeType)
 			.withNodeId(nodeId)
 			.withOptions(options)
 			.withDeletedDate(deletedDate);
+
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		result.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		result.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getId()).isEqualTo(filmId);
@@ -80,8 +80,6 @@ class FilmEntityTest {
 		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getOrganizationId()).isEqualTo(organizationId);
-		assertThat(result.getSubEntityId()).isEqualTo(subEntityId);
-		assertThat(result.getUnitId()).isEqualTo(unitId);
 		assertThat(result.getComment()).isEqualTo(comment);
 		assertThat(result.getFilmMimeType()).isEqualTo(filmMimeType);
 		assertThat(result.getNodeId()).isEqualTo(nodeId);

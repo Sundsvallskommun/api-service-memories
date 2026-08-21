@@ -28,9 +28,9 @@ class TextEntityTest {
 		assertThat(TextEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography", "subject"),
-			hasValidBeanEqualsExcluding("topography", "subject"),
-			hasValidBeanToStringExcluding("topography", "subject")));
+			hasValidBeanHashCodeExcluding("topography", "subject", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanEqualsExcluding("topography", "subject", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanToStringExcluding("topography", "subject", "creatorPerson", "creatorLegalEntity")));
 	}
 
 	@Test
@@ -39,8 +39,6 @@ class TextEntityTest {
 		final var documentDate = "1920-01-01";
 		final var documentEndDate = "1920-12-31";
 		final var documentTitle = "Minne från Sundsvall";
-		final var ueId = 1;
-		final var ujId = 2;
 		final var topographyId = 3;
 		final var locationText = "Sundsvall";
 		final var subjectId = 7;
@@ -62,8 +60,6 @@ class TextEntityTest {
 			.withDocumentDate(documentDate)
 			.withDocumentEndDate(documentEndDate)
 			.withDocumentTitle(documentTitle)
-			.withUeId(ueId)
-			.withUjId(ujId)
 			.withTopography(TopographyEntity.create().withId(topographyId).withName("Sundsvall"))
 			.withLocationText(locationText)
 			.withSubject(OcmEntity.create().withId(subjectId).withText("Musik"))
@@ -80,13 +76,15 @@ class TextEntityTest {
 			.withFilFormat(filFormat)
 			.withDeletedDate(deletedDate);
 
+		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
+		result.setCreatorPerson(PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin"));
+		result.setCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén 1888-1889"));
+
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getId()).isEqualTo(textId);
 		assertThat(result.getDocumentDate()).isEqualTo(documentDate);
 		assertThat(result.getDocumentEndDate()).isEqualTo(documentEndDate);
 		assertThat(result.getDocumentTitle()).isEqualTo(documentTitle);
-		assertThat(result.getUeId()).isEqualTo(ueId);
-		assertThat(result.getUjId()).isEqualTo(ujId);
 		assertThat(result.getTopography().getId()).isEqualTo(topographyId);
 		assertThat(result.getLocationText()).isEqualTo(locationText);
 		assertThat(result.getSubject().getId()).isEqualTo(subjectId);
