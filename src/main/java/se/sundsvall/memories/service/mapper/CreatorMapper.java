@@ -42,25 +42,25 @@ final class CreatorMapper {
 		return creator.equals(Creator.create()) ? null : creator;
 	}
 
-	static Integer personId(final PersonEntity person) {
+	private static Integer personId(final PersonEntity person) {
 		return realPerson(person)
 			.map(PersonEntity::getPersonId)
 			.orElse(null);
 	}
 
-	static String personName(final PersonEntity person) {
+	private static String personName(final PersonEntity person) {
 		return realPerson(person)
 			.map(PersonEntity::getDisplayName)
 			.orElse(null);
 	}
 
-	static Integer legalEntityId(final LegalEntityEntity legalEntity) {
+	private static Integer legalEntityId(final LegalEntityEntity legalEntity) {
 		return realLegalEntity(legalEntity)
 			.map(LegalEntityEntity::getLegalEntityId)
 			.orElse(null);
 	}
 
-	static String legalEntityName(final LegalEntityEntity legalEntity) {
+	private static String legalEntityName(final LegalEntityEntity legalEntity) {
 		return realLegalEntity(legalEntity)
 			.map(LegalEntityEntity::getName)
 			.orElse(null);

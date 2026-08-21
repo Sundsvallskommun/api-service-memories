@@ -1,0 +1,16 @@
+{
+	"node": {
+		"id": 300,
+		"name": "Dolt arkiv",
+		"nodeTypeId": 1,
+		"nodeType": "Arkiv",
+		"startYear": 1900,
+		"stopYear": 1950,
+		"description": "Ska inte synas i sökningen",
+		"sortOrder": 50,
+		"subItemCount": 0,
+		"publishedSubItemCount": 0,
+		"options": 1
+	},
+	"path": []
+}

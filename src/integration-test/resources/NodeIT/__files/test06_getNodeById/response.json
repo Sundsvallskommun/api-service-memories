@@ -1,0 +1,45 @@
+{
+	"node": {
+		"id": 111,
+		"parentId": 110,
+		"name": "Volym 1",
+		"nodeTypeId": 4,
+		"nodeType": "Volym",
+		"startYear": 1862,
+		"stopYear": 1863,
+		"description": "Protokoll 1862-1863",
+		"sortOrder": 10,
+		"subItemCount": 0,
+		"publishedSubItemCount": 0,
+		"options": 6
+	},
+	"path": [
+		{
+			"id": 100,
+			"name": "Sundsvalls stads arkiv",
+			"nodeTypeId": 1,
+			"nodeType": "Arkiv",
+			"startYear": 1862,
+			"stopYear": 1951,
+			"description": "Handlingar från stadsfullmäktige",
+			"sortOrder": 10,
+			"subItemCount": 3,
+			"publishedSubItemCount": 2,
+			"options": 6
+		},
+		{
+			"id": 110,
+			"parentId": 100,
+			"name": "Protokoll",
+			"nodeTypeId": 2,
+			"nodeType": "Serie",
+			"startYear": 1862,
+			"stopYear": 1900,
+			"description": "Stadsfullmäktiges protokoll",
+			"sortOrder": 20,
+			"subItemCount": 2,
+			"publishedSubItemCount": 2,
+			"options": 6
+		}
+	]
+}
