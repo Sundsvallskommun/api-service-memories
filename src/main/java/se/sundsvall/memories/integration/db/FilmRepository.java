@@ -11,8 +11,11 @@ import se.sundsvall.memories.integration.db.model.FilmEntity;
 
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.fetchCreators;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.fetchTopography;
+import static se.sundsvall.memories.integration.db.specification.FilmSpecification.hasCreatorLegalEntity;
+import static se.sundsvall.memories.integration.db.specification.FilmSpecification.hasCreatorPerson;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.FilmSpecification.matchesCreator;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.FilmSpecification.published;
@@ -30,7 +33,10 @@ public interface FilmRepository extends JpaRepository<FilmEntity, Integer>, JpaS
 			.and(matches(parameters.getQuery()))
 			.and(matchesLocation(parameters.getLocation()))
 			.and(yearAtLeast(parameters.getYearFrom()))
-			.and(yearAtMost(parameters.getYearTo())),
+			.and(yearAtMost(parameters.getYearTo()))
+			.and(matchesCreator(parameters.getCreator()))
+			.and(hasCreatorPerson(parameters.getCreatorPersonId()))
+			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId())),
 			pageable);
 	}
 

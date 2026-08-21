@@ -1,5 +1,6 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
@@ -24,6 +25,12 @@ public abstract class AbstractSearchParameters extends AbstractParameterPagingAn
 	protected Integer yearTo;
 
 	protected String location;
+
+	protected String creator;
+
+	protected Integer creatorPersonId;
+
+	protected Integer creatorLegalEntityId;
 
 	public String getQuery() {
 		return query;
@@ -57,6 +64,37 @@ public abstract class AbstractSearchParameters extends AbstractParameterPagingAn
 		this.location = location;
 	}
 
+	/**
+	 * The originator filters are documented here rather than in every subclass: unlike the year filters they mean the
+	 * same thing for every object type, since all five carry the originator in the same pair of columns.
+	 */
+	@Schema(description = "Originator (upphovsman) name (substring, case-insensitive; matches a person or a legal entity)", examples = "Nordin")
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(final String creator) {
+		this.creator = creator;
+	}
+
+	@Schema(description = "ID of the originator, when it is a person", examples = "1")
+	public Integer getCreatorPersonId() {
+		return creatorPersonId;
+	}
+
+	public void setCreatorPersonId(final Integer creatorPersonId) {
+		this.creatorPersonId = creatorPersonId;
+	}
+
+	@Schema(description = "ID of the originator, when it is a legal entity", examples = "10")
+	public Integer getCreatorLegalEntityId() {
+		return creatorLegalEntityId;
+	}
+
+	public void setCreatorLegalEntityId(final Integer creatorLegalEntityId) {
+		this.creatorLegalEntityId = creatorLegalEntityId;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -64,12 +102,13 @@ public abstract class AbstractSearchParameters extends AbstractParameterPagingAn
 		if (!super.equals(o))
 			return false;
 		final AbstractSearchParameters that = (AbstractSearchParameters) o;
-		return Objects.equals(query, that.query) && Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location);
+		return Objects.equals(query, that.query) && Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location)
+			&& Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId) && Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location);
+		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, creator, creatorPersonId, creatorLegalEntityId);
 	}
 
 	@Override
@@ -79,6 +118,9 @@ public abstract class AbstractSearchParameters extends AbstractParameterPagingAn
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
 			", location='" + location + '\'' +
+			", creator='" + creator + '\'' +
+			", creatorPersonId=" + creatorPersonId +
+			", creatorLegalEntityId=" + creatorLegalEntityId +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

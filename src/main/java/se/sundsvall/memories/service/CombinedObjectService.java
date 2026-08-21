@@ -34,7 +34,10 @@ public class CombinedObjectService {
 			trimToNull(parameters.getQuery()),
 			parameters.getYearFrom(),
 			parameters.getYearTo(),
-			trimToNull(parameters.getLocation())).stream()
+			trimToNull(parameters.getLocation()),
+			trimToNull(parameters.getCreator()),
+			parameters.getCreatorPersonId(),
+			parameters.getCreatorLegalEntityId()).stream()
 			.collect(toMap(TypeCount::getObjectType, TypeCount::getTotal, (first, _) -> first, LinkedHashMap::new));
 
 		return PagedCombinedObjectResponse.create()

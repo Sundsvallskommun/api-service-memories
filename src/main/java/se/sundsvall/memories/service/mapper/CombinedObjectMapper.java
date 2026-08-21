@@ -29,7 +29,8 @@ public final class CombinedObjectMapper {
 				.withYear(e.getYear())
 				.withTopographyId(topographyId(e))
 				.withLocationText(e.getLocationText())
-				.withLocation(location(e)))
+				.withLocation(location(e))
+				.withCreator(CreatorMapper.toCreator(e.getCreatorPerson(), e.getCreatorLegalEntity())))
 			.orElse(null);
 	}
 

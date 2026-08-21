@@ -56,7 +56,7 @@ class CombinedObjectServiceTest {
 
 		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
-		when(repositoryMock.countByType("Sundsvall", 1900, 1950, "Sundsvall")).thenReturn(counts);
+		when(repositoryMock.countByType("Sundsvall", 1900, 1950, "Sundsvall", null, null, null)).thenReturn(counts);
 
 		final var result = service.search(parameters);
 
@@ -78,7 +78,7 @@ class CombinedObjectServiceTest {
 
 		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
-		when(repositoryMock.countByType(eq("Sundsvall"), isNull(), isNull(), isNull())).thenReturn(List.of());
+		when(repositoryMock.countByType(eq("Sundsvall"), isNull(), isNull(), isNull(), isNull(), isNull(), isNull())).thenReturn(List.of());
 
 		final var result = service.search(parameters);
 
@@ -89,6 +89,6 @@ class CombinedObjectServiceTest {
 		final var searchCaptor = ArgumentCaptor.forClass(CombinedObjectParameters.class);
 		verify(repositoryMock).findAllByParameters(searchCaptor.capture(), eq(pageable));
 		assertThat(searchCaptor.getValue()).isSameAs(parameters);
-		verify(repositoryMock).countByType(eq("Sundsvall"), isNull(), isNull(), isNull());
+		verify(repositoryMock).countByType(eq("Sundsvall"), isNull(), isNull(), isNull(), isNull(), isNull(), isNull());
 	}
 }

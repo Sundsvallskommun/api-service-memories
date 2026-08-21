@@ -12,8 +12,11 @@ import se.sundsvall.memories.integration.db.model.AudioEntity;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchCreators;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchSubject;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.fetchTopography;
+import static se.sundsvall.memories.integration.db.specification.AudioSpecification.hasCreatorLegalEntity;
+import static se.sundsvall.memories.integration.db.specification.AudioSpecification.hasCreatorPerson;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.AudioSpecification.matchesCreator;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.AudioSpecification.published;
@@ -32,7 +35,10 @@ public interface AudioRepository extends JpaRepository<AudioEntity, Integer>, Jp
 			.and(matches(parameters.getQuery()))
 			.and(matchesLocation(parameters.getLocation()))
 			.and(yearAtLeast(parameters.getYearFrom()))
-			.and(yearAtMost(parameters.getYearTo())),
+			.and(yearAtMost(parameters.getYearTo()))
+			.and(matchesCreator(parameters.getCreator()))
+			.and(hasCreatorPerson(parameters.getCreatorPersonId()))
+			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId())),
 			pageable);
 	}
 
