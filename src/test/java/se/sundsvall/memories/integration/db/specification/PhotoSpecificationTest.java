@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.integration.db.PhotoRepository;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -50,6 +52,8 @@ class PhotoSpecificationTest {
 		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM FOTO_OCM").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM OCM").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM PERSON").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM JURPERS").executeUpdate();
 		photoRepository.flush();
 	}
 
@@ -67,6 +71,101 @@ class PhotoSpecificationTest {
 			.map(PhotoEntity::getId)
 			.sorted()
 			.toList();
+	}
+
+	private PersonEntity persistPerson(final Integer id, final String firstName, final String lastName) {
+		final var person = PersonEntity.create().withPersonId(id).withFirstName(firstName).withLastName(lastName);
+		entityManager.persist(person);
+		entityManager.flush();
+		return person;
+	}
+
+	private LegalEntityEntity persistLegalEntity(final Integer id, final String name, final String alternativeNames) {
+		final var legalEntity = LegalEntityEntity.create().withLegalEntityId(id).withName(name).withAlternativeNames(alternativeNames);
+		entityManager.persist(legalEntity);
+		entityManager.flush();
+		return legalEntity;
+	}
+
+	/**
+	 * The originator is found by a person's name or a legal entity's, and either name column of each.
+	 */
+	@Test
+	void matchesCreatorFindsBothKindsOfOriginator() {
+		final var person = persistPerson(5, "Anton", "Nordin");
+		final var legalEntity = persistLegalEntity(20, "Nödhjälpskommittén 1888-1889", "Kommittén");
+		persist(1, 4, "Av personen", null, "Foto").setCreatorPerson(person);
+		persist(2, 4, "Av bolaget", null, "Foto").setCreatorLegalEntity(legalEntity);
+		persist(3, 4, "Utan upphovsman", null, "Foto");
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesCreator("nordin"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matchesCreator("Anton"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matchesCreator("kommitté"))).containsExactly(2);
+		assertThat(findIds(PhotoSpecification.matchesCreator("   "))).containsExactly(1, 2, 3);
+		assertThat(findIds(PhotoSpecification.matchesCreator(null))).containsExactly(1, 2, 3);
+	}
+
+	/**
+	 * A person's name lives in two columns, so a search for the whole name is in neither of them on its own — it has to
+	 * be matched against the two joined.
+	 */
+	@Test
+	void matchesCreatorFindsAPersonByTheirFullName() {
+		final var person = persistPerson(5, "Anton", "Nordin");
+		persist(1, 4, "Av personen", null, "Foto").setCreatorPerson(person);
+		persist(2, 4, "Utan upphovsman", null, "Foto");
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesCreator("Anton Nordin"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matchesCreator("anton nordin"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matchesCreator("Nordin"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matchesCreator("Anton Andersson"))).isEmpty();
+	}
+
+	/**
+	 * A person with only one half of a name recorded is still found by it, rather than being lost because the other
+	 * half is NULL.
+	 */
+	@Test
+	void matchesCreatorFindsAPersonWithHalfANameRecorded() {
+		final var person = persistPerson(6, null, "Nordin");
+		persist(1, 4, "Av personen", null, "Foto").setCreatorPerson(person);
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesCreator("Nordin"))).containsExactly(1);
+	}
+
+	/**
+	 * U_E_ID defaults to 0 and U_J_ID to 1, the rows that mean "no originator" — and both are named "Ingen". Searching
+	 * for that word must not return every object in the archive.
+	 */
+	@Test
+	void matchesCreatorIgnoresThePlaceholderRows() {
+		final var placeholderPerson = persistPerson(0, null, "Ingen");
+		final var placeholderLegalEntity = persistLegalEntity(1, "Ingen", null);
+		final var person = persistPerson(5, "Anton", "Nordin");
+		persist(1, 4, "Utan upphovsman", null, "Foto").setCreatorPerson(placeholderPerson);
+		photoRepository.findById(1).ifPresent(photo -> photo.setCreatorLegalEntity(placeholderLegalEntity));
+		persist(2, 4, "Med upphovsman", null, "Foto").setCreatorPerson(person);
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesCreator("Ingen"))).isEmpty();
+		assertThat(findIds(PhotoSpecification.matchesCreator("Nordin"))).containsExactly(2);
+	}
+
+	@Test
+	void hasCreatorFiltersOnTheAssociationId() {
+		final var person = persistPerson(5, "Anton", "Nordin");
+		final var legalEntity = persistLegalEntity(20, "Nödhjälpskommittén 1888-1889", null);
+		persist(1, 4, "Av personen", null, "Foto").setCreatorPerson(person);
+		persist(2, 4, "Av bolaget", null, "Foto").setCreatorLegalEntity(legalEntity);
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.hasCreatorPerson(5))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.hasCreatorLegalEntity(20))).containsExactly(2);
+		assertThat(findIds(PhotoSpecification.hasCreatorPerson(null))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.hasCreatorLegalEntity(null))).containsExactly(1, 2);
 	}
 
 	private TopographyEntity persistTopography(final int id, final String name) {

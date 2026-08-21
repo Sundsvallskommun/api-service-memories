@@ -134,4 +134,32 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * Only the object branches of the view carry an originator, so filtering on one also leaves out the register types
+	 * — a person is not created by anyone. Film 1 is the one row with a real originator.
+	 */
+	@Test
+	void test10_searchObjectsByCreator() {
+		setupCall()
+			.withServicePath(PATH + "?creator=Nordin")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * The placeholder rows both answer to "Ingen", and nearly every object points at them. Searching for that word
+	 * must not return the whole archive.
+	 */
+	@Test
+	void test11_searchObjectsByCreatorIgnoresThePlaceholders() {
+		setupCall()
+			.withServicePath(PATH + "?creator=Ingen")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

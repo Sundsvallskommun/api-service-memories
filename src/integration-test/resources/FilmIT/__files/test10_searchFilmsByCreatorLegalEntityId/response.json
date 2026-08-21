@@ -1,0 +1,33 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"films": [
+		{
+			"filmId": 1,
+			"filename": "midsommar1985.mp4",
+			"objectFilePath": "/media/film/midsommar1985.mp4",
+			"objectType": "VIDEO",
+			"date": "1985-06-21",
+			"documentTitle": "Midsommarfirande i Sundsvall 1985",
+			"topographyId": 1,
+			"locationText": "Sundsvall",
+			"location": "Sundsvall",
+			"organizationId": 1,
+			"creator": {
+				"personId": 1,
+				"person": "Anton Nordin",
+				"legalEntityId": 10,
+				"legalEntity": "Nödhjälpskommittén 1888-1889"
+			},
+			"comment": "Film om midsommarfirande på Stora torget",
+			"filmMimeType": "video/mp4",
+			"nodeId": 100,
+			"options": 6
+		}
+	]
+}

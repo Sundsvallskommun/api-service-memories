@@ -101,6 +101,9 @@ public class PhotoParameters extends AbstractSearchParameters {
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
 			", location='" + location + '\'' +
+			", creator='" + creator + '\'' +
+			", creatorPersonId=" + creatorPersonId +
+			", creatorLegalEntityId=" + creatorLegalEntityId +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

@@ -18,9 +18,9 @@ class CombinedObjectEntityTest {
 		assertThat(CombinedObjectEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography"),
-			hasValidBeanEqualsExcluding("topography"),
-			hasValidBeanToStringExcluding("topography")));
+			hasValidBeanHashCodeExcluding("topography", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanEqualsExcluding("topography", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanToStringExcluding("topography", "creatorPerson", "creatorLegalEntity")));
 	}
 
 	@Test

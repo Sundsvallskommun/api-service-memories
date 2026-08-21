@@ -20,6 +20,8 @@ import se.sundsvall.memories.integration.db.CombinedObjectRepository.TypeCount;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
+import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -61,7 +63,72 @@ class CombinedObjectSpecificationTest {
 		photoRepository.deleteAll();
 		audioRepository.deleteAll();
 		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM PERSON").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM JURPERS").executeUpdate();
 		photoRepository.flush();
+	}
+
+	/**
+	 * Only the object branches of the view carry an originator, so filtering on one also leaves out the register types
+	 * — a person is not created by anyone.
+	 */
+	@Test
+	void matchesCreatorFindsObjectsByTheirOriginator() {
+		final var person = PersonEntity.create().withPersonId(5).withFirstName("Anton").withLastName("Nordin");
+		final var legalEntity = LegalEntityEntity.create().withLegalEntityId(20).withName("Nödhjälpskommittén 1888-1889").withAlternativeNames("Kommittén");
+		entityManager.persist(person);
+		entityManager.persist(legalEntity);
+		entityManager.flush();
+
+		persistPhoto(1, "Av personen", null, "1900", null);
+		persistPhoto(2, "Av bolaget", null, "1900", null);
+		photoRepository.findById(1).ifPresent(photo -> photo.setCreatorPerson(person));
+		photoRepository.findById(2).ifPresent(photo -> photo.setCreatorLegalEntity(legalEntity));
+		photoRepository.flush();
+		entityManager.clear();
+
+		final var byPersonName = CombinedObjectParameters.create();
+		byPersonName.setCreator("Nordin");
+		final var byLegalEntityName = CombinedObjectParameters.create();
+		byLegalEntityName.setCreator("kommitté");
+		final var byPersonId = CombinedObjectParameters.create();
+		byPersonId.setCreatorPersonId(5);
+		final var byLegalEntityId = CombinedObjectParameters.create();
+		byLegalEntityId.setCreatorLegalEntityId(20);
+
+		assertThat(findKeys(byPersonName)).containsExactly("foto-1");
+		assertThat(findKeys(byLegalEntityName)).containsExactly("foto-2");
+		assertThat(findKeys(byPersonId)).containsExactly("foto-1");
+		assertThat(findKeys(byLegalEntityId)).containsExactly("foto-2");
+	}
+
+	/**
+	 * The counters are a handwritten query, so they have to agree with the specifications on the originator filters as
+	 * well — otherwise the per-type chips would contradict the result they label.
+	 */
+	@Test
+	void countByTypeAgreesWithTheSearchOnTheOriginatorFilters() {
+		final var person = PersonEntity.create().withPersonId(5).withFirstName("Anton").withLastName("Nordin");
+		entityManager.persist(person);
+		entityManager.flush();
+
+		persistPhoto(1, "Av personen", null, "1900", null);
+		persistPhoto(2, "Utan upphovsman", null, "1900", null);
+		photoRepository.findById(1).ifPresent(photo -> photo.setCreatorPerson(person));
+		photoRepository.flush();
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create();
+		parameters.setCreator("Nordin");
+
+		final var fullName = CombinedObjectParameters.create();
+		fullName.setCreator("Anton Nordin");
+
+		assertThat(findKeys(parameters)).containsExactly("foto-1");
+		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L));
+		// a full name is in neither name column on its own, and the counters have to read it the same way the search does
+		assertThat(findKeys(fullName)).containsExactly("foto-1");
+		assertThat(countByType(fullName)).containsExactly(entry("Foto", 1L));
 	}
 
 	private void persistPhoto(final Integer id, final String title, final String comment, final String earliest, final TopographyEntity topography) {
@@ -214,7 +281,10 @@ class CombinedObjectSpecificationTest {
 			trimToNull(parameters.getQuery()),
 			parameters.getYearFrom(),
 			parameters.getYearTo(),
-			trimToNull(parameters.getLocation())).stream()
+			trimToNull(parameters.getLocation()),
+			trimToNull(parameters.getCreator()),
+			parameters.getCreatorPersonId(),
+			parameters.getCreatorLegalEntityId()).stream()
 			.collect(toMap(TypeCount::getObjectType, TypeCount::getTotal, (first, _) -> first, LinkedHashMap::new));
 	}
 

@@ -52,6 +52,18 @@ public class CombinedObjectEntity {
 	@Column(name = "LOCATION_TEXT")
 	private String locationText;
 
+	/**
+	 * The upphovsman (originator). The register branches of the view have none and emit {@code NULL}; the object
+	 * branches carry the sentinel a missing originator is written as, which the mapper reads as absent.
+	 */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "CREATOR_PERSON_ID")
+	private PersonEntity creatorPerson;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "CREATOR_LEGAL_ENTITY_ID")
+	private LegalEntityEntity creatorLegalEntity;
+
 	public static CombinedObjectEntity create() {
 		return new CombinedObjectEntity();
 	}
@@ -157,6 +169,32 @@ public class CombinedObjectEntity {
 
 	public CombinedObjectEntity withLocationText(final String locationText) {
 		this.locationText = locationText;
+		return this;
+	}
+
+	public PersonEntity getCreatorPerson() {
+		return creatorPerson;
+	}
+
+	public void setCreatorPerson(final PersonEntity creatorPerson) {
+		this.creatorPerson = creatorPerson;
+	}
+
+	public CombinedObjectEntity withCreatorPerson(final PersonEntity creatorPerson) {
+		this.creatorPerson = creatorPerson;
+		return this;
+	}
+
+	public LegalEntityEntity getCreatorLegalEntity() {
+		return creatorLegalEntity;
+	}
+
+	public void setCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
+	}
+
+	public CombinedObjectEntity withCreatorLegalEntity(final LegalEntityEntity creatorLegalEntity) {
+		this.creatorLegalEntity = creatorLegalEntity;
 		return this;
 	}
 

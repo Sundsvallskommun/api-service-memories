@@ -1534,6 +1534,24 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        creator:
+          type: string
+          description: "Originator (upphovsman) name (substring, case-insensitive;\
+            \ matches a person or a legal entity)"
+          examples:
+          - Nordin
+        creatorPersonId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a person"
+          examples:
+          - 1
+        creatorLegalEntityId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a legal entity"
+          examples:
+          - 10
     Problem:
       type: object
       properties:
@@ -2100,6 +2118,24 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        creator:
+          type: string
+          description: "Originator (upphovsman) name (substring, case-insensitive;\
+            \ matches a person or a legal entity)"
+          examples:
+          - Nordin
+        creatorPersonId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a person"
+          examples:
+          - 1
+        creatorLegalEntityId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a legal entity"
+          examples:
+          - 10
     PagedPublicationResponse:
       type: object
       description: Paged publication response
@@ -2255,6 +2291,24 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        creator:
+          type: string
+          description: "Originator (upphovsman) name (substring, case-insensitive;\
+            \ matches a person or a legal entity)"
+          examples:
+          - Nordin
+        creatorPersonId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a person"
+          examples:
+          - 1
+        creatorLegalEntityId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a legal entity"
+          examples:
+          - 10
         objectType:
           type: string
           description: Filter by object type. Use 'Foto' for photographs or 'Föremål'
@@ -2682,6 +2736,25 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        creator:
+          type: string
+          description: "Originator (upphovsman) name (substring, case-insensitive;\
+            \ matches a person or a legal entity). Only object types carry an originator,\
+            \ so this filter also excludes the register types."
+          examples:
+          - Nordin
+        creatorPersonId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a person"
+          examples:
+          - 1
+        creatorLegalEntityId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a legal entity"
+          examples:
+          - 10
     CombinedObject:
       type: object
       description: Combined object search hit (any object or register type)
@@ -2734,6 +2807,8 @@ components:
             when set)
           examples:
           - Sundsvall
+        creator:
+          $ref: "#/components/schemas/Creator"
     PagedCombinedObjectResponse:
       type: object
       description: Paged combined object response
@@ -3136,6 +3211,24 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        creator:
+          type: string
+          description: "Originator (upphovsman) name (substring, case-insensitive;\
+            \ matches a person or a legal entity)"
+          examples:
+          - Nordin
+        creatorPersonId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a person"
+          examples:
+          - 1
+        creatorLegalEntityId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a legal entity"
+          examples:
+          - 10
     Film:
       type: object
       description: Film model
@@ -3492,6 +3585,24 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        creator:
+          type: string
+          description: "Originator (upphovsman) name (substring, case-insensitive;\
+            \ matches a person or a legal entity)"
+          examples:
+          - Nordin
+        creatorPersonId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a person"
+          examples:
+          - 1
+        creatorLegalEntityId:
+          type: integer
+          format: int32
+          description: "ID of the originator, when it is a legal entity"
+          examples:
+          - 10
     Audio:
       type: object
       description: Audio model

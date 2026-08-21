@@ -69,6 +69,59 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows where the value occurs in at least one attribute of at least one of the given associations, skipping
+	 * the sentinel row each association may point at. The originator filters need this: an object names its upphovsman
+	 * through either a person or a legal entity, and both foreign keys default to a placeholder row rather than to
+	 * {@code NULL} — a placeholder is called "Ingen", so without the guard a search for that word would return
+	 * everything. Matches every row when the value is blank.
+	 */
+	public Specification<T> buildAssociationLikeAnyFilter(final List<AssociationAttributes> associations, final String value) {
+		if (value == null || value.isBlank()) {
+			return Specification.unrestricted();
+		}
+		final var pattern = "%" + escapeWildcards(value.trim()) + "%";
+		return (root, _, cb) -> cb.or(associations.stream()
+			.map(association -> matchesAssociation(root, cb, association, pattern))
+			.toArray(Predicate[]::new));
+	}
+
+	private Predicate matchesAssociation(final Root<T> root, final CriteriaBuilder cb, final AssociationAttributes association, final String pattern) {
+		final var join = reuseFetchOrJoin(root, association.association());
+		final var matches = association.attributeGroups().stream()
+			.map(group -> cb.like(joined(cb, join, group), pattern, LIKE_ESCAPE));
+		return cb.and(
+			cb.notEqual(join.get(association.idAttribute()), association.placeholderId()),
+			cb.or(matches.toArray(Predicate[]::new)));
+	}
+
+	/**
+	 * The attributes of one group as a single space-separated string, so that a value spanning them still matches: a
+	 * person's name lives in two columns, and a search for "Anton Nordin" is in neither of them on its own. A missing
+	 * attribute reads as empty rather than turning the whole expression into {@code NULL}.
+	 */
+	private Expression<String> joined(final CriteriaBuilder cb, final Join<T, ?> join, final List<String> attributes) {
+		return attributes.stream()
+			.map(attribute -> cb.coalesce(join.<String>get(attribute), ""))
+			.map(Expression.class::cast)
+			.reduce((left, right) -> cb.concat(cb.concat((Expression<String>) left, " "), (Expression<String>) right))
+			.map(expression -> (Expression<String>) expression)
+			.orElseThrow(() -> new IllegalArgumentException("An association attribute group cannot be empty"));
+	}
+
+	/**
+	 * What a value may match on one association, together with the sentinel row that never counts as a match. Each
+	 * group is matched as one space-separated string, so attributes that together form a single name — a person's given
+	 * and family name — belong in the same group, while attributes that are alternatives to each other get one group
+	 * apiece.
+	 *
+	 * @param association     name of the association attribute
+	 * @param attributeGroups attributes on the associated entity to match against, grouped
+	 * @param idAttribute     name of the associated entity's id attribute
+	 * @param placeholderId   id of the sentinel row
+	 */
+	public record AssociationAttributes(String association, List<List<String>> attributeGroups, String idAttribute, Object placeholderId) {}
+
+	/**
 	 * Matches rows where the attribute is {@code NULL}.
 	 */
 	public Specification<T> buildIsNullFilter(final String attribute) {
