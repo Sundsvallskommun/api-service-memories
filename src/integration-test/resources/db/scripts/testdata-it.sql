@@ -305,12 +305,14 @@ VALUES (3, 'Erik', 'Nordin', 'man', '1889');
 INSERT INTO TBL_NODETYPES (ID, PARENTID, NAME, NODETYPEIDS)
 VALUES (1, null, 'Arkiv', '2'),
        (2, 1, 'Serie', null),
-       (3, null, 'Samling', null);
+       (3, null, 'Samling', null),
+       (4, 2, 'Volym', null);
 
 INSERT INTO TBL_NODES (ID, PARENTID, NAME, NODETYPEID, STARTYEAR, STOPYEAR, DESCRIPTION, `OPTIONS`, SORT, SUBITEMS,
                        SUBITEMS_4)
 VALUES (100, null, 'Sundsvalls stads arkiv', 1, 1862, 1951, 'Handlingar från stadsfullmäktige', 6, 10, 3, 2),
        (110, 100, 'Protokoll', 2, 1862, 1900, 'Stadsfullmäktiges protokoll', 6, 20, 2, 2),
+       (111, 110, 'Volym 1', 4, 1862, 1863, 'Protokoll 1862-1863', 6, 10, 0, 0),
        (120, 100, 'Räkenskaper', 2, 1900, 0, 'Huvudböcker, pågående serie', 4, 30, 1, 0),
        (200, null, 'Fotosamlingen', 3, 1900, null, 'Glasplåtar från stadens fotografer', 6, 40, 5, 5),
        (300, null, 'Dolt arkiv', 1, 1900, 1950, 'Ska inte synas i sökningen', 1, 50, 0, 0),

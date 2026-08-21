@@ -762,6 +762,105 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PagedNodeResponse"
+  /{municipalityId}/nodes/{id}:
+    get:
+      tags:
+      - Node
+      summary: Get node by ID
+      description: "Get a specific archive or collection node together with the path\
+        \ from the root down to it, for a breadcrumb."
+      operationId: getNode
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NodeDetail"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/nodes/{id}/children:
+    get:
+      tags:
+      - Node
+      summary: Get the children of a node
+      description: "List the nodes directly below a node, in the archive's own order\
+        \ unless another sort is requested. Takes the same filters as the search."
+      operationId: getNodeChildren
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: parameters
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/NodeParameters"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedNodeResponse"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/legal-entities:
     get:
       tags:
@@ -2773,6 +2872,21 @@ components:
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true
+    NodeDetail:
+      type: object
+      description: Archive or collection node with the path from the root down to
+        it
+      properties:
+        node:
+          $ref: "#/components/schemas/Node"
+          readOnly: true
+        path:
+          type: array
+          description: "Ancestors of the node, root first, excluding the node itself.\
+            \ Empty for a root node."
+          items:
+            $ref: "#/components/schemas/Node"
+            readOnly: true
     LegalEntityParameters:
       type: object
       description: "Legal entity (juridisk person) search parameters. All filters\

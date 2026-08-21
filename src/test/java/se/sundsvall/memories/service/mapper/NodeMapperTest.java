@@ -76,4 +76,35 @@ class NodeMapperTest {
 	void toNodeListWhenNull() {
 		assertThat(NodeMapper.toNodeList(null)).isEqualTo(emptyList());
 	}
+
+	@Test
+	void toNodeDetail() {
+		final var ancestors = List.of(
+			NodeEntity.create().withId(100).withName("Sundsvalls stads arkiv"),
+			NodeEntity.create().withId(110).withName("Protokoll"));
+
+		final var result = NodeMapper.toNodeDetail(sampleEntity(), ancestors);
+
+		assertThat(result).isNotNull();
+		assertThat(result.getNode().getId()).isEqualTo(100);
+		assertThat(result.getPath())
+			.extracting("id", "name")
+			.containsExactly(tuple(100, "Sundsvalls stads arkiv"), tuple(110, "Protokoll"));
+	}
+
+	/**
+	 * A root node has nothing above it, which is an empty path rather than a missing one.
+	 */
+	@Test
+	void toNodeDetailWithoutAncestors() {
+		final var result = NodeMapper.toNodeDetail(sampleEntity(), null);
+
+		assertThat(result).isNotNull();
+		assertThat(result.getPath()).isEqualTo(emptyList());
+	}
+
+	@Test
+	void toNodeDetailWhenNull() {
+		assertThat(NodeMapper.toNodeDetail(null, List.of())).isNull();
+	}
 }

@@ -1,10 +1,10 @@
 {
 	"_meta": {
-		"count": 5,
+		"count": 6,
 		"limit": 100,
 		"page": 1,
 		"totalPages": 1,
-		"totalRecords": 5
+		"totalRecords": 6
 	},
 	"nodes": [
 		{
@@ -32,6 +32,20 @@
 			"sortOrder": 20,
 			"subItemCount": 2,
 			"publishedSubItemCount": 2,
+			"options": 6
+		},
+		{
+			"id": 111,
+			"parentId": 110,
+			"name": "Volym 1",
+			"nodeTypeId": 4,
+			"nodeType": "Volym",
+			"startYear": 1862,
+			"stopYear": 1863,
+			"description": "Protokoll 1862-1863",
+			"sortOrder": 10,
+			"subItemCount": 0,
+			"publishedSubItemCount": 0,
 			"options": 6
 		},
 		{
