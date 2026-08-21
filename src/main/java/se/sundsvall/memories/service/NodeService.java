@@ -3,6 +3,8 @@ package se.sundsvall.memories.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -17,6 +19,7 @@ import se.sundsvall.memories.integration.db.NodeRepository;
 import se.sundsvall.memories.integration.db.model.NodeEntity;
 import se.sundsvall.memories.service.mapper.NodeMapper;
 
+import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
@@ -86,21 +89,24 @@ public class NodeService {
 		final var visited = new HashSet<Integer>();
 		visited.add(node.getId());
 
-		var parentId = node.getParentId();
-		while (!isRootNode(parentId) && visited.add(parentId) && ancestors.size() < MAX_DEPTH) {
-			final var parent = nodeRepository.findNodeById(parentId).orElse(null);
-			if (parent == null) {
-				break;
-			}
-			ancestors.add(parent);
-			parentId = parent.getParentId();
+		var parent = parentOf(node.getParentId(), visited);
+		while (parent.isPresent() && ancestors.size() < MAX_DEPTH) {
+			final var ancestor = parent.get();
+			ancestors.add(ancestor);
+			parent = parentOf(ancestor.getParentId(), visited);
 		}
 
 		return ancestors.reversed();
 	}
 
-	private static boolean isRootNode(final Integer parentId) {
-		return parentId == null;
+	/**
+	 * The node one step up, or nothing at all: a root has no parent, PARENTID carries no foreign key so it can name a
+	 * node that does not exist, and a node already seen means the parent chain loops.
+	 */
+	private Optional<NodeEntity> parentOf(final Integer parentId, final Set<Integer> visited) {
+		return ofNullable(parentId)
+			.filter(visited::add)
+			.flatMap(nodeRepository::findNodeById);
 	}
 
 	private static PagedNodeResponse toResponse(final Page<NodeEntity> page) {
