@@ -2545,9 +2545,14 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Property to sort on
+            enum:
+            - objectKey
+            - title
+            - year
+            - objectType
             examples:
-            - propertyName
+            - title
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
