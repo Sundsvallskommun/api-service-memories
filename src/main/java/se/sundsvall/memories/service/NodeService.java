@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.NodeDetail;
 import se.sundsvall.memories.api.model.NodeParameters;
@@ -18,6 +16,7 @@ import se.sundsvall.memories.api.model.PagedNodeResponse;
 import se.sundsvall.memories.integration.db.NodeRepository;
 import se.sundsvall.memories.integration.db.model.NodeEntity;
 import se.sundsvall.memories.service.mapper.NodeMapper;
+import se.sundsvall.memories.service.util.Pageables;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -47,7 +46,7 @@ public class NodeService {
 
 	@Transactional(readOnly = true)
 	public PagedNodeResponse search(final NodeParameters parameters) {
-		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
+		final var pageable = Pageables.of(parameters, "id");
 
 		return toResponse(nodeRepository.findAllByParameters(parameters, pageable));
 	}
@@ -58,8 +57,7 @@ public class NodeService {
 	 */
 	@Transactional(readOnly = true)
 	public PagedNodeResponse searchChildren(final Integer parentId, final NodeParameters parameters) {
-		final var requestedSort = parameters.sort();
-		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), requestedSort.isSorted() ? requestedSort : CHILD_ORDER);
+		final var pageable = Pageables.of(parameters, CHILD_ORDER, "id");
 
 		if (!nodeRepository.existsNodeById(parentId)) {
 			throw Problem.valueOf(NOT_FOUND, NODE_NOT_FOUND.formatted(parentId));
@@ -112,6 +110,6 @@ public class NodeService {
 	private static PagedNodeResponse toResponse(final Page<NodeEntity> page) {
 		return PagedNodeResponse.create()
 			.withNodes(NodeMapper.toNodeList(page.getContent()))
-			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
+			.withMetaData(Pageables.metaDataOf(page, "id"));
 	}
 }

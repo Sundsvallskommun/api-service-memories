@@ -1,10 +1,8 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedPublicationResponse;
 import se.sundsvall.memories.api.model.Publication;
@@ -16,6 +14,7 @@ import se.sundsvall.memories.service.mapper.PublicationMapper;
 import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.util.FileStreamer;
 import se.sundsvall.memories.service.util.FileVariants;
+import se.sundsvall.memories.service.util.Pageables;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -37,13 +36,13 @@ public class PublicationService {
 
 	@Transactional(readOnly = true)
 	public PagedPublicationResponse search(final PublicationParameters parameters) {
-		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
+		final var pageable = Pageables.of(parameters, "id");
 
 		final var page = publicationRepository.findAllByParameters(parameters, pageable);
 
 		return PagedPublicationResponse.create()
 			.withPublications(PublicationMapper.toPublicationList(page.getContent()))
-			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
+			.withMetaData(Pageables.metaDataOf(page, "id"));
 	}
 
 	private PublicationEntity findVisible(final Integer id) {

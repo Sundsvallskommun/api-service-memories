@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.SeamanParameters;
 import se.sundsvall.memories.integration.db.SeamanRepository;
@@ -37,7 +38,7 @@ class SeamanServiceTest {
 
 	@Test
 	void searchDelegatesAndMaps() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		final var parameters = SeamanParameters.create()
 			.withLastName("Nordin")
 			.withFirstName("Anton")
@@ -62,7 +63,7 @@ class SeamanServiceTest {
 
 	@Test
 	void searchForwardsTheParametersUnchanged() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		final var parameters = SeamanParameters.create().withLastName("  ").withFirstName("").withBirthParish(null);
 
 		when(repositoryMock.findAllByParameters(any(SeamanParameters.class), eq(pageable)))

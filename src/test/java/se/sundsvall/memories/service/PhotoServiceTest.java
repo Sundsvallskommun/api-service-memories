@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.api.model.Subject;
@@ -77,7 +78,7 @@ class PhotoServiceTest {
 
 	@Test
 	void searchDelegatesToRepositoryAndMapsThePage() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		when(photoRepositoryMock.findAllByParameters(any(PhotoParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
@@ -93,7 +94,7 @@ class PhotoServiceTest {
 
 	@Test
 	void searchForwardsTheParametersUnchanged() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		final var parameters = PhotoParameters.create();
 		when(photoRepositoryMock.findAllByParameters(any(PhotoParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
@@ -111,7 +112,7 @@ class PhotoServiceTest {
 
 	@Test
 	void searchAppliesRequestedPaging() {
-		final var pageable = PageRequest.of(2, 25);
+		final var pageable = PageRequest.of(2, 25, Sort.by("id"));
 		when(photoRepositoryMock.findAllByParameters(any(PhotoParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 51));
 

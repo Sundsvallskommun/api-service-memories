@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository.TypeCount;
@@ -45,7 +46,7 @@ class CombinedObjectServiceTest {
 
 	@Test
 	void searchDelegatesResolvesLocationAndBuildsTypeCounts() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("objectKey"));
 		final var parameters = CombinedObjectParameters.create().withQuery("Sundsvall").withYearFrom(1900).withYearTo(1950).withLocation("Sundsvall").withPage(1).withLimit(100);
 		final var entity = CombinedObjectEntity.create().withObjectKey("foto-1001").withObjectType("Foto").withTitle("Stadsvy")
 			.withTopography(TopographyEntity.create().withId(1).withName("Sundsvalls kommun"));
@@ -72,7 +73,7 @@ class CombinedObjectServiceTest {
 	 */
 	@Test
 	void searchTrimsOnTheWayToTheCounters() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("objectKey"));
 		final var parameters = CombinedObjectParameters.create().withQuery("  Sundsvall  ").withLocation("   ");
 
 		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(pageable)))

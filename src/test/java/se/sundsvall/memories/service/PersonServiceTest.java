@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.PersonParameters;
 import se.sundsvall.memories.integration.db.PersonRepository;
@@ -38,7 +39,7 @@ class PersonServiceTest {
 
 	@Test
 	void searchDelegatesAndMaps() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("personId"));
 		final var parameters = PersonParameters.create()
 			.withLastName("Nordin")
 			.withFirstName("Anton")
@@ -64,7 +65,7 @@ class PersonServiceTest {
 
 	@Test
 	void searchForwardsTheParametersUnchanged() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("personId"));
 		final var parameters = PersonParameters.create().withLastName("  Nordin  ").withGender("   ");
 
 		when(repositoryMock.findAllByParameters(any(PersonParameters.class), eq(pageable)))
@@ -83,7 +84,7 @@ class PersonServiceTest {
 
 	@Test
 	void searchAppliesRequestedPaging() {
-		final var pageable = PageRequest.of(2, 25);
+		final var pageable = PageRequest.of(2, 25, Sort.by("personId"));
 
 		when(repositoryMock.findAllByParameters(any(PersonParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(PersonEntity.create().withPersonId(1)), pageable, 51));
