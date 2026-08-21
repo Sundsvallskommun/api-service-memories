@@ -87,22 +87,39 @@ public class SpecificationBuilder<T> {
 
 	private Predicate matchesAssociation(final Root<T> root, final CriteriaBuilder cb, final AssociationAttributes association, final String pattern) {
 		final var join = reuseFetchOrJoin(root, association.association());
-		final var matches = association.attributes().stream()
-			.map(attribute -> cb.like(join.<String>get(attribute), pattern, LIKE_ESCAPE));
+		final var matches = association.attributeGroups().stream()
+			.map(group -> cb.like(joined(cb, join, group), pattern, LIKE_ESCAPE));
 		return cb.and(
 			cb.notEqual(join.get(association.idAttribute()), association.placeholderId()),
 			cb.or(matches.toArray(Predicate[]::new)));
 	}
 
 	/**
-	 * The attributes of one association a value may match, together with the sentinel row that never counts as a match.
-	 *
-	 * @param association   name of the association attribute
-	 * @param attributes    attributes on the associated entity to match against
-	 * @param idAttribute   name of the associated entity's id attribute
-	 * @param placeholderId id of the sentinel row
+	 * The attributes of one group as a single space-separated string, so that a value spanning them still matches: a
+	 * person's name lives in two columns, and a search for "Anton Nordin" is in neither of them on its own. A missing
+	 * attribute reads as empty rather than turning the whole expression into {@code NULL}.
 	 */
-	public record AssociationAttributes(String association, List<String> attributes, String idAttribute, Object placeholderId) {}
+	private Expression<String> joined(final CriteriaBuilder cb, final Join<T, ?> join, final List<String> attributes) {
+		return attributes.stream()
+			.map(attribute -> cb.coalesce(join.<String>get(attribute), ""))
+			.map(Expression.class::cast)
+			.reduce((left, right) -> cb.concat(cb.concat((Expression<String>) left, " "), (Expression<String>) right))
+			.map(expression -> (Expression<String>) expression)
+			.orElseThrow(() -> new IllegalArgumentException("An association attribute group cannot be empty"));
+	}
+
+	/**
+	 * What a value may match on one association, together with the sentinel row that never counts as a match. Each
+	 * group is matched as one space-separated string, so attributes that together form a single name — a person's given
+	 * and family name — belong in the same group, while attributes that are alternatives to each other get one group
+	 * apiece.
+	 *
+	 * @param association     name of the association attribute
+	 * @param attributeGroups attributes on the associated entity to match against, grouped
+	 * @param idAttribute     name of the associated entity's id attribute
+	 * @param placeholderId   id of the sentinel row
+	 */
+	public record AssociationAttributes(String association, List<List<String>> attributeGroups, String idAttribute, Object placeholderId) {}
 
 	/**
 	 * Matches rows where the attribute is {@code NULL}.

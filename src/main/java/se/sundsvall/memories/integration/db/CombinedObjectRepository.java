@@ -37,7 +37,7 @@ public interface CombinedObjectRepository extends JpaRepository<CombinedObjectEn
 		AND (:yearFrom IS NULL OR SORT_YEAR >= :yearFrom)
 		AND (:yearTo IS NULL OR SORT_YEAR <= :yearTo)
 		AND (:creator IS NULL
-		     OR CREATOR_PERSON_ID IN (SELECT P_ID FROM PERSON WHERE P_ID <> 0 AND (FNAMN LIKE CONCAT('%', :creator, '%') OR ENAMN LIKE CONCAT('%', :creator, '%')))
+		     OR CREATOR_PERSON_ID IN (SELECT P_ID FROM PERSON WHERE P_ID <> 0 AND CONCAT_WS(' ', FNAMN, ENAMN) LIKE CONCAT('%', :creator, '%'))
 		     OR CREATOR_LEGAL_ENTITY_ID IN (SELECT J_ID FROM JURPERS WHERE J_ID <> 1 AND (JURPERS LIKE CONCAT('%', :creator, '%') OR ALTNAMN LIKE CONCAT('%', :creator, '%'))))
 		AND (:creatorPersonId IS NULL OR CREATOR_PERSON_ID = :creatorPersonId)
 		AND (:creatorLegalEntityId IS NULL OR CREATOR_LEGAL_ENTITY_ID = :creatorLegalEntityId)

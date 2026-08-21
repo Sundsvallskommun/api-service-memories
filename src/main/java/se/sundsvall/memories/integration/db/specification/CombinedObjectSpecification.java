@@ -49,9 +49,11 @@ public interface CombinedObjectSpecification {
 	 * counts as a match.
 	 */
 	List<SpecificationBuilder.AssociationAttributes> CREATOR_ATTRIBUTES = List.of(
-		new SpecificationBuilder.AssociationAttributes(CREATOR_PERSON, List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME), PersonEntity_.PERSON_ID, PersonSpecification.PLACEHOLDER_ID),
-		new SpecificationBuilder.AssociationAttributes(CREATOR_LEGAL_ENTITY, List.of(LegalEntityEntity_.NAME, LegalEntityEntity_.ALTERNATIVE_NAMES), LegalEntityEntity_.LEGAL_ENTITY_ID,
-			LegalEntitySpecification.PLACEHOLDER_ID));
+		// a person's name spans two columns and is matched as one string; a legal entity's two names are alternatives
+		new SpecificationBuilder.AssociationAttributes(CREATOR_PERSON, List.of(List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME)), PersonEntity_.PERSON_ID,
+			PersonSpecification.PLACEHOLDER_ID),
+		new SpecificationBuilder.AssociationAttributes(CREATOR_LEGAL_ENTITY, List.of(List.of(LegalEntityEntity_.NAME), List.of(LegalEntityEntity_.ALTERNATIVE_NAMES)),
+			LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntitySpecification.PLACEHOLDER_ID));
 
 	/**
 	 * The register branches of the view carry no originator, so filtering on one leaves only object types — which is

@@ -121,8 +121,14 @@ class CombinedObjectSpecificationTest {
 		final var parameters = CombinedObjectParameters.create();
 		parameters.setCreator("Nordin");
 
+		final var fullName = CombinedObjectParameters.create();
+		fullName.setCreator("Anton Nordin");
+
 		assertThat(findKeys(parameters)).containsExactly("foto-1");
 		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L));
+		// a full name is in neither name column on its own, and the counters have to read it the same way the search does
+		assertThat(findKeys(fullName)).containsExactly("foto-1");
+		assertThat(countByType(fullName)).containsExactly(entry("Foto", 1L));
 	}
 
 	private void persistPhoto(final Integer id, final String title, final String comment, final String earliest, final TopographyEntity topography) {

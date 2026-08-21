@@ -107,6 +107,36 @@ class PhotoSpecificationTest {
 	}
 
 	/**
+	 * A person's name lives in two columns, so a search for the whole name is in neither of them on its own — it has to
+	 * be matched against the two joined.
+	 */
+	@Test
+	void matchesCreatorFindsAPersonByTheirFullName() {
+		final var person = persistPerson(5, "Anton", "Nordin");
+		persist(1, 4, "Av personen", null, "Foto").setCreatorPerson(person);
+		persist(2, 4, "Utan upphovsman", null, "Foto");
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesCreator("Anton Nordin"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matchesCreator("anton nordin"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matchesCreator("Nordin"))).containsExactly(1);
+		assertThat(findIds(PhotoSpecification.matchesCreator("Anton Andersson"))).isEmpty();
+	}
+
+	/**
+	 * A person with only one half of a name recorded is still found by it, rather than being lost because the other
+	 * half is NULL.
+	 */
+	@Test
+	void matchesCreatorFindsAPersonWithHalfANameRecorded() {
+		final var person = persistPerson(6, null, "Nordin");
+		persist(1, 4, "Av personen", null, "Foto").setCreatorPerson(person);
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesCreator("Nordin"))).containsExactly(1);
+	}
+
+	/**
 	 * U_E_ID defaults to 0 and U_J_ID to 1, the rows that mean "no originator" — and both are named "Ingen". Searching
 	 * for that word must not return every object in the archive.
 	 */
