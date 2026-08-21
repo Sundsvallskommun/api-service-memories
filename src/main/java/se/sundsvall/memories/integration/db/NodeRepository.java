@@ -40,10 +40,19 @@ public interface NodeRepository extends JpaRepository<NodeEntity, Integer>, JpaS
 	 * and legal entity lookups document: an administrative interface has to be able to reach them by id. A deleted node
 	 * is gone for good, though, so it is hidden here as well.
 	 */
-	default Optional<NodeEntity> findDetailById(final Integer id) {
+	default Optional<NodeEntity> findNodeById(final Integer id) {
 		return findOne(fetchNodeType()
 			.and(notDeleted())
 			.and(hasId(id)));
+	}
+
+	/**
+	 * Whether a node exists and is not deleted, for the callers that only need to tell a missing node from an empty
+	 * result.
+	 */
+	default boolean existsNodeById(final Integer id) {
+		return exists(hasId(id)
+			.and(notDeleted()));
 	}
 
 	private static Specification<NodeEntity> byParameters(final NodeParameters parameters) {

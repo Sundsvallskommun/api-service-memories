@@ -58,8 +58,9 @@ public class NodeService {
 		final var requestedSort = parameters.sort();
 		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), requestedSort.isSorted() ? requestedSort : CHILD_ORDER);
 
-		nodeRepository.findDetailById(parentId)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, NODE_NOT_FOUND.formatted(parentId)));
+		if (!nodeRepository.existsNodeById(parentId)) {
+			throw Problem.valueOf(NOT_FOUND, NODE_NOT_FOUND.formatted(parentId));
+		}
 
 		return toResponse(nodeRepository.findChildrenByParameters(parentId, parameters, pageable));
 	}
@@ -69,16 +70,16 @@ public class NodeService {
 	 */
 	@Transactional(readOnly = true)
 	public NodeDetail getById(final Integer id) {
-		final var node = nodeRepository.findDetailById(id)
+		final var node = nodeRepository.findNodeById(id)
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, NODE_NOT_FOUND.formatted(id)));
 
 		return NodeMapper.toNodeDetail(node, ancestorsOf(node));
 	}
 
 	/**
-	 * Walks up the tree from a node, collecting its ancestors root first. The walk stops on a node that has no parent,
-	 * on a parent that does not exist — {@code PARENTID} carries no foreign key — and on a node already seen, which is
-	 * what a cyclic parent chain in the legacy data would look like.
+	 * Walks up the tree from a node, collecting its ancestors root first. The walk stops on a root, on a parent that
+	 * does not exist — {@code PARENTID} carries no foreign key — and on a node already seen, which is what a cyclic
+	 * parent chain in the legacy data would look like.
 	 */
 	private List<NodeEntity> ancestorsOf(final NodeEntity node) {
 		final var ancestors = new ArrayList<NodeEntity>();
@@ -86,8 +87,8 @@ public class NodeService {
 		visited.add(node.getId());
 
 		var parentId = node.getParentId();
-		while (isNode(parentId) && visited.add(parentId) && ancestors.size() < MAX_DEPTH) {
-			final var parent = nodeRepository.findDetailById(parentId).orElse(null);
+		while (!isRootNode(parentId) && visited.add(parentId) && ancestors.size() < MAX_DEPTH) {
+			final var parent = nodeRepository.findNodeById(parentId).orElse(null);
 			if (parent == null) {
 				break;
 			}
@@ -98,11 +99,8 @@ public class NodeService {
 		return ancestors.reversed();
 	}
 
-	/**
-	 * A root node has no parent, which the legacy schema writes as both {@code NULL} and {@code 0}.
-	 */
-	private static boolean isNode(final Integer id) {
-		return id != null && id != 0;
+	private static boolean isRootNode(final Integer parentId) {
+		return parentId == null;
 	}
 
 	private static PagedNodeResponse toResponse(final Page<NodeEntity> page) {

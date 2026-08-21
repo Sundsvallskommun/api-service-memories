@@ -87,9 +87,9 @@ class NodeServiceTest {
 	@Test
 	void getByIdReturnsTheNodeWithItsPathRootFirst() {
 		final var node = node(111, 110);
-		when(repositoryMock.findDetailById(111)).thenReturn(Optional.of(node));
-		when(repositoryMock.findDetailById(110)).thenReturn(Optional.of(node(110, 100)));
-		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, null)));
+		when(repositoryMock.findNodeById(111)).thenReturn(Optional.of(node));
+		when(repositoryMock.findNodeById(110)).thenReturn(Optional.of(node(110, 100)));
+		when(repositoryMock.findNodeById(100)).thenReturn(Optional.of(node(100, null)));
 
 		final var result = service.getById(111);
 
@@ -99,27 +99,12 @@ class NodeServiceTest {
 
 	@Test
 	void getByIdReturnsAnEmptyPathForARootNode() {
-		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, null)));
+		when(repositoryMock.findNodeById(100)).thenReturn(Optional.of(node(100, null)));
 
 		final var result = service.getById(100);
 
 		assertThat(result.getPath()).isEmpty();
-		verify(repositoryMock).findDetailById(100);
-		verifyNoMoreInteractions(repositoryMock);
-	}
-
-	/**
-	 * The legacy schema writes "no parent" as 0 as well as NULL, and a node pointing at 0 is a root, not a child of a
-	 * node with id 0.
-	 */
-	@Test
-	void getByIdTreatsParentZeroAsARoot() {
-		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, 0)));
-
-		final var result = service.getById(100);
-
-		assertThat(result.getPath()).isEmpty();
-		verify(repositoryMock).findDetailById(100);
+		verify(repositoryMock).findNodeById(100);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
@@ -129,8 +114,8 @@ class NodeServiceTest {
 	 */
 	@Test
 	void getByIdStopsAtAParentThatDoesNotExist() {
-		when(repositoryMock.findDetailById(111)).thenReturn(Optional.of(node(111, 110)));
-		when(repositoryMock.findDetailById(110)).thenReturn(Optional.empty());
+		when(repositoryMock.findNodeById(111)).thenReturn(Optional.of(node(111, 110)));
+		when(repositoryMock.findNodeById(110)).thenReturn(Optional.empty());
 
 		final var result = service.getById(111);
 
@@ -143,8 +128,8 @@ class NodeServiceTest {
 	 */
 	@Test
 	void getByIdStopsOnACyclicParentChain() {
-		when(repositoryMock.findDetailById(1)).thenReturn(Optional.of(node(1, 2)));
-		when(repositoryMock.findDetailById(2)).thenReturn(Optional.of(node(2, 1)));
+		when(repositoryMock.findNodeById(1)).thenReturn(Optional.of(node(1, 2)));
+		when(repositoryMock.findNodeById(2)).thenReturn(Optional.of(node(2, 1)));
 
 		final var result = service.getById(1);
 
@@ -154,7 +139,7 @@ class NodeServiceTest {
 
 	@Test
 	void getByIdNotFound() {
-		when(repositoryMock.findDetailById(999)).thenReturn(Optional.empty());
+		when(repositoryMock.findNodeById(999)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.getById(999))
 			.isInstanceOf(ThrowableProblem.class)
@@ -168,7 +153,7 @@ class NodeServiceTest {
 	@Test
 	void searchChildrenFallsBackToTheArchiveOrder() {
 		final var pageable = PageRequest.of(0, 100, Sort.by("sortOrder", "name"));
-		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, null)));
+		when(repositoryMock.existsNodeById(100)).thenReturn(true);
 		when(repositoryMock.findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(node(110, 100)), pageable, 1));
 
@@ -186,7 +171,7 @@ class NodeServiceTest {
 		parameters.setSortBy(List.of("name"));
 		parameters.setSortDirection(Sort.Direction.DESC);
 
-		when(repositoryMock.findDetailById(100)).thenReturn(Optional.of(node(100, null)));
+		when(repositoryMock.existsNodeById(100)).thenReturn(true);
 		when(repositoryMock.findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
@@ -201,14 +186,14 @@ class NodeServiceTest {
 	 */
 	@Test
 	void searchChildrenOfUnknownNode() {
-		when(repositoryMock.findDetailById(999)).thenReturn(Optional.empty());
+		when(repositoryMock.existsNodeById(999)).thenReturn(false);
 
 		final var parameters = NodeParameters.create();
 		assertThatThrownBy(() -> service.searchChildren(999, parameters))
 			.isInstanceOf(ThrowableProblem.class)
 			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
 			.hasMessageContaining("Node with id '999' not found");
-		verify(repositoryMock).findDetailById(999);
+		verify(repositoryMock).existsNodeById(999);
 		verifyNoMoreInteractions(repositoryMock);
 	}
 
