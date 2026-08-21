@@ -7,6 +7,7 @@ import se.sundsvall.dept44.test.annotation.wiremock.WireMockAppTestSuite;
 import se.sundsvall.memories.Application;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
 @WireMockAppTestSuite(files = "classpath:/CombinedObjectIT/", classes = Application.class)
@@ -87,11 +88,59 @@ class CombinedObjectIT extends AbstractAppTest {
 	}
 
 	/**
+	 * Every value the parameter accepts has to resolve as an entity attribute. A property that only fails once it
+	 * reaches Spring Data is a 500 no unit test would catch, so each one is walked through the whole request here.
+	 */
+	@Test
+	void test06_searchObjectsSortedByTitle() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&sortBy=title&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test07_searchObjectsSortedByYear() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&sortBy=year&sortBy=objectKey&sortDirection=DESC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test08_searchObjectsSortedByObjectType() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&sortBy=objectType&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * A column of the view is not an entity attribute, and is refused with the list of alternatives rather than
+	 * reaching Spring Data and failing there.
+	 */
+	@Test
+	void test09_searchObjectsWithInvalidSortBy() {
+		setupCall()
+			.withServicePath(PATH + "?sortBy=SORT_YEAR")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(BAD_REQUEST)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
 	 * Only the object branches of the view carry an originator, so filtering on one also leaves out the register types
 	 * — a person is not created by anyone. Film 1 is the one row with a real originator.
 	 */
 	@Test
-	void test06_searchObjectsByCreator() {
+	void test10_searchObjectsByCreator() {
 		setupCall()
 			.withServicePath(PATH + "?creator=Nordin")
 			.withHttpMethod(GET)
@@ -105,7 +154,7 @@ class CombinedObjectIT extends AbstractAppTest {
 	 * must not return the whole archive.
 	 */
 	@Test
-	void test07_searchObjectsByCreatorIgnoresThePlaceholders() {
+	void test11_searchObjectsByCreatorIgnoresThePlaceholders() {
 		setupCall()
 			.withServicePath(PATH + "?creator=Ingen")
 			.withHttpMethod(GET)

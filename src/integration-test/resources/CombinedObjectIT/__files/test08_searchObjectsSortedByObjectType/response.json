@@ -1,0 +1,44 @@
+{
+	"_meta": {
+		"count": 3,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 3,
+		"sortBy": [
+			"objectType",
+			"objectKey"
+		],
+		"sortDirection": "ASC"
+	},
+	"typeCounts": {
+		"Person": 1,
+		"Sjöman": 2
+	},
+	"objects": [
+		{
+			"objectKey": "person-1",
+			"sourceId": 1,
+			"objectType": "Person",
+			"title": "Anton Nordin",
+			"year": 1852,
+			"locationText": "Sundsvall"
+		},
+		{
+			"objectKey": "sjoman-1",
+			"sourceId": 1,
+			"objectType": "Sjöman",
+			"title": "Anton Nordin",
+			"year": 1852,
+			"locationText": "Sundsvall"
+		},
+		{
+			"objectKey": "sjoman-3",
+			"sourceId": 3,
+			"objectType": "Sjöman",
+			"title": "Erik Holm",
+			"year": 1889,
+			"locationText": "Njurunda"
+		}
+	]
+}

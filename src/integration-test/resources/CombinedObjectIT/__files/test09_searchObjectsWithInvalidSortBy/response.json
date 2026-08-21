@@ -1,0 +1,11 @@
+{
+	"status": 400,
+	"title": "Constraint Violation",
+	"type": "https://github.com/Sundsvallskommun/dept44/problems/constraint-violation",
+	"violations": [
+		{
+			"field": "sortBy[0]",
+			"message": "must be one of: objectKey, title, year, objectType"
+		}
+	]
+}
