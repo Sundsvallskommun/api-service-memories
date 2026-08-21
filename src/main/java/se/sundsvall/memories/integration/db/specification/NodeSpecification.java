@@ -7,9 +7,11 @@ import se.sundsvall.memories.integration.db.model.NodeTypeEntity_;
 
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.DESCRIPTION;
+import static se.sundsvall.memories.integration.db.model.NodeEntity_.ID;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.NAME;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.NODE_TYPE;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.OPTIONS;
+import static se.sundsvall.memories.integration.db.model.NodeEntity_.PARENT_ID;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.START_YEAR;
 import static se.sundsvall.memories.integration.db.model.NodeEntity_.STOP_YEAR;
 
@@ -23,6 +25,14 @@ public interface NodeSpecification {
 	 */
 	static Specification<NodeEntity> matches(final String query) {
 		return BUILDER.buildLikeAnyFilter(List.of(NAME, DESCRIPTION), query);
+	}
+
+	static Specification<NodeEntity> hasId(final Integer id) {
+		return BUILDER.buildEqualFilter(ID, id);
+	}
+
+	static Specification<NodeEntity> hasParent(final Integer parentId) {
+		return BUILDER.buildEqualFilter(PARENT_ID, parentId);
 	}
 
 	static Specification<NodeEntity> hasNodeType(final Integer nodeTypeId) {
