@@ -39,7 +39,7 @@ class NodeServiceTest {
 
 	@Test
 	void searchDelegatesAndMaps() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		final var parameters = NodeParameters.create()
 			.withQuery("stadsfullmäktige")
 			.withNodeTypeId(1)
@@ -67,7 +67,7 @@ class NodeServiceTest {
 
 	@Test
 	void searchForwardsTheParametersUnchanged() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		final var parameters = NodeParameters.create().withQuery("  arkiv  ");
 
 		when(repositoryMock.findAllByParameters(any(NodeParameters.class), eq(pageable)))
@@ -152,7 +152,7 @@ class NodeServiceTest {
 	 */
 	@Test
 	void searchChildrenFallsBackToTheArchiveOrder() {
-		final var pageable = PageRequest.of(0, 100, Sort.by("sortOrder", "name"));
+		final var pageable = PageRequest.of(0, 100, Sort.by("sortOrder", "name").and(Sort.by("id")));
 		when(repositoryMock.existsNodeById(100)).thenReturn(true);
 		when(repositoryMock.findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(node(110, 100)), pageable, 1));
@@ -166,7 +166,7 @@ class NodeServiceTest {
 	@Test
 	void searchChildrenKeepsARequestedSort() {
 		final var requested = Sort.by(Sort.Direction.DESC, "name");
-		final var pageable = PageRequest.of(0, 100, requested);
+		final var pageable = PageRequest.of(0, 100, requested.and(Sort.by("id")));
 		final var parameters = NodeParameters.create();
 		parameters.setSortBy(List.of("name"));
 		parameters.setSortDirection(Sort.Direction.DESC);
@@ -203,7 +203,7 @@ class NodeServiceTest {
 
 	@Test
 	void searchAppliesRequestedPaging() {
-		final var pageable = PageRequest.of(2, 25);
+		final var pageable = PageRequest.of(2, 25, Sort.by("id"));
 
 		when(repositoryMock.findAllByParameters(any(NodeParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(NodeEntity.create().withId(1)), pageable, 51));

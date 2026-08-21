@@ -1,14 +1,13 @@
 package se.sundsvall.memories.service;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.CensusRecord;
 import se.sundsvall.memories.api.model.CensusRecordParameters;
 import se.sundsvall.memories.api.model.PagedCensusRecordResponse;
 import se.sundsvall.memories.integration.db.CensusRecordRepository;
 import se.sundsvall.memories.service.mapper.CensusRecordMapper;
+import se.sundsvall.memories.service.util.Pageables;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -24,13 +23,13 @@ public class CensusRecordService {
 	}
 
 	public PagedCensusRecordResponse search(final CensusRecordParameters parameters) {
-		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
+		final var pageable = Pageables.of(parameters, "id");
 
 		final var page = censusRecordRepository.findAllByParameters(parameters, pageable);
 
 		return PagedCensusRecordResponse.create()
 			.withCensusRecords(CensusRecordMapper.toCensusRecordList(page.getContent()))
-			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
+			.withMetaData(Pageables.metaDataOf(page, "id"));
 	}
 
 	public CensusRecord getById(final Integer id) {

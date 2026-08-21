@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.TextParameters;
 import se.sundsvall.memories.integration.db.TextMediaRepository;
@@ -104,7 +105,7 @@ class TextServiceTest {
 
 	@Test
 	void searchDelegatesToRepositoryAndMapsThePage() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		when(textRepositoryMock.findAllByParameters(any(TextParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
@@ -120,7 +121,7 @@ class TextServiceTest {
 
 	@Test
 	void searchForwardsTheParametersUnchanged() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		final var parameters = TextParameters.create();
 		when(textRepositoryMock.findAllByParameters(any(TextParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
@@ -138,7 +139,7 @@ class TextServiceTest {
 
 	@Test
 	void searchAppliesRequestedPaging() {
-		final var pageable = PageRequest.of(2, 25);
+		final var pageable = PageRequest.of(2, 25, Sort.by("id"));
 		when(textRepositoryMock.findAllByParameters(any(TextParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 51));
 

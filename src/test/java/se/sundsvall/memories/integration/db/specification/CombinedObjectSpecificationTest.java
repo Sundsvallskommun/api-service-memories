@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
+import se.sundsvall.memories.service.util.Pageables;
 
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +64,30 @@ class CombinedObjectSpecificationTest {
 		audioRepository.deleteAll();
 		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		photoRepository.flush();
+	}
+
+	/**
+	 * The point of the tiebreaker: consecutive pages of the same search must not overlap, and between them they have to
+	 * cover every row exactly once.
+	 */
+	@Test
+	void pagingCoversEveryRowExactlyOnce() {
+		persistPhoto(1, "A", null, "1900", null);
+		persistPhoto(2, "B", null, "1900", null);
+		persistPhoto(3, "C", null, "1900", null);
+
+		final var parameters = CombinedObjectParameters.create();
+		final var first = combinedObjectRepository.findAllByParameters(parameters, Pageables.of(parameters.withPage(1).withLimit(2), "objectKey"));
+		final var second = combinedObjectRepository.findAllByParameters(parameters, Pageables.of(parameters.withPage(2).withLimit(2), "objectKey"));
+
+		assertThat(keysOf(first)).containsExactly("foto-1", "foto-2");
+		assertThat(keysOf(second)).containsExactly("foto-3");
+	}
+
+	private static List<String> keysOf(final Page<CombinedObjectEntity> page) {
+		return page.getContent().stream()
+			.map(CombinedObjectEntity::getObjectKey)
+			.toList();
 	}
 
 	private void persistPhoto(final Integer id, final String title, final String comment, final String earliest, final TopographyEntity topography) {

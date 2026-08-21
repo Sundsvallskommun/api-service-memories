@@ -1,14 +1,13 @@
 package se.sundsvall.memories.service;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedSeamanResponse;
 import se.sundsvall.memories.api.model.Seaman;
 import se.sundsvall.memories.api.model.SeamanParameters;
 import se.sundsvall.memories.integration.db.SeamanRepository;
 import se.sundsvall.memories.service.mapper.SeamanMapper;
+import se.sundsvall.memories.service.util.Pageables;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -24,13 +23,13 @@ public class SeamanService {
 	}
 
 	public PagedSeamanResponse search(final SeamanParameters parameters) {
-		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
+		final var pageable = Pageables.of(parameters, "id");
 
 		final var page = seamanRepository.findAllByParameters(parameters, pageable);
 
 		return PagedSeamanResponse.create()
 			.withSeamen(SeamanMapper.toSeamanList(page.getContent()))
-			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
+			.withMetaData(Pageables.metaDataOf(page, "id"));
 	}
 
 	public Seaman getById(final Integer id) {

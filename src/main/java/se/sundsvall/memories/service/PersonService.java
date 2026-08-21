@@ -1,14 +1,13 @@
 package se.sundsvall.memories.service;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.api.model.PagedPersonResponse;
 import se.sundsvall.memories.api.model.Person;
 import se.sundsvall.memories.api.model.PersonParameters;
 import se.sundsvall.memories.integration.db.PersonRepository;
 import se.sundsvall.memories.service.mapper.PersonMapper;
+import se.sundsvall.memories.service.util.Pageables;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -24,13 +23,13 @@ public class PersonService {
 	}
 
 	public PagedPersonResponse search(final PersonParameters parameters) {
-		final var pageable = PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), parameters.sort());
+		final var pageable = Pageables.of(parameters, "personId");
 
 		final var page = personRepository.findAllByParameters(parameters, pageable);
 
 		return PagedPersonResponse.create()
 			.withPersons(PersonMapper.toPersonList(page.getContent()))
-			.withMetaData(PagingAndSortingMetaData.create().withPageData(page));
+			.withMetaData(Pageables.metaDataOf(page, "personId"));
 	}
 
 	/**

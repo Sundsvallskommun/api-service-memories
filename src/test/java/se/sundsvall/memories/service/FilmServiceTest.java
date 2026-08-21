@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.FilmParameters;
 import se.sundsvall.memories.integration.db.FilmRepository;
@@ -53,7 +54,7 @@ class FilmServiceTest {
 
 	@Test
 	void searchDelegatesToRepositoryAndMapsThePage() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		final var entity = FilmEntity.create().withId(1).withDocumentTitle("Sundsvall film");
 
 		when(repositoryMock.findAllByParameters(any(FilmParameters.class), eq(pageable)))
@@ -71,7 +72,7 @@ class FilmServiceTest {
 
 	@Test
 	void searchForwardsTheParametersUnchanged() {
-		final var pageable = PageRequest.of(0, 100);
+		final var pageable = PageRequest.of(0, 100, Sort.by("id"));
 		final var parameters = FilmParameters.create();
 
 		when(repositoryMock.findAllByParameters(any(FilmParameters.class), eq(pageable)))
@@ -90,7 +91,7 @@ class FilmServiceTest {
 
 	@Test
 	void searchAppliesRequestedPaging() {
-		final var pageable = PageRequest.of(2, 25);
+		final var pageable = PageRequest.of(2, 25, Sort.by("id"));
 		final var entity = FilmEntity.create().withId(1);
 
 		when(repositoryMock.findAllByParameters(any(FilmParameters.class), eq(pageable)))
