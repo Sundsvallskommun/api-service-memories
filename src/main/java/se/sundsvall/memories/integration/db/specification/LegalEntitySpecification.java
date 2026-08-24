@@ -8,6 +8,7 @@ import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static se.sundsvall.memories.integration.db.model.LegalEntityEntity_.ALTERNATIVE_NAMES;
 import static se.sundsvall.memories.integration.db.model.LegalEntityEntity_.CATEGORY;
+import static se.sundsvall.memories.integration.db.model.LegalEntityEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.LegalEntityEntity_.END_DATE;
 import static se.sundsvall.memories.integration.db.model.LegalEntityEntity_.LEGAL_ENTITY_ID;
 import static se.sundsvall.memories.integration.db.model.LegalEntityEntity_.LOCATION_TEXT;
@@ -40,6 +41,14 @@ public interface LegalEntitySpecification {
 
 	static Specification<LegalEntityEntity> published() {
 		return BUILDER.buildPublishedFilter(OPTIONS);
+	}
+
+	/**
+	 * Deletion sets {@code DELETEDDATE} but leaves the published bit set, so {@link #published()} alone does not hide
+	 * the row — the same reason the object searches filter on it.
+	 */
+	static Specification<LegalEntityEntity> notDeleted() {
+		return BUILDER.buildIsNullFilter(DELETED_DATE);
 	}
 
 	static Specification<LegalEntityEntity> notPlaceholder() {

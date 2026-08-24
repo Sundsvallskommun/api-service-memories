@@ -1,6 +1,9 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 
 @Schema(description = "Text search parameters")
 public class TextParameters extends AbstractSearchParameters {
@@ -61,5 +64,23 @@ public class TextParameters extends AbstractSearchParameters {
 	public TextParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
+	}
+
+	/**
+	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of the entity rather than a
+	 * column of the table. Restricting the accepted values here turns an unresolvable property into a
+	 * {@code 400 Constraint Violation} that names the alternatives, instead of the {@code 500} it would otherwise
+	 * cause once it reached Spring Data.
+	 */
+	private static final String SORTABLE_PROPERTIES = "documentTitle|documentDate|id";
+
+	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: documentTitle, documentDate, id";
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "documentTitle", allowableValues = {
+		"documentTitle", "documentDate", "id"
+	}))
+	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
 	}
 }

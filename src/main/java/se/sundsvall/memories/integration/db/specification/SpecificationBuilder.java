@@ -4,10 +4,13 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,6 +22,12 @@ public class SpecificationBuilder<T> {
 	private static final int PUBLISHED_BIT = 4;
 
 	private static final int YEAR_LENGTH = 4;
+
+	private static final int RELEVANCE_EXACT_NAME = 0;
+	private static final int RELEVANCE_NAME_PREFIX = 1;
+	private static final int RELEVANCE_ALL_WORDS_IN_NAME = 2;
+	private static final int RELEVANCE_ANY_WORD_IN_NAME = 3;
+	private static final int RELEVANCE_BODY_ONLY = 4;
 
 	private static final Pattern LIKE_WILDCARDS = Pattern.compile("([!%_])");
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
@@ -55,6 +64,20 @@ public class SpecificationBuilder<T> {
 		}
 		final var lowerCased = value.trim().toLowerCase();
 		return (root, _, cb) -> cb.equal(cb.lower(root.get(attribute)), lowerCased);
+	}
+
+	/**
+	 * Matches rows whose attribute is one of the values. The values are alternatives rather than further restrictions,
+	 * which is what a multi-select filter needs: two of them selected together widens the result, it does not empty it.
+	 * Blank values are dropped rather than compared against the empty string, so a parameter sent without a value is
+	 * the same "no filter" every other builder gives a blank one, and so is an empty list.
+	 */
+	public Specification<T> buildInFilter(final String attribute, final List<String> values) {
+		final var wanted = distinctNonBlank(values);
+		if (wanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, _) -> root.get(attribute).in(wanted);
 	}
 
 	/**
@@ -300,6 +323,59 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Orders the query without restricting it, the mirror of {@link #buildFetchJoin(String)}. Ordering from a
+	 * specification rather than from the {@code Pageable} is what lets an order be something other than a column —
+	 * relevance is computed per request, and no column holds it — but it only survives while the {@code Pageable}
+	 * carries no sort: Spring Data JPA 4.1 replaces the whole order list as soon as it does, and appends nothing of its
+	 * own. The caller therefore has to own the entire ordering, the caller's own sort keys included.
+	 *
+	 * <p>
+	 * The orders are skipped for the count query Spring Data derives from the same specification, where they are both
+	 * meaningless and cleared immediately afterwards.
+	 */
+	public Specification<T> buildOrderBy(final BiFunction<Root<T>, CriteriaBuilder, List<Order>> orders) {
+		return (root, query, cb) -> {
+			if (query != null && !Long.class.equals(query.getResultType())) {
+				query.orderBy(orders.apply(root, cb));
+			}
+			return cb.conjunction();
+		};
+	}
+
+	/**
+	 * How well the attribute matches the query, as a number that is smaller the better the match: the whole query is
+	 * the attribute (0), the attribute starts with it (1), every word occurs in it (2), some word does (3), or none
+	 * does (4) — the row matched through some other column, a comment or a body text, and is the kind of hit that used
+	 * to bury a person or a company under everything that merely mentioned them. Ordering ascending therefore puts a
+	 * name or a title hit first.
+	 *
+	 * <p>
+	 * The comparison is deliberately the same {@code LIKE} the filters use, with wildcards escaped the same way, so
+	 * that a row can never be ranked by one rule and matched by another.
+	 */
+	public Expression<Integer> relevance(final Root<T> root, final CriteriaBuilder cb, final String attribute, final String query) {
+		final var words = splitWords(query);
+		final var value = query.trim().toLowerCase();
+		final var name = cb.lower(root.<String>get(attribute));
+
+		return cb.<Integer>selectCase()
+			.when(cb.equal(name, value), RELEVANCE_EXACT_NAME)
+			.when(cb.like(name, escapeWildcards(value) + "%", LIKE_ESCAPE), RELEVANCE_NAME_PREFIX)
+			.when(cb.and(matchesWords(name, cb, words)), RELEVANCE_ALL_WORDS_IN_NAME)
+			.when(cb.or(matchesWords(name, cb, words)), RELEVANCE_ANY_WORD_IN_NAME)
+			.otherwise(RELEVANCE_BODY_ONLY);
+	}
+
+	/**
+	 * One {@code LIKE} per word, for the caller to combine with {@code and} or with {@code or}.
+	 */
+	private Predicate[] matchesWords(final Expression<String> name, final CriteriaBuilder cb, final List<String> words) {
+		return words.stream()
+			.map(word -> cb.like(name, "%" + escapeWildcards(word.toLowerCase()) + "%", LIKE_ESCAPE))
+			.toArray(Predicate[]::new);
+	}
+
+	/**
 	 * A number that carries no information: the legacy schema leaves an unknown year as {@code NULL} in some rows and as
 	 * {@code 0} in others, and neither bounds a period.
 	 */
@@ -357,6 +433,18 @@ public class SpecificationBuilder<T> {
 		return cb.or(attributes.stream()
 			.map(attribute -> cb.like(root.<String>get(attribute), pattern, LIKE_ESCAPE))
 			.toArray(Predicate[]::new));
+	}
+
+	private static List<String> distinctNonBlank(final List<String> values) {
+		if (values == null) {
+			return List.of();
+		}
+		return values.stream()
+			.filter(Objects::nonNull)
+			.map(String::trim)
+			.filter(value -> !value.isEmpty())
+			.distinct()
+			.toList();
 	}
 
 	private static List<String> splitWords(final String query) {

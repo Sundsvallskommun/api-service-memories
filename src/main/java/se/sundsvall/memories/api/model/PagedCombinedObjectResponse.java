@@ -16,7 +16,8 @@ public class PagedCombinedObjectResponse {
 	@ArraySchema(schema = @Schema(implementation = CombinedObject.class, accessMode = READ_ONLY))
 	private List<CombinedObject> objects;
 
-	@Schema(description = "Total number of matching objects per type (for chip counters), independent of the current page", accessMode = READ_ONLY, examples = "{\"Foto\":12,\"Text\":3}")
+	@Schema(description = "Total number of matching objects per type (for chip counters), independent of the current page and of the objectType filter — "
+		+ "every other filter applies, so a chip keeps saying how many objects selecting that type would return", accessMode = READ_ONLY, examples = "{\"Foto\":12,\"Text\":3}")
 	private Map<String, Long> typeCounts;
 
 	@JsonProperty("_meta")

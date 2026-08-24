@@ -6,6 +6,7 @@ import se.sundsvall.memories.integration.db.model.PersonEntity;
 
 import static se.sundsvall.memories.integration.db.model.PersonEntity_.BIRTH_DATE;
 import static se.sundsvall.memories.integration.db.model.PersonEntity_.BIRTH_PARISH;
+import static se.sundsvall.memories.integration.db.model.PersonEntity_.DELETED_DATE;
 import static se.sundsvall.memories.integration.db.model.PersonEntity_.FIRST_NAME;
 import static se.sundsvall.memories.integration.db.model.PersonEntity_.GENDER;
 import static se.sundsvall.memories.integration.db.model.PersonEntity_.LAST_NAME;
@@ -27,6 +28,14 @@ public interface PersonSpecification {
 
 	static Specification<PersonEntity> published() {
 		return BUILDER.buildPublishedFilter(OPTIONS);
+	}
+
+	/**
+	 * Deletion sets {@code DELETEDDATE} but leaves the published bit set, so {@link #published()} alone does not hide
+	 * the row — the same reason the object searches filter on it.
+	 */
+	static Specification<PersonEntity> notDeleted() {
+		return BUILDER.buildIsNullFilter(DELETED_DATE);
 	}
 
 	static Specification<PersonEntity> notPlaceholder() {

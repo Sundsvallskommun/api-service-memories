@@ -162,4 +162,148 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * A known person's name puts the person first. Photo 1005 mentions the same name in its comment and comes last:
+	 * before the ranking existed the two were indistinguishable, and a name that occurred in many comments buried the
+	 * one record that actually carried it. Seaman 1 is the same person in the seamen's register and ranks between them,
+	 * on the strength of its name rather than its comment.
+	 */
+	@Test
+	void test12_searchObjectsRanksTheNamedPersonFirst() {
+		setupCall()
+			.withServicePath(PATH + "?query=Anton Nordin")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * A company name matches the legal entity record. Legal entity 10 is registered as "Nödhjälpskommittén 1888-1889"
+	 * and known as "Nödhjälpskommittén", which is an alternative name the view now ranks on — the photo that merely
+	 * credits the company in its comment follows it.
+	 */
+	@Test
+	void test13_searchObjectsMatchesLegalEntityByCompanyName() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nödhjälpskommittén")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * A document title matches the document that carries it, ahead of the one that only mentions it.
+	 */
+	@Test
+	void test14_searchObjectsMatchesTheDocumentTitle() {
+		setupCall()
+			.withServicePath(PATH + "?query=Stadsvy")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Every word has to occur, but not as a phrase and not in the same column: the seaman register stores this name
+	 * across a first name and a second surname, and the whole-string match this replaces found nothing at all for it.
+	 */
+	@Test
+	void test15_searchObjectsMatchesASecondSurname() {
+		setupCall()
+			.withServicePath(PATH + "?query=Erik Nordin")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Relevance is also a sort the caller can ask for by name, so a client that has sorted by something else can get
+	 * back to it — and asking for it explicitly is reported back under {@code _meta.sortBy}, unlike the default.
+	 */
+	@Test
+	void test16_searchObjectsSortedByRelevance() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&sortBy=relevance")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Deletion sets DELETEDDATE but leaves the published bit set. The view checked only the bit, so every soft-deleted
+	 * row — a film, a photo, an audio, a text and a publication in this data — stayed findable here long after the
+	 * per-type searches had stopped returning them.
+	 */
+	@Test
+	void test17_searchObjectsExcludesSoftDeletedRows() {
+		setupCall()
+			.withServicePath(PATH + "?query=raderad")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * The type selection narrows the list to the chosen types, and deliberately leaves the counters alone: the chips
+	 * still count Foto and Person, so the client that rendered them can tell the user what selecting those would give
+	 * and can offer a way back. Every other filter — here the query — still narrows both.
+	 */
+	@Test
+	void test18_searchObjectsFilteredByObjectType() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&objectType=Sjöman&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Several types are alternatives rather than further restrictions, which is the whole point of filtering here
+	 * rather than calling one per-type endpoint per chip and merging the pages in a client: the result is one list,
+	 * sorted and paged across every selected type at once.
+	 */
+	@Test
+	void test19_searchObjectsFilteredBySeveralObjectTypes() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&objectType=Person,Sjöman&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * The set of types is the archive's rather than this API's — FOTO carries its own OBJTYP — so an unknown one is
+	 * not a rejected request but an empty result, with the counters left to say which types there were.
+	 */
+	@Test
+	void test20_searchObjectsFilteredByUnknownObjectType() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&objectType=Karta")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// ---------------------------------------------------------------------------------------------------------------
+	// Searches from the business
+	//
+	// Tests 12 to 14 cover the three acceptance criteria with names taken from this suite's own test data — a person,
+	// a company and a document title that happen to exist here. They prove the ranking works; they do not prove it
+	// works on the searches people actually make.
+	//
+	// The remaining acceptance criterion is that the test cases are verified against the business's examples. Add one
+	// test per example below, with the search term Lena and Niklas give and the record they expect at the top, and add
+	// the matching rows to testdata-it.sql. A real example that ranks the wrong record first is the finding this whole
+	// story exists to surface, so it belongs here as a failing test rather than in a comment.
+	// ---------------------------------------------------------------------------------------------------------------
 }

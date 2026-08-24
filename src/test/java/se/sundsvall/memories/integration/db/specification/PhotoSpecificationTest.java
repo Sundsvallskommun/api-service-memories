@@ -263,15 +263,30 @@ class PhotoSpecificationTest {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Föremål");
 
-		assertThat(findIds(PhotoSpecification.hasObjectType("Föremål"))).containsExactly(2);
+		assertThat(findIds(PhotoSpecification.hasObjectType(List.of("Föremål")))).containsExactly(2);
+	}
+
+	/**
+	 * Several types are alternatives rather than further restrictions, so selecting both widens the result instead of
+	 * emptying it — the same rule the combined /objects search applies.
+	 */
+	@Test
+	void hasObjectTypeAcceptsSeveralTypesAsAlternatives() {
+		persist(1, 4, "a", null, "Foto");
+		persist(2, 4, "b", null, "Föremål");
+		persist(3, 4, "c", null, "Karta");
+
+		assertThat(findIds(PhotoSpecification.hasObjectType(List.of("Foto", "Föremål")))).containsExactly(1, 2);
 	}
 
 	@Test
-	void hasObjectTypeIsUnrestrictedWhenNull() {
+	void hasObjectTypeIsUnrestrictedWhenNullEmptyOrBlank() {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Föremål");
 
 		assertThat(findIds(PhotoSpecification.hasObjectType(null))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.hasObjectType(List.of()))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.hasObjectType(List.of(" ")))).containsExactly(1, 2);
 	}
 
 	@Test
@@ -419,10 +434,12 @@ class PhotoSpecificationTest {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Föremål");
 
-		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType("Föremål"), Pageable.unpaged())
+		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType(List.of("Föremål")), Pageable.unpaged())
 			.getContent()).extracting(PhotoEntity::getId).containsExactly(2);
+		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType(List.of("Foto", "Föremål")), Pageable.unpaged())
+			.getContent()).extracting(PhotoEntity::getId).containsExactlyInAnyOrder(1, 2);
 		// A blank object type means "no filter", so the request parameter can be passed through untrimmed.
-		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType("   "), Pageable.unpaged())
+		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType(List.of("   ")), Pageable.unpaged())
 			.getContent()).extracting(PhotoEntity::getId).containsExactlyInAnyOrder(1, 2);
 	}
 
@@ -447,7 +464,7 @@ class PhotoSpecificationTest {
 		final var specification = Specification.allOf(
 			PhotoSpecification.published(),
 			PhotoSpecification.matches("hamnen"),
-			PhotoSpecification.hasObjectType("Foto"));
+			PhotoSpecification.hasObjectType(List.of("Foto")));
 
 		assertThat(findIds(specification)).containsExactly(1);
 	}

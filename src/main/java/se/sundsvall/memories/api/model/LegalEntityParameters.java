@@ -1,6 +1,9 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
@@ -100,6 +103,24 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 	public LegalEntityParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
+	}
+
+	/**
+	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of the entity rather than a
+	 * column of the table. Restricting the accepted values here turns an unresolvable property into a
+	 * {@code 400 Constraint Violation} that names the alternatives, instead of the {@code 500} it would otherwise
+	 * cause once it reached Spring Data.
+	 */
+	private static final String SORTABLE_PROPERTIES = "name|startDate|endDate|legalEntityId";
+
+	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: name, startDate, endDate, legalEntityId";
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "name", allowableValues = {
+		"name", "startDate", "endDate", "legalEntityId"
+	}))
+	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
 	}
 
 	@Override

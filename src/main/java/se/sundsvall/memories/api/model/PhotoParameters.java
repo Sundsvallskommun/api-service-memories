@@ -1,13 +1,24 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import java.util.Objects;
 
 @Schema(description = "Photo search parameters")
 public class PhotoParameters extends AbstractSearchParameters {
 
-	@Schema(description = "Filter by object type. Use 'Foto' for photographs or 'Föremål' for physical objects. Omit to return both.", examples = "Foto")
-	private String objectType;
+	/**
+	 * The selection is deliberately not validated against a fixed list of types: FOTO carries its own {@code OBJTYP},
+	 * so the set of values is the archive's rather than this API's. An unrecognised value therefore matches nothing
+	 * rather than failing the request. The combined {@code /objects} search takes the same parameter, spelled the same
+	 * way, so a client can move a chip row between the two.
+	 */
+	@ArraySchema(schema = @Schema(description = "Object type to include: 'Foto' for photographs or 'Föremål' for physical objects. "
+		+ "Repeat the parameter, or comma-separate the values, to select several — they are alternatives, so Foto and Föremål "
+		+ "together means either. Omit to return both.", examples = "Foto"))
+	private List<String> objectType;
 
 	public static PhotoParameters create() {
 		return new PhotoParameters();
@@ -24,15 +35,15 @@ public class PhotoParameters extends AbstractSearchParameters {
 		return this;
 	}
 
-	public String getObjectType() {
+	public List<String> getObjectType() {
 		return objectType;
 	}
 
-	public void setObjectType(final String objectType) {
+	public void setObjectType(final List<String> objectType) {
 		this.objectType = objectType;
 	}
 
-	public PhotoParameters withObjectType(final String objectType) {
+	public PhotoParameters withObjectType(final List<String> objectType) {
 		this.objectType = objectType;
 		return this;
 	}
@@ -80,6 +91,24 @@ public class PhotoParameters extends AbstractSearchParameters {
 		return this;
 	}
 
+	/**
+	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of the entity rather than a
+	 * column of the table. Restricting the accepted values here turns an unresolvable property into a
+	 * {@code 400 Constraint Violation} that names the alternatives, instead of the {@code 500} it would otherwise
+	 * cause once it reached Spring Data.
+	 */
+	private static final String SORTABLE_PROPERTIES = "documentTitle|earliest|latest|objectType|id";
+
+	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: documentTitle, earliest, latest, objectType, id";
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "documentTitle", allowableValues = {
+		"documentTitle", "earliest", "latest", "objectType", "id"
+	}))
+	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (!super.equals(o))
@@ -97,7 +126,7 @@ public class PhotoParameters extends AbstractSearchParameters {
 	public String toString() {
 		return "PhotoParameters{" +
 			"query='" + query + '\'' +
-			", objectType='" + objectType + '\'' +
+			", objectType=" + objectType +
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
 			", location='" + location + '\'' +

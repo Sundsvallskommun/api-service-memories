@@ -82,7 +82,7 @@ class PhotoServiceTest {
 		when(photoRepositoryMock.findAllByParameters(any(PhotoParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity()), pageable, 1));
 
-		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall").withObjectType("Foto"));
+		final var result = service.search(PhotoParameters.create().withQuery("Sundsvall").withObjectType(List.of("Foto")));
 
 		assertThat(result.getPhotos()).hasSize(1);
 		assertThat(result.getPhotos().getFirst().getDocumentTitle()).isEqualTo("Stadsvy");

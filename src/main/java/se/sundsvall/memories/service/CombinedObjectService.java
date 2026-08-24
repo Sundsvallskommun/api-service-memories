@@ -6,12 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.api.model.PagedCombinedObjectResponse;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
-import se.sundsvall.memories.integration.db.CombinedObjectRepository.TypeCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.service.mapper.CombinedObjectMapper;
 import se.sundsvall.memories.service.util.Pageables;
 
 import static java.util.stream.Collectors.toMap;
-import static se.sundsvall.memories.service.util.StringUtil.trimToNull;
 
 @Service
 public class CombinedObjectService {
@@ -24,25 +23,20 @@ public class CombinedObjectService {
 
 	@Transactional(readOnly = true)
 	public PagedCombinedObjectResponse search(final CombinedObjectParameters parameters) {
-		final var pageable = Pageables.of(parameters, "objectKey");
+		// This search orders itself, so unlike the others it gets an unordered page request: relevance is computed per
+		// request and is not a column, and Spring Data would replace the specification's order with the page request's
+		// the moment it had one. The id tiebreaker the other searches get from Pageables is appended by the
+		// specification instead.
+		final var pageable = Pageables.unordered(parameters);
 
 		final var page = combinedObjectRepository.findAllByParameters(parameters, pageable);
 
-		// The search trims through its specifications; the counters are a native query, so they have to be handed
-		// trimmed values to filter on the same rows.
-		final var typeCounts = combinedObjectRepository.countByType(
-			trimToNull(parameters.getQuery()),
-			parameters.getYearFrom(),
-			parameters.getYearTo(),
-			trimToNull(parameters.getLocation()),
-			trimToNull(parameters.getCreator()),
-			parameters.getCreatorPersonId(),
-			parameters.getCreatorLegalEntityId()).stream()
-			.collect(toMap(TypeCount::getObjectType, TypeCount::getTotal, (first, _) -> first, LinkedHashMap::new));
+		final var typeCounts = combinedObjectRepository.countByType(parameters).stream()
+			.collect(toMap(TypeCount::objectType, TypeCount::total, (first, _) -> first, LinkedHashMap::new));
 
 		return PagedCombinedObjectResponse.create()
 			.withObjects(CombinedObjectMapper.toCombinedObjectList(page.getContent()))
 			.withTypeCounts(typeCounts)
-			.withMetaData(Pageables.metaDataOf(page, "objectKey"));
+			.withMetaData(Pageables.metaDataOf(page, parameters));
 	}
 }

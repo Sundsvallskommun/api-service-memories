@@ -224,6 +224,14 @@ VALUES (1, 1001, 1),
 INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, OBJTYP, `OPTIONS`)
 VALUES (1004, 'Odaterad bild', 'Bild utan känt datum', 'okänt', 'Foto', 6);
 
+-- A photo that mentions a person, a legal entity and another photo's title in its comment, and none of them in its
+-- own title. It is the competitor the ranking tests need: every one of those searches matches this row too, and it
+-- must come back below the record that actually carries the name — which is exactly what the combined search used to
+-- get wrong, since a comment match and a name match were indistinguishable to it.
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, OBJTYP, `OPTIONS`)
+VALUES (1005, 'Handelsbod vid Storgatan', 'Fotografi av Anton Nordin, skänkt av Nödhjälpskommittén. Stadsvy i bakgrunden.',
+        '1890', 'Foto', 4);
+
 --
 -- PERSON (personsök)
 -- id 1 & 2 published ((OPTIONS & 4) = 4); id 3 unpublished (bit 4 not set); id 0 placeholder ("ingen person")

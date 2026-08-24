@@ -1,5 +1,6 @@
 package se.sundsvall.memories.api.model;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
@@ -30,6 +31,7 @@ class CombinedObjectParametersTest {
 			.withYearFrom(1900)
 			.withYearTo(1950)
 			.withLocation("Sundsvall")
+			.withObjectType(List.of("Foto", "Ljud"))
 			.withPage(2)
 			.withLimit(50);
 
@@ -37,6 +39,7 @@ class CombinedObjectParametersTest {
 		assertThat(result.getYearFrom()).isEqualTo(1900);
 		assertThat(result.getYearTo()).isEqualTo(1950);
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
+		assertThat(result.getObjectType()).containsExactly("Foto", "Ljud");
 		assertThat(result.getPage()).isEqualTo(2);
 		assertThat(result.getLimit()).isEqualTo(50);
 	}
@@ -49,6 +52,7 @@ class CombinedObjectParametersTest {
 		assertThat(result.getYearFrom()).isNull();
 		assertThat(result.getYearTo()).isNull();
 		assertThat(result.getLocation()).isNull();
+		assertThat(result.getObjectType()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
 	}

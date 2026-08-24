@@ -43,7 +43,8 @@ class CombinedObjectResource {
 	}
 
 	@GetMapping(produces = APPLICATION_JSON_VALUE)
-	@Operation(summary = "Search objects", description = "Search across all object types (Foto, Föremål, Film, Ljud, Text, Publikation) and registers (Person, Juridisk person, Sjöman) in one call, with global sorting, pagination and per-type counts.")
+	@Operation(summary = "Search objects",
+		description = "Search across all object types (Foto, Föremål, Film, Ljud, Text, Publikation) and registers (Person, Juridisk person, Sjöman) in one call, with global sorting, pagination and per-type counts. Pass objectType to restrict the search to a selection of types; the counts keep covering every type, so the chips stay selectable.")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
 	ResponseEntity<PagedCombinedObjectResponse> searchObjects(
 		@PathVariable @ValidMunicipalityId final String municipalityId,

@@ -7,7 +7,6 @@ import se.sundsvall.memories.integration.db.model.PersonEntity_;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
-import static java.util.Optional.ofNullable;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.CREATOR_LEGAL_ENTITY;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.CREATOR_PERSON;
@@ -48,9 +47,12 @@ public interface PhotoSpecification {
 		return BUILDER.buildEqualFilter(ID, id);
 	}
 
-	// A blank object type means "no filter", so the request parameter can be passed through untrimmed.
-	static Specification<PhotoEntity> hasObjectType(final String objectType) {
-		return BUILDER.buildEqualFilter(OBJECT_TYPE, trimToNull(objectType));
+	/**
+	 * The selected object types, which are alternatives: Foto and Föremål together means either. A blank or empty
+	 * selection means "no filter", so the request parameter can be passed through untrimmed.
+	 */
+	static Specification<PhotoEntity> hasObjectType(final List<String> objectTypes) {
+		return BUILDER.buildInFilter(OBJECT_TYPE, objectTypes);
 	}
 
 	static Specification<PhotoEntity> matches(final String query) {
@@ -105,12 +107,5 @@ public interface PhotoSpecification {
 
 	static Specification<PhotoEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
-	}
-
-	private static String trimToNull(final String value) {
-		return ofNullable(value)
-			.map(String::trim)
-			.filter(trimmed -> !trimmed.isEmpty())
-			.orElse(null);
 	}
 }

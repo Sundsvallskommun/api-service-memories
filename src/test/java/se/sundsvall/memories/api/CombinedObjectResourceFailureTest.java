@@ -75,7 +75,31 @@ class CombinedObjectResourceFailureTest {
 		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
 		assertThat(response.getViolations())
 			.extracting(Violation::message)
-			.containsExactly("must be one of: objectKey, title, year, objectType");
+			.containsExactly("must be one of: relevance, objectKey, title, year, objectType");
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	/**
+	 * The whitelist is a whitelist, not a spelling check: {@code nameText} is a real attribute of the entity — it is the
+	 * one relevance ranks on — and is still rejected, because it is not a sort the endpoint offers.
+	 */
+	@Test
+	void searchObjectsWithAnUnofferedEntityAttributeAsSortBy() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("sortBy", "nameText")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getViolations())
+			.extracting(Violation::message)
+			.containsExactly("must be one of: relevance, objectKey, title, year, objectType");
 
 		verifyNoInteractions(serviceMock);
 	}

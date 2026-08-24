@@ -1,12 +1,15 @@
 package se.sundsvall.memories.service.util;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
+
+import static java.util.function.Predicate.not;
 
 /**
  * Builds the {@link Pageable} for a paged search.
@@ -48,6 +51,42 @@ public final class Pageables {
 		final var order = requested.isSorted() ? requested : fallback;
 
 		return PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), order.and(Sort.by(idAttribute)));
+	}
+
+	/**
+	 * An unordered page request, for the one search that orders itself: the combined object search ranks by relevance,
+	 * which is computed per request and is not a column, so its order has to come from its specification — and Spring
+	 * Data replaces a specification's order the moment the page request carries one. That search appends the same id
+	 * tiebreaker itself; see
+	 * {@link se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification#orderedBy(String, Sort)}.
+	 *
+	 * @param  parameters the paging and sorting parameters of the request
+	 * @return            the page request to hand to the repository
+	 */
+	public static Pageable unordered(final AbstractParameterPagingAndSortingBase parameters) {
+		return PageRequest.of(parameters.getPage() - 1, parameters.getLimit());
+	}
+
+	/**
+	 * The paging metadata for a page from {@link #unordered(AbstractParameterPagingAndSortingBase)}, which carries no
+	 * sort of its own to read the order back from. It reports what the caller asked for and nothing more: an order the
+	 * endpoint applied on its own — relevance, or the id tiebreaker — is not something the caller requested, and a
+	 * response saying otherwise would send a client off looking for a sort it never asked for.
+	 *
+	 * @param  page       the page returned by the repository
+	 * @param  parameters the paging and sorting parameters of the request
+	 * @return            the metadata to put under {@code _meta}
+	 */
+	public static PagingAndSortingMetaData metaDataOf(final Page<?> page, final AbstractParameterPagingAndSortingBase parameters) {
+		final var reported = Optional.ofNullable(parameters.getSortBy())
+			.filter(not(List::isEmpty));
+
+		return PagingAndSortingMetaData.create()
+			.withPageData(page)
+			.withSortBy(reported.orElse(null))
+			.withSortDirection(reported
+				.flatMap(_ -> parameters.sort().stream().findFirst().map(Sort.Order::getDirection))
+				.orElse(null));
 	}
 
 	/**

@@ -34,6 +34,15 @@ public class CombinedObjectEntity {
 	private String title;
 
 	/**
+	 * The title, or the composed full name for the registers, as the view assembles it — everything a user is likely to
+	 * have typed the query from, and nothing else. It is the column the relevance ordering reads, so that a hit here
+	 * outranks one that only occurred in {@link #searchText}. It carries the name columns {@link #title} leaves out
+	 * because they are not part of a display name: a legal entity's alternative name and a seaman's second surname.
+	 */
+	@Column(name = "NAME_TEXT")
+	private String nameText;
+
+	/**
 	 * Title and comment concatenated by the view, and the only column the free-text filter reads. It is mapped rather
 	 * than left to a native query so the filter can be a specification, which means it is also selected with every row:
 	 * a comment can be several kilobytes, so this is the one column worth revisiting if the endpoint ever shows up in
@@ -117,6 +126,19 @@ public class CombinedObjectEntity {
 
 	public CombinedObjectEntity withTitle(final String title) {
 		this.title = title;
+		return this;
+	}
+
+	public String getNameText() {
+		return nameText;
+	}
+
+	public void setNameText(final String nameText) {
+		this.nameText = nameText;
+	}
+
+	public CombinedObjectEntity withNameText(final String nameText) {
+		this.nameText = nameText;
 		return this;
 	}
 
@@ -204,13 +226,13 @@ public class CombinedObjectEntity {
 			return false;
 		final CombinedObjectEntity that = (CombinedObjectEntity) o;
 		return Objects.equals(objectKey, that.objectKey) && Objects.equals(sourceId, that.sourceId) && Objects.equals(objectType, that.objectType)
-			&& Objects.equals(title, that.title) && Objects.equals(searchText, that.searchText) && Objects.equals(year, that.year)
+			&& Objects.equals(title, that.title) && Objects.equals(nameText, that.nameText) && Objects.equals(searchText, that.searchText) && Objects.equals(year, that.year)
 			&& Objects.equals(locationText, that.locationText);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(objectKey, sourceId, objectType, title, searchText, year, locationText);
+		return Objects.hash(objectKey, sourceId, objectType, title, nameText, searchText, year, locationText);
 	}
 
 	@Override
@@ -220,6 +242,7 @@ public class CombinedObjectEntity {
 			", sourceId=" + sourceId +
 			", objectType='" + objectType + '\'' +
 			", title='" + title + '\'' +
+			", nameText='" + nameText + '\'' +
 			", searchText='" + searchText + '\'' +
 			", year=" + year +
 			", locationText='" + locationText + '\'' +

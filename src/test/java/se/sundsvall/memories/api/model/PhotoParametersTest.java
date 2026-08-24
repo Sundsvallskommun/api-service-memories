@@ -1,5 +1,6 @@
 package se.sundsvall.memories.api.model;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
@@ -27,7 +28,7 @@ class PhotoParametersTest {
 	void testBuilderMethods() {
 		final var result = PhotoParameters.create()
 			.withQuery("Sundsvall")
-			.withObjectType("Foto")
+			.withObjectType(List.of("Foto", "Föremål"))
 			.withYearFrom(1900)
 			.withYearTo(1950)
 			.withLocation("Sundsvall")
@@ -35,7 +36,7 @@ class PhotoParametersTest {
 			.withLimit(50);
 
 		assertThat(result.getQuery()).isEqualTo("Sundsvall");
-		assertThat(result.getObjectType()).isEqualTo("Foto");
+		assertThat(result.getObjectType()).containsExactly("Foto", "Föremål");
 		assertThat(result.getYearFrom()).isEqualTo(1900);
 		assertThat(result.getYearTo()).isEqualTo(1950);
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");

@@ -1,0 +1,15 @@
+{
+	"_meta": {
+		"count": 0,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 0,
+		"totalRecords": 0
+	},
+	"typeCounts": {
+		"Foto": 1,
+		"Person": 1,
+		"Sjöman": 2
+	},
+	"objects": []
+}

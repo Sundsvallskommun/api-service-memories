@@ -2,8 +2,8 @@
 	"_meta": {
 		"page": 1,
 		"limit": 100,
-		"count": 4,
-		"totalRecords": 4,
+		"count": 5,
+		"totalRecords": 5,
 		"totalPages": 1
 	},
 	"photos": [
@@ -54,6 +54,14 @@
 			"documentTitle": "Odaterad bild",
 			"comment": "Bild utan känt datum",
 			"earliest": "okänt",
+			"objectType": "Foto",
+			"location": "Sundsvall"
+		},
+		{
+			"photoId": 1005,
+			"documentTitle": "Handelsbod vid Storgatan",
+			"comment": "Fotografi av Anton Nordin, skänkt av Nödhjälpskommittén. Stadsvy i bakgrunden.",
+			"earliest": "1890",
 			"objectType": "Foto",
 			"location": "Sundsvall"
 		}

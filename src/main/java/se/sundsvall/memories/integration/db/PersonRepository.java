@@ -16,6 +16,7 @@ import static se.sundsvall.memories.integration.db.specification.PersonSpecifica
 import static se.sundsvall.memories.integration.db.specification.PersonSpecification.hasGender;
 import static se.sundsvall.memories.integration.db.specification.PersonSpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.PersonSpecification.hasLastName;
+import static se.sundsvall.memories.integration.db.specification.PersonSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.PersonSpecification.notPlaceholder;
 import static se.sundsvall.memories.integration.db.specification.PersonSpecification.published;
 
@@ -24,6 +25,7 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer>, 
 
 	default Page<PersonEntity> findAllByParameters(final PersonParameters parameters, final Pageable pageable) {
 		return findAll(published()
+			.and(notDeleted())
 			.and(notPlaceholder())
 			.and(hasLastName(parameters.getLastName()))
 			.and(hasFirstName(parameters.getFirstName()))
@@ -36,6 +38,7 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer>, 
 
 	default Optional<PersonEntity> findVisibleById(final Integer id) {
 		return findOne(hasId(id)
+			.and(notDeleted())
 			.and(notPlaceholder()));
 	}
 }
