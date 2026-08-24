@@ -2,6 +2,7 @@ package se.sundsvall.memories.integration.db.specification;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import se.sundsvall.memories.integration.db.model.CategoryEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -106,6 +108,23 @@ class LegalEntitySpecificationTest {
 
 		assertThat(findIds(LegalEntitySpecification.published())).containsExactly(1, 2);
 		assertThat(findIds(LegalEntitySpecification.notPlaceholder())).containsExactly(2);
+	}
+
+	/**
+	 * Deletion sets {@code DELETEDDATE} but leaves the published bit set, so the published filter alone keeps the row —
+	 * which is what let a deleted legal entity stay findable through both the search and get-by-id.
+	 */
+	@Test
+	void notDeletedExcludesTheSoftDeletedRowThePublishedFilterKeeps() {
+		persist(2, PUBLISHED, "Berg AB");
+		persist(3, PUBLISHED, "Berg AB raderad").setDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		legalEntityRepository.flush();
+
+		assertThat(findIds(LegalEntitySpecification.published())).containsExactly(2, 3);
+		assertThat(findIds(LegalEntitySpecification.notDeleted())).containsExactly(2);
+		assertThat(legalEntityRepository.findAllByParameters(LegalEntityParameters.create(), Pageable.unpaged()).getContent())
+			.extracting(LegalEntityEntity::getLegalEntityId).containsExactly(2);
+		assertThat(legalEntityRepository.findVisibleById(3)).isEmpty();
 	}
 
 	@Test

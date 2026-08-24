@@ -6,27 +6,11 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
-import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 
 @Schema(description = "Combined object search parameters (across all object and register types). All filters are optional "
 	+ "and combined with AND, except that several values of objectType are alternatives. Sort on one of: relevance, objectKey, "
 	+ "title, year or objectType. Defaults to relevance when a query is given.")
 public class CombinedObjectParameters extends AbstractParameterPagingAndSortingBase {
-
-	/**
-	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of {@link CombinedObjectEntity}
-	 * rather than a column of the view. Restricting the accepted values here turns an unresolvable property into a
-	 * {@code 400 Constraint Violation} that names the alternatives, instead of the {@code 500} it would otherwise
-	 * cause.
-	 *
-	 * <p>
-	 * {@code relevance} is the exception that proves the rule: it is deliberately not an attribute of anything, and is
-	 * translated into a computed expression by the specification. The whitelist is what keeps the two kinds apart —
-	 * an entity attribute that is not offered here, such as the text relevance itself ranks on, is rejected too.
-	 */
-	private static final String SORTABLE_PROPERTIES = "relevance|objectKey|title|year|objectType";
-
-	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: relevance, objectKey, title, year, objectType";
 
 	@Schema(description = "Free text search (case-insensitive). Every word must occur somewhere in the title and comment, and for the register "
 		+ "types also in names, parishes and other identifying fields, in any order. Results are ranked with title and name matches above matches "
@@ -158,6 +142,13 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		this.creatorLegalEntityId = creatorLegalEntityId;
 	}
 
+	/**
+	 * {@code relevance} is the exception among the accepted values: it is deliberately not an attribute of anything —
+	 * nothing stores it, the specification computes it per request — while every other value is an attribute of
+	 * {@link se.sundsvall.memories.integration.db.model.CombinedObjectEntity}. The whitelist is what keeps the two
+	 * kinds apart, and an entity attribute it does not offer, such as the text the ranking itself reads, is rejected
+	 * too.
+	 */
 	@Override
 	@ArraySchema(schema = @Schema(description = "Property to sort on. 'relevance' ranks the best match first and is the default when a query is "
 		+ "given; it is ignored without one. Sorting is ascending by default, which for relevance means most relevant first.",
@@ -165,7 +156,7 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		allowableValues = {
 			"relevance", "objectKey", "title", "year", "objectType"
 		}))
-	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+	public List<@Pattern(regexp = SortableProperties.COMBINED_OBJECT, message = SortableProperties.COMBINED_OBJECT_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
 	}
 

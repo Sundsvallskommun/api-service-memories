@@ -48,7 +48,9 @@ public final class Pageables {
 	 */
 	public static Pageable of(final AbstractParameterPagingAndSortingBase parameters, final Sort fallback, final String idAttribute) {
 		final var requested = parameters.sort();
-		final var order = requested.isSorted() ? requested : fallback;
+		final var order = Optional.of(requested)
+			.filter(Sort::isSorted)
+			.orElse(fallback);
 
 		return PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), order.and(Sort.by(idAttribute)));
 	}
@@ -103,12 +105,18 @@ public final class Pageables {
 		final var ordered = page.getSort().stream()
 			.map(Sort.Order::getProperty)
 			.toList();
-		final var reported = endsWithTiebreaker(ordered, idAttribute) ? ordered.subList(0, ordered.size() - 1) : ordered;
+		final var withoutTiebreaker = Optional.of(ordered)
+			.filter(properties -> endsWithTiebreaker(properties, idAttribute))
+			.map(properties -> properties.subList(0, properties.size() - 1))
+			.orElse(ordered);
+		final var reported = Optional.of(withoutTiebreaker).filter(not(List::isEmpty));
 
 		return PagingAndSortingMetaData.create()
 			.withPageData(page)
-			.withSortBy(reported.isEmpty() ? null : reported)
-			.withSortDirection(reported.isEmpty() ? null : page.getSort().stream().findFirst().map(Sort.Order::getDirection).orElse(null));
+			.withSortBy(reported.orElse(null))
+			.withSortDirection(reported
+				.flatMap(_ -> page.getSort().stream().findFirst().map(Sort.Order::getDirection))
+				.orElse(null));
 	}
 
 	/**

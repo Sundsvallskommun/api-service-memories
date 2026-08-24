@@ -105,21 +105,11 @@ public class SeamanParameters extends AbstractParameterPagingAndSortingBase {
 		return this;
 	}
 
-	/**
-	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of the entity rather than a
-	 * column of the table. Restricting the accepted values here turns an unresolvable property into a
-	 * {@code 400 Constraint Violation} that names the alternatives, instead of the {@code 500} it would otherwise
-	 * cause once it reached Spring Data.
-	 */
-	private static final String SORTABLE_PROPERTIES = "lastName1|firstName|birthDate|birthParish|id";
-
-	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: lastName1, firstName, birthDate, birthParish, id";
-
 	@Override
 	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "lastName1", allowableValues = {
 		"lastName1", "firstName", "birthDate", "birthParish", "id"
 	}))
-	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+	public List<@Pattern(regexp = SortableProperties.SEAMAN, message = SortableProperties.SEAMAN_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
 	}
 

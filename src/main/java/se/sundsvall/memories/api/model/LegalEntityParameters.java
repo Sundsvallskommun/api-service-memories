@@ -105,21 +105,11 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 		return this;
 	}
 
-	/**
-	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of the entity rather than a
-	 * column of the table. Restricting the accepted values here turns an unresolvable property into a
-	 * {@code 400 Constraint Violation} that names the alternatives, instead of the {@code 500} it would otherwise
-	 * cause once it reached Spring Data.
-	 */
-	private static final String SORTABLE_PROPERTIES = "name|startDate|endDate|legalEntityId";
-
-	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: name, startDate, endDate, legalEntityId";
-
 	@Override
 	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "name", allowableValues = {
 		"name", "startDate", "endDate", "legalEntityId"
 	}))
-	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+	public List<@Pattern(regexp = SortableProperties.LEGAL_ENTITY, message = SortableProperties.LEGAL_ENTITY_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
 	}
 

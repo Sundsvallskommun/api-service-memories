@@ -293,17 +293,4 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
-
-	// ---------------------------------------------------------------------------------------------------------------
-	// Searches from the business
-	//
-	// Tests 12 to 14 cover the three acceptance criteria with names taken from this suite's own test data — a person,
-	// a company and a document title that happen to exist here. They prove the ranking works; they do not prove it
-	// works on the searches people actually make.
-	//
-	// The remaining acceptance criterion is that the test cases are verified against the business's examples. Add one
-	// test per example below, with the search term Lena and Niklas give and the record they expect at the top, and add
-	// the matching rows to testdata-it.sql. A real example that ranks the wrong record first is the finding this whole
-	// story exists to surface, so it belongs here as a failing test rather than in a comment.
-	// ---------------------------------------------------------------------------------------------------------------
 }

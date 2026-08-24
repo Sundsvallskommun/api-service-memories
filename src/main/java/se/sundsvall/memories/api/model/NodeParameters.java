@@ -6,19 +6,10 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
-import se.sundsvall.memories.integration.db.model.NodeEntity;
 
 @Schema(description = "Archive and collection node search parameters. All filters are optional and combined with AND. "
 	+ "Sort on one of: name, startYear, stopYear or sortOrder.")
 public class NodeParameters extends AbstractParameterPagingAndSortingBase {
-
-	/**
-	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of {@link NodeEntity}. Anything
-	 * else fails to resolve and comes back as a 500, hence the up-front validation.
-	 */
-	private static final String SORTABLE_PROPERTIES = "name|startYear|stopYear|sortOrder";
-
-	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: name, startYear, stopYear, sortOrder";
 
 	@Schema(description = "Free text search (substring, case-insensitive) across name and description", examples = "stadsfullmäktige")
 	private String query;
@@ -92,7 +83,7 @@ public class NodeParameters extends AbstractParameterPagingAndSortingBase {
 	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "name", allowableValues = {
 		"name", "startYear", "stopYear", "sortOrder"
 	}))
-	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+	public List<@Pattern(regexp = SortableProperties.NODE, message = SortableProperties.NODE_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
 	}
 

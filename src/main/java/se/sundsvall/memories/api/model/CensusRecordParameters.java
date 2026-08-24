@@ -12,10 +12,6 @@ import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
 	+ "on one of: lastName, firstName or birthYear.")
 public class CensusRecordParameters extends AbstractParameterPagingAndSortingBase {
 
-	private static final String SORTABLE_PROPERTIES = "lastName|firstName|birthYear";
-
-	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: lastName, firstName, birthYear";
-
 	@Schema(description = "Last name (substring, case-insensitive)", examples = "Nordin")
 	private String lastName;
 
@@ -119,7 +115,7 @@ public class CensusRecordParameters extends AbstractParameterPagingAndSortingBas
 	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "lastName", allowableValues = {
 		"lastName", "firstName", "birthYear"
 	}))
-	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+	public List<@Pattern(regexp = SortableProperties.CENSUS_RECORD, message = SortableProperties.CENSUS_RECORD_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
 	}
 

@@ -28,6 +28,7 @@ import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 import se.sundsvall.memories.service.util.Pageables;
 
+import static java.time.Month.JANUARY;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -338,7 +339,7 @@ class CombinedObjectSpecificationTest {
 			.withObjectType("Foto")
 			.withDocumentTitle("Stadsvy raderad")
 			.withEarliest("1920")
-			.withDeletedDate(LocalDate.of(2026, 1, 1)));
+			.withDeletedDate(LocalDate.of(2026, JANUARY, 1)));
 		entityManager.clear();
 
 		final var parameters = CombinedObjectParameters.create().withQuery("Stadsvy");

@@ -1,5 +1,6 @@
 package se.sundsvall.memories.integration.db.specification;
 
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import se.sundsvall.memories.api.model.PersonParameters;
 import se.sundsvall.memories.integration.db.PersonRepository;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 
+import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -74,6 +76,23 @@ class PersonSpecificationTest {
 
 		assertThat(findIds(PersonSpecification.published())).containsExactly(0, 1);
 		assertThat(findIds(PersonSpecification.notPlaceholder())).containsExactly(1);
+	}
+
+	/**
+	 * Deletion sets {@code DELETEDDATE} but leaves the published bit set, so the published filter alone keeps the row —
+	 * which is what let a deleted person stay findable through both the search and get-by-id.
+	 */
+	@Test
+	void notDeletedExcludesTheSoftDeletedRowThePublishedFilterKeeps() {
+		persist(1, PUBLISHED, "Nordin");
+		persist(2, PUBLISHED, "Nordin raderad").setDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		personRepository.flush();
+
+		assertThat(findIds(PersonSpecification.published())).containsExactly(1, 2);
+		assertThat(findIds(PersonSpecification.notDeleted())).containsExactly(1);
+		assertThat(personRepository.findAllByParameters(PersonParameters.create(), Pageable.unpaged()).getContent())
+			.extracting(PersonEntity::getPersonId).containsExactly(1);
+		assertThat(personRepository.findVisibleById(2)).isEmpty();
 	}
 
 	@Test

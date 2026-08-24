@@ -66,21 +66,11 @@ public class PublicationParameters extends AbstractSearchParameters {
 		return this;
 	}
 
-	/**
-	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of the entity rather than a
-	 * column of the table. Restricting the accepted values here turns an unresolvable property into a
-	 * {@code 400 Constraint Violation} that names the alternatives, instead of the {@code 500} it would otherwise
-	 * cause once it reached Spring Data.
-	 */
-	private static final String SORTABLE_PROPERTIES = "documentTitle|documentDate|date|id";
-
-	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: documentTitle, documentDate, date, id";
-
 	@Override
 	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "documentTitle", allowableValues = {
 		"documentTitle", "documentDate", "date", "id"
 	}))
-	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+	public List<@Pattern(regexp = SortableProperties.PUBLICATION, message = SortableProperties.PUBLICATION_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
 	}
 }
