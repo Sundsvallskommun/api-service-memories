@@ -6,11 +6,20 @@
 		"totalPages": 1,
 		"totalRecords": 3
 	},
-	"typeCounts": {
-		"Foto": 1,
-		"Person": 1,
-		"Sjöman": 1
-	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		},
+		{
+			"objectType": "Person",
+			"count": 1
+		},
+		{
+			"objectType": "Sjöman",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "person-1",

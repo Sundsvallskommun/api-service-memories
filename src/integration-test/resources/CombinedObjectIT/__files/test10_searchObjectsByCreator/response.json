@@ -6,9 +6,12 @@
 		"totalPages": 1,
 		"totalRecords": 1
 	},
-	"typeCounts": {
-		"Film": 1
-	},
+	"typeCounts": [
+		{
+			"objectType": "Film",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "film-1",

@@ -2,6 +2,8 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import se.sundsvall.memories.api.model.CombinedObject;
+import se.sundsvall.memories.api.model.ObjectTypeCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -43,6 +45,33 @@ public final class CombinedObjectMapper {
 	public static List<CombinedObject> toCombinedObjectList(final List<CombinedObjectEntity> entities) {
 		return ofNullable(entities).orElse(emptyList()).stream()
 			.map(CombinedObjectMapper::toCombinedObject)
+			.toList();
+	}
+
+	/**
+	 * Map one chip counter.
+	 *
+	 * @param  typeCount the counter the search grouped
+	 * @return           the mapped {@link ObjectTypeCount}, or {@code null} if {@code typeCount} is null
+	 */
+	public static ObjectTypeCount toObjectTypeCount(final TypeCount typeCount) {
+		return ofNullable(typeCount)
+			.map(count -> ObjectTypeCount.create()
+				.withObjectType(count.objectType())
+				.withCount(count.total()))
+			.orElse(null);
+	}
+
+	/**
+	 * Map the chip counters, keeping the order the search counted them in — which a JSON array preserves and an object
+	 * keyed by the type name does not.
+	 *
+	 * @param  typeCounts the counters the search grouped
+	 * @return            list of mapped {@link ObjectTypeCount} objects (empty if {@code typeCounts} is null)
+	 */
+	public static List<ObjectTypeCount> toObjectTypeCountList(final List<TypeCount> typeCounts) {
+		return ofNullable(typeCounts).orElse(emptyList()).stream()
+			.map(CombinedObjectMapper::toObjectTypeCount)
 			.toList();
 	}
 

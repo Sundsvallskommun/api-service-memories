@@ -2855,6 +2855,25 @@ components:
           - Sundsvall
         creator:
           $ref: "#/components/schemas/Creator"
+    ObjectTypeCount:
+      type: object
+      description: How many objects of one type the search matches
+      properties:
+        objectType:
+          type: string
+          description: "Object type (Foto, Föremål, Film, Ljud, Text, Publikation,\
+            \ Person, Juridisk person or Sjöman) — the same value each object reports\
+            \ and the objectType filter accepts"
+          examples:
+          - Foto
+          readOnly: true
+        count:
+          type: integer
+          format: int64
+          description: "Number of matching objects of that type, across every page"
+          examples:
+          - 12
+          readOnly: true
     PagedCombinedObjectResponse:
       type: object
       description: Paged combined object response
@@ -2865,18 +2884,14 @@ components:
             $ref: "#/components/schemas/CombinedObject"
             readOnly: true
         typeCounts:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int64
+          type: array
           description: "Total number of matching objects per type (for chip counters),\
-            \ independent of the current page and of the objectType filter — every\
-            \ other filter applies, so a chip keeps saying how many objects selecting\
-            \ that type would return"
-          examples:
-          - Foto: 12
-            Text: 3
-          readOnly: true
+            \ ordered by object type. The counts are independent of the current page\
+            \ and of the objectType filter — every other filter applies, so a chip\
+            \ keeps saying how many objects selecting that type would return."
+          items:
+            $ref: "#/components/schemas/ObjectTypeCount"
+            readOnly: true
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true

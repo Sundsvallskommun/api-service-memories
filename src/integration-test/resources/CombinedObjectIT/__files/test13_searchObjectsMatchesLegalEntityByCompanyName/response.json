@@ -6,10 +6,16 @@
 		"totalPages": 1,
 		"totalRecords": 2
 	},
-	"typeCounts": {
-		"Foto": 1,
-		"Juridisk person": 1
-	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		},
+		{
+			"objectType": "Juridisk person",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "jurpers-10",

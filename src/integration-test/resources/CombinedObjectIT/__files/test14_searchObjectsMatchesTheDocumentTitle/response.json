@@ -6,9 +6,12 @@
 		"totalPages": 1,
 		"totalRecords": 2
 	},
-	"typeCounts": {
-		"Foto": 2
-	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 2
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "foto-1001",

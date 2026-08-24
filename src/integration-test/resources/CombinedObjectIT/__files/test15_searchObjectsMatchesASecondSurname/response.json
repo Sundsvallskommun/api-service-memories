@@ -6,9 +6,12 @@
 		"totalPages": 1,
 		"totalRecords": 1
 	},
-	"typeCounts": {
-		"Sjöman": 1
-	},
+	"typeCounts": [
+		{
+			"objectType": "Sjöman",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "sjoman-3",

@@ -2,6 +2,8 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import se.sundsvall.memories.api.model.ObjectTypeCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -68,5 +70,23 @@ class CombinedObjectMapperTest {
 	@Test
 	void toCombinedObjectListWhenNull() {
 		assertThat(CombinedObjectMapper.toCombinedObjectList(null)).isEqualTo(emptyList());
+	}
+
+	@Test
+	void toObjectTypeCountList() {
+		final var result = CombinedObjectMapper.toObjectTypeCountList(List.of(new TypeCount("Foto", 12L), new TypeCount("Sjöman", 2L)));
+
+		assertThat(result).extracting(ObjectTypeCount::getObjectType, ObjectTypeCount::getCount)
+			.containsExactly(tuple("Foto", 12L), tuple("Sjöman", 2L));
+	}
+
+	@Test
+	void toObjectTypeCountWhenNull() {
+		assertThat(CombinedObjectMapper.toObjectTypeCount(null)).isNull();
+	}
+
+	@Test
+	void toObjectTypeCountListWhenNull() {
+		assertThat(CombinedObjectMapper.toObjectTypeCountList(null)).isEqualTo(emptyList());
 	}
 }

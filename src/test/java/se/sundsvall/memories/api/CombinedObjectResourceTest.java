@@ -14,10 +14,12 @@ import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.CombinedObject;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
+import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.api.model.PagedCombinedObjectResponse;
 import se.sundsvall.memories.service.CombinedObjectService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,7 +45,7 @@ class CombinedObjectResourceTest {
 		final var object = CombinedObject.create().withObjectKey("foto-1001").withObjectType("Foto").withTitle("Stadsvy");
 		final var pagedResponse = PagedCombinedObjectResponse.create()
 			.withObjects(List.of(object))
-			.withTypeCounts(Map.of("Foto", 1L))
+			.withTypeCounts(List.of(ObjectTypeCount.create().withObjectType("Foto").withCount(1L)))
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
@@ -62,7 +64,8 @@ class CombinedObjectResourceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getObjects()).hasSize(1);
 		assertThat(response.getObjects().getFirst().getObjectType()).isEqualTo("Foto");
-		assertThat(response.getTypeCounts()).containsEntry("Foto", 1L);
+		assertThat(response.getTypeCounts()).extracting(ObjectTypeCount::getObjectType, ObjectTypeCount::getCount)
+			.containsExactly(tuple("Foto", 1L));
 		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(serviceMock).search(any());
 	}
@@ -101,7 +104,7 @@ class CombinedObjectResourceTest {
 	void searchObjectsWithoutFilters() {
 		final var pagedResponse = PagedCombinedObjectResponse.create()
 			.withObjects(List.of())
-			.withTypeCounts(Map.of())
+			.withTypeCounts(List.of())
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);

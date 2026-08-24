@@ -10,13 +10,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
+import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -51,7 +52,8 @@ class CombinedObjectServiceTest {
 
 		assertThat(result.getObjects()).hasSize(1);
 		assertThat(result.getObjects().getFirst().getLocation()).isEqualTo("Sundsvalls kommun");
-		assertThat(result.getTypeCounts()).containsExactly(entry("Foto", 1L), entry("Text", 3L));
+		assertThat(result.getTypeCounts()).extracting(ObjectTypeCount::getObjectType, ObjectTypeCount::getCount)
+			.containsExactly(tuple("Foto", 1L), tuple("Text", 3L));
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 	}
 

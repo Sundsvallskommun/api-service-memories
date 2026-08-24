@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 
@@ -16,9 +15,11 @@ public class PagedCombinedObjectResponse {
 	@ArraySchema(schema = @Schema(implementation = CombinedObject.class, accessMode = READ_ONLY))
 	private List<CombinedObject> objects;
 
-	@Schema(description = "Total number of matching objects per type (for chip counters), independent of the current page and of the objectType filter — "
-		+ "every other filter applies, so a chip keeps saying how many objects selecting that type would return", accessMode = READ_ONLY, examples = "{\"Foto\":12,\"Text\":3}")
-	private Map<String, Long> typeCounts;
+	@ArraySchema(schema = @Schema(implementation = ObjectTypeCount.class, accessMode = READ_ONLY),
+		arraySchema = @Schema(description = "Total number of matching objects per type (for chip counters), ordered by object type. The counts are "
+			+ "independent of the current page and of the objectType filter — every other filter applies, so a chip keeps saying how many objects "
+			+ "selecting that type would return."))
+	private List<ObjectTypeCount> typeCounts;
 
 	@JsonProperty("_meta")
 	@Schema(implementation = PagingAndSortingMetaData.class, accessMode = READ_ONLY)
@@ -41,15 +42,15 @@ public class PagedCombinedObjectResponse {
 		return this;
 	}
 
-	public Map<String, Long> getTypeCounts() {
+	public List<ObjectTypeCount> getTypeCounts() {
 		return typeCounts;
 	}
 
-	public void setTypeCounts(final Map<String, Long> typeCounts) {
+	public void setTypeCounts(final List<ObjectTypeCount> typeCounts) {
 		this.typeCounts = typeCounts;
 	}
 
-	public PagedCombinedObjectResponse withTypeCounts(final Map<String, Long> typeCounts) {
+	public PagedCombinedObjectResponse withTypeCounts(final List<ObjectTypeCount> typeCounts) {
 		this.typeCounts = typeCounts;
 		return this;
 	}
