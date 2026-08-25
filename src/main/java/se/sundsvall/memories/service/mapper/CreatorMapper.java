@@ -15,6 +15,10 @@ import static java.util.Optional.ofNullable;
  * {@code U_J_ID} to {@code 1} ("ingen"). Those rows exist in {@code PERSON} and {@code JURPERS} and are perfectly
  * loadable, so without this the API would report an originator named "Ingen" on nearly every object. They are read as
  * absent instead, the same way the person and legal entity searches exclude them.
+ *
+ * <p>
+ * A soft-deleted register record is read as absent too. Its own endpoint answers {@code 404}, so naming it here would
+ * publish a reference the API then refuses to resolve — and the name of a record the archive has deleted.
  */
 final class CreatorMapper {
 
@@ -39,7 +43,9 @@ final class CreatorMapper {
 			.withLegalEntityId(legalEntityId(legalEntity))
 			.withLegalEntity(legalEntityName(legalEntity));
 
-		return creator.equals(Creator.create()) ? null : creator;
+		return Optional.of(creator)
+			.filter(candidate -> !candidate.equals(Creator.create()))
+			.orElse(null);
 	}
 
 	private static Integer personId(final PersonEntity person) {
@@ -68,11 +74,13 @@ final class CreatorMapper {
 
 	private static Optional<PersonEntity> realPerson(final PersonEntity person) {
 		return ofNullable(person)
-			.filter(candidate -> !PERSON_PLACEHOLDER_ID.equals(candidate.getPersonId()));
+			.filter(candidate -> !PERSON_PLACEHOLDER_ID.equals(candidate.getPersonId()))
+			.filter(candidate -> candidate.getDeletedDate() == null);
 	}
 
 	private static Optional<LegalEntityEntity> realLegalEntity(final LegalEntityEntity legalEntity) {
 		return ofNullable(legalEntity)
-			.filter(candidate -> !LEGAL_ENTITY_PLACEHOLDER_ID.equals(candidate.getLegalEntityId()));
+			.filter(candidate -> !LEGAL_ENTITY_PLACEHOLDER_ID.equals(candidate.getLegalEntityId()))
+			.filter(candidate -> candidate.getDeletedDate() == null);
 	}
 }

@@ -144,6 +144,29 @@ class CombinedObjectSpecificationTest {
 		assertThat(countByType(fullName)).containsExactly(entry("Foto", 1L));
 	}
 
+	/** A deleted register record is not served by its own endpoint, so it must not select objects here either. */
+	@Test
+	void creatorFiltersSkipADeletedRegisterRecord() {
+		final var person = PersonEntity.create().withPersonId(5).withFirstName("Anton").withLastName("Nordin")
+			.withDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		entityManager.persist(person);
+		entityManager.flush();
+
+		persistPhoto(1, "Av personen", null, "1900", null);
+		photoRepository.findById(1).ifPresent(photo -> photo.setCreatorPerson(person));
+		photoRepository.flush();
+		entityManager.clear();
+
+		final var byName = CombinedObjectParameters.create();
+		byName.setCreator("Nordin");
+		final var byId = CombinedObjectParameters.create();
+		byId.setCreatorPersonId(5);
+
+		assertThat(findKeys(byName)).isEmpty();
+		assertThat(findKeys(byId)).isEmpty();
+		assertThat(countByType(byName)).isEmpty();
+	}
+
 	private void persistPhoto(final Integer id, final String title, final String comment, final String earliest, final TopographyEntity topography) {
 		photoRepository.saveAndFlush(PhotoEntity.create()
 			.withId(id)

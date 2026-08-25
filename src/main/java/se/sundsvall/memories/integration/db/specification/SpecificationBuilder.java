@@ -91,10 +91,9 @@ public class SpecificationBuilder<T> {
 
 	/**
 	 * Matches rows where the value occurs in at least one attribute of at least one of the given associations, skipping
-	 * the sentinel row each association may point at. The originator filters need this: an object names its upphovsman
-	 * through either a person or a legal entity, and both foreign keys default to a placeholder row rather than to
-	 * {@code NULL} — a placeholder is called "Ingen", so without the guard a search for that word would return
-	 * everything. Matches every row when the value is blank.
+	 * the sentinel row each association may point at, and rows the association points at that are soft-deleted. Both
+	 * foreign keys default to a placeholder called "Ingen" rather than to {@code NULL}, so without the sentinel guard a
+	 * search for that word would return everything. Matches every row when the value is blank.
 	 */
 	public Specification<T> buildAssociationLikeAnyFilter(final List<AssociationAttributes> associations, final String value) {
 		if (value == null || value.isBlank()) {
@@ -112,6 +111,7 @@ public class SpecificationBuilder<T> {
 			.map(group -> cb.like(joined(cb, join, group), pattern, LIKE_ESCAPE));
 		return cb.and(
 			cb.notEqual(join.get(association.idAttribute()), association.placeholderId()),
+			cb.isNull(join.get(association.deletedAttribute())),
 			cb.or(matches.toArray(Predicate[]::new)));
 	}
 
@@ -135,12 +135,13 @@ public class SpecificationBuilder<T> {
 	 * and family name — belong in the same group, while attributes that are alternatives to each other get one group
 	 * apiece.
 	 *
-	 * @param association     name of the association attribute
-	 * @param attributeGroups attributes on the associated entity to match against, grouped
-	 * @param idAttribute     name of the associated entity's id attribute
-	 * @param placeholderId   id of the sentinel row
+	 * @param association      name of the association attribute
+	 * @param attributeGroups  attributes on the associated entity to match against, grouped
+	 * @param idAttribute      name of the associated entity's id attribute
+	 * @param placeholderId    id of the sentinel row
+	 * @param deletedAttribute name of the associated entity's soft-delete attribute, which must be null to match
 	 */
-	public record AssociationAttributes(String association, List<List<String>> attributeGroups, String idAttribute, Object placeholderId) {}
+	public record AssociationAttributes(String association, List<List<String>> attributeGroups, String idAttribute, Object placeholderId, String deletedAttribute) {}
 
 	/**
 	 * Matches rows where the attribute is {@code NULL}.
@@ -268,6 +269,21 @@ public class SpecificationBuilder<T> {
 			return Specification.unrestricted();
 		}
 		return (root, _, cb) -> cb.equal(root.get(association).get(attribute), value);
+	}
+
+	/**
+	 * As {@link #buildAssociationEqualFilter(String, String, Object)}, and the associated row must not be soft-deleted.
+	 * The originator filters need that: a deleted register record is not served by its own endpoint, so it must not
+	 * select objects here either.
+	 */
+	public Specification<T> buildAssociationEqualFilter(final String association, final String attribute, final String deletedAttribute, final Object value) {
+		if (value == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> {
+			final var join = reuseFetchOrJoin(root, association);
+			return cb.and(cb.equal(join.get(attribute), value), cb.isNull(join.get(deletedAttribute)));
+		};
 	}
 
 	/**

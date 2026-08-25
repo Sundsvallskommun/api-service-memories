@@ -22,6 +22,7 @@ import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.JANUARY;
 import static java.time.Month.MARCH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -104,6 +105,23 @@ class PhotoSpecificationTest {
 		assertThat(findIds(PhotoSpecification.matchesCreator("kommitté"))).containsExactly(2);
 		assertThat(findIds(PhotoSpecification.matchesCreator("   "))).containsExactly(1, 2, 3);
 		assertThat(findIds(PhotoSpecification.matchesCreator(null))).containsExactly(1, 2, 3);
+	}
+
+	/** A deleted register record is not served by its own endpoint, so it must not select objects here either. */
+	@Test
+	void creatorFiltersSkipADeletedRegisterRecord() {
+		final var person = persistPerson(5, "Anton", "Nordin");
+		final var legalEntity = persistLegalEntity(20, "Nödhjälpskommittén 1888-1889", "Kommittén");
+		person.setDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		legalEntity.setDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		persist(1, 4, "Av personen", null, "Foto").setCreatorPerson(person);
+		persist(2, 4, "Av bolaget", null, "Foto").setCreatorLegalEntity(legalEntity);
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesCreator("nordin"))).isEmpty();
+		assertThat(findIds(PhotoSpecification.matchesCreator("kommitté"))).isEmpty();
+		assertThat(findIds(PhotoSpecification.hasCreatorPerson(5))).isEmpty();
+		assertThat(findIds(PhotoSpecification.hasCreatorLegalEntity(20))).isEmpty();
 	}
 
 	/**

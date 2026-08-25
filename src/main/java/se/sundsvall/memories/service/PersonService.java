@@ -34,8 +34,7 @@ public class PersonService {
 
 	/**
 	 * Fetches a single person by id. Unpublished persons are intentionally still returned here even though
-	 * {@link #search} hides them; only the {@code P_ID = 0} placeholder row is unreachable. See
-	 * {@link PersonRepository#findVisibleById} for the reasoning.
+	 * {@link #search} hides them; the {@code P_ID = 0} placeholder row and soft-deleted persons are not.
 	 *
 	 * @param  id the person id to look up
 	 * @return    the matching {@link Person}

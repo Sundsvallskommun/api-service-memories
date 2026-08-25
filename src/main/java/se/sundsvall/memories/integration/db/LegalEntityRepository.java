@@ -41,6 +41,8 @@ public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, 
 			pageable);
 	}
 
+	// Unpublished legal entity records stay reachable by id, the way the object searches keep unpublished objects;
+	// a deleted one does not, and is not named as an originator either.
 	default Optional<LegalEntityEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
 			.and(fetchCategory())

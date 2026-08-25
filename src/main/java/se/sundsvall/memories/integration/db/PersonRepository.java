@@ -36,6 +36,8 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Integer>, 
 			pageable);
 	}
 
+	// Unpublished person records stay reachable by id, the way the object searches keep unpublished objects;
+	// a deleted one does not, and is not named as an originator either.
 	default Optional<PersonEntity> findVisibleById(final Integer id) {
 		return findOne(hasId(id)
 			.and(notDeleted())
