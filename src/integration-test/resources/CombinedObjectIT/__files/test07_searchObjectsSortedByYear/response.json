@@ -1,21 +1,40 @@
 {
 	"_meta": {
-		"count": 3,
+		"count": 4,
 		"limit": 100,
 		"page": 1,
-		"totalPages": 1,
-		"totalRecords": 3,
 		"sortBy": [
 			"year",
 			"objectKey"
 		],
-		"sortDirection": "DESC"
+		"sortDirection": "DESC",
+		"totalPages": 1,
+		"totalRecords": 4
 	},
-	"typeCounts": {
-		"Person": 1,
-		"Sjöman": 2
-	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		},
+		{
+			"objectType": "Person",
+			"count": 1
+		},
+		{
+			"objectType": "Sjöman",
+			"count": 2
+		}
+	],
 	"objects": [
+		{
+			"objectKey": "foto-1005",
+			"sourceId": 1005,
+			"objectType": "Foto",
+			"title": "Handelsbod vid Storgatan",
+			"year": 1890,
+			"topographyId": 1,
+			"location": "Sundsvall"
+		},
 		{
 			"objectKey": "sjoman-3",
 			"sourceId": 3,

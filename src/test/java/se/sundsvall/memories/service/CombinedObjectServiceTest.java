@@ -9,27 +9,27 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
+import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
-import se.sundsvall.memories.integration.db.CombinedObjectRepository.TypeCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
-// Which rows the filters select, and that the counters agree with the search, is verified against a real database in
-// CombinedObjectSpecificationTest. These tests cover what the service itself does: build the pageable, forward the
-// parameters, and assemble the response.
+// Which rows the filters select is verified against a real database in CombinedObjectSpecificationTest. These tests
+// cover what the service does: build the pageable, forward the parameters, assemble the response.
 @ExtendWith(MockitoExtension.class)
 class CombinedObjectServiceTest {
+
+	private static final PageRequest PAGEABLE = PageRequest.of(0, 100);
 
 	@Mock
 	private CombinedObjectRepository repositoryMock;
@@ -37,58 +37,63 @@ class CombinedObjectServiceTest {
 	@InjectMocks
 	private CombinedObjectService service;
 
-	private static TypeCount typeCount(final String type, final long total) {
-		final var typeCount = mock(TypeCount.class);
-		when(typeCount.getObjectType()).thenReturn(type);
-		when(typeCount.getTotal()).thenReturn(total);
-		return typeCount;
-	}
-
 	@Test
 	void searchDelegatesResolvesLocationAndBuildsTypeCounts() {
-		final var pageable = PageRequest.of(0, 100, Sort.by("objectKey"));
 		final var parameters = CombinedObjectParameters.create().withQuery("Sundsvall").withYearFrom(1900).withYearTo(1950).withLocation("Sundsvall").withPage(1).withLimit(100);
 		final var entity = CombinedObjectEntity.create().withObjectKey("foto-1001").withObjectType("Foto").withTitle("Stadsvy")
 			.withTopography(TopographyEntity.create().withId(1).withName("Sundsvalls kommun"));
-		// Built before the stubbing below: these are stubbed mocks themselves, and Mockito rejects stubbing inside an
-		// unfinished when(...).
-		final var counts = List.of(typeCount("Foto", 1L), typeCount("Text", 3L));
 
-		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(pageable)))
-			.thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
-		when(repositoryMock.countByType("Sundsvall", 1900, 1950, "Sundsvall", null, null, null)).thenReturn(counts);
+		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(PAGEABLE)))
+			.thenReturn(new PageImpl<>(List.of(entity), PAGEABLE, 1));
+		when(repositoryMock.countByType(parameters)).thenReturn(List.of(new TypeCount("Foto", 1L), new TypeCount("Text", 3L)));
 
 		final var result = service.search(parameters);
 
 		assertThat(result.getObjects()).hasSize(1);
 		assertThat(result.getObjects().getFirst().getLocation()).isEqualTo("Sundsvalls kommun");
-		assertThat(result.getTypeCounts()).containsExactly(entry("Foto", 1L), entry("Text", 3L));
+		assertThat(result.getTypeCounts()).extracting(ObjectTypeCount::getObjectType, ObjectTypeCount::getCount)
+			.containsExactly(tuple("Foto", 1L), tuple("Text", 3L));
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 	}
 
-	/**
-	 * The search trims through its specifications and the counters are a native query, so the service has to trim on
-	 * the way to the counters. Otherwise a blank parameter means "no filter" for the list and a literal match for the
-	 * chips, and the two disagree.
-	 */
+	/** The page request carries no sort: this search orders itself from its specification. */
 	@Test
-	void searchTrimsOnTheWayToTheCounters() {
-		final var pageable = PageRequest.of(0, 100, Sort.by("objectKey"));
+	void searchHandsTheParametersOnUntouchedAndPagesWithoutASort() {
 		final var parameters = CombinedObjectParameters.create().withQuery("  Sundsvall  ").withLocation("   ");
 
-		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(pageable)))
-			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
-		when(repositoryMock.countByType(eq("Sundsvall"), isNull(), isNull(), isNull(), isNull(), isNull(), isNull())).thenReturn(List.of());
+		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(PAGEABLE)))
+			.thenReturn(new PageImpl<>(List.of(), PAGEABLE, 0));
+		when(repositoryMock.countByType(parameters)).thenReturn(List.of());
 
 		final var result = service.search(parameters);
 
 		assertThat(result.getObjects()).isEmpty();
 		assertThat(result.getTypeCounts()).isEmpty();
 
-		// The search itself gets the parameters untouched — the trimming there lives in the specifications.
 		final var searchCaptor = ArgumentCaptor.forClass(CombinedObjectParameters.class);
-		verify(repositoryMock).findAllByParameters(searchCaptor.capture(), eq(pageable));
+		verify(repositoryMock).findAllByParameters(searchCaptor.capture(), eq(PAGEABLE));
 		assertThat(searchCaptor.getValue()).isSameAs(parameters);
-		verify(repositoryMock).countByType(eq("Sundsvall"), isNull(), isNull(), isNull(), isNull(), isNull(), isNull());
+		verify(repositoryMock).countByType(parameters);
+	}
+
+	/** The metadata reports the caller's own sort only, not relevance or the id tiebreak. */
+	@Test
+	void metaDataReportsOnlyTheRequestedSort() {
+		final var unsorted = CombinedObjectParameters.create().withQuery("Nordin");
+		final var sorted = CombinedObjectParameters.create().withQuery("Nordin");
+		sorted.setSortBy(List.of("title"));
+		sorted.setSortDirection(DESC);
+
+		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(PAGEABLE)))
+			.thenReturn(new PageImpl<>(List.of(), PAGEABLE, 0));
+		when(repositoryMock.countByType(any(CombinedObjectParameters.class))).thenReturn(List.of());
+
+		final var withoutSort = service.search(unsorted).getMetaData();
+		final var withSort = service.search(sorted).getMetaData();
+
+		assertThat(withoutSort.getSortBy()).isNull();
+		assertThat(withoutSort.getSortDirection()).isNull();
+		assertThat(withSort.getSortBy()).containsExactly("title");
+		assertThat(withSort.getSortDirection()).isEqualTo(DESC);
 	}
 }

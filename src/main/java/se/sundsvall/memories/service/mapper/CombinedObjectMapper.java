@@ -2,6 +2,8 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import se.sundsvall.memories.api.model.CombinedObject;
+import se.sundsvall.memories.api.model.ObjectTypeCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -47,19 +49,39 @@ public final class CombinedObjectMapper {
 	}
 
 	/**
-	 * Resolves the place name through the topography association. The association is {@code null} both when the object
-	 * has no place and when {@code TOPOGRAPHY_ID} points at a row that does not exist.
+	 * Map one chip counter.
+	 *
+	 * @param  typeCount the counter the search grouped
+	 * @return           the mapped {@link ObjectTypeCount}, or {@code null} if {@code typeCount} is null
 	 */
+	public static ObjectTypeCount toObjectTypeCount(final TypeCount typeCount) {
+		return ofNullable(typeCount)
+			.map(count -> ObjectTypeCount.create()
+				.withObjectType(count.objectType())
+				.withCount(count.total()))
+			.orElse(null);
+	}
+
+	/**
+	 * Map the chip counters, keeping the order the search counted them in.
+	 *
+	 * @param  typeCounts the counters the search grouped
+	 * @return            list of mapped {@link ObjectTypeCount} objects (empty if {@code typeCounts} is null)
+	 */
+	public static List<ObjectTypeCount> toObjectTypeCountList(final List<TypeCount> typeCounts) {
+		return ofNullable(typeCounts).orElse(emptyList()).stream()
+			.map(CombinedObjectMapper::toObjectTypeCount)
+			.toList();
+	}
+
+	/** Resolves the place name through the topography association, which is {@code null} when there is no place. */
 	private static String location(final CombinedObjectEntity entity) {
 		return ofNullable(entity.getTopography())
 			.map(TopographyEntity::getDisplayName)
 			.orElse(null);
 	}
 
-	/**
-	 * Resolves the raw topography id, which the API exposes alongside the resolved {@code location}. Read through the
-	 * association rather than from a second mapping of {@code TOPOGRAPHY_ID}, so the two can never disagree.
-	 */
+	/** The raw topography id, read through the association so it cannot disagree with the resolved location. */
 	private static Integer topographyId(final CombinedObjectEntity entity) {
 		return ofNullable(entity.getTopography())
 			.map(TopographyEntity::getId)

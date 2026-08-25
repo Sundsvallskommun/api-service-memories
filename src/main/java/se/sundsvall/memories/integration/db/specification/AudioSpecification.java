@@ -66,20 +66,20 @@ public interface AudioSpecification {
 	List<SpecificationBuilder.AssociationAttributes> CREATOR_ATTRIBUTES = List.of(
 		// a person's name spans two columns and is matched as one string; a legal entity's two names are alternatives
 		new SpecificationBuilder.AssociationAttributes(CREATOR_PERSON, List.of(List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME)), PersonEntity_.PERSON_ID,
-			PersonSpecification.PLACEHOLDER_ID),
+			PersonSpecification.PLACEHOLDER_ID, PersonEntity_.DELETED_DATE),
 		new SpecificationBuilder.AssociationAttributes(CREATOR_LEGAL_ENTITY, List.of(List.of(LegalEntityEntity_.NAME), List.of(LegalEntityEntity_.ALTERNATIVE_NAMES)),
-			LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntitySpecification.PLACEHOLDER_ID));
+			LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntitySpecification.PLACEHOLDER_ID, LegalEntityEntity_.DELETED_DATE));
 
 	static Specification<AudioEntity> matchesCreator(final String creator) {
 		return BUILDER.buildAssociationLikeAnyFilter(CREATOR_ATTRIBUTES, creator);
 	}
 
 	static Specification<AudioEntity> hasCreatorPerson(final Integer creatorPersonId) {
-		return BUILDER.buildAssociationEqualFilter(CREATOR_PERSON, PersonEntity_.PERSON_ID, creatorPersonId);
+		return BUILDER.buildAssociationEqualFilter(CREATOR_PERSON, PersonEntity_.PERSON_ID, PersonEntity_.DELETED_DATE, creatorPersonId);
 	}
 
 	static Specification<AudioEntity> hasCreatorLegalEntity(final Integer creatorLegalEntityId) {
-		return BUILDER.buildAssociationEqualFilter(CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, creatorLegalEntityId);
+		return BUILDER.buildAssociationEqualFilter(CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntityEntity_.DELETED_DATE, creatorLegalEntityId);
 	}
 
 	/**

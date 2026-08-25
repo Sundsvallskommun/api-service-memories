@@ -1,0 +1,25 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"typeCounts": [
+		{
+			"objectType": "Sjöman",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "sjoman-3",
+			"sourceId": 3,
+			"objectType": "Sjöman",
+			"title": "Erik Holm",
+			"year": 1889,
+			"locationText": "Njurunda"
+		}
+	]
+}

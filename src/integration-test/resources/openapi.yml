@@ -5,7 +5,7 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.6"
+  version: "3.7"
 servers:
 - url: http://localhost:56801
   description: Generated server url
@@ -688,7 +688,9 @@ paths:
       summary: Search objects
       description: "Search across all object types (Foto, Föremål, Film, Ljud, Text,\
         \ Publikation) and registers (Person, Juridisk person, Sjöman) in one call,\
-        \ with global sorting, pagination and per-type counts."
+        \ with global sorting, pagination and per-type counts. Pass objectType to\
+        \ restrict the search to a selection of types; the counts keep covering every\
+        \ type, so the chips stay selectable."
       operationId: searchObjects
       parameters:
       - name: municipalityId
@@ -1501,9 +1503,13 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Property to sort on
+            enum:
+            - documentTitle
+            - documentDate
+            - id
             examples:
-            - propertyName
+            - documentTitle
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -1709,6 +1715,8 @@ components:
       type: object
       description: Text model
       properties:
+        creator:
+          $ref: "#/components/schemas/Creator"
         textId:
           type: integer
           format: int32
@@ -1757,8 +1765,6 @@ components:
           description: Resolved subject label from OCM (Ämne)
           examples:
           - Musik
-        creator:
-          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -1839,9 +1845,15 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Property to sort on
+            enum:
+            - lastName1
+            - firstName
+            - birthDate
+            - birthParish
+            - id
             examples:
-            - propertyName
+            - lastName1
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -2087,9 +2099,14 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Property to sort on
+            enum:
+            - documentTitle
+            - documentDate
+            - date
+            - id
             examples:
-            - propertyName
+            - documentTitle
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -2152,6 +2169,8 @@ components:
       type: object
       description: Publication model
       properties:
+        creator:
+          $ref: "#/components/schemas/Creator"
         publicationId:
           type: integer
           format: int32
@@ -2209,8 +2228,6 @@ components:
             locationText when set)
           examples:
           - Sundsvall
-        creator:
-          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -2258,9 +2275,15 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Property to sort on
+            enum:
+            - documentTitle
+            - earliest
+            - latest
+            - objectType
+            - id
             examples:
-            - propertyName
+            - documentTitle
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -2310,11 +2333,15 @@ components:
           examples:
           - 10
         objectType:
-          type: string
-          description: Filter by object type. Use 'Foto' for photographs or 'Föremål'
-            for physical objects. Omit to return both.
-          examples:
-          - Foto
+          type: array
+          items:
+            type: string
+            description: "Object type to include: 'Foto' for photographs or 'Föremå\
+              l' for physical objects. Repeat the parameter, or comma-separate the\
+              \ values, to select several — they are alternatives, so Foto and Fö\
+              remål together means either. Omit to return both."
+            examples:
+            - Foto
     PagedPhotoResponse:
       type: object
       description: Paged photo response
@@ -2331,6 +2358,8 @@ components:
       type: object
       description: Photo model
       properties:
+        creator:
+          $ref: "#/components/schemas/Creator"
         photoId:
           type: integer
           format: int32
@@ -2358,8 +2387,6 @@ components:
         subjectKeyword:
           type: string
           description: Subject keyword
-        creator:
-          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment / description
@@ -2675,8 +2702,9 @@ components:
     CombinedObjectParameters:
       type: object
       description: "Combined object search parameters (across all object and register\
-        \ types). All filters are optional and combined with AND. Sort on one of:\
-        \ objectKey, title, year or objectType."
+        \ types). All filters are optional and combined with AND, except that several\
+        \ values of objectType are alternatives. Sort on one of: relevance, objectKey,\
+        \ title, year or objectType. Defaults to relevance when a query is given."
       properties:
         page:
           type: integer
@@ -2698,14 +2726,18 @@ components:
           type: array
           items:
             type: string
-            description: Property to sort on
+            description: "Property to sort on. 'relevance' ranks the best match first\
+              \ and is the default when a query is given; it is ignored without one.\
+              \ Sorting is ascending by default, which for relevance means most relevant\
+              \ first."
             enum:
+            - relevance
             - objectKey
             - title
             - year
             - objectType
             examples:
-            - title
+            - relevance
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -2713,11 +2745,13 @@ components:
           - ASC
         query:
           type: string
-          description: "Free text search (substring, case-insensitive) across title\
-            \ and comment, and for the register types also across names, parishes\
-            \ and other identifying fields"
+          description: "Free text search (case-insensitive). Every word must occur\
+            \ somewhere in the title and comment, and for the register types also\
+            \ in names, parishes and other identifying fields, in any order. Results\
+            \ are ranked with title and name matches above matches that only occurred\
+            \ in a comment or a body text."
           examples:
-          - Sundsvall
+          - Anton Nordin
         yearFrom:
           type: integer
           format: int32
@@ -2736,6 +2770,18 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        objectType:
+          type: array
+          items:
+            type: string
+            description: "Object type to include: Foto, Föremål, Film, Ljud, Text,\
+              \ Publikation, Person, Juridisk person or Sjöman. Repeat the parameter,\
+              \ or comma-separate the values, to select several — they are alternatives,\
+              \ so Foto and Ljud together means either. Omit to include every type.\
+              \ The values are the ones each object reports under objectType and typeCounts\
+              \ counts by, so a client can filter on exactly what it counted."
+            examples:
+            - Foto
         creator:
           type: string
           description: "Originator (upphovsman) name (substring, case-insensitive;\
@@ -2809,6 +2855,23 @@ components:
           - Sundsvall
         creator:
           $ref: "#/components/schemas/Creator"
+    ObjectTypeCount:
+      type: object
+      description: How many objects of one type the search matches
+      properties:
+        objectType:
+          type: string
+          description: "Object type (Foto, Föremål, Film, Ljud, Text, Publikation,\
+            \ Person, Juridisk person or Sjöman) — the same value each object reports\
+            \ and the objectType filter accepts"
+          examples:
+          - Foto
+        count:
+          type: integer
+          format: int64
+          description: "Number of matching objects of that type, across every page"
+          examples:
+          - 12
     PagedCombinedObjectResponse:
       type: object
       description: Paged combined object response
@@ -2819,16 +2882,14 @@ components:
             $ref: "#/components/schemas/CombinedObject"
             readOnly: true
         typeCounts:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int64
+          type: array
           description: "Total number of matching objects per type (for chip counters),\
-            \ independent of the current page"
-          examples:
-          - Foto: 12
-            Text: 3
-          readOnly: true
+            \ ordered by object type. The counts are independent of the current page\
+            \ and of the objectType filter — every other filter applies, so a chip\
+            \ keeps saying how many objects selecting that type would return."
+          items:
+            $ref: "#/components/schemas/ObjectTypeCount"
+            readOnly: true
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true
@@ -3020,9 +3081,14 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Property to sort on
+            enum:
+            - name
+            - startDate
+            - endDate
+            - legalEntityId
             examples:
-            - propertyName
+            - name
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -3180,9 +3246,13 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Property to sort on
+            enum:
+            - documentTitle
+            - date
+            - id
             examples:
-            - propertyName
+            - documentTitle
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -3233,6 +3303,8 @@ components:
       type: object
       description: Film model
       properties:
+        creator:
+          $ref: "#/components/schemas/Creator"
         filmId:
           type: integer
           format: int32
@@ -3287,8 +3359,6 @@ components:
           description: Film organization ID
           examples:
           - 1
-        creator:
-          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment
@@ -3554,9 +3624,13 @@ components:
           type: array
           items:
             type: string
-            description: The properties to sort on
+            description: Property to sort on
+            enum:
+            - documentTitle
+            - date
+            - id
             examples:
-            - propertyName
+            - documentTitle
         sortDirection:
           $ref: "#/components/schemas/Direction"
           description: The sort order direction
@@ -3607,6 +3681,8 @@ components:
       type: object
       description: Audio model
       properties:
+        creator:
+          $ref: "#/components/schemas/Creator"
         audioId:
           type: integer
           format: int32
@@ -3666,8 +3742,6 @@ components:
           description: Resolved subject label from OCM (Ämne)
           examples:
           - Intervju
-        creator:
-          $ref: "#/components/schemas/Creator"
         comment:
           type: string
           description: Comment

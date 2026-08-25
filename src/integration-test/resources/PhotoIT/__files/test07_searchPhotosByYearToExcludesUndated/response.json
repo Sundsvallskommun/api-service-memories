@@ -1,10 +1,10 @@
 {
 	"_meta": {
-		"count": 1,
+		"count": 2,
 		"limit": 100,
 		"page": 1,
 		"totalPages": 1,
-		"totalRecords": 1
+		"totalRecords": 2
 	},
 	"photos": [
 		{
@@ -23,6 +23,14 @@
 			"conditionAssessment": "Inga skador",
 			"thumbnailFilename": "FOTO.id_1001_fil_liten.jpg",
 			"largeImageFilename": "FOTO.id_1001_fil_stor.jpg"
+		},
+		{
+			"photoId": 1005,
+			"documentTitle": "Handelsbod vid Storgatan",
+			"comment": "Fotografi av Anton Nordin, skänkt av Nödhjälpskommittén. Stadsvy i bakgrunden.",
+			"earliest": "1890",
+			"objectType": "Foto",
+			"location": "Sundsvall"
 		}
 	]
 }

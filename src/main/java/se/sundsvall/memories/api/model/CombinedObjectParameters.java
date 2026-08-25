@@ -6,23 +6,17 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
-import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 
-@Schema(description = "Combined object search parameters (across all object and register types). All filters are optional "
-	+ "and combined with AND. Sort on one of: objectKey, title, year or objectType.")
+@Schema(description = """
+	Combined object search parameters (across all object and register types). All filters are optional \
+	and combined with AND, except that several values of objectType are alternatives. Sort on one of: relevance, objectKey, \
+	title, year or objectType. Defaults to relevance when a query is given.""")
 public class CombinedObjectParameters extends AbstractParameterPagingAndSortingBase {
 
-	/**
-	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of {@link CombinedObjectEntity}
-	 * rather than a column of the view. Restricting the accepted values here turns an unresolvable property into a
-	 * {@code 400 Constraint Violation} that names the alternatives, instead of the {@code 500} it would otherwise
-	 * cause.
-	 */
-	private static final String SORTABLE_PROPERTIES = "objectKey|title|year|objectType";
-
-	private static final String SORTABLE_PROPERTIES_MESSAGE = "must be one of: objectKey, title, year, objectType";
-
-	@Schema(description = "Free text search (substring, case-insensitive) across title and comment, and for the register types also across names, parishes and other identifying fields", examples = "Sundsvall")
+	@Schema(description = """
+		Free text search (case-insensitive). Every word must occur somewhere in the title and comment, and for the register \
+		types also in names, parishes and other identifying fields, in any order. Results are ranked with title and name matches above matches \
+		that only occurred in a comment or a body text.""", examples = "Anton Nordin")
 	private String query;
 
 	@Schema(description = "Year from (inclusive)", examples = "1900")
@@ -33,6 +27,18 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 
 	@Schema(description = "Location (substring, case-insensitive; resolved place name or free-text location)", examples = "Sundsvall")
 	private String location;
+
+	/**
+	 * Not validated against a fixed list: FOTO carries its own {@code OBJTYP}, so the set of types belongs to the
+	 * archive. An unknown value matches nothing rather than failing the request.
+	 */
+	@ArraySchema(schema = @Schema(description = """
+		Object type to include: Foto, Föremål, Film, Ljud, Text, Publikation, Person, \
+		Juridisk person or Sjöman. Repeat the parameter, or comma-separate the values, to select several — they are \
+		alternatives, so Foto and Ljud together means either. Omit to include every type. The values are the ones each \
+		object reports under objectType and typeCounts counts by, so a client can filter on exactly what it counted.""",
+		examples = "Foto"))
+	private List<String> objectType;
 
 	@Schema(description = "Originator (upphovsman) name (substring, case-insensitive; matches a person or a legal entity). Only object types carry an originator, so this filter also excludes the register types.", examples = "Nordin")
 	private String creator;
@@ -99,6 +105,19 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		return this;
 	}
 
+	public List<String> getObjectType() {
+		return objectType;
+	}
+
+	public void setObjectType(final List<String> objectType) {
+		this.objectType = objectType;
+	}
+
+	public CombinedObjectParameters withObjectType(final List<String> objectType) {
+		this.objectType = objectType;
+		return this;
+	}
+
 	public String getCreator() {
 		return creator;
 	}
@@ -123,11 +142,16 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		this.creatorLegalEntityId = creatorLegalEntityId;
 	}
 
+	/** {@code relevance} is computed by the specification; every other accepted value is an entity attribute. */
 	@Override
-	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "title", allowableValues = {
-		"objectKey", "title", "year", "objectType"
-	}))
-	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = SORTABLE_PROPERTIES_MESSAGE) String> getSortBy() {
+	@ArraySchema(schema = @Schema(description = """
+		Property to sort on. 'relevance' ranks the best match first and is the default when a query is \
+		given; it is ignored without one. Sorting is ascending by default, which for relevance means most relevant first.""",
+		examples = "relevance",
+		allowableValues = {
+			"relevance", "objectKey", "title", "year", "objectType"
+		}))
+	public List<@Pattern(regexp = SortableProperties.COMBINED_OBJECT, message = SortableProperties.COMBINED_OBJECT_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
 	}
 
@@ -149,12 +173,13 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			return false;
 		final CombinedObjectParameters that = (CombinedObjectParameters) o;
 		return Objects.equals(query, that.query) && Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location)
-			&& Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId) && Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId);
+			&& Objects.equals(objectType, that.objectType) && Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId)
+			&& Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, creator, creatorPersonId, creatorLegalEntityId);
+		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, objectType, creator, creatorPersonId, creatorLegalEntityId);
 	}
 
 	@Override
@@ -164,6 +189,7 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
 			", location='" + location + '\'' +
+			", objectType=" + objectType +
 			", creator='" + creator + '\'' +
 			", creatorPersonId=" + creatorPersonId +
 			", creatorLegalEntityId=" + creatorLegalEntityId +

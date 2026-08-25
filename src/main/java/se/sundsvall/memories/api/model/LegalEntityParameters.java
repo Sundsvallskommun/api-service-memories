@@ -1,11 +1,15 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
-@Schema(description = "Legal entity (juridisk person) search parameters. All filters are optional and combined with "
-	+ "AND. Sort on one of: name, startDate or endDate.")
+@Schema(description = """
+	Legal entity (juridisk person) search parameters. All filters are optional and combined with \
+	AND. Sort on one of: name, startDate or endDate.""")
 public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Name (substring, case-insensitive; matches name or alternative names)", examples = "Nödhjälpskommittén")
@@ -100,6 +104,14 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 	public LegalEntityParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
+	}
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "name", allowableValues = {
+		"name", "startDate", "endDate", "legalEntityId"
+	}))
+	public List<@Pattern(regexp = SortableProperties.LEGAL_ENTITY, message = SortableProperties.LEGAL_ENTITY_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
 	}
 
 	@Override

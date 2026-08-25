@@ -7,7 +7,6 @@ import se.sundsvall.memories.integration.db.model.PersonEntity_;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
-import static java.util.Optional.ofNullable;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.COMMENT;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.CREATOR_LEGAL_ENTITY;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.CREATOR_PERSON;
@@ -48,9 +47,9 @@ public interface PhotoSpecification {
 		return BUILDER.buildEqualFilter(ID, id);
 	}
 
-	// A blank object type means "no filter", so the request parameter can be passed through untrimmed.
-	static Specification<PhotoEntity> hasObjectType(final String objectType) {
-		return BUILDER.buildEqualFilter(OBJECT_TYPE, trimToNull(objectType));
+	/** The selected object types, which are alternatives. A blank or empty selection matches every type. */
+	static Specification<PhotoEntity> hasObjectType(final List<String> objectTypes) {
+		return BUILDER.buildInFilter(OBJECT_TYPE, objectTypes);
 	}
 
 	static Specification<PhotoEntity> matches(final String query) {
@@ -78,20 +77,20 @@ public interface PhotoSpecification {
 	List<SpecificationBuilder.AssociationAttributes> CREATOR_ATTRIBUTES = List.of(
 		// a person's name spans two columns and is matched as one string; a legal entity's two names are alternatives
 		new SpecificationBuilder.AssociationAttributes(CREATOR_PERSON, List.of(List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME)), PersonEntity_.PERSON_ID,
-			PersonSpecification.PLACEHOLDER_ID),
+			PersonSpecification.PLACEHOLDER_ID, PersonEntity_.DELETED_DATE),
 		new SpecificationBuilder.AssociationAttributes(CREATOR_LEGAL_ENTITY, List.of(List.of(LegalEntityEntity_.NAME), List.of(LegalEntityEntity_.ALTERNATIVE_NAMES)),
-			LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntitySpecification.PLACEHOLDER_ID));
+			LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntitySpecification.PLACEHOLDER_ID, LegalEntityEntity_.DELETED_DATE));
 
 	static Specification<PhotoEntity> matchesCreator(final String creator) {
 		return BUILDER.buildAssociationLikeAnyFilter(CREATOR_ATTRIBUTES, creator);
 	}
 
 	static Specification<PhotoEntity> hasCreatorPerson(final Integer creatorPersonId) {
-		return BUILDER.buildAssociationEqualFilter(CREATOR_PERSON, PersonEntity_.PERSON_ID, creatorPersonId);
+		return BUILDER.buildAssociationEqualFilter(CREATOR_PERSON, PersonEntity_.PERSON_ID, PersonEntity_.DELETED_DATE, creatorPersonId);
 	}
 
 	static Specification<PhotoEntity> hasCreatorLegalEntity(final Integer creatorLegalEntityId) {
-		return BUILDER.buildAssociationEqualFilter(CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, creatorLegalEntityId);
+		return BUILDER.buildAssociationEqualFilter(CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntityEntity_.DELETED_DATE, creatorLegalEntityId);
 	}
 
 	/**
@@ -105,12 +104,5 @@ public interface PhotoSpecification {
 
 	static Specification<PhotoEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
-	}
-
-	private static String trimToNull(final String value) {
-		return ofNullable(value)
-			.map(String::trim)
-			.filter(trimmed -> !trimmed.isEmpty())
-			.orElse(null);
 	}
 }

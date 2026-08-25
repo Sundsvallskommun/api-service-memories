@@ -1,6 +1,9 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 
 @Schema(description = "Text search parameters")
 public class TextParameters extends AbstractSearchParameters {
@@ -61,5 +64,13 @@ public class TextParameters extends AbstractSearchParameters {
 	public TextParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
+	}
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "documentTitle", allowableValues = {
+		"documentTitle", "documentDate", "id"
+	}))
+	public List<@Pattern(regexp = SortableProperties.TEXT, message = SortableProperties.TEXT_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
 	}
 }

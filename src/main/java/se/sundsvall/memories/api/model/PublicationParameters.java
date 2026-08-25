@@ -1,6 +1,9 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 
 @Schema(description = "Publication search parameters")
 public class PublicationParameters extends AbstractSearchParameters {
@@ -61,5 +64,13 @@ public class PublicationParameters extends AbstractSearchParameters {
 	public PublicationParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
+	}
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "documentTitle", allowableValues = {
+		"documentTitle", "documentDate", "date", "id"
+	}))
+	public List<@Pattern(regexp = SortableProperties.PUBLICATION, message = SortableProperties.PUBLICATION_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
 	}
 }

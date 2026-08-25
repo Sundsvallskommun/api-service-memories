@@ -17,6 +17,7 @@ import static se.sundsvall.memories.integration.db.specification.LegalEntitySpec
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasName;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.matchesLocation;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.notPlaceholder;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.published;
 
@@ -30,6 +31,7 @@ public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, 
 		return findAll(fetchTopography()
 			.and(fetchCategory())
 			.and(published())
+			.and(notDeleted())
 			.and(notPlaceholder())
 			.and(hasName(parameters.getName()))
 			.and(matchesLocation(parameters.getLocation()))
@@ -39,10 +41,13 @@ public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, 
 			pageable);
 	}
 
+	// Unpublished legal entity records stay reachable by id, the way the object searches keep unpublished objects;
+	// a deleted one does not, and is not named as an originator either.
 	default Optional<LegalEntityEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
 			.and(fetchCategory())
 			.and(hasId(id))
+			.and(notDeleted())
 			.and(notPlaceholder()));
 	}
 }

@@ -1,11 +1,15 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
-@Schema(description = "Seaman (sjömanshus) search parameters. All filters are optional and combined with AND. Sort on "
-	+ "one of: lastName1, firstName, birthDate or birthParish.")
+@Schema(description = """
+	Seaman (sjömanshus) search parameters. All filters are optional and combined with AND. Sort on \
+	one of: lastName1, firstName, birthDate or birthParish.""")
 public class SeamanParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Last name (substring, case-insensitive; matches either surname column)", examples = "Nordin")
@@ -100,6 +104,14 @@ public class SeamanParameters extends AbstractParameterPagingAndSortingBase {
 	public SeamanParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
+	}
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "lastName1", allowableValues = {
+		"lastName1", "firstName", "birthDate", "birthParish", "id"
+	}))
+	public List<@Pattern(regexp = SortableProperties.SEAMAN, message = SortableProperties.SEAMAN_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
 	}
 
 	@Override

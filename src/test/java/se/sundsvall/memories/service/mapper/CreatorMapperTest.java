@@ -1,9 +1,11 @@
 package se.sundsvall.memories.service.mapper;
 
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 
+import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CreatorMapperTest {
@@ -74,5 +76,27 @@ class CreatorMapperTest {
 
 	private static String name(final PersonEntity person) {
 		return CreatorMapper.toCreator(person, null).getPerson();
+	}
+
+	/**
+	 * A deleted register record answers 404 on its own endpoint, so naming it here would publish a reference the API
+	 * refuses to resolve — and the name of a record the archive has deleted.
+	 */
+	@Test
+	void deletedOriginatorIsReadAsAbsent() {
+		final var deletedPerson = PersonEntity.create().withPersonId(1).withFirstName("Anton").withLastName("Nordin")
+			.withDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		final var deletedLegalEntity = LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén")
+			.withDeletedDate(LocalDate.of(2026, JANUARY, 1));
+
+		assertThat(CreatorMapper.toCreator(deletedPerson, deletedLegalEntity)).isNull();
+
+		final var oneDeleted = CreatorMapper.toCreator(deletedPerson,
+			LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén"));
+
+		assertThat(oneDeleted).isNotNull();
+		assertThat(oneDeleted.getPersonId()).isNull();
+		assertThat(oneDeleted.getPerson()).isNull();
+		assertThat(oneDeleted.getLegalEntity()).isEqualTo("Nödhjälpskommittén");
 	}
 }

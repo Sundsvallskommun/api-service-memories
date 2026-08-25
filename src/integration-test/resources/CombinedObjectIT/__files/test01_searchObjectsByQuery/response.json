@@ -6,9 +6,12 @@
 		"totalPages": 1,
 		"totalRecords": 1
 	},
-	"typeCounts": {
-		"Ljud": 1
-	},
+	"typeCounts": [
+		{
+			"objectType": "Ljud",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "ljud-3",

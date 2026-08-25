@@ -54,10 +54,6 @@ class CombinedObjectResourceFailureTest {
 		verifyNoInteractions(serviceMock);
 	}
 
-	/**
-	 * The sort property is an entity attribute, not a column of the view. A column name used to reach Spring Data and
-	 * fail there as a 500; it is a 400 that names the alternatives instead.
-	 */
 	@Test
 	void searchObjectsWithInvalidSortBy() {
 		final var response = webTestClient.get()
@@ -75,7 +71,27 @@ class CombinedObjectResourceFailureTest {
 		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
 		assertThat(response.getViolations())
 			.extracting(Violation::message)
-			.containsExactly("must be one of: objectKey, title, year, objectType");
+			.containsExactly("must be one of: relevance, objectKey, title, year, objectType");
+
+		verifyNoInteractions(serviceMock);
+	}
+
+	@Test
+	void searchObjectsWithAnUnofferedEntityAttributeAsSortBy() {
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("sortBy", "nameText")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getViolations())
+			.extracting(Violation::message)
+			.containsExactly("must be one of: relevance, objectKey, title, year, objectType");
 
 		verifyNoInteractions(serviceMock);
 	}

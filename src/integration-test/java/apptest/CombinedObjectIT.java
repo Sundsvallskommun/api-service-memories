@@ -31,10 +31,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The register types (Person, Sjöman) take part in the same union as the object types — a name matches the person
-	 * record as well as both seamen, including the one carrying the name in its second surname column.
-	 */
 	@Test
 	void test02_searchObjectsIncludesRegisters() {
 		setupCall()
@@ -45,10 +41,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A legal entity is the one register type with a topography reference, so its location is resolved to a place name
-	 * just like the object types', and its year comes from the start of the activity period.
-	 */
 	@Test
 	void test03_searchObjectsIncludesLegalEntities() {
 		setupCall()
@@ -59,10 +51,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Unpublished register rows (person 3 and legal entity 30, neither with bit 4 of OPTIONS set) must stay out of the
-	 * combined search, exactly as they stay out of the per-type searches.
-	 */
 	@Test
 	void test04_searchObjectsExcludesUnpublishedRegisterRows() {
 		setupCall()
@@ -73,10 +61,7 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The placeholder rows PERSON.P_ID = 0 and JURPERS.J_ID = 1 ("ingen") are sentinels, not archive records. Both are
-	 * flagged published, so only the explicit id predicates keep them out of the result.
-	 */
+	// PERSON.P_ID = 0 and JURPERS.J_ID = 1 are sentinels, and both are flagged published.
 	@Test
 	void test05_searchObjectsExcludesRegisterPlaceholders() {
 		setupCall()
@@ -87,10 +72,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Every value the parameter accepts has to resolve as an entity attribute. A property that only fails once it
-	 * reaches Spring Data is a 500 no unit test would catch, so each one is walked through the whole request here.
-	 */
 	@Test
 	void test06_searchObjectsSortedByTitle() {
 		setupCall()
@@ -121,10 +102,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A column of the view is not an entity attribute, and is refused with the list of alternatives rather than
-	 * reaching Spring Data and failing there.
-	 */
 	@Test
 	void test09_searchObjectsWithInvalidSortBy() {
 		setupCall()
@@ -135,10 +112,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Only the object branches of the view carry an originator, so filtering on one also leaves out the register types
-	 * — a person is not created by anyone. Film 1 is the one row with a real originator.
-	 */
 	@Test
 	void test10_searchObjectsByCreator() {
 		setupCall()
@@ -149,14 +122,102 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The placeholder rows both answer to "Ingen", and nearly every object points at them. Searching for that word
-	 * must not return the whole archive.
-	 */
 	@Test
 	void test11_searchObjectsByCreatorIgnoresThePlaceholders() {
 		setupCall()
 			.withServicePath(PATH + "?creator=Ingen")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test12_searchObjectsRanksTheNamedPersonFirst() {
+		setupCall()
+			.withServicePath(PATH + "?query=Anton Nordin")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// Legal entity 10 is registered as "Nödhjälpskommittén 1888-1889" and matched on its alternative name.
+	@Test
+	void test13_searchObjectsMatchesLegalEntityByCompanyName() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nödhjälpskommittén")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test14_searchObjectsMatchesTheDocumentTitle() {
+		setupCall()
+			.withServicePath(PATH + "?query=Stadsvy")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test15_searchObjectsMatchesASecondSurname() {
+		setupCall()
+			.withServicePath(PATH + "?query=Erik Nordin")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test16_searchObjectsSortedByRelevance() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&sortBy=relevance")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test17_searchObjectsExcludesSoftDeletedRows() {
+		setupCall()
+			.withServicePath(PATH + "?query=raderad")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// The type selection narrows the list but not typeCounts, so the unselected chips keep their counts.
+	@Test
+	void test18_searchObjectsFilteredByObjectType() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&objectType=Sjöman&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test19_searchObjectsFilteredBySeveralObjectTypes() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&objectType=Person,Sjöman&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test20_searchObjectsFilteredByUnknownObjectType() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&objectType=Karta")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)

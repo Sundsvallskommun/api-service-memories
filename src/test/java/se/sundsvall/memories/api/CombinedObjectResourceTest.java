@@ -3,6 +3,7 @@ package se.sundsvall.memories.api;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
@@ -12,11 +13,15 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.CombinedObject;
+import se.sundsvall.memories.api.model.CombinedObjectParameters;
+import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.api.model.PagedCombinedObjectResponse;
 import se.sundsvall.memories.service.CombinedObjectService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -40,7 +45,7 @@ class CombinedObjectResourceTest {
 		final var object = CombinedObject.create().withObjectKey("foto-1001").withObjectType("Foto").withTitle("Stadsvy");
 		final var pagedResponse = PagedCombinedObjectResponse.create()
 			.withObjects(List.of(object))
-			.withTypeCounts(Map.of("Foto", 1L))
+			.withTypeCounts(List.of(ObjectTypeCount.create().withObjectType("Foto").withCount(1L)))
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);
@@ -59,16 +64,42 @@ class CombinedObjectResourceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getObjects()).hasSize(1);
 		assertThat(response.getObjects().getFirst().getObjectType()).isEqualTo("Foto");
-		assertThat(response.getTypeCounts()).containsEntry("Foto", 1L);
+		assertThat(response.getTypeCounts()).extracting(ObjectTypeCount::getObjectType, ObjectTypeCount::getCount)
+			.containsExactly(tuple("Foto", 1L));
 		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(serviceMock).search(any());
+	}
+
+	@Test
+	void searchObjectsBindsRepeatedAndCommaSeparatedObjectTypes() {
+		final var parameters = ArgumentCaptor.forClass(CombinedObjectParameters.class);
+		when(serviceMock.search(any())).thenReturn(PagedCombinedObjectResponse.create());
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("objectType", "Foto")
+				.queryParam("objectType", "Ljud")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("objectType", "Foto,Ljud")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock, times(2)).search(parameters.capture());
+		assertThat(parameters.getAllValues()).extracting(CombinedObjectParameters::getObjectType)
+			.containsExactly(List.of("Foto", "Ljud"), List.of("Foto", "Ljud"));
 	}
 
 	@Test
 	void searchObjectsWithoutFilters() {
 		final var pagedResponse = PagedCombinedObjectResponse.create()
 			.withObjects(List.of())
-			.withTypeCounts(Map.of())
+			.withTypeCounts(List.of())
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(0).withTotalRecords(0).withTotalPages(0));
 
 		when(serviceMock.search(any())).thenReturn(pagedResponse);

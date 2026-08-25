@@ -1,6 +1,9 @@
 package se.sundsvall.memories.api.model;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
 
 @Schema(description = "Audio search parameters")
 public class AudioParameters extends AbstractSearchParameters {
@@ -61,5 +64,13 @@ public class AudioParameters extends AbstractSearchParameters {
 	public AudioParameters withLimit(final int limit) {
 		super.setLimit(limit);
 		return this;
+	}
+
+	@Override
+	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "documentTitle", allowableValues = {
+		"documentTitle", "date", "id"
+	}))
+	public List<@Pattern(regexp = SortableProperties.AUDIO, message = SortableProperties.AUDIO_MESSAGE) String> getSortBy() {
+		return super.getSortBy();
 	}
 }

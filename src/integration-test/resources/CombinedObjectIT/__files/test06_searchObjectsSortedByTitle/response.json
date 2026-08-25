@@ -1,20 +1,30 @@
 {
 	"_meta": {
-		"count": 3,
+		"count": 4,
 		"limit": 100,
 		"page": 1,
-		"totalPages": 1,
-		"totalRecords": 3,
 		"sortBy": [
 			"title",
 			"objectKey"
 		],
-		"sortDirection": "ASC"
+		"sortDirection": "ASC",
+		"totalPages": 1,
+		"totalRecords": 4
 	},
-	"typeCounts": {
-		"Person": 1,
-		"Sjöman": 2
-	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		},
+		{
+			"objectType": "Person",
+			"count": 1
+		},
+		{
+			"objectType": "Sjöman",
+			"count": 2
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "person-1",
@@ -39,6 +49,15 @@
 			"title": "Erik Holm",
 			"year": 1889,
 			"locationText": "Njurunda"
+		},
+		{
+			"objectKey": "foto-1005",
+			"sourceId": 1005,
+			"objectType": "Foto",
+			"title": "Handelsbod vid Storgatan",
+			"year": 1890,
+			"topographyId": 1,
+			"location": "Sundsvall"
 		}
 	]
 }

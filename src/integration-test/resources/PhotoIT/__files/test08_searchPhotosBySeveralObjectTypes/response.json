@@ -1,0 +1,23 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"photos": [
+		{
+			"photoId": 1003,
+			"documentTitle": "Industribild från Timrå",
+			"comment": "Sågverk i Timrå",
+			"earliest": "1960",
+			"latest": "1962",
+			"locationText": "Timrå",
+			"location": "Timrå",
+			"objectType": "Foto",
+			"thumbnailFilename": "FOTO.id_1003_fil_liten.jpg",
+			"largeImageFilename": "FOTO.id_1003_fil_stor.jpg"
+		}
+	]
+}

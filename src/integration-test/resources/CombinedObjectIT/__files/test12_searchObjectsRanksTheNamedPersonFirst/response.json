@@ -1,0 +1,50 @@
+{
+	"_meta": {
+		"count": 3,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 3
+	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		},
+		{
+			"objectType": "Person",
+			"count": 1
+		},
+		{
+			"objectType": "Sjöman",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "person-1",
+			"sourceId": 1,
+			"objectType": "Person",
+			"title": "Anton Nordin",
+			"year": 1852,
+			"locationText": "Sundsvall"
+		},
+		{
+			"objectKey": "sjoman-1",
+			"sourceId": 1,
+			"objectType": "Sjöman",
+			"title": "Anton Nordin",
+			"year": 1852,
+			"locationText": "Sundsvall"
+		},
+		{
+			"objectKey": "foto-1005",
+			"sourceId": 1005,
+			"objectType": "Foto",
+			"title": "Handelsbod vid Storgatan",
+			"year": 1890,
+			"topographyId": 1,
+			"location": "Sundsvall"
+		}
+	]
+}

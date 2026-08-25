@@ -61,10 +61,6 @@ class PhotoIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Photo 1098 is soft-deleted but still carries the published bit, which is exactly the state that used to leak it
-	 * through both search and get-by-id.
-	 */
 	@Test
 	void test05_getSoftDeletedPhotoByIdNotFound() {
 		setupCall()
@@ -85,14 +81,32 @@ class PhotoIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A yearTo-only search must not match photos whose TIDIG is blank or non-numeric — those cast to year 0, which
-	 * would otherwise satisfy every upper bound.
-	 */
+	// A photo with a blank or non-numeric TIDIG casts to year 0, which would otherwise satisfy every upper bound.
 	@Test
 	void test07_searchPhotosByYearToExcludesUndated() {
 		setupCall()
 			.withServicePath(PATH + "?yearTo=1930")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// Same search as test06 with one more type selected: the types are alternatives, so the result is unchanged.
+	@Test
+	void test08_searchPhotosBySeveralObjectTypes() {
+		setupCall()
+			.withServicePath(PATH + "?location=Timrå&yearFrom=1958&yearTo=1965&objectType=Föremål,Foto")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test09_searchPhotosByObjectTypeWithoutMatches() {
+		setupCall()
+			.withServicePath(PATH + "?location=Timrå&yearFrom=1958&yearTo=1965&objectType=Föremål")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)

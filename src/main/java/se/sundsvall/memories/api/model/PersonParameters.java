@@ -6,17 +6,11 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
-import se.sundsvall.memories.integration.db.model.PersonEntity;
 
-@Schema(description = "Person search parameters. All filters are optional and combined with AND. Sort on one of: "
-	+ "lastName, firstName, birthDate or birthParish.")
+@Schema(description = """
+	Person search parameters. All filters are optional and combined with AND. Sort on one of: \
+	lastName, firstName, birthDate or birthParish.""")
 public class PersonParameters extends AbstractParameterPagingAndSortingBase {
-
-	/**
-	 * {@link #getSortBy()} feeds a specification, so a sort property is an attribute of {@link PersonEntity} rather than
-	 * a {@code PERSON} column. Anything else fails to resolve and comes back as a 500, hence the up-front validation.
-	 */
-	private static final String SORTABLE_PROPERTIES = "lastName|firstName|birthDate|birthParish";
 
 	@Schema(description = "Last name (substring, case-insensitive)", examples = "Nordin")
 	private String lastName;
@@ -122,7 +116,7 @@ public class PersonParameters extends AbstractParameterPagingAndSortingBase {
 	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "lastName", allowableValues = {
 		"lastName", "firstName", "birthDate", "birthParish"
 	}))
-	public List<@Pattern(regexp = SORTABLE_PROPERTIES, message = "must be one of: lastName, firstName, birthDate, birthParish") String> getSortBy() {
+	public List<@Pattern(regexp = SortableProperties.PERSON, message = SortableProperties.PERSON_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
 	}
 

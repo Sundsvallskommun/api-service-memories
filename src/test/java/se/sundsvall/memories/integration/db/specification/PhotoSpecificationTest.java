@@ -22,6 +22,7 @@ import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.JANUARY;
 import static java.time.Month.MARCH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -104,6 +105,23 @@ class PhotoSpecificationTest {
 		assertThat(findIds(PhotoSpecification.matchesCreator("kommitté"))).containsExactly(2);
 		assertThat(findIds(PhotoSpecification.matchesCreator("   "))).containsExactly(1, 2, 3);
 		assertThat(findIds(PhotoSpecification.matchesCreator(null))).containsExactly(1, 2, 3);
+	}
+
+	/** A deleted register record is not served by its own endpoint, so it must not select objects here either. */
+	@Test
+	void creatorFiltersSkipADeletedRegisterRecord() {
+		final var person = persistPerson(5, "Anton", "Nordin");
+		final var legalEntity = persistLegalEntity(20, "Nödhjälpskommittén 1888-1889", "Kommittén");
+		person.setDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		legalEntity.setDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		persist(1, 4, "Av personen", null, "Foto").setCreatorPerson(person);
+		persist(2, 4, "Av bolaget", null, "Foto").setCreatorLegalEntity(legalEntity);
+		photoRepository.flush();
+
+		assertThat(findIds(PhotoSpecification.matchesCreator("nordin"))).isEmpty();
+		assertThat(findIds(PhotoSpecification.matchesCreator("kommitté"))).isEmpty();
+		assertThat(findIds(PhotoSpecification.hasCreatorPerson(5))).isEmpty();
+		assertThat(findIds(PhotoSpecification.hasCreatorLegalEntity(20))).isEmpty();
 	}
 
 	/**
@@ -263,15 +281,27 @@ class PhotoSpecificationTest {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Föremål");
 
-		assertThat(findIds(PhotoSpecification.hasObjectType("Föremål"))).containsExactly(2);
+		assertThat(findIds(PhotoSpecification.hasObjectType(List.of("Föremål")))).containsExactly(2);
+	}
+
+	/** Several types are alternatives, so selecting both widens the result instead of emptying it. */
+	@Test
+	void hasObjectTypeAcceptsSeveralTypesAsAlternatives() {
+		persist(1, 4, "a", null, "Foto");
+		persist(2, 4, "b", null, "Föremål");
+		persist(3, 4, "c", null, "Karta");
+
+		assertThat(findIds(PhotoSpecification.hasObjectType(List.of("Foto", "Föremål")))).containsExactly(1, 2);
 	}
 
 	@Test
-	void hasObjectTypeIsUnrestrictedWhenNull() {
+	void hasObjectTypeIsUnrestrictedWhenNullEmptyOrBlank() {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Föremål");
 
 		assertThat(findIds(PhotoSpecification.hasObjectType(null))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.hasObjectType(List.of()))).containsExactly(1, 2);
+		assertThat(findIds(PhotoSpecification.hasObjectType(List.of(" ")))).containsExactly(1, 2);
 	}
 
 	@Test
@@ -419,10 +449,12 @@ class PhotoSpecificationTest {
 		persist(1, 4, "a", null, "Foto");
 		persist(2, 4, "b", null, "Föremål");
 
-		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType("Föremål"), Pageable.unpaged())
+		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType(List.of("Föremål")), Pageable.unpaged())
 			.getContent()).extracting(PhotoEntity::getId).containsExactly(2);
+		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType(List.of("Foto", "Föremål")), Pageable.unpaged())
+			.getContent()).extracting(PhotoEntity::getId).containsExactlyInAnyOrder(1, 2);
 		// A blank object type means "no filter", so the request parameter can be passed through untrimmed.
-		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType("   "), Pageable.unpaged())
+		assertThat(photoRepository.findAllByParameters(PhotoParameters.create().withObjectType(List.of("   ")), Pageable.unpaged())
 			.getContent()).extracting(PhotoEntity::getId).containsExactlyInAnyOrder(1, 2);
 	}
 
@@ -447,7 +479,7 @@ class PhotoSpecificationTest {
 		final var specification = Specification.allOf(
 			PhotoSpecification.published(),
 			PhotoSpecification.matches("hamnen"),
-			PhotoSpecification.hasObjectType("Foto"));
+			PhotoSpecification.hasObjectType(List.of("Foto")));
 
 		assertThat(findIds(specification)).containsExactly(1);
 	}

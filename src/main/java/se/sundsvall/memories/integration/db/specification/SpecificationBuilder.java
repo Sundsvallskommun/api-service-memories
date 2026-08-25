@@ -4,10 +4,13 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,6 +22,12 @@ public class SpecificationBuilder<T> {
 	private static final int PUBLISHED_BIT = 4;
 
 	private static final int YEAR_LENGTH = 4;
+
+	private static final int RELEVANCE_EXACT_NAME = 0;
+	private static final int RELEVANCE_NAME_PREFIX = 1;
+	private static final int RELEVANCE_ALL_WORDS_IN_NAME = 2;
+	private static final int RELEVANCE_ANY_WORD_IN_NAME = 3;
+	private static final int RELEVANCE_BODY_ONLY = 4;
 
 	private static final Pattern LIKE_WILDCARDS = Pattern.compile("([!%_])");
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
@@ -58,6 +67,18 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows whose attribute is one of the values, which are alternatives. Blank values are dropped, so an empty
+	 * or blank selection matches every row.
+	 */
+	public Specification<T> buildInFilter(final String attribute, final List<String> values) {
+		final var wanted = distinctNonBlank(values);
+		if (wanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, _) -> root.get(attribute).in(wanted);
+	}
+
+	/**
 	 * Matches rows where the value occurs anywhere in at least one of the attributes. Wildcards in the value are
 	 * escaped. Matches every row when the value is blank.
 	 */
@@ -70,10 +91,9 @@ public class SpecificationBuilder<T> {
 
 	/**
 	 * Matches rows where the value occurs in at least one attribute of at least one of the given associations, skipping
-	 * the sentinel row each association may point at. The originator filters need this: an object names its upphovsman
-	 * through either a person or a legal entity, and both foreign keys default to a placeholder row rather than to
-	 * {@code NULL} — a placeholder is called "Ingen", so without the guard a search for that word would return
-	 * everything. Matches every row when the value is blank.
+	 * the sentinel row each association may point at, and rows the association points at that are soft-deleted. Both
+	 * foreign keys default to a placeholder called "Ingen" rather than to {@code NULL}, so without the sentinel guard a
+	 * search for that word would return everything. Matches every row when the value is blank.
 	 */
 	public Specification<T> buildAssociationLikeAnyFilter(final List<AssociationAttributes> associations, final String value) {
 		if (value == null || value.isBlank()) {
@@ -91,6 +111,7 @@ public class SpecificationBuilder<T> {
 			.map(group -> cb.like(joined(cb, join, group), pattern, LIKE_ESCAPE));
 		return cb.and(
 			cb.notEqual(join.get(association.idAttribute()), association.placeholderId()),
+			cb.isNull(join.get(association.deletedAttribute())),
 			cb.or(matches.toArray(Predicate[]::new)));
 	}
 
@@ -114,12 +135,13 @@ public class SpecificationBuilder<T> {
 	 * and family name — belong in the same group, while attributes that are alternatives to each other get one group
 	 * apiece.
 	 *
-	 * @param association     name of the association attribute
-	 * @param attributeGroups attributes on the associated entity to match against, grouped
-	 * @param idAttribute     name of the associated entity's id attribute
-	 * @param placeholderId   id of the sentinel row
+	 * @param association      name of the association attribute
+	 * @param attributeGroups  attributes on the associated entity to match against, grouped
+	 * @param idAttribute      name of the associated entity's id attribute
+	 * @param placeholderId    id of the sentinel row
+	 * @param deletedAttribute name of the associated entity's soft-delete attribute, which must be null to match
 	 */
-	public record AssociationAttributes(String association, List<List<String>> attributeGroups, String idAttribute, Object placeholderId) {}
+	public record AssociationAttributes(String association, List<List<String>> attributeGroups, String idAttribute, Object placeholderId, String deletedAttribute) {}
 
 	/**
 	 * Matches rows where the attribute is {@code NULL}.
@@ -250,6 +272,21 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * As {@link #buildAssociationEqualFilter(String, String, Object)}, and the associated row must not be soft-deleted.
+	 * The originator filters need that: a deleted register record is not served by its own endpoint, so it must not
+	 * select objects here either.
+	 */
+	public Specification<T> buildAssociationEqualFilter(final String association, final String attribute, final String deletedAttribute, final Object value) {
+		if (value == null) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> {
+			final var join = reuseFetchOrJoin(root, association);
+			return cb.and(cb.equal(join.get(attribute), value), cb.isNull(join.get(deletedAttribute)));
+		};
+	}
+
+	/**
 	 * Matches rows whose year is at most {@code yearTo}, read the same way as in
 	 * {@link #buildYearAtLeastFilter(List, Integer)}.
 	 */
@@ -297,6 +334,45 @@ public class SpecificationBuilder<T> {
 			}
 			return cb.conjunction();
 		};
+	}
+
+	/**
+	 * Orders the query without restricting it, so an order can be a computed expression rather than a column. Only
+	 * applies while the {@code Pageable} carries no sort of its own, which Spring Data would otherwise use instead.
+	 * Skipped for the derived count query.
+	 */
+	public Specification<T> buildOrderBy(final BiFunction<Root<T>, CriteriaBuilder, List<Order>> orders) {
+		return (root, query, cb) -> {
+			if (query != null && !Long.class.equals(query.getResultType())) {
+				query.orderBy(orders.apply(root, cb));
+			}
+			return cb.conjunction();
+		};
+	}
+
+	/**
+	 * How well the attribute matches the query, lower being better: exact (0), prefix (1), all words (2), some word
+	 * (3), none (4). Ordering ascending therefore puts a name or title hit above one that only matched a comment. Uses
+	 * the same escaped {@code LIKE} as the filters, so ranking and matching cannot disagree.
+	 */
+	public Expression<Integer> relevance(final Root<T> root, final CriteriaBuilder cb, final String attribute, final String query) {
+		final var words = splitWords(query);
+		final var value = query.trim().toLowerCase();
+		final var name = cb.lower(root.<String>get(attribute));
+
+		return cb.<Integer>selectCase()
+			.when(cb.equal(name, value), RELEVANCE_EXACT_NAME)
+			.when(cb.like(name, escapeWildcards(value) + "%", LIKE_ESCAPE), RELEVANCE_NAME_PREFIX)
+			.when(cb.and(matchesWords(name, cb, words)), RELEVANCE_ALL_WORDS_IN_NAME)
+			.when(cb.or(matchesWords(name, cb, words)), RELEVANCE_ANY_WORD_IN_NAME)
+			.otherwise(RELEVANCE_BODY_ONLY);
+	}
+
+	/** One {@code LIKE} per word, for the caller to combine with {@code and} or {@code or}. */
+	private Predicate[] matchesWords(final Expression<String> name, final CriteriaBuilder cb, final List<String> words) {
+		return words.stream()
+			.map(word -> cb.like(name, "%" + escapeWildcards(word.toLowerCase()) + "%", LIKE_ESCAPE))
+			.toArray(Predicate[]::new);
 	}
 
 	/**
@@ -357,6 +433,18 @@ public class SpecificationBuilder<T> {
 		return cb.or(attributes.stream()
 			.map(attribute -> cb.like(root.<String>get(attribute), pattern, LIKE_ESCAPE))
 			.toArray(Predicate[]::new));
+	}
+
+	private static List<String> distinctNonBlank(final List<String> values) {
+		if (values == null) {
+			return List.of();
+		}
+		return values.stream()
+			.filter(Objects::nonNull)
+			.map(String::trim)
+			.filter(value -> !value.isEmpty())
+			.distinct()
+			.toList();
 	}
 
 	private static List<String> splitWords(final String query) {
