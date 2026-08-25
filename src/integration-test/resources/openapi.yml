@@ -2866,14 +2866,12 @@ components:
             \ and the objectType filter accepts"
           examples:
           - Foto
-          readOnly: true
         count:
           type: integer
           format: int64
           description: "Number of matching objects of that type, across every page"
           examples:
           - 12
-          readOnly: true
     PagedCombinedObjectResponse:
       type: object
       description: Paged combined object response

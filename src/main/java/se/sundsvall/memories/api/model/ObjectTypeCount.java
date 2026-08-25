@@ -3,18 +3,15 @@ package se.sundsvall.memories.api.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 
-import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
-
 /** One chip counter. The type is a value rather than a JSON key, which keeps the archive's spelling out of the keys. */
 @Schema(description = "How many objects of one type the search matches")
 public class ObjectTypeCount {
 
 	@Schema(description = "Object type (Foto, Föremål, Film, Ljud, Text, Publikation, Person, Juridisk person or Sjöman) — the same value each object reports and the objectType filter accepts",
-		examples = "Foto",
-		accessMode = READ_ONLY)
+		examples = "Foto")
 	private String objectType;
 
-	@Schema(description = "Number of matching objects of that type, across every page", examples = "12", accessMode = READ_ONLY)
+	@Schema(description = "Number of matching objects of that type, across every page", examples = "12")
 	private Long count;
 
 	public static ObjectTypeCount create() {
