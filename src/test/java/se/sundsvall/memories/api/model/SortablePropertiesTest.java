@@ -27,13 +27,8 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /**
- * Every value a {@code sortBy} whitelist accepts has to resolve as an attribute of the entity behind it. A property
- * that does not is invisible until it reaches Spring Data, where it becomes a 500 — which is the bug the whitelists
- * exist to prevent, and which a whitelist listing the wrong name would reintroduce in a way no unit test would catch.
- *
- * <p>
- * This runs the real search once per accepted value, against a real database, and only asserts that it does not throw.
- * What the order actually is belongs to the per-type tests.
+ * Every value a {@code sortBy} whitelist accepts has to resolve as an entity attribute, which only fails once it
+ * reaches Spring Data. Runs each accepted value through a real search and asserts that it does not throw.
  */
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("junit")

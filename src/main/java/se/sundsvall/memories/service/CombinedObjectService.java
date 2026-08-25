@@ -19,10 +19,7 @@ public class CombinedObjectService {
 
 	@Transactional(readOnly = true)
 	public PagedCombinedObjectResponse search(final CombinedObjectParameters parameters) {
-		// This search orders itself, so unlike the others it gets an unordered page request: relevance is computed per
-		// request and is not a column, and Spring Data would replace the specification's order with the page request's
-		// the moment it had one. The id tiebreaker the other searches get from Pageables is appended by the
-		// specification instead.
+		// Unordered on purpose: this search orders itself from its specification, tiebreak included.
 		final var pageable = Pageables.unordered(parameters);
 
 		final var page = combinedObjectRepository.findAllByParameters(parameters, pageable);

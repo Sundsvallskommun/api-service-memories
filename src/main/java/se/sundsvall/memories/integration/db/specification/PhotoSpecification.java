@@ -47,10 +47,7 @@ public interface PhotoSpecification {
 		return BUILDER.buildEqualFilter(ID, id);
 	}
 
-	/**
-	 * The selected object types, which are alternatives: Foto and Föremål together means either. A blank or empty
-	 * selection means "no filter", so the request parameter can be passed through untrimmed.
-	 */
+	/** The selected object types, which are alternatives. A blank or empty selection matches every type. */
 	static Specification<PhotoEntity> hasObjectType(final List<String> objectTypes) {
 		return BUILDER.buildInFilter(OBJECT_TYPE, objectTypes);
 	}

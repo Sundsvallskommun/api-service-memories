@@ -1,20 +1,11 @@
--- Refines VW_MEMORY_OBJECTS (see V1_7 through V1_9) in two ways. Which tables take part, and how OBJECT_KEY, TITLE,
--- SEARCH_TEXT, SORT_YEAR, TOPOGRAPHY_ID, LOCATION_TEXT and the two originator ids are derived, is unchanged.
+-- Refines VW_MEMORY_OBJECTS (see V1_7 through V1_9) in two ways; everything else is unchanged.
 --
---   * NAME_TEXT is new: the part of a row a user is likely to have typed the query from — the document title for the
---     object types, the full name for the registers. It carries the name columns TITLE leaves out because they are not
---     part of a display name: JURPERS.ALTNAMN, under which a company is as often known as under its registered name,
---     and SJOMAN.EFTERNAMN2, a real second surname the register fills in inconsistently. The combined search ranks a
---     hit in NAME_TEXT above one that only occurred in SEARCH_TEXT, which is what puts the person above the photo
---     whose comment happens to mention them. NAME_TEXT is a subset of SEARCH_TEXT in every branch, so it changes which
---     rows match not at all — only the order they come back in.
---   * The soft-delete guard is new. Deletion sets DELETEDDATE but leaves the published bit set, so the OPTIONS check
---     alone never hid a deleted row: every per-type search chains a DELETEDDATE IS NULL predicate and the combined one
---     silently did not. SJOMAN has neither column and is therefore left exactly as it was.
---
--- NAME_TEXT wraps every column in NULLIF(..., '') before CONCAT_WS, the same way V1_8 composes TITLE for the
--- registers: CONCAT_WS skips NULL but not the empty string, so an empty column would otherwise leave a stray
--- separator behind.
+--   * NAME_TEXT is new: the document title for the object types, the full name for the registers, including the name
+--     columns TITLE leaves out (JURPERS.ALTNAMN, SJOMAN.EFTERNAMN2). The combined search ranks a hit here above one
+--     that only occurred in SEARCH_TEXT. It is a subset of SEARCH_TEXT, so it changes the order, not which rows match.
+--     Columns are wrapped in NULLIF(..., '') because CONCAT_WS skips NULL but not the empty string.
+--   * The soft-delete guard is new: deletion sets DELETEDDATE but leaves the published bit set, so the OPTIONS check
+--     alone never hid a deleted row. SJOMAN has neither column and is left as it was.
 CREATE OR REPLACE VIEW VW_MEMORY_OBJECTS AS
 SELECT CONCAT('foto-', F_ID)  AS OBJECT_KEY,
        F_ID                   AS SOURCE_ID,

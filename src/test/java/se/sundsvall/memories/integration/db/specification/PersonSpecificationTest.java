@@ -78,10 +78,7 @@ class PersonSpecificationTest {
 		assertThat(findIds(PersonSpecification.notPlaceholder())).containsExactly(1);
 	}
 
-	/**
-	 * Deletion sets {@code DELETEDDATE} but leaves the published bit set, so the published filter alone keeps the row —
-	 * which is what let a deleted person stay findable through both the search and get-by-id.
-	 */
+	/** Deletion sets {@code DELETEDDATE} but leaves the published bit set, so {@code published()} alone keeps the row. */
 	@Test
 	void notDeletedExcludesTheSoftDeletedRowThePublishedFilterKeeps() {
 		persist(1, PUBLISHED, "Nordin");

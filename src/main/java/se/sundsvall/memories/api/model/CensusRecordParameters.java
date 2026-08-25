@@ -6,10 +6,10 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
-import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
 
-@Schema(description = "Census record (mantal) search parameters. All filters are optional and combined with AND. Sort "
-	+ "on one of: lastName, firstName or birthYear.")
+@Schema(description = """
+	Census record (mantal) search parameters. All filters are optional and combined with AND. Sort \
+	on one of: lastName, firstName or birthYear.""")
 public class CensusRecordParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Last name (substring, case-insensitive)", examples = "Nordin")
@@ -106,11 +106,6 @@ public class CensusRecordParameters extends AbstractParameterPagingAndSortingBas
 		return this;
 	}
 
-	/**
-	 * The search runs through specifications, so a sort property has to be an attribute of {@link CensusRecordEntity}
-	 * rather than a {@code MANTAL} column. Restricting the accepted values here turns an unresolvable property into a
-	 * {@code 400 Constraint Violation} instead of the {@code 500} it would otherwise cause.
-	 */
 	@Override
 	@ArraySchema(schema = @Schema(description = "Property to sort on", examples = "lastName", allowableValues = {
 		"lastName", "firstName", "birthYear"

@@ -110,10 +110,7 @@ class LegalEntitySpecificationTest {
 		assertThat(findIds(LegalEntitySpecification.notPlaceholder())).containsExactly(2);
 	}
 
-	/**
-	 * Deletion sets {@code DELETEDDATE} but leaves the published bit set, so the published filter alone keeps the row —
-	 * which is what let a deleted legal entity stay findable through both the search and get-by-id.
-	 */
+	/** Deletion sets {@code DELETEDDATE} but leaves the published bit set, so {@code published()} alone keeps the row. */
 	@Test
 	void notDeletedExcludesTheSoftDeletedRowThePublishedFilterKeeps() {
 		persist(2, PUBLISHED, "Berg AB");

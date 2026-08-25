@@ -24,9 +24,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
-// Which rows the filters select, how they are ranked, and that the counters agree with the search, is verified against
-// a real database in CombinedObjectSpecificationTest. These tests cover what the service itself does: build the
-// pageable, forward the parameters, and assemble the response.
+// Which rows the filters select is verified against a real database in CombinedObjectSpecificationTest. These tests
+// cover what the service does: build the pageable, forward the parameters, assemble the response.
 @ExtendWith(MockitoExtension.class)
 class CombinedObjectServiceTest {
 
@@ -57,12 +56,7 @@ class CombinedObjectServiceTest {
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 	}
 
-	/**
-	 * The page request carries no sort, so there is no order to read the metadata back from: this search orders itself
-	 * from its specification, because relevance is not a column. Both the parameters and the counters therefore go to
-	 * the repository untouched — the trimming the counters used to need lives in the specifications now that they build
-	 * the counters too.
-	 */
+	/** The page request carries no sort: this search orders itself from its specification. */
 	@Test
 	void searchHandsTheParametersOnUntouchedAndPagesWithoutASort() {
 		final var parameters = CombinedObjectParameters.create().withQuery("  Sundsvall  ").withLocation("   ");
@@ -82,11 +76,7 @@ class CombinedObjectServiceTest {
 		verify(repositoryMock).countByType(parameters);
 	}
 
-	/**
-	 * The metadata reports the sort the caller asked for. Relevance and the id tiebreaker are orders the endpoint
-	 * applies on its own, so a caller who asked for nothing is told nothing rather than being sent looking for a sort
-	 * they never requested.
-	 */
+	/** The metadata reports the caller's own sort only, not relevance or the id tiebreak. */
 	@Test
 	void metaDataReportsOnlyTheRequestedSort() {
 		final var unsorted = CombinedObjectParameters.create().withQuery("Nordin");

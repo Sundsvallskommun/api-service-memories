@@ -61,10 +61,6 @@ class PhotoIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Photo 1098 is soft-deleted but still carries the published bit, which is exactly the state that used to leak it
-	 * through both search and get-by-id.
-	 */
 	@Test
 	void test05_getSoftDeletedPhotoByIdNotFound() {
 		setupCall()
@@ -85,10 +81,7 @@ class PhotoIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A yearTo-only search must not match photos whose TIDIG is blank or non-numeric — those cast to year 0, which
-	 * would otherwise satisfy every upper bound.
-	 */
+	// A photo with a blank or non-numeric TIDIG casts to year 0, which would otherwise satisfy every upper bound.
 	@Test
 	void test07_searchPhotosByYearToExcludesUndated() {
 		setupCall()
@@ -99,10 +92,7 @@ class PhotoIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The object type takes several values, comma-separated or repeated, and they are alternatives: adding Föremål to
-	 * the selection cannot take the Foto row away. Same search as test06, one more type selected, same result.
-	 */
+	// Same search as test06 with one more type selected: the types are alternatives, so the result is unchanged.
 	@Test
 	void test08_searchPhotosBySeveralObjectTypes() {
 		setupCall()
@@ -113,10 +103,6 @@ class PhotoIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The other half of the same rule: a selection that leaves the row's own type out excludes it. The types are the
-	 * archive's own OBJTYP values, so a value nothing carries is an empty result rather than a rejected request.
-	 */
 	@Test
 	void test09_searchPhotosByObjectTypeWithoutMatches() {
 		setupCall()

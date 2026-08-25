@@ -16,9 +16,10 @@ public class PagedCombinedObjectResponse {
 	private List<CombinedObject> objects;
 
 	@ArraySchema(schema = @Schema(implementation = ObjectTypeCount.class, accessMode = READ_ONLY),
-		arraySchema = @Schema(description = "Total number of matching objects per type (for chip counters), ordered by object type. The counts are "
-			+ "independent of the current page and of the objectType filter — every other filter applies, so a chip keeps saying how many objects "
-			+ "selecting that type would return."))
+		arraySchema = @Schema(description = """
+			Total number of matching objects per type (for chip counters), ordered by object type. The counts are \
+			independent of the current page and of the objectType filter — every other filter applies, so a chip keeps saying how many objects \
+			selecting that type would return."""))
 	private List<ObjectTypeCount> typeCounts;
 
 	@JsonProperty("_meta")

@@ -266,10 +266,7 @@ class PhotoSpecificationTest {
 		assertThat(findIds(PhotoSpecification.hasObjectType(List.of("Föremål")))).containsExactly(2);
 	}
 
-	/**
-	 * Several types are alternatives rather than further restrictions, so selecting both widens the result instead of
-	 * emptying it — the same rule the combined /objects search applies.
-	 */
+	/** Several types are alternatives, so selecting both widens the result instead of emptying it. */
 	@Test
 	void hasObjectTypeAcceptsSeveralTypesAsAlternatives() {
 		persist(1, 4, "a", null, "Foto");

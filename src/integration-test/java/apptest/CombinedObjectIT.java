@@ -31,10 +31,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The register types (Person, Sjöman) take part in the same union as the object types — a name matches the person
-	 * record as well as both seamen, including the one carrying the name in its second surname column.
-	 */
 	@Test
 	void test02_searchObjectsIncludesRegisters() {
 		setupCall()
@@ -45,10 +41,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A legal entity is the one register type with a topography reference, so its location is resolved to a place name
-	 * just like the object types', and its year comes from the start of the activity period.
-	 */
 	@Test
 	void test03_searchObjectsIncludesLegalEntities() {
 		setupCall()
@@ -59,10 +51,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Unpublished register rows (person 3 and legal entity 30, neither with bit 4 of OPTIONS set) must stay out of the
-	 * combined search, exactly as they stay out of the per-type searches.
-	 */
 	@Test
 	void test04_searchObjectsExcludesUnpublishedRegisterRows() {
 		setupCall()
@@ -73,10 +61,7 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The placeholder rows PERSON.P_ID = 0 and JURPERS.J_ID = 1 ("ingen") are sentinels, not archive records. Both are
-	 * flagged published, so only the explicit id predicates keep them out of the result.
-	 */
+	// PERSON.P_ID = 0 and JURPERS.J_ID = 1 are sentinels, and both are flagged published.
 	@Test
 	void test05_searchObjectsExcludesRegisterPlaceholders() {
 		setupCall()
@@ -87,10 +72,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Every value the parameter accepts has to resolve as an entity attribute. A property that only fails once it
-	 * reaches Spring Data is a 500 no unit test would catch, so each one is walked through the whole request here.
-	 */
 	@Test
 	void test06_searchObjectsSortedByTitle() {
 		setupCall()
@@ -121,10 +102,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A column of the view is not an entity attribute, and is refused with the list of alternatives rather than
-	 * reaching Spring Data and failing there.
-	 */
 	@Test
 	void test09_searchObjectsWithInvalidSortBy() {
 		setupCall()
@@ -135,10 +112,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Only the object branches of the view carry an originator, so filtering on one also leaves out the register types
-	 * — a person is not created by anyone. Film 1 is the one row with a real originator.
-	 */
 	@Test
 	void test10_searchObjectsByCreator() {
 		setupCall()
@@ -149,10 +122,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The placeholder rows both answer to "Ingen", and nearly every object points at them. Searching for that word
-	 * must not return the whole archive.
-	 */
 	@Test
 	void test11_searchObjectsByCreatorIgnoresThePlaceholders() {
 		setupCall()
@@ -163,12 +132,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A known person's name puts the person first. Photo 1005 mentions the same name in its comment and comes last:
-	 * before the ranking existed the two were indistinguishable, and a name that occurred in many comments buried the
-	 * one record that actually carried it. Seaman 1 is the same person in the seamen's register and ranks between them,
-	 * on the strength of its name rather than its comment.
-	 */
 	@Test
 	void test12_searchObjectsRanksTheNamedPersonFirst() {
 		setupCall()
@@ -179,11 +142,7 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A company name matches the legal entity record. Legal entity 10 is registered as "Nödhjälpskommittén 1888-1889"
-	 * and known as "Nödhjälpskommittén", which is an alternative name the view now ranks on — the photo that merely
-	 * credits the company in its comment follows it.
-	 */
+	// Legal entity 10 is registered as "Nödhjälpskommittén 1888-1889" and matched on its alternative name.
 	@Test
 	void test13_searchObjectsMatchesLegalEntityByCompanyName() {
 		setupCall()
@@ -194,9 +153,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * A document title matches the document that carries it, ahead of the one that only mentions it.
-	 */
 	@Test
 	void test14_searchObjectsMatchesTheDocumentTitle() {
 		setupCall()
@@ -207,10 +163,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Every word has to occur, but not as a phrase and not in the same column: the seaman register stores this name
-	 * across a first name and a second surname, and the whole-string match this replaces found nothing at all for it.
-	 */
 	@Test
 	void test15_searchObjectsMatchesASecondSurname() {
 		setupCall()
@@ -221,10 +173,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Relevance is also a sort the caller can ask for by name, so a client that has sorted by something else can get
-	 * back to it — and asking for it explicitly is reported back under {@code _meta.sortBy}, unlike the default.
-	 */
 	@Test
 	void test16_searchObjectsSortedByRelevance() {
 		setupCall()
@@ -235,11 +183,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Deletion sets DELETEDDATE but leaves the published bit set. The view checked only the bit, so every soft-deleted
-	 * row — a film, a photo, an audio, a text and a publication in this data — stayed findable here long after the
-	 * per-type searches had stopped returning them.
-	 */
 	@Test
 	void test17_searchObjectsExcludesSoftDeletedRows() {
 		setupCall()
@@ -250,11 +193,7 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The type selection narrows the list to the chosen types, and deliberately leaves the counters alone: the chips
-	 * still count Foto and Person, so the client that rendered them can tell the user what selecting those would give
-	 * and can offer a way back. Every other filter — here the query — still narrows both.
-	 */
+	// The type selection narrows the list but not typeCounts, so the unselected chips keep their counts.
 	@Test
 	void test18_searchObjectsFilteredByObjectType() {
 		setupCall()
@@ -265,11 +204,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * Several types are alternatives rather than further restrictions, which is the whole point of filtering here
-	 * rather than calling one per-type endpoint per chip and merging the pages in a client: the result is one list,
-	 * sorted and paged across every selected type at once.
-	 */
 	@Test
 	void test19_searchObjectsFilteredBySeveralObjectTypes() {
 		setupCall()
@@ -280,10 +214,6 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	/**
-	 * The set of types is the archive's rather than this API's — FOTO carries its own OBJTYP — so an unknown one is
-	 * not a rejected request but an empty result, with the counters left to say which types there were.
-	 */
 	@Test
 	void test20_searchObjectsFilteredByUnknownObjectType() {
 		setupCall()

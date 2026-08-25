@@ -10,14 +10,13 @@ import java.util.Objects;
 public class PhotoParameters extends AbstractSearchParameters {
 
 	/**
-	 * The selection is deliberately not validated against a fixed list of types: FOTO carries its own {@code OBJTYP},
-	 * so the set of values is the archive's rather than this API's. An unrecognised value therefore matches nothing
-	 * rather than failing the request. The combined {@code /objects} search takes the same parameter, spelled the same
-	 * way, so a client can move a chip row between the two.
+	 * Not validated against a fixed list: FOTO carries its own {@code OBJTYP}. An unknown value matches nothing rather
+	 * than failing the request. {@code /objects} takes the same parameter, spelled the same way.
 	 */
-	@ArraySchema(schema = @Schema(description = "Object type to include: 'Foto' for photographs or 'Föremål' for physical objects. "
-		+ "Repeat the parameter, or comma-separate the values, to select several — they are alternatives, so Foto and Föremål "
-		+ "together means either. Omit to return both.", examples = "Foto"))
+	@ArraySchema(schema = @Schema(description = """
+		Object type to include: 'Foto' for photographs or 'Föremål' for physical objects. \
+		Repeat the parameter, or comma-separate the values, to select several — they are alternatives, so Foto and Föremål \
+		together means either. Omit to return both.""", examples = "Foto"))
 	private List<String> objectType;
 
 	public static PhotoParameters create() {

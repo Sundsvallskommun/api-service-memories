@@ -32,45 +32,26 @@ public interface CombinedObjectSpecification {
 
 	List<String> LOCATION_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE);
 
-	/**
-	 * The value {@code sortBy} takes to order by how well a row matches the query. It is not an attribute of
-	 * {@link CombinedObjectEntity} — nothing stores it, it is computed per request — so it is translated here rather
-	 * than handed to Spring Data, which is also why every other sort key has to be translated here.
-	 */
+	/** Sort value for ranking by how well a row matches the query. Computed per request, so not an entity attribute. */
 	String RELEVANCE = "relevance";
 
 	/**
-	 * Matches rows where every word of the query occurs somewhere in the title and comment the view concatenates, in
-	 * any order — the same rule the per-type searches apply. The single {@code LIKE} over the whole query string this
-	 * replaces could only find the words as a verbatim phrase, so a query as ordinary as a first name followed by a
-	 * surname found nothing at all, while a single word found everything whose comment merely mentioned it.
-	 *
-	 * <p>
-	 * The match deliberately stays on {@code SEARCH_TEXT} alone: {@code NAME_TEXT} is a subset of it in every branch of
-	 * the view, so adding it here would widen the {@code OR} without matching a single further row. It earns its keep
-	 * in {@link #orderedBy(String, Sort)} instead, where it decides the order.
+	 * Matches rows where every word of the query occurs in {@code SEARCH_TEXT} (title and comment), in any order.
+	 * {@code NAME_TEXT} is a subset of it and would add no rows, so it decides the order instead.
 	 */
 	static Specification<CombinedObjectEntity> matches(final String query) {
 		return BUILDER.buildLikeAllWordsFilter(List.of(SEARCH_TEXT), query);
 	}
 
-	/**
-	 * Every filter the search restricts on, without the fetch joins and without the ordering. The chip counters build
-	 * their grouped query from the very same predicates rather than from a second copy of them written in SQL: the two
-	 * disagreeing is the failure mode — a chip claiming more hits than the list can show. The one predicate they leave
-	 * out is the type selection itself; see {@link #filtersExcludingObjectType(CombinedObjectParameters)}.
-	 */
+	/** Every filter the search applies, without fetch joins or ordering. The counters share the same predicates. */
 	static Specification<CombinedObjectEntity> filters(final CombinedObjectParameters parameters) {
 		return filtersExcludingObjectType(parameters)
 			.and(hasObjectType(parameters.getObjectType()));
 	}
 
 	/**
-	 * The same filters with the type selection left out, which is what the counters count over. A chip has to keep
-	 * saying how many rows the search would return <em>if</em> that type were selected — otherwise selecting Foto
-	 * zeroes every other chip, and the only way back to Ljud is to clear the filter the user cannot see the effect of.
-	 * Every other filter still applies, so the chips narrow with the query, the years, the location and the originator;
-	 * only the selection they are themselves the control for leaves them alone.
+	 * What the chip counters count over: every filter except the type selection, so a chip keeps reporting how many
+	 * objects selecting that type would return.
 	 */
 	static Specification<CombinedObjectEntity> filtersExcludingObjectType(final CombinedObjectParameters parameters) {
 		return matches(parameters.getQuery())
@@ -83,22 +64,16 @@ public interface CombinedObjectSpecification {
 	}
 
 	/**
-	 * Restricts the search to the given object types, which are alternatives: Foto and Ljud selected together means
-	 * either of them, not both at once. The accepted values are the ones the view emits, which are also the ones the
-	 * response reports per row and counts under {@code typeCounts} — a client can filter on exactly what it counted.
-	 * An empty selection is no filter at all, and returns every type.
+	 * Restricts to the given object types, which are alternatives. The values are the ones the view emits and
+	 * {@code typeCounts} counts by. An empty selection matches every type.
 	 */
 	static Specification<CombinedObjectEntity> hasObjectType(final List<String> objectTypes) {
 		return BUILDER.buildInFilter(OBJECT_TYPE, objectTypes);
 	}
 
 	/**
-	 * Orders the result: relevance first when the caller asked for it, or asked for nothing at all but did pass a
-	 * query, then whatever else the caller asked for, and last always {@code objectKey}. That final key is what makes
-	 * paging stable — the view is a {@code UNION ALL}, and without a unique key the database is free to hand back the
-	 * same row on two pages and never hand back another. It is the same tiebreak
-	 * {@link se.sundsvall.memories.service.util.Pageables} appends for every other search; this search has to append it
-	 * itself, because it owns its whole ordering.
+	 * Orders by the caller's sort keys, always ending with {@code objectKey}. The view is a {@code UNION ALL}, so
+	 * without that unique key consecutive pages can repeat one row and skip another.
 	 */
 	static Specification<CombinedObjectEntity> orderedBy(final String query, final Sort sort) {
 		return BUILDER.buildOrderBy((root, cb) -> orderKeys(sort, query).stream()
@@ -110,10 +85,7 @@ public interface CombinedObjectSpecification {
 		return BUILDER.buildLocationFilter(TOPOGRAPHY, LOCATION_ATTRIBUTES, LOCATION_TEXT, location);
 	}
 
-	/**
-	 * The view has already derived the year and normalised an unreadable one to {@code NULL}, so these compare a real
-	 * number and a row without a year falls outside every range.
-	 */
+	/** The view normalises an unreadable year to {@code NULL}, so a row without a year falls outside every range. */
 	static Specification<CombinedObjectEntity> yearAtLeast(final Integer yearFrom) {
 		return BUILDER.buildAtLeastFilter(YEAR, yearFrom);
 	}
@@ -122,10 +94,7 @@ public interface CombinedObjectSpecification {
 		return BUILDER.buildAtMostFilter(YEAR, yearTo);
 	}
 
-	/**
-	 * The attributes an originator can be found by, and the sentinel row each association may point at, which never
-	 * counts as a match.
-	 */
+	/** The attributes an originator is matched on, and the sentinel id that never counts as a match. */
 	List<SpecificationBuilder.AssociationAttributes> CREATOR_ATTRIBUTES = List.of(
 		// a person's name spans two columns and is matched as one string; a legal entity's two names are alternatives
 		new SpecificationBuilder.AssociationAttributes(CREATOR_PERSON, List.of(List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME)), PersonEntity_.PERSON_ID,
@@ -133,10 +102,7 @@ public interface CombinedObjectSpecification {
 		new SpecificationBuilder.AssociationAttributes(CREATOR_LEGAL_ENTITY, List.of(List.of(LegalEntityEntity_.NAME), List.of(LegalEntityEntity_.ALTERNATIVE_NAMES)),
 			LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntitySpecification.PLACEHOLDER_ID));
 
-	/**
-	 * The register branches of the view carry no originator, so filtering on one leaves only object types — which is
-	 * the point: a person is not created by anyone.
-	 */
+	/** Only the object branches carry an originator, so this filter also excludes the register types. */
 	static Specification<CombinedObjectEntity> matchesCreator(final String creator) {
 		return BUILDER.buildAssociationLikeAnyFilter(CREATOR_ATTRIBUTES, creator);
 	}
@@ -159,10 +125,9 @@ public interface CombinedObjectSpecification {
 	}
 
 	/**
-	 * The keys to order by, in order. A caller who passed no sort gets relevance when there is a query to be relevant
-	 * to, and nothing but the tiebreak when there is not — the closest thing to the arbitrary order the union used to
-	 * hand back, only reproducible. A relevance key is dropped rather than ordered by when the query is blank: every
-	 * row would score the same, and a constant in an {@code ORDER BY} is read as a column position.
+	 * The sort keys to apply, in order. With no explicit sortBy: relevance if there is a query, otherwise only the
+	 * {@code objectKey} tiebreak. Relevance is dropped when the query is blank, since MariaDB reads a constant in
+	 * {@code ORDER BY} as a column position.
 	 */
 	private static Sort orderKeys(final Sort sort, final String query) {
 		final var requested = Optional.of(sort)
@@ -185,11 +150,7 @@ public interface CombinedObjectSpecification {
 			.orElseGet(Sort::unsorted);
 	}
 
-	/**
-	 * Translates one sort key into a criteria order. Every key but {@link #RELEVANCE} is an attribute of the entity;
-	 * relevance is the computed expression, which is the whole reason the ordering is built here rather than left to
-	 * Spring Data.
-	 */
+	/** Translates one sort key into a criteria order. {@link #RELEVANCE} is computed, every other key is an attribute. */
 	private static Order toOrder(final Root<CombinedObjectEntity> root, final CriteriaBuilder cb, final Sort.Order order, final String query) {
 		final Expression<?> expression = Optional.of(order.getProperty())
 			.filter(RELEVANCE::equals)

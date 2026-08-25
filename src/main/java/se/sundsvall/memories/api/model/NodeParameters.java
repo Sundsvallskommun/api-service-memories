@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
-@Schema(description = "Archive and collection node search parameters. All filters are optional and combined with AND. "
-	+ "Sort on one of: name, startYear, stopYear or sortOrder.")
+@Schema(description = """
+	Archive and collection node search parameters. All filters are optional and combined with AND. \
+	Sort on one of: name, startYear, stopYear or sortOrder.""")
 public class NodeParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Free text search (substring, case-insensitive) across name and description", examples = "stadsfullmäktige")

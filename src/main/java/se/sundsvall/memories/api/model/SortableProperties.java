@@ -2,18 +2,8 @@ package se.sundsvall.memories.api.model;
 
 /**
  * What each search accepts under {@code sortBy}: the pattern its parameter class validates against, and the message
- * that names the alternatives when it does not match.
- *
- * <p>
- * A sort property feeds a specification, so it is an attribute of the entity rather than a column of the table. One
- * that is neither stays invisible until it reaches Spring Data, where it becomes a {@code 500}; validating against
- * these turns it into a {@code 400 Constraint Violation} that tells the caller what to ask for instead.
- *
- * <p>
- * The values live here rather than in each parameter class because an annotation needs them as compile-time constants,
- * and eleven copies of the same two declarations is what a reviewer has to read past to find the one that differs.
- * Keeping them together also makes the one question worth asking of them — does every search offer what a client
- * needs to sort on? — answerable from a single screen.
+ * naming the alternatives. A property that is not an entity attribute would otherwise reach Spring Data as a 500
+ * instead of a 400.
  */
 final class SortableProperties {
 

@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
-@Schema(description = "Person search parameters. All filters are optional and combined with AND. Sort on one of: "
-	+ "lastName, firstName, birthDate or birthParish.")
+@Schema(description = """
+	Person search parameters. All filters are optional and combined with AND. Sort on one of: \
+	lastName, firstName, birthDate or birthParish.""")
 public class PersonParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = "Last name (substring, case-insensitive)", examples = "Nordin")

@@ -27,10 +27,8 @@ class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCust
 		final var root = query.from(CombinedObjectEntity.class);
 		final var objectType = root.<String>get(OBJECT_TYPE);
 
-		// Every filter but the type selection: a chip counts the rows that type would return if it were selected, so
-		// it must not be narrowed by the selection it is the control for. A specification that restricts nothing
-		// yields no predicate at all, which is not the same thing as one that restricts everything — hence the
-		// fallback rather than a bare where(null).
+		// Every filter but the type selection, so a chip counts what selecting that type would return. A specification
+		// that restricts nothing yields no predicate at all, hence the fallback rather than a bare where(null).
 		final var predicate = ofNullable(filtersExcludingObjectType(parameters).toPredicate(root, query, cb))
 			.orElseGet(cb::conjunction);
 

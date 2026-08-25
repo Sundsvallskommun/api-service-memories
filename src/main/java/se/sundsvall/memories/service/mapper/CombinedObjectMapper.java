@@ -63,8 +63,7 @@ public final class CombinedObjectMapper {
 	}
 
 	/**
-	 * Map the chip counters, keeping the order the search counted them in — which a JSON array preserves and an object
-	 * keyed by the type name does not.
+	 * Map the chip counters, keeping the order the search counted them in.
 	 *
 	 * @param  typeCounts the counters the search grouped
 	 * @return            list of mapped {@link ObjectTypeCount} objects (empty if {@code typeCounts} is null)
@@ -75,20 +74,14 @@ public final class CombinedObjectMapper {
 			.toList();
 	}
 
-	/**
-	 * Resolves the place name through the topography association. The association is {@code null} both when the object
-	 * has no place and when {@code TOPOGRAPHY_ID} points at a row that does not exist.
-	 */
+	/** Resolves the place name through the topography association, which is {@code null} when there is no place. */
 	private static String location(final CombinedObjectEntity entity) {
 		return ofNullable(entity.getTopography())
 			.map(TopographyEntity::getDisplayName)
 			.orElse(null);
 	}
 
-	/**
-	 * Resolves the raw topography id, which the API exposes alongside the resolved {@code location}. Read through the
-	 * association rather than from a second mapping of {@code TOPOGRAPHY_ID}, so the two can never disagree.
-	 */
+	/** The raw topography id, read through the association so it cannot disagree with the resolved location. */
 	private static Integer topographyId(final CombinedObjectEntity entity) {
 		return ofNullable(entity.getTopography())
 			.map(TopographyEntity::getId)

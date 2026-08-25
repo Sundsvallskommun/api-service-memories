@@ -12,22 +12,15 @@ import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import static java.util.function.Predicate.not;
 
 /**
- * Builds the {@link Pageable} for a paged search.
- *
- * <p>
- * Every search here ends up ordered by something unique. Without that the database is free to return the rows of an
- * unordered — or ambiguously ordered — query in any order it likes, and it does: two requests for consecutive pages can
- * then repeat a row and skip another, which is the sort of bug that only shows up as "a photo I saw on page 1 is gone
- * from page 2".
+ * Builds the {@link Pageable} for a paged search. Every search ends up ordered by something unique, since an
+ * ambiguously ordered query lets consecutive pages repeat one row and skip another.
  */
 public final class Pageables {
 
 	private Pageables() {}
 
 	/**
-	 * A page request ordered by what the caller asked for, ending in {@code idAttribute} so that the order is total. A
-	 * caller sorting on a name gets ties broken the same way on every page; a caller sorting on nothing at all gets the
-	 * id order.
+	 * A page request ordered by what the caller asked for, ending in {@code idAttribute} so that the order is total.
 	 *
 	 * @param  parameters  the paging and sorting parameters of the request
 	 * @param  idAttribute the entity's id attribute, which is unique by definition
@@ -39,7 +32,7 @@ public final class Pageables {
 
 	/**
 	 * As {@link #of(AbstractParameterPagingAndSortingBase, String)}, with an order to fall back to when the caller asks
-	 * for none — for the tree listings, which read best in the order the archive itself sets.
+	 * for none. Used by the tree listings, which default to the archive's own order.
 	 *
 	 * @param  parameters  the paging and sorting parameters of the request
 	 * @param  fallback    the order to use when the caller asks for none
@@ -56,11 +49,8 @@ public final class Pageables {
 	}
 
 	/**
-	 * An unordered page request, for the one search that orders itself: the combined object search ranks by relevance,
-	 * which is computed per request and is not a column, so its order has to come from its specification — and Spring
-	 * Data replaces a specification's order the moment the page request carries one. That search appends the same id
-	 * tiebreaker itself; see
-	 * {@link se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification#orderedBy(String, Sort)}.
+	 * An unordered page request, for the combined object search: it orders itself from its specification, which Spring
+	 * Data would override if the page request carried a sort. It appends the id tiebreak itself.
 	 *
 	 * @param  parameters the paging and sorting parameters of the request
 	 * @return            the page request to hand to the repository
@@ -71,9 +61,7 @@ public final class Pageables {
 
 	/**
 	 * The paging metadata for a page from {@link #unordered(AbstractParameterPagingAndSortingBase)}, which carries no
-	 * sort of its own to read the order back from. It reports what the caller asked for and nothing more: an order the
-	 * endpoint applied on its own — relevance, or the id tiebreaker — is not something the caller requested, and a
-	 * response saying otherwise would send a client off looking for a sort it never asked for.
+	 * sort to read the order back from. Reports the caller's own sort only, not relevance or the id tiebreak.
 	 *
 	 * @param  page       the page returned by the repository
 	 * @param  parameters the paging and sorting parameters of the request
@@ -93,9 +81,7 @@ public final class Pageables {
 
 	/**
 	 * The paging metadata for a page ordered by {@link #of(AbstractParameterPagingAndSortingBase, Sort, String)},
-	 * reporting the order without the id the tiebreaker added. The tiebreaker is there to keep the pages from shifting
-	 * under the caller, not because they asked to order by an id, and a response saying otherwise would send a client
-	 * off looking for a sort it never requested.
+	 * reporting the caller's order without the appended id tiebreak.
 	 *
 	 * @param  page        the page returned by the repository
 	 * @param  idAttribute the id attribute the page request ends with
@@ -119,10 +105,7 @@ public final class Pageables {
 				.orElse(null));
 	}
 
-	/**
-	 * Whether the last property is the tiebreaker this class appends. A caller who sorts on the id themselves still
-	 * sees it, since their own property comes first and only the appended one is dropped.
-	 */
+	/** Whether the last property is the appended tiebreak. A caller sorting on the id themselves still sees theirs. */
 	private static boolean endsWithTiebreaker(final List<String> ordered, final String idAttribute) {
 		return !ordered.isEmpty() && ordered.getLast().equals(idAttribute);
 	}

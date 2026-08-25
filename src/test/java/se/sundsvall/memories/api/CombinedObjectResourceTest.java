@@ -70,11 +70,6 @@ class CombinedObjectResourceTest {
 		verify(serviceMock).search(any());
 	}
 
-	/**
-	 * The selection reaches the service as a list however the client spelled it — repeated, as a browser sends a set of
-	 * checked chips, or comma-separated. Binding is the only part of this parameter that can go wrong at this layer:
-	 * the filtering itself is the specification's.
-	 */
 	@Test
 	void searchObjectsBindsRepeatedAndCommaSeparatedObjectTypes() {
 		final var parameters = ArgumentCaptor.forClass(CombinedObjectParameters.class);

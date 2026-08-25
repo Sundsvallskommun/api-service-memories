@@ -67,10 +67,8 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
-	 * Matches rows whose attribute is one of the values. The values are alternatives rather than further restrictions,
-	 * which is what a multi-select filter needs: two of them selected together widens the result, it does not empty it.
-	 * Blank values are dropped rather than compared against the empty string, so a parameter sent without a value is
-	 * the same "no filter" every other builder gives a blank one, and so is an empty list.
+	 * Matches rows whose attribute is one of the values, which are alternatives. Blank values are dropped, so an empty
+	 * or blank selection matches every row.
 	 */
 	public Specification<T> buildInFilter(final String attribute, final List<String> values) {
 		final var wanted = distinctNonBlank(values);
@@ -323,15 +321,9 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
-	 * Orders the query without restricting it, the mirror of {@link #buildFetchJoin(String)}. Ordering from a
-	 * specification rather than from the {@code Pageable} is what lets an order be something other than a column —
-	 * relevance is computed per request, and no column holds it — but it only survives while the {@code Pageable}
-	 * carries no sort: Spring Data JPA 4.1 replaces the whole order list as soon as it does, and appends nothing of its
-	 * own. The caller therefore has to own the entire ordering, the caller's own sort keys included.
-	 *
-	 * <p>
-	 * The orders are skipped for the count query Spring Data derives from the same specification, where they are both
-	 * meaningless and cleared immediately afterwards.
+	 * Orders the query without restricting it, so an order can be a computed expression rather than a column. Only
+	 * applies while the {@code Pageable} carries no sort of its own, which Spring Data would otherwise use instead.
+	 * Skipped for the derived count query.
 	 */
 	public Specification<T> buildOrderBy(final BiFunction<Root<T>, CriteriaBuilder, List<Order>> orders) {
 		return (root, query, cb) -> {
@@ -343,15 +335,9 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
-	 * How well the attribute matches the query, as a number that is smaller the better the match: the whole query is
-	 * the attribute (0), the attribute starts with it (1), every word occurs in it (2), some word does (3), or none
-	 * does (4) — the row matched through some other column, a comment or a body text, and is the kind of hit that used
-	 * to bury a person or a company under everything that merely mentioned them. Ordering ascending therefore puts a
-	 * name or a title hit first.
-	 *
-	 * <p>
-	 * The comparison is deliberately the same {@code LIKE} the filters use, with wildcards escaped the same way, so
-	 * that a row can never be ranked by one rule and matched by another.
+	 * How well the attribute matches the query, lower being better: exact (0), prefix (1), all words (2), some word
+	 * (3), none (4). Ordering ascending therefore puts a name or title hit above one that only matched a comment. Uses
+	 * the same escaped {@code LIKE} as the filters, so ranking and matching cannot disagree.
 	 */
 	public Expression<Integer> relevance(final Root<T> root, final CriteriaBuilder cb, final String attribute, final String query) {
 		final var words = splitWords(query);
@@ -366,9 +352,7 @@ public class SpecificationBuilder<T> {
 			.otherwise(RELEVANCE_BODY_ONLY);
 	}
 
-	/**
-	 * One {@code LIKE} per word, for the caller to combine with {@code and} or with {@code or}.
-	 */
+	/** One {@code LIKE} per word, for the caller to combine with {@code and} or {@code or}. */
 	private Predicate[] matchesWords(final Expression<String> name, final CriteriaBuilder cb, final List<String> words) {
 		return words.stream()
 			.map(word -> cb.like(name, "%" + escapeWildcards(word.toLowerCase()) + "%", LIKE_ESCAPE))

@@ -11,9 +11,8 @@ import java.util.Objects;
 import org.hibernate.annotations.Immutable;
 
 /**
- * Read-only entity mapped to the {@code VW_MEMORY_OBJECTS} view — the union of the five object tables (FOTO incl.
- * Föremål, FILM, LJUD, TEXT, PUBL) and the three registers (PERSON, JURPERS, SJOMAN). Backs the combined
- * {@code /objects} search so sorting and pagination happen globally on the server side.
+ * Read-only entity mapped to the {@code VW_MEMORY_OBJECTS} view: the union of the five object tables (FOTO, FILM,
+ * LJUD, TEXT, PUBL) and the three registers (PERSON, JURPERS, SJOMAN). Backs the combined {@code /objects} search.
  */
 @Entity
 @Immutable
@@ -34,19 +33,15 @@ public class CombinedObjectEntity {
 	private String title;
 
 	/**
-	 * The title, or the composed full name for the registers, as the view assembles it — everything a user is likely to
-	 * have typed the query from, and nothing else. It is the column the relevance ordering reads, so that a hit here
-	 * outranks one that only occurred in {@link #searchText}. It carries the name columns {@link #title} leaves out
-	 * because they are not part of a display name: a legal entity's alternative name and a seaman's second surname.
+	 * The title, or the composed name for the registers. The column the relevance ordering reads, so a hit here
+	 * outranks one that only occurred in {@link #searchText}.
 	 */
 	@Column(name = "NAME_TEXT")
 	private String nameText;
 
 	/**
-	 * Title and comment concatenated by the view, and the only column the free-text filter reads. It is mapped rather
-	 * than left to a native query so the filter can be a specification, which means it is also selected with every row:
-	 * a comment can be several kilobytes, so this is the one column worth revisiting if the endpoint ever shows up in
-	 * profiling.
+	 * Title and comment concatenated by the view, and the only column the free-text filter reads. Selected with every
+	 * row, and a comment can be several kilobytes.
 	 */
 	@Column(name = "SEARCH_TEXT")
 	private String searchText;
@@ -61,10 +56,7 @@ public class CombinedObjectEntity {
 	@Column(name = "LOCATION_TEXT")
 	private String locationText;
 
-	/**
-	 * The upphovsman (originator). The register branches of the view have none and emit {@code NULL}; the object
-	 * branches carry the sentinel a missing originator is written as, which the mapper reads as absent.
-	 */
+	/** The upphovsman (originator). The registers emit {@code NULL}; the objects use a sentinel id for "none". */
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "CREATOR_PERSON_ID")
 	private PersonEntity creatorPerson;

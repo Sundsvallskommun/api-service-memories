@@ -54,10 +54,6 @@ class CombinedObjectResourceFailureTest {
 		verifyNoInteractions(serviceMock);
 	}
 
-	/**
-	 * The sort property is an entity attribute, not a column of the view. A column name used to reach Spring Data and
-	 * fail there as a 500; it is a 400 that names the alternatives instead.
-	 */
 	@Test
 	void searchObjectsWithInvalidSortBy() {
 		final var response = webTestClient.get()
@@ -80,10 +76,6 @@ class CombinedObjectResourceFailureTest {
 		verifyNoInteractions(serviceMock);
 	}
 
-	/**
-	 * The whitelist is a whitelist, not a spelling check: {@code nameText} is a real attribute of the entity — it is the
-	 * one relevance ranks on — and is still rejected, because it is not a sort the endpoint offers.
-	 */
 	@Test
 	void searchObjectsWithAnUnofferedEntityAttributeAsSortBy() {
 		final var response = webTestClient.get()

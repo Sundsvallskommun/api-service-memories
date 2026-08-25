@@ -5,11 +5,7 @@ import java.util.Objects;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
-/**
- * One chip counter. The type is a value here rather than a property name, which is what keeps the archive's own
- * spelling — {@code Foto}, {@code Juridisk person} — out of the JSON keys, and what lets the order the search counted
- * in survive the response.
- */
+/** One chip counter. The type is a value rather than a JSON key, which keeps the archive's spelling out of the keys. */
 @Schema(description = "How many objects of one type the search matches")
 public class ObjectTypeCount {
 

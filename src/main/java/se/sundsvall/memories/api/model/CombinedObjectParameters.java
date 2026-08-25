@@ -7,14 +7,16 @@ import java.util.List;
 import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
-@Schema(description = "Combined object search parameters (across all object and register types). All filters are optional "
-	+ "and combined with AND, except that several values of objectType are alternatives. Sort on one of: relevance, objectKey, "
-	+ "title, year or objectType. Defaults to relevance when a query is given.")
+@Schema(description = """
+	Combined object search parameters (across all object and register types). All filters are optional \
+	and combined with AND, except that several values of objectType are alternatives. Sort on one of: relevance, objectKey, \
+	title, year or objectType. Defaults to relevance when a query is given.""")
 public class CombinedObjectParameters extends AbstractParameterPagingAndSortingBase {
 
-	@Schema(description = "Free text search (case-insensitive). Every word must occur somewhere in the title and comment, and for the register "
-		+ "types also in names, parishes and other identifying fields, in any order. Results are ranked with title and name matches above matches "
-		+ "that only occurred in a comment or a body text.", examples = "Anton Nordin")
+	@Schema(description = """
+		Free text search (case-insensitive). Every word must occur somewhere in the title and comment, and for the register \
+		types also in names, parishes and other identifying fields, in any order. Results are ranked with title and name matches above matches \
+		that only occurred in a comment or a body text.""", examples = "Anton Nordin")
 	private String query;
 
 	@Schema(description = "Year from (inclusive)", examples = "1900")
@@ -27,16 +29,14 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 	private String location;
 
 	/**
-	 * The selection is deliberately not validated against a fixed list of types. The five object tables are unioned
-	 * under a literal type each, but FOTO carries its own ({@code OBJTYP}, "Foto" or "Föremål"), so the set of values
-	 * is the archive's rather than this API's — a whitelist here would refuse a type the response had just counted.
-	 * An unrecognised value therefore matches nothing rather than failing the request, and {@code typeCounts} names
-	 * every value that does match something.
+	 * Not validated against a fixed list: FOTO carries its own {@code OBJTYP}, so the set of types belongs to the
+	 * archive. An unknown value matches nothing rather than failing the request.
 	 */
-	@ArraySchema(schema = @Schema(description = "Object type to include: Foto, Föremål, Film, Ljud, Text, Publikation, Person, "
-		+ "Juridisk person or Sjöman. Repeat the parameter, or comma-separate the values, to select several — they are "
-		+ "alternatives, so Foto and Ljud together means either. Omit to include every type. The values are the ones each "
-		+ "object reports under objectType and typeCounts counts by, so a client can filter on exactly what it counted.",
+	@ArraySchema(schema = @Schema(description = """
+		Object type to include: Foto, Föremål, Film, Ljud, Text, Publikation, Person, \
+		Juridisk person or Sjöman. Repeat the parameter, or comma-separate the values, to select several — they are \
+		alternatives, so Foto and Ljud together means either. Omit to include every type. The values are the ones each \
+		object reports under objectType and typeCounts counts by, so a client can filter on exactly what it counted.""",
 		examples = "Foto"))
 	private List<String> objectType;
 
@@ -142,16 +142,11 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		this.creatorLegalEntityId = creatorLegalEntityId;
 	}
 
-	/**
-	 * {@code relevance} is the exception among the accepted values: it is deliberately not an attribute of anything —
-	 * nothing stores it, the specification computes it per request — while every other value is an attribute of
-	 * {@link se.sundsvall.memories.integration.db.model.CombinedObjectEntity}. The whitelist is what keeps the two
-	 * kinds apart, and an entity attribute it does not offer, such as the text the ranking itself reads, is rejected
-	 * too.
-	 */
+	/** {@code relevance} is computed by the specification; every other accepted value is an entity attribute. */
 	@Override
-	@ArraySchema(schema = @Schema(description = "Property to sort on. 'relevance' ranks the best match first and is the default when a query is "
-		+ "given; it is ignored without one. Sorting is ascending by default, which for relevance means most relevant first.",
+	@ArraySchema(schema = @Schema(description = """
+		Property to sort on. 'relevance' ranks the best match first and is the default when a query is \
+		given; it is ignored without one. Sorting is ascending by default, which for relevance means most relevant first.""",
 		examples = "relevance",
 		allowableValues = {
 			"relevance", "objectKey", "title", "year", "objectType"

@@ -34,13 +34,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
 /**
- * Exercises {@link CombinedObjectSpecification} against a real MariaDB instance (Testcontainers). The subject is the
- * {@code VW_MEMORY_OBJECTS} view, so the rows are set up in the underlying tables and read back through the view —
- * which
- * also pins that the view still projects what the specification expects.
- *
- * <p>
- * Each test runs in a transaction that is rolled back, so the rows inserted here do not leak between tests.
+ * Exercises {@link CombinedObjectSpecification} against a real MariaDB instance (Testcontainers). Rows are set up in
+ * the underlying tables and read back through the {@code VW_MEMORY_OBJECTS} view. Each test is rolled back.
  */
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("junit")
@@ -71,10 +66,7 @@ class CombinedObjectSpecificationTest {
 		photoRepository.flush();
 	}
 
-	/**
-	 * The point of the tiebreaker: consecutive pages of the same search must not overlap, and between them they have to
-	 * cover every row exactly once.
-	 */
+	/** The point of the tiebreak: consecutive pages must not overlap, and together cover every row exactly once. */
 	@Test
 	void pagingCoversEveryRowExactlyOnce() {
 		persistPhoto(1, "A", null, "1900", null);
@@ -95,10 +87,7 @@ class CombinedObjectSpecificationTest {
 			.toList();
 	}
 
-	/**
-	 * Only the object branches of the view carry an originator, so filtering on one also leaves out the register types
-	 * — a person is not created by anyone.
-	 */
+	/** Only the object branches carry an originator, so this filter also leaves out the register types. */
 	@Test
 	void matchesCreatorFindsObjectsByTheirOriginator() {
 		final var person = PersonEntity.create().withPersonId(5).withFirstName("Anton").withLastName("Nordin");
@@ -129,10 +118,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(byLegalEntityId)).containsExactly("foto-2");
 	}
 
-	/**
-	 * The counters are a handwritten query, so they have to agree with the specifications on the originator filters as
-	 * well — otherwise the per-type chips would contradict the result they label.
-	 */
+	/** The counters must agree with the search on the originator filters too. */
 	@Test
 	void countByTypeAgreesWithTheSearchOnTheOriginatorFilters() {
 		final var person = PersonEntity.create().withPersonId(5).withFirstName("Anton").withLastName("Nordin");
@@ -153,7 +139,7 @@ class CombinedObjectSpecificationTest {
 
 		assertThat(findKeys(parameters)).containsExactly("foto-1");
 		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L));
-		// a full name is in neither name column on its own, and the counters have to read it the same way the search does
+		// a full name is in neither name column on its own
 		assertThat(findKeys(fullName)).containsExactly("foto-1");
 		assertThat(countByType(fullName)).containsExactly(entry("Foto", 1L));
 	}
@@ -192,10 +178,7 @@ class CombinedObjectSpecificationTest {
 			.toList();
 	}
 
-	/**
-	 * The keys in the order the query returned them. {@link #findKeys(CombinedObjectParameters)} sorts, which is what
-	 * the tests asserting <em>which</em> rows match want and exactly what a test asserting the ranking must not do.
-	 */
+	/** The keys in the order the query returned them, unlike {@link #findKeys(CombinedObjectParameters)}, which sorts. */
 	private List<String> rankedKeys(final CombinedObjectParameters parameters) {
 		return combinedObjectRepository.findAllByParameters(parameters, Pageable.unpaged()).getContent().stream()
 			.map(CombinedObjectEntity::getObjectKey)
@@ -214,11 +197,7 @@ class CombinedObjectSpecificationTest {
 		return person;
 	}
 
-	/**
-	 * Every word has to occur, in any order and not necessarily in the same column — the rule the per-type searches
-	 * already applied. The single LIKE over the whole query string this replaces could only find the words as a
-	 * verbatim phrase, so a first name followed by a surname found nothing at all.
-	 */
+	/** Every word has to occur, in any order and not necessarily in the same column. */
 	@Test
 	void matchesRequiresEveryWordSomewhereInTheText() {
 		persistPhoto(1, "Stadsvy", "Fotograf Nordin", "1920", null);
@@ -229,10 +208,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(CombinedObjectParameters.create().withQuery("Stadsvy Timrå"))).isEmpty();
 	}
 
-	/**
-	 * A wildcard in the query is a character to search for, not a pattern. The counters escape it the same way, which
-	 * the handwritten query they replace did not.
-	 */
+	/** A wildcard in the query is a character to search for, not a pattern. The counters escape it the same way. */
 	@Test
 	void matchesEscapesWildcards() {
 		persistPhoto(1, "100% ull", null, "1920", null);
@@ -244,10 +220,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L));
 	}
 
-	/**
-	 * The point of the whole change: a search for a person's name puts the person first, not the photograph whose
-	 * comment happens to mention them.
-	 */
+	/** A search for a person's name puts the person first, not the photo whose comment mentions them. */
 	@Test
 	void relevancePutsANameHitAboveABodyHit() {
 		persistPhoto(1, "Handelsbod vid Storgatan", "Anton Nordin utanför sin handelsbod", "1890", null);
@@ -258,9 +231,7 @@ class CombinedObjectSpecificationTest {
 			.containsExactly("person-2", "foto-1");
 	}
 
-	/**
-	 * Within the names, an exact one outranks a prefix, which outranks a name that merely contains the query.
-	 */
+	/** An exact name outranks a prefix, which outranks a name that merely contains the query. */
 	@Test
 	void relevancePutsAnExactNameFirst() {
 		persistPhoto(1, "Handelsboden vid Berg", null, "1900", null);
@@ -271,10 +242,7 @@ class CombinedObjectSpecificationTest {
 			.containsExactly("foto-3", "foto-2", "foto-1");
 	}
 
-	/**
-	 * A legal entity is as often known by its alternative name as by its registered one, so NAME_TEXT carries both and
-	 * a search for either ranks the company as a name hit rather than burying it.
-	 */
+	/** {@code NAME_TEXT} carries the alternative name too, so a search for either ranks the company as a name hit. */
 	@Test
 	void relevanceRanksALegalEntityByItsAlternativeName() {
 		final var legalEntity = LegalEntityEntity.create()
@@ -291,10 +259,7 @@ class CombinedObjectSpecificationTest {
 			.containsExactly("jurpers-20", "foto-1");
 	}
 
-	/**
-	 * A caller who sorts explicitly gets their order, not relevance — but still gets the tiebreaker, so that rows
-	 * sharing the sorted value keep a stable order between pages.
-	 */
+	/** An explicit sort replaces relevance but still gets the tiebreak, so tied rows keep a stable order. */
 	@Test
 	void explicitSortReplacesRelevanceButNotTheTiebreak() {
 		persistPhoto(2, "Nordin B", "Nordin", "1900", null);
@@ -307,11 +272,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(rankedKeys(parameters)).containsExactly("foto-1", "foto-2", "foto-3");
 	}
 
-	/**
-	 * The ordering is applied from the specification, which Spring Data also runs to derive the count query — where an
-	 * order is invalid. This is the guard: if a future Spring Data stops clearing the orders there, the total breaks
-	 * here rather than in production.
-	 */
+	/** Spring Data runs the same specification to derive the count query, where an order is invalid. */
 	@Test
 	void relevanceOrderingDoesNotBreakTheCountQuery() {
 		final var sundsvall = persistTopography(500, "Sundsvall");
@@ -325,11 +286,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(page.getContent()).hasSize(1);
 	}
 
-	/**
-	 * Deletion sets DELETEDDATE but leaves the published bit set, so the view has to check both. It only checked the
-	 * bit, which let a deleted row stay findable through the combined search long after every per-type search had
-	 * stopped returning it.
-	 */
+	/** Deletion sets DELETEDDATE but leaves the published bit set, so the view has to check both. */
 	@Test
 	void softDeletedRowsAreInvisibleToTheSearchAndTheCounters() {
 		persistPhoto(1, "Stadsvy", null, "1920", null);
@@ -348,9 +305,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L));
 	}
 
-	/**
-	 * The view concatenates title and comment, so a word that appears only in the comment still matches.
-	 */
+	/** The view concatenates title and comment, so a word that appears only in the comment still matches. */
 	@Test
 	void matchesSearchesTitleAndComment() {
 		persistPhoto(1, "Stadsvy", "Fotograf okänd", "1920", null);
@@ -370,10 +325,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(CombinedObjectParameters.create().withLocation("alnö"))).containsExactly("ljud-2");
 	}
 
-	/**
-	 * The view has already normalised an unreadable date to {@code NULL}, so a row without a year falls outside every
-	 * range rather than satisfying an upper bound as year zero.
-	 */
+	/** The view normalises an unreadable date to {@code NULL}, so a row without a year falls outside every range. */
 	@Test
 	void yearFiltersKeepRowsInsideTheRangeAndExcludeUndatedOnes() {
 		persistPhoto(1, "a", null, "1920", null);
@@ -392,11 +344,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(CombinedObjectParameters.create().withQuery("sundsvall"))).containsExactly("foto-1", "ljud-2");
 	}
 
-	/**
-	 * The type selection is what a chip row needs from the search: the values are alternatives, so picking a second
-	 * type widens the result rather than emptying it. A value no row carries simply matches nothing — the set of types
-	 * is the archive's, not this API's, so an unknown one is not worth a rejected request.
-	 */
+	/** The types are alternatives, so picking a second one widens the result. An unknown type matches nothing. */
 	@Test
 	void objectTypeSelectsTheTypesToSearchIn() {
 		persistPhoto(1, "Stadsvy", null, "1920", null);
@@ -410,10 +358,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(CombinedObjectParameters.create().withObjectType(List.of("Karta")))).isEmpty();
 	}
 
-	/**
-	 * An empty selection is no selection. A chip row that sends the parameter with nothing picked must get every type
-	 * back, rather than the rows whose type is the empty string — which is none of them.
-	 */
+	/** An empty selection is no selection: every type comes back, not the rows whose type is the empty string. */
 	@Test
 	void objectTypeIgnoresAnEmptyOrBlankSelectionAndTrimsTheRest() {
 		persistPhoto(1, "Stadsvy", null, "1920", null);
@@ -424,11 +369,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(CombinedObjectParameters.create().withObjectType(List.of(" Ljud ")))).containsExactly("ljud-2");
 	}
 
-	/**
-	 * Selecting a type narrows the list but not the chips: the counters cover every type whatever is selected, so the
-	 * chip for a type the user has not picked still says what picking it would return, and there is a way back to it.
-	 * Every other filter does reach them.
-	 */
+	/** Selecting a type narrows the list but not the chips. Every other filter does reach them. */
 	@Test
 	void countByTypeIgnoresTheTypeSelectionButNoOtherFilter() {
 		persistPhoto(1, "Sundsvall stadsvy", null, "1920", null);
@@ -442,11 +383,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(countByType(parameters)).containsExactly(entry("Foto", 2L), entry("Ljud", 1L));
 	}
 
-	/**
-	 * The counters are the one query left in handwritten SQL, so its filter is written twice: once as SQL and once as
-	 * the specification the search uses. These tests are what keeps the two honest — a chip that disagrees with the
-	 * list claims more hits than the list can show.
-	 */
+	/** The counters and the search must select the same rows, or a chip contradicts the list it labels. */
 	@Test
 	void countByTypeGroupsTheSameRowsTheSearchReturns() {
 		persistPhoto(1, "Sundsvall stadsvy", null, "1920", null);
@@ -460,9 +397,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(parameters)).hasSize(3);
 	}
 
-	/**
-	 * Every filter, on both paths, over rows that differ in exactly one respect each.
-	 */
+	/** Every filter, on both paths, over rows that differ in exactly one respect each. */
 	@Test
 	void countByTypeAgreesWithTheSearchOnEveryFilter() {
 		final var sundsvall = persistTopography(500, "Sundsvall");
@@ -481,10 +416,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L), entry("Ljud", 1L));
 	}
 
-	/**
-	 * A blank parameter means "no filter" on both paths. The specifications trim; the native query is handed trimmed
-	 * values by the service, which is the seam this pins.
-	 */
+	/** A blank parameter means "no filter" on both paths, and an untrimmed one is trimmed. */
 	@Test
 	void countByTypeAgreesWithTheSearchOnBlankAndUntrimmedInput() {
 		persistPhoto(1, "Sundsvall stadsvy", null, "1920", null);
@@ -506,10 +438,7 @@ class CombinedObjectSpecificationTest {
 		assertThat(countByType(CombinedObjectParameters.create().withQuery("saknas"))).isEmpty();
 	}
 
-	/**
-	 * Calls the counters the way the service does. They build their grouped query from the same specification the
-	 * search does, so a filter can no longer mean one thing to the list and another to the chips.
-	 */
+	/** Calls the counters the way the service does. */
 	private Map<String, Long> countByType(final CombinedObjectParameters parameters) {
 		return combinedObjectRepository.countByType(parameters).stream()
 			.collect(toMap(TypeCount::objectType, TypeCount::total, (first, _) -> first, LinkedHashMap::new));
