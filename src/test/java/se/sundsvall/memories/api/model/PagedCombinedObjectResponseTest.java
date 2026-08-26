@@ -34,11 +34,14 @@ class PagedCombinedObjectResponseTest {
 		final var result = PagedCombinedObjectResponse.create()
 			.withObjects(objects)
 			.withTypeCounts(List.of(ObjectTypeCount.create().withObjectType("Foto").withCount(1L)))
+			.withGenderCounts(List.of(GenderCount.create().withGender("man").withCount(2L)))
 			.withMetaData(meta);
 
 		assertThat(result.getObjects()).hasSize(1);
 		assertThat(result.getTypeCounts()).extracting(ObjectTypeCount::getObjectType, ObjectTypeCount::getCount)
 			.containsExactly(tuple("Foto", 1L));
+		assertThat(result.getGenderCounts()).extracting(GenderCount::getGender, GenderCount::getCount)
+			.containsExactly(tuple("man", 2L));
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 	}
 

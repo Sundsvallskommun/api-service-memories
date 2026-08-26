@@ -5,7 +5,7 @@
 	"violations": [
 		{
 			"field": "sortBy[0]",
-			"message": "must be one of: relevance, objectKey, title, year, objectType"
+			"message": "must be one of: relevance, objectKey, title, year, objectType, location"
 		}
 	]
 }

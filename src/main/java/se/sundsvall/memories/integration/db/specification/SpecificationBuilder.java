@@ -287,6 +287,36 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * As {@link #buildAssociationEqualFilter(String, String, String, Object)}, for several ids that are alternatives.
+	 * Matches every row when the list yields no ids.
+	 */
+	public Specification<T> buildAssociationInFilter(final String association, final String attribute, final String deletedAttribute, final List<?> values) {
+		final var wanted = distinctNonNull(values);
+		if (wanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> {
+			final var join = reuseFetchOrJoin(root, association);
+			return cb.and(join.get(attribute).in(wanted), cb.isNull(join.get(deletedAttribute)));
+		};
+	}
+
+	/**
+	 * The string a row's place sorts on: the free-text attribute when present, otherwise the association's attributes
+	 * in the given order. The registers fill only the free text and the objects often only the association, so without
+	 * the fallback either kind would clump at one end of the order. Blank values count as absent, like in the display
+	 * name they fall back through.
+	 */
+	public Expression<String> location(final Root<T> root, final CriteriaBuilder cb, final String textAttribute, final String association,
+		final List<String> associationAttributes) {
+		final var join = reuseFetchOrJoin(root, association);
+		final var coalesce = cb.<String>coalesce();
+		coalesce.value(cb.nullif(root.<String>get(textAttribute), ""));
+		associationAttributes.forEach(attribute -> coalesce.value(cb.nullif(join.<String>get(attribute), "")));
+		return coalesce;
+	}
+
+	/**
 	 * Matches rows whose year is at most {@code yearTo}, read the same way as in
 	 * {@link #buildYearAtLeastFilter(List, Integer)}.
 	 */
@@ -433,6 +463,16 @@ public class SpecificationBuilder<T> {
 		return cb.or(attributes.stream()
 			.map(attribute -> cb.like(root.<String>get(attribute), pattern, LIKE_ESCAPE))
 			.toArray(Predicate[]::new));
+	}
+
+	private static List<?> distinctNonNull(final List<?> values) {
+		if (values == null) {
+			return List.of();
+		}
+		return values.stream()
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList();
 	}
 
 	private static List<String> distinctNonBlank(final List<String> values) {

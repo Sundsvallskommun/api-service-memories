@@ -2,7 +2,9 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import se.sundsvall.memories.api.model.CombinedObject;
+import se.sundsvall.memories.api.model.GenderCount;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -71,6 +73,32 @@ public final class CombinedObjectMapper {
 	public static List<ObjectTypeCount> toObjectTypeCountList(final List<TypeCount> typeCounts) {
 		return ofNullable(typeCounts).orElse(emptyList()).stream()
 			.map(CombinedObjectMapper::toObjectTypeCount)
+			.toList();
+	}
+
+	/**
+	 * Map one gender chip counter.
+	 *
+	 * @param  genderCount the counter the search grouped
+	 * @return             the mapped {@link GenderCount}, or {@code null} if {@code genderCount} is null
+	 */
+	public static GenderCount toGenderCount(final CombinedObjectRepositoryCustom.GenderCount genderCount) {
+		return ofNullable(genderCount)
+			.map(count -> GenderCount.create()
+				.withGender(count.gender())
+				.withCount(count.total()))
+			.orElse(null);
+	}
+
+	/**
+	 * Map the gender chip counters, keeping the order the search counted them in.
+	 *
+	 * @param  genderCounts the counters the search grouped
+	 * @return              list of mapped {@link GenderCount} objects (empty if {@code genderCounts} is null)
+	 */
+	public static List<GenderCount> toGenderCountList(final List<CombinedObjectRepositoryCustom.GenderCount> genderCounts) {
+		return ofNullable(genderCounts).orElse(emptyList()).stream()
+			.map(CombinedObjectMapper::toGenderCount)
 			.toList();
 	}
 

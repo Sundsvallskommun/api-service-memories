@@ -71,7 +71,7 @@ class CombinedObjectResourceFailureTest {
 		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
 		assertThat(response.getViolations())
 			.extracting(Violation::message)
-			.containsExactly("must be one of: relevance, objectKey, title, year, objectType");
+			.containsExactly("must be one of: relevance, objectKey, title, year, objectType, location");
 
 		verifyNoInteractions(serviceMock);
 	}
@@ -91,7 +91,7 @@ class CombinedObjectResourceFailureTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getViolations())
 			.extracting(Violation::message)
-			.containsExactly("must be one of: relevance, objectKey, title, year, objectType");
+			.containsExactly("must be one of: relevance, objectKey, title, year, objectType, location");
 
 		verifyNoInteractions(serviceMock);
 	}

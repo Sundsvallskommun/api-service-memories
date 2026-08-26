@@ -56,6 +56,10 @@ public class CombinedObjectEntity {
 	@Column(name = "LOCATION_TEXT")
 	private String locationText;
 
+	/** {@code KON} for the branches that record one (PERSON, MANTAL), {@code NULL} everywhere else. */
+	@Column(name = "GENDER")
+	private String gender;
+
 	/** The upphovsman (originator). The registers emit {@code NULL}; the objects use a sentinel id for "none". */
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "CREATOR_PERSON_ID")
@@ -186,6 +190,19 @@ public class CombinedObjectEntity {
 		return this;
 	}
 
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(final String gender) {
+		this.gender = gender;
+	}
+
+	public CombinedObjectEntity withGender(final String gender) {
+		this.gender = gender;
+		return this;
+	}
+
 	public PersonEntity getCreatorPerson() {
 		return creatorPerson;
 	}
@@ -219,12 +236,12 @@ public class CombinedObjectEntity {
 		final CombinedObjectEntity that = (CombinedObjectEntity) o;
 		return Objects.equals(objectKey, that.objectKey) && Objects.equals(sourceId, that.sourceId) && Objects.equals(objectType, that.objectType)
 			&& Objects.equals(title, that.title) && Objects.equals(nameText, that.nameText) && Objects.equals(searchText, that.searchText) && Objects.equals(year, that.year)
-			&& Objects.equals(locationText, that.locationText);
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(gender, that.gender);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(objectKey, sourceId, objectType, title, nameText, searchText, year, locationText);
+		return Objects.hash(objectKey, sourceId, objectType, title, nameText, searchText, year, locationText, gender);
 	}
 
 	@Override
@@ -238,6 +255,7 @@ public class CombinedObjectEntity {
 			", searchText='" + searchText + '\'' +
 			", year=" + year +
 			", locationText='" + locationText + '\'' +
+			", gender='" + gender + '\'' +
 			'}';
 	}
 }

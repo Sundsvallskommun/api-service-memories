@@ -22,6 +22,14 @@ public class PagedCombinedObjectResponse {
 			selecting that type would return."""))
 	private List<ObjectTypeCount> typeCounts;
 
+	@ArraySchema(schema = @Schema(implementation = GenderCount.class, accessMode = READ_ONLY),
+		arraySchema = @Schema(description = """
+			Total number of matching objects per gender (for chip counters), ordered by gender, over the rows that \
+			record one. Gender is its own dimension — a row is both Person and man — so these overlap with typeCounts \
+			rather than summing with them. The counts are independent of the current page and of the gender filter — \
+			every other filter applies, so a chip keeps saying how many objects selecting that gender would return."""))
+	private List<GenderCount> genderCounts;
+
 	@JsonProperty("_meta")
 	@Schema(implementation = PagingAndSortingMetaData.class, accessMode = READ_ONLY)
 	private PagingAndSortingMetaData metaData;
@@ -56,6 +64,19 @@ public class PagedCombinedObjectResponse {
 		return this;
 	}
 
+	public List<GenderCount> getGenderCounts() {
+		return genderCounts;
+	}
+
+	public void setGenderCounts(final List<GenderCount> genderCounts) {
+		this.genderCounts = genderCounts;
+	}
+
+	public PagedCombinedObjectResponse withGenderCounts(final List<GenderCount> genderCounts) {
+		this.genderCounts = genderCounts;
+		return this;
+	}
+
 	public PagingAndSortingMetaData getMetaData() {
 		return metaData;
 	}
@@ -74,12 +95,13 @@ public class PagedCombinedObjectResponse {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final PagedCombinedObjectResponse that = (PagedCombinedObjectResponse) o;
-		return Objects.equals(objects, that.objects) && Objects.equals(typeCounts, that.typeCounts) && Objects.equals(metaData, that.metaData);
+		return Objects.equals(objects, that.objects) && Objects.equals(typeCounts, that.typeCounts) && Objects.equals(genderCounts, that.genderCounts)
+			&& Objects.equals(metaData, that.metaData);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(objects, typeCounts, metaData);
+		return Objects.hash(objects, typeCounts, genderCounts, metaData);
 	}
 
 	@Override
@@ -87,6 +109,7 @@ public class PagedCombinedObjectResponse {
 		return "PagedCombinedObjectResponse{" +
 			"objects=" + objects +
 			", typeCounts=" + typeCounts +
+			", genderCounts=" + genderCounts +
 			", metaData=" + metaData +
 			'}';
 	}

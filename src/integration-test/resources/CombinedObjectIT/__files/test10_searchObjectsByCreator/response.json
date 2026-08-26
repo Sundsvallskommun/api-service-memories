@@ -12,6 +12,7 @@
 			"count": 1
 		}
 	],
+	"genderCounts": [],
 	"objects": [
 		{
 			"objectKey": "film-1",
@@ -20,13 +21,13 @@
 			"title": "Midsommarfirande i Sundsvall 1985",
 			"year": 1985,
 			"topographyId": 1,
-			"locationText": "Sundsvall",
 			"location": "Sundsvall",
+			"locationText": "Sundsvall",
 			"creator": {
-				"personId": 1,
-				"person": "Anton Nordin",
+				"legalEntity": "Nödhjälpskommittén 1888-1889",
 				"legalEntityId": 10,
-				"legalEntity": "Nödhjälpskommittén 1888-1889"
+				"person": "Anton Nordin",
+				"personId": 1
 			}
 		}
 	]

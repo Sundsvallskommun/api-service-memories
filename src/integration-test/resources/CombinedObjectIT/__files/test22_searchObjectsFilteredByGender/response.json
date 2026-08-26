@@ -12,29 +12,35 @@
 	},
 	"typeCounts": [
 		{
-			"objectType": "Foto",
-			"count": 1
-		},
-		{
 			"objectType": "Mantal",
 			"count": 2
 		},
 		{
 			"objectType": "Person",
 			"count": 1
-		},
-		{
-			"objectType": "Sjöman",
-			"count": 2
 		}
 	],
 	"genderCounts": [
 		{
 			"gender": "man",
-			"count": 1
+			"count": 3
 		}
 	],
 	"objects": [
+		{
+			"objectKey": "mantal-1",
+			"sourceId": 1,
+			"objectType": "Mantal",
+			"title": "Anton Nordin",
+			"year": 1852
+		},
+		{
+			"objectKey": "mantal-3",
+			"sourceId": 3,
+			"objectType": "Mantal",
+			"title": "Erik Nordin",
+			"year": 1889
+		},
 		{
 			"objectKey": "person-1",
 			"sourceId": 1,
@@ -42,22 +48,6 @@
 			"title": "Anton Nordin",
 			"year": 1852,
 			"locationText": "Sundsvall"
-		},
-		{
-			"objectKey": "sjoman-1",
-			"sourceId": 1,
-			"objectType": "Sjöman",
-			"title": "Anton Nordin",
-			"year": 1852,
-			"locationText": "Sundsvall"
-		},
-		{
-			"objectKey": "sjoman-3",
-			"sourceId": 3,
-			"objectType": "Sjöman",
-			"title": "Erik Holm",
-			"year": 1889,
-			"locationText": "Njurunda"
 		}
 	]
 }

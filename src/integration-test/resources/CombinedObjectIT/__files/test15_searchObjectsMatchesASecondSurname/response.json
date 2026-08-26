@@ -1,18 +1,35 @@
 {
 	"_meta": {
-		"count": 1,
+		"count": 2,
 		"limit": 100,
 		"page": 1,
 		"totalPages": 1,
-		"totalRecords": 1
+		"totalRecords": 2
 	},
 	"typeCounts": [
+		{
+			"objectType": "Mantal",
+			"count": 1
+		},
 		{
 			"objectType": "Sjöman",
 			"count": 1
 		}
 	],
+	"genderCounts": [
+		{
+			"gender": "man",
+			"count": 1
+		}
+	],
 	"objects": [
+		{
+			"objectKey": "mantal-3",
+			"sourceId": 3,
+			"objectType": "Mantal",
+			"title": "Erik Nordin",
+			"year": 1889
+		},
 		{
 			"objectKey": "sjoman-3",
 			"sourceId": 3,

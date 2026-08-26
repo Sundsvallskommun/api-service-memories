@@ -12,6 +12,7 @@
 			"count": 2
 		}
 	],
+	"genderCounts": [],
 	"objects": [
 		{
 			"objectKey": "foto-1001",
@@ -20,8 +21,8 @@
 			"title": "Stadsvy från Norra berget",
 			"year": 1920,
 			"topographyId": 1,
-			"locationText": "Sundsvall",
-			"location": "Sundsvall"
+			"location": "Sundsvall",
+			"locationText": "Sundsvall"
 		},
 		{
 			"objectKey": "foto-1005",

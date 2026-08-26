@@ -15,8 +15,8 @@ final class SortableProperties {
 	static final String CENSUS_RECORD = "lastName|firstName|birthYear";
 	static final String CENSUS_RECORD_MESSAGE = "must be one of: lastName, firstName, birthYear";
 
-	static final String COMBINED_OBJECT = "relevance|objectKey|title|year|objectType";
-	static final String COMBINED_OBJECT_MESSAGE = "must be one of: relevance, objectKey, title, year, objectType";
+	static final String COMBINED_OBJECT = "relevance|objectKey|title|year|objectType|location";
+	static final String COMBINED_OBJECT_MESSAGE = "must be one of: relevance, objectKey, title, year, objectType, location";
 
 	static final String FILM = "documentTitle|date|id";
 	static final String FILM_MESSAGE = "must be one of: documentTitle, date, id";

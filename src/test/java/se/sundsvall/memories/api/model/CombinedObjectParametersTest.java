@@ -32,6 +32,7 @@ class CombinedObjectParametersTest {
 			.withYearTo(1950)
 			.withLocation("Sundsvall")
 			.withObjectType(List.of("Foto", "Ljud"))
+			.withGender("man")
 			.withPage(2)
 			.withLimit(50);
 
@@ -40,6 +41,7 @@ class CombinedObjectParametersTest {
 		assertThat(result.getYearTo()).isEqualTo(1950);
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getObjectType()).containsExactly("Foto", "Ljud");
+		assertThat(result.getGender()).isEqualTo("man");
 		assertThat(result.getPage()).isEqualTo(2);
 		assertThat(result.getLimit()).isEqualTo(50);
 	}
@@ -53,6 +55,7 @@ class CombinedObjectParametersTest {
 		assertThat(result.getYearTo()).isNull();
 		assertThat(result.getLocation()).isNull();
 		assertThat(result.getObjectType()).isNull();
+		assertThat(result.getGender()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
 	}

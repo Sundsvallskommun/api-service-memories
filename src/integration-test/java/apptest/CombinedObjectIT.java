@@ -223,4 +223,28 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	// location reads the free text — the birth parish for the person registers — and falls back to the topography,
+	// which is what puts foto-1005 among the Sundsvall rows instead of first among the empties.
+	@Test
+	void test21_searchObjectsSortedByLocation() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&sortBy=location&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// The gender selection narrows the list and the type counts but not its own counters, which keep counting every
+	// gender the search matches.
+	@Test
+	void test22_searchObjectsFilteredByGender() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&gender=man&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

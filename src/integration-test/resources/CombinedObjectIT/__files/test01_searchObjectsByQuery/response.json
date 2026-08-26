@@ -12,6 +12,7 @@
 			"count": 1
 		}
 	],
+	"genderCounts": [],
 	"objects": [
 		{
 			"objectKey": "ljud-3",
@@ -20,8 +21,8 @@
 			"title": "Folkmusik från Timrå 1975",
 			"year": 1975,
 			"topographyId": 2,
-			"locationText": "Timrå",
-			"location": "Timrå"
+			"location": "Timrå",
+			"locationText": "Timrå"
 		}
 	]
 }

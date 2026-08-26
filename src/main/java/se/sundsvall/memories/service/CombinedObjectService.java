@@ -26,9 +26,12 @@ public class CombinedObjectService {
 
 		final var typeCounts = combinedObjectRepository.countByType(parameters);
 
+		final var genderCounts = combinedObjectRepository.countByGender(parameters);
+
 		return PagedCombinedObjectResponse.create()
 			.withObjects(CombinedObjectMapper.toCombinedObjectList(page.getContent()))
 			.withTypeCounts(CombinedObjectMapper.toObjectTypeCountList(typeCounts))
+			.withGenderCounts(CombinedObjectMapper.toGenderCountList(genderCounts))
 			.withMetaData(Pageables.metaDataOf(page, parameters));
 	}
 }

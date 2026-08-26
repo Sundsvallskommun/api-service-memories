@@ -3,6 +3,7 @@ package se.sundsvall.memories.service.mapper;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -88,5 +89,23 @@ class CombinedObjectMapperTest {
 	@Test
 	void toObjectTypeCountListWhenNull() {
 		assertThat(CombinedObjectMapper.toObjectTypeCountList(null)).isEqualTo(emptyList());
+	}
+
+	@Test
+	void toGenderCountList() {
+		final var result = CombinedObjectMapper.toGenderCountList(List.of(new GenderCount("kvinna", 3L), new GenderCount("man", 12L)));
+
+		assertThat(result).extracting(se.sundsvall.memories.api.model.GenderCount::getGender, se.sundsvall.memories.api.model.GenderCount::getCount)
+			.containsExactly(tuple("kvinna", 3L), tuple("man", 12L));
+	}
+
+	@Test
+	void toGenderCountWhenNull() {
+		assertThat(CombinedObjectMapper.toGenderCount(null)).isNull();
+	}
+
+	@Test
+	void toGenderCountListWhenNull() {
+		assertThat(CombinedObjectMapper.toGenderCountList(null)).isEqualTo(emptyList());
 	}
 }

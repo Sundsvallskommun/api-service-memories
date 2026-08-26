@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -38,7 +39,7 @@ class CombinedObjectServiceTest {
 	private CombinedObjectService service;
 
 	@Test
-	void searchDelegatesResolvesLocationAndBuildsTypeCounts() {
+	void searchDelegatesResolvesLocationAndBuildsTheCounters() {
 		final var parameters = CombinedObjectParameters.create().withQuery("Sundsvall").withYearFrom(1900).withYearTo(1950).withLocation("Sundsvall").withPage(1).withLimit(100);
 		final var entity = CombinedObjectEntity.create().withObjectKey("foto-1001").withObjectType("Foto").withTitle("Stadsvy")
 			.withTopography(TopographyEntity.create().withId(1).withName("Sundsvalls kommun"));
@@ -46,6 +47,7 @@ class CombinedObjectServiceTest {
 		when(repositoryMock.findAllByParameters(any(CombinedObjectParameters.class), eq(PAGEABLE)))
 			.thenReturn(new PageImpl<>(List.of(entity), PAGEABLE, 1));
 		when(repositoryMock.countByType(parameters)).thenReturn(List.of(new TypeCount("Foto", 1L), new TypeCount("Text", 3L)));
+		when(repositoryMock.countByGender(parameters)).thenReturn(List.of(new GenderCount("kvinna", 2L), new GenderCount("man", 5L)));
 
 		final var result = service.search(parameters);
 
@@ -53,6 +55,8 @@ class CombinedObjectServiceTest {
 		assertThat(result.getObjects().getFirst().getLocation()).isEqualTo("Sundsvalls kommun");
 		assertThat(result.getTypeCounts()).extracting(ObjectTypeCount::getObjectType, ObjectTypeCount::getCount)
 			.containsExactly(tuple("Foto", 1L), tuple("Text", 3L));
+		assertThat(result.getGenderCounts()).extracting(se.sundsvall.memories.api.model.GenderCount::getGender, se.sundsvall.memories.api.model.GenderCount::getCount)
+			.containsExactly(tuple("kvinna", 2L), tuple("man", 5L));
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 	}
 
@@ -74,6 +78,7 @@ class CombinedObjectServiceTest {
 		verify(repositoryMock).findAllByParameters(searchCaptor.capture(), eq(PAGEABLE));
 		assertThat(searchCaptor.getValue()).isSameAs(parameters);
 		verify(repositoryMock).countByType(parameters);
+		verify(repositoryMock).countByGender(parameters);
 	}
 
 	/** The metadata reports the caller's own sort only, not relevance or the id tiebreak. */
