@@ -1,6 +1,6 @@
 {
 	"_meta": {
-		"count": 4,
+		"count": 6,
 		"limit": 100,
 		"page": 1,
 		"sortBy": [
@@ -8,12 +8,16 @@
 		],
 		"sortDirection": "ASC",
 		"totalPages": 1,
-		"totalRecords": 4
+		"totalRecords": 6
 	},
 	"typeCounts": [
 		{
 			"objectType": "Foto",
 			"count": 1
+		},
+		{
+			"objectType": "Mantal",
+			"count": 2
 		},
 		{
 			"objectType": "Person",
@@ -22,6 +26,12 @@
 		{
 			"objectType": "Sjöman",
 			"count": 2
+		}
+	],
+	"genderCounts": [
+		{
+			"gender": "man",
+			"count": 3
 		}
 	],
 	"objects": [
@@ -33,6 +43,20 @@
 			"year": 1890,
 			"topographyId": 1,
 			"location": "Sundsvall"
+		},
+		{
+			"objectKey": "mantal-1",
+			"sourceId": 1,
+			"objectType": "Mantal",
+			"title": "Anton Nordin",
+			"year": 1852
+		},
+		{
+			"objectKey": "mantal-3",
+			"sourceId": 3,
+			"objectType": "Mantal",
+			"title": "Erik Nordin",
+			"year": 1889
 		},
 		{
 			"objectKey": "person-1",

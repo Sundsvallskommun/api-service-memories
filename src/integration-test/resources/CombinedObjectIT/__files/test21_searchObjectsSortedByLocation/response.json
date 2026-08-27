@@ -1,14 +1,15 @@
 {
 	"_meta": {
-		"count": 3,
+		"count": 6,
 		"limit": 100,
 		"page": 1,
 		"sortBy": [
+			"location",
 			"objectKey"
 		],
 		"sortDirection": "ASC",
 		"totalPages": 1,
-		"totalRecords": 3
+		"totalRecords": 6
 	},
 	"typeCounts": [
 		{
@@ -31,10 +32,41 @@
 	"genderCounts": [
 		{
 			"gender": "man",
-			"count": 1
+			"count": 3
 		}
 	],
 	"objects": [
+		{
+			"objectKey": "mantal-1",
+			"sourceId": 1,
+			"objectType": "Mantal",
+			"title": "Anton Nordin",
+			"year": 1852
+		},
+		{
+			"objectKey": "mantal-3",
+			"sourceId": 3,
+			"objectType": "Mantal",
+			"title": "Erik Nordin",
+			"year": 1889
+		},
+		{
+			"objectKey": "sjoman-3",
+			"sourceId": 3,
+			"objectType": "Sjöman",
+			"title": "Erik Holm",
+			"year": 1889,
+			"locationText": "Njurunda"
+		},
+		{
+			"objectKey": "foto-1005",
+			"sourceId": 1005,
+			"objectType": "Foto",
+			"title": "Handelsbod vid Storgatan",
+			"year": 1890,
+			"topographyId": 1,
+			"location": "Sundsvall"
+		},
 		{
 			"objectKey": "person-1",
 			"sourceId": 1,
@@ -50,14 +82,6 @@
 			"title": "Anton Nordin",
 			"year": 1852,
 			"locationText": "Sundsvall"
-		},
-		{
-			"objectKey": "sjoman-3",
-			"sourceId": 3,
-			"objectType": "Sjöman",
-			"title": "Erik Holm",
-			"year": 1889,
-			"locationText": "Njurunda"
 		}
 	]
 }

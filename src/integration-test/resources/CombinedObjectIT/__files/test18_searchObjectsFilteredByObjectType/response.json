@@ -16,6 +16,10 @@
 			"count": 1
 		},
 		{
+			"objectType": "Mantal",
+			"count": 2
+		},
+		{
 			"objectType": "Person",
 			"count": 1
 		},
@@ -24,6 +28,7 @@
 			"count": 2
 		}
 	],
+	"genderCounts": [],
 	"objects": [
 		{
 			"objectKey": "sjoman-1",

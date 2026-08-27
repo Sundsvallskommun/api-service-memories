@@ -18,6 +18,7 @@ import static java.util.function.Predicate.not;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.CREATOR_LEGAL_ENTITY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.CREATOR_PERSON;
+import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.GENDER;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.LOCATION_TEXT;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.NAME_TEXT;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.OBJECT_KEY;
@@ -32,8 +33,19 @@ public interface CombinedObjectSpecification {
 
 	List<String> LOCATION_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE);
 
+	/** The topography columns the location sort falls back through, in the display name's order. */
+	List<String> LOCATION_DISPLAY_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE, TopographyEntity_.CODE);
+
 	/** Sort value for ranking by how well a row matches the query. Computed per request, so not an entity attribute. */
 	String RELEVANCE = "relevance";
+
+	/**
+	 * Sort value for the place, named after the filter parameter rather than an attribute: it reads the free-text
+	 * location — the birth parish for persons and seamen — and falls back to the topography columns, since the
+	 * registers fill only the former and the objects often only the latter. One key therefore sorts objects by place
+	 * and the registers by parish, without either kind clumping at one end.
+	 */
+	String LOCATION = "location";
 
 	/**
 	 * Matches rows where every word of the query occurs in {@code SEARCH_TEXT} (title and comment), in any order.
@@ -50,10 +62,24 @@ public interface CombinedObjectSpecification {
 	}
 
 	/**
-	 * What the chip counters count over: every filter except the type selection, so a chip keeps reporting how many
+	 * What the type counters count over: every filter except the type selection, so a chip keeps reporting how many
 	 * objects selecting that type would return.
 	 */
 	static Specification<CombinedObjectEntity> filtersExcludingObjectType(final CombinedObjectParameters parameters) {
+		return filtersExcludingTypeAndGender(parameters)
+			.and(hasGender(parameters.getGender()));
+	}
+
+	/**
+	 * What the gender counters count over: every filter except the gender selection, mirroring how the type counters
+	 * leave out theirs. Each dimension ignores only its own selection.
+	 */
+	static Specification<CombinedObjectEntity> filtersExcludingGender(final CombinedObjectParameters parameters) {
+		return filtersExcludingTypeAndGender(parameters)
+			.and(hasObjectType(parameters.getObjectType()));
+	}
+
+	private static Specification<CombinedObjectEntity> filtersExcludingTypeAndGender(final CombinedObjectParameters parameters) {
 		return matches(parameters.getQuery())
 			.and(matchesLocation(parameters.getLocation()))
 			.and(yearAtLeast(parameters.getYearFrom()))
@@ -61,6 +87,11 @@ public interface CombinedObjectSpecification {
 			.and(matchesCreator(parameters.getCreator()))
 			.and(hasCreatorPerson(parameters.getCreatorPersonId()))
 			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId()));
+	}
+
+	/** Only the person registers record a gender, so this filter also excludes every other type. */
+	static Specification<CombinedObjectEntity> hasGender(final String gender) {
+		return BUILDER.buildEqualIgnoreCaseFilter(GENDER, gender);
 	}
 
 	/**
@@ -111,8 +142,9 @@ public interface CombinedObjectSpecification {
 		return BUILDER.buildAssociationEqualFilter(CREATOR_PERSON, PersonEntity_.PERSON_ID, PersonEntity_.DELETED_DATE, creatorPersonId);
 	}
 
-	static Specification<CombinedObjectEntity> hasCreatorLegalEntity(final Integer creatorLegalEntityId) {
-		return BUILDER.buildAssociationEqualFilter(CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntityEntity_.DELETED_DATE, creatorLegalEntityId);
+	/** The ids are alternatives, so a whole category of legal entities can be filtered in one call. */
+	static Specification<CombinedObjectEntity> hasCreatorLegalEntity(final List<Integer> creatorLegalEntityIds) {
+		return BUILDER.buildAssociationInFilter(CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntityEntity_.DELETED_DATE, creatorLegalEntityIds);
 	}
 
 	static Specification<CombinedObjectEntity> fetchCreators() {
@@ -150,12 +182,16 @@ public interface CombinedObjectSpecification {
 			.orElseGet(Sort::unsorted);
 	}
 
-	/** Translates one sort key into a criteria order. {@link #RELEVANCE} is computed, every other key is an attribute. */
+	/**
+	 * Translates one sort key into a criteria order. {@link #RELEVANCE} is computed and {@link #LOCATION} is renamed,
+	 * every other key is an attribute.
+	 */
 	private static Order toOrder(final Root<CombinedObjectEntity> root, final CriteriaBuilder cb, final Sort.Order order, final String query) {
-		final Expression<?> expression = Optional.of(order.getProperty())
-			.filter(RELEVANCE::equals)
-			.<Expression<?>>map(_ -> BUILDER.relevance(root, cb, NAME_TEXT, query))
-			.orElseGet(() -> root.get(order.getProperty()));
+		final Expression<?> expression = switch (order.getProperty()) {
+			case RELEVANCE -> BUILDER.relevance(root, cb, NAME_TEXT, query);
+			case LOCATION -> BUILDER.location(root, cb, LOCATION_TEXT, TOPOGRAPHY, LOCATION_DISPLAY_ATTRIBUTES);
+			default -> root.get(order.getProperty());
+		};
 
 		return Optional.of(order)
 			.filter(Sort.Order::isAscending)

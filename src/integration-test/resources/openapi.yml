@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.7"
 servers:
-- url: http://localhost:56801
+- url: http://localhost:50806
   description: Generated server url
 tags:
 - name: Node
@@ -2704,7 +2704,8 @@ components:
       description: "Combined object search parameters (across all object and register\
         \ types). All filters are optional and combined with AND, except that several\
         \ values of objectType are alternatives. Sort on one of: relevance, objectKey,\
-        \ title, year or objectType. Defaults to relevance when a query is given."
+        \ title, year, objectType or location. Defaults to relevance when a query\
+        \ is given."
       properties:
         page:
           type: integer
@@ -2728,14 +2729,16 @@ components:
             type: string
             description: "Property to sort on. 'relevance' ranks the best match first\
               \ and is the default when a query is given; it is ignored without one.\
-              \ Sorting is ascending by default, which for relevance means most relevant\
-              \ first."
+              \ 'location' sorts on the free-text location, which for persons and\
+              \ seamen holds the birth parish. Sorting is ascending by default, which\
+              \ for relevance means most relevant first."
             enum:
             - relevance
             - objectKey
             - title
             - year
             - objectType
+            - location
             examples:
             - relevance
         sortDirection:
@@ -2775,13 +2778,21 @@ components:
           items:
             type: string
             description: "Object type to include: Foto, Föremål, Film, Ljud, Text,\
-              \ Publikation, Person, Juridisk person or Sjöman. Repeat the parameter,\
-              \ or comma-separate the values, to select several — they are alternatives,\
-              \ so Foto and Ljud together means either. Omit to include every type.\
-              \ The values are the ones each object reports under objectType and typeCounts\
-              \ counts by, so a client can filter on exactly what it counted."
+              \ Publikation, Person, Juridisk person, Sjöman or Mantal. Repeat the\
+              \ parameter, or comma-separate the values, to select several — they\
+              \ are alternatives, so Foto and Ljud together means either. Omit to\
+              \ include every type. The values are the ones each object reports under\
+              \ objectType and typeCounts counts by, so a client can filter on exactly\
+              \ what it counted."
             examples:
             - Foto
+        gender:
+          type: string
+          description: "Gender (matched case-insensitively against the stored value).\
+            \ Only the person registers record one, so this filter also excludes every\
+            \ other type."
+          examples:
+          - man
         creator:
           type: string
           description: "Originator (upphovsman) name (substring, case-insensitive;\
@@ -2796,11 +2807,16 @@ components:
           examples:
           - 1
         creatorLegalEntityId:
-          type: integer
-          format: int32
-          description: "ID of the originator, when it is a legal entity"
-          examples:
-          - 10
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the originator, when it is a legal entity. Repeat\
+              \ the parameter, or comma-separate the values, to select several — they\
+              \ are alternatives, so a category of legal entities can be filtered\
+              \ in one call."
+            examples:
+            - 10
     CombinedObject:
       type: object
       description: Combined object search hit (any object or register type)
@@ -2855,6 +2871,22 @@ components:
           - Sundsvall
         creator:
           $ref: "#/components/schemas/Creator"
+    GenderCount:
+      type: object
+      description: How many objects recording one gender the search matches
+      properties:
+        gender:
+          type: string
+          description: "Gender — the stored value, which the gender filter accepts"
+          examples:
+          - man
+        count:
+          type: integer
+          format: int64
+          description: "Number of matching objects recording that gender, across every\
+            \ page"
+          examples:
+          - 12
     ObjectTypeCount:
       type: object
       description: How many objects of one type the search matches
@@ -2889,6 +2921,17 @@ components:
             \ keeps saying how many objects selecting that type would return."
           items:
             $ref: "#/components/schemas/ObjectTypeCount"
+            readOnly: true
+        genderCounts:
+          type: array
+          description: "Total number of matching objects per gender (for chip counters),\
+            \ ordered by gender, over the rows that record one. Gender is its own\
+            \ dimension — a row is both Person and man — so these overlap with typeCounts\
+            \ rather than summing with them. The counts are independent of the current\
+            \ page and of the gender filter — every other filter applies, so a chip\
+            \ keeps saying how many objects selecting that gender would return."
+          items:
+            $ref: "#/components/schemas/GenderCount"
             readOnly: true
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"

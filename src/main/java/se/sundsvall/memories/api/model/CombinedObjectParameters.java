@@ -10,7 +10,7 @@ import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBa
 @Schema(description = """
 	Combined object search parameters (across all object and register types). All filters are optional \
 	and combined with AND, except that several values of objectType are alternatives. Sort on one of: relevance, objectKey, \
-	title, year or objectType. Defaults to relevance when a query is given.""")
+	title, year, objectType or location. Defaults to relevance when a query is given.""")
 public class CombinedObjectParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = """
@@ -34,11 +34,14 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 	 */
 	@ArraySchema(schema = @Schema(description = """
 		Object type to include: Foto, Föremål, Film, Ljud, Text, Publikation, Person, \
-		Juridisk person or Sjöman. Repeat the parameter, or comma-separate the values, to select several — they are \
+		Juridisk person, Sjöman or Mantal. Repeat the parameter, or comma-separate the values, to select several — they are \
 		alternatives, so Foto and Ljud together means either. Omit to include every type. The values are the ones each \
 		object reports under objectType and typeCounts counts by, so a client can filter on exactly what it counted.""",
 		examples = "Foto"))
 	private List<String> objectType;
+
+	@Schema(description = "Gender (matched case-insensitively against the stored value). Only the person registers record one, so this filter also excludes every other type.", examples = "man")
+	private String gender;
 
 	@Schema(description = "Originator (upphovsman) name (substring, case-insensitive; matches a person or a legal entity). Only object types carry an originator, so this filter also excludes the register types.", examples = "Nordin")
 	private String creator;
@@ -46,8 +49,10 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 	@Schema(description = "ID of the originator, when it is a person", examples = "1")
 	private Integer creatorPersonId;
 
-	@Schema(description = "ID of the originator, when it is a legal entity", examples = "10")
-	private Integer creatorLegalEntityId;
+	@ArraySchema(schema = @Schema(description = """
+		ID of the originator, when it is a legal entity. Repeat the parameter, or comma-separate the values, to select \
+		several — they are alternatives, so a category of legal entities can be filtered in one call.""", examples = "10"))
+	private List<Integer> creatorLegalEntityId;
 
 	public static CombinedObjectParameters create() {
 		return new CombinedObjectParameters();
@@ -118,6 +123,19 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		return this;
 	}
 
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(final String gender) {
+		this.gender = gender;
+	}
+
+	public CombinedObjectParameters withGender(final String gender) {
+		this.gender = gender;
+		return this;
+	}
+
 	public String getCreator() {
 		return creator;
 	}
@@ -134,22 +152,26 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		this.creatorPersonId = creatorPersonId;
 	}
 
-	public Integer getCreatorLegalEntityId() {
+	public List<Integer> getCreatorLegalEntityId() {
 		return creatorLegalEntityId;
 	}
 
-	public void setCreatorLegalEntityId(final Integer creatorLegalEntityId) {
+	public void setCreatorLegalEntityId(final List<Integer> creatorLegalEntityId) {
 		this.creatorLegalEntityId = creatorLegalEntityId;
 	}
 
-	/** {@code relevance} is computed by the specification; every other accepted value is an entity attribute. */
+	/**
+	 * {@code relevance} and {@code location} are translated by the specification; every other accepted value is an entity
+	 * attribute.
+	 */
 	@Override
 	@ArraySchema(schema = @Schema(description = """
 		Property to sort on. 'relevance' ranks the best match first and is the default when a query is \
-		given; it is ignored without one. Sorting is ascending by default, which for relevance means most relevant first.""",
+		given; it is ignored without one. 'location' sorts on the free-text location, which for persons and seamen \
+		holds the birth parish. Sorting is ascending by default, which for relevance means most relevant first.""",
 		examples = "relevance",
 		allowableValues = {
-			"relevance", "objectKey", "title", "year", "objectType"
+			"relevance", "objectKey", "title", "year", "objectType", "location"
 		}))
 	public List<@Pattern(regexp = SortableProperties.COMBINED_OBJECT, message = SortableProperties.COMBINED_OBJECT_MESSAGE) String> getSortBy() {
 		return super.getSortBy();
@@ -173,13 +195,13 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			return false;
 		final CombinedObjectParameters that = (CombinedObjectParameters) o;
 		return Objects.equals(query, that.query) && Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location)
-			&& Objects.equals(objectType, that.objectType) && Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId)
-			&& Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId);
+			&& Objects.equals(objectType, that.objectType) && Objects.equals(gender, that.gender) && Objects.equals(creator, that.creator)
+			&& Objects.equals(creatorPersonId, that.creatorPersonId) && Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, objectType, creator, creatorPersonId, creatorLegalEntityId);
+		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, objectType, gender, creator, creatorPersonId, creatorLegalEntityId);
 	}
 
 	@Override
@@ -190,6 +212,7 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			", yearTo=" + yearTo +
 			", location='" + location + '\'' +
 			", objectType=" + objectType +
+			", gender='" + gender + '\'' +
 			", creator='" + creator + '\'' +
 			", creatorPersonId=" + creatorPersonId +
 			", creatorLegalEntityId=" + creatorLegalEntityId +

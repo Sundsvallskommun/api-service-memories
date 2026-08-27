@@ -18,9 +18,11 @@ import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
+import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
@@ -63,6 +65,7 @@ class CombinedObjectSpecificationTest {
 		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM PERSON").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM JURPERS").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM MANTAL").executeUpdate();
 		photoRepository.flush();
 	}
 
@@ -110,7 +113,7 @@ class CombinedObjectSpecificationTest {
 		final var byPersonId = CombinedObjectParameters.create();
 		byPersonId.setCreatorPersonId(5);
 		final var byLegalEntityId = CombinedObjectParameters.create();
-		byLegalEntityId.setCreatorLegalEntityId(20);
+		byLegalEntityId.setCreatorLegalEntityId(List.of(20));
 
 		assertThat(findKeys(byPersonName)).containsExactly("foto-1");
 		assertThat(findKeys(byLegalEntityName)).containsExactly("foto-2");
@@ -293,6 +296,127 @@ class CombinedObjectSpecificationTest {
 		parameters.setSortBy(List.of("year"));
 
 		assertThat(rankedKeys(parameters)).containsExactly("foto-1", "foto-2", "foto-3");
+	}
+
+	/**
+	 * {@code location} is not an attribute name: it sorts objects by their free-text place and persons by their birth
+	 * parish.
+	 */
+	@Test
+	void locationSortOrdersObjectsByPlaceAndPersonsByParish() {
+		persistAudio(1, "Intervju", "1975", "Njurunda");
+		persistAudio(2, "Intervju", "1975", "Alnö");
+		// only a resolved place, so the sort has to fall back to the topography or the photo clumps with the empties
+		persistPhoto(4, "Stadsvy", null, "1920", persistTopography(500, "Bergsjö"));
+		entityManager.persist(PersonEntity.create()
+			.withPersonId(3)
+			.withOptions(PUBLISHED)
+			.withFirstName("Anna")
+			.withLastName("Berg")
+			.withBirthParish("Indal"));
+		entityManager.flush();
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create();
+		parameters.setSortBy(List.of("location"));
+
+		assertThat(rankedKeys(parameters)).containsExactly("ljud-2", "foto-4", "person-3", "ljud-1");
+	}
+
+	/** The gender filter reads the view's {@code KON}, so it also excludes every type that records none. */
+	@Test
+	void genderFilterSelectsOnlyRegisterRowsOfThatGender() {
+		persistPhoto(1, "Stadsvy", null, "1920", null);
+		persistPerson(2, "Anna", "Berg", "kvinna", null);
+		persistPerson(3, "Anton", "Nordin", "man", null);
+		persistCensusRecord(4, "Erik", "Holm", "man", "1889");
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create().withGender("MAN");
+
+		assertThat(findKeys(parameters)).containsExactly("mantal-4", "person-3");
+	}
+
+	/**
+	 * Selecting a gender narrows the list but not its own counters. Every other filter, the type selection included, does
+	 * reach them, and rows recording no gender are not counted.
+	 */
+	@Test
+	void countByGenderIgnoresTheGenderSelectionButNoOtherFilter() {
+		persistPhoto(1, "Stadsvy", null, "1920", null);
+		persistPerson(2, "Anna", "Berg", "kvinna", null);
+		persistPerson(3, "Anton", "Nordin", "man", null);
+		persistCensusRecord(4, "Erik", "Holm", "man", "1889");
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create().withGender("man");
+		assertThat(findKeys(parameters)).containsExactly("mantal-4", "person-3");
+		assertThat(countByGender(parameters)).containsExactly(entry("kvinna", 1L), entry("man", 2L));
+
+		final var mantalOnly = CombinedObjectParameters.create().withObjectType(List.of("Mantal"));
+		assertThat(countByGender(mantalOnly)).containsExactly(entry("man", 1L));
+	}
+
+	/** Census records are searchable as the object type {@code Mantal}, composed and dated like the other registers. */
+	@Test
+	void searchIncludesCensusRecordsAsMantal() {
+		persistPhoto(1, "Stadsvy", null, "1920", null);
+		persistCensusRecord(7, "Anton", "Nordin", "man", "1852");
+		entityManager.clear();
+
+		assertThat(findKeys(CombinedObjectParameters.create().withQuery("Anton Nordin"))).containsExactly("mantal-7");
+		assertThat(findKeys(CombinedObjectParameters.create().withObjectType(List.of("Mantal")))).containsExactly("mantal-7");
+		assertThat(countByType(CombinedObjectParameters.create())).containsExactly(entry("Foto", 1L), entry("Mantal", 1L));
+	}
+
+	/** Several legal entity ids are alternatives, so a whole category can be filtered in one call. */
+	@Test
+	void creatorLegalEntityIdsAreAlternatives() {
+		final var first = LegalEntityEntity.create().withLegalEntityId(20).withName("Nödhjälpskommittén");
+		final var second = LegalEntityEntity.create().withLegalEntityId(21).withName("Rederiet");
+		entityManager.persist(first);
+		entityManager.persist(second);
+		entityManager.flush();
+
+		persistPhoto(1, "Av kommittén", null, "1900", null);
+		persistPhoto(2, "Av rederiet", null, "1900", null);
+		persistPhoto(3, "Utan upphovsman", null, "1900", null);
+		photoRepository.findById(1).ifPresent(photo -> photo.setCreatorLegalEntity(first));
+		photoRepository.findById(2).ifPresent(photo -> photo.setCreatorLegalEntity(second));
+		photoRepository.flush();
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create();
+		parameters.setCreatorLegalEntityId(List.of(20, 21));
+
+		assertThat(findKeys(parameters)).containsExactly("foto-1", "foto-2");
+	}
+
+	private void persistPerson(final Integer id, final String firstName, final String lastName, final String gender, final String comment) {
+		entityManager.persist(PersonEntity.create()
+			.withPersonId(id)
+			.withOptions(PUBLISHED)
+			.withFirstName(firstName)
+			.withLastName(lastName)
+			.withGender(gender)
+			.withComment(comment));
+		entityManager.flush();
+	}
+
+	private void persistCensusRecord(final Integer id, final String firstName, final String lastName, final String gender, final String birthYear) {
+		entityManager.persist(CensusRecordEntity.create()
+			.withId(id)
+			.withFirstName(firstName)
+			.withLastName(lastName)
+			.withGender(gender)
+			.withBirthYear(birthYear));
+		entityManager.flush();
+	}
+
+	/** Calls the gender counters the way the service does. */
+	private Map<String, Long> countByGender(final CombinedObjectParameters parameters) {
+		return combinedObjectRepository.countByGender(parameters).stream()
+			.collect(toMap(GenderCount::gender, GenderCount::total, (first, _) -> first, LinkedHashMap::new));
 	}
 
 	/** Spring Data runs the same specification to derive the count query, where an order is invalid. */

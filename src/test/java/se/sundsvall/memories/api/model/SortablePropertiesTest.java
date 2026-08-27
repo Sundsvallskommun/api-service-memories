@@ -67,7 +67,7 @@ class SortablePropertiesTest {
 			arguments("legalEntity", List.of("name", "startDate", "endDate", "legalEntityId")),
 			arguments("person", List.of("lastName", "firstName", "birthDate", "birthParish")),
 			arguments("censusRecord", List.of("lastName", "firstName", "birthYear")),
-			arguments("combinedObject", List.of("objectKey", "title", "year", "objectType")));
+			arguments("combinedObject", List.of("objectKey", "title", "year", "objectType", "location")));
 	}
 
 	@ParameterizedTest(name = "{0}")
