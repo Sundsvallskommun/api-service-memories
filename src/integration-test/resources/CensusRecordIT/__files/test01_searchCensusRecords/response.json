@@ -1,16 +1,16 @@
 {
 	"_meta": {
-		"count": 3,
+		"count": 5,
 		"limit": 100,
 		"page": 1,
 		"totalPages": 1,
-		"totalRecords": 3
+		"totalRecords": 5
 	},
 	"censusRecords": [
 		{
-			"id": 1,
+			"id": "1845-1",
 			"objectNumber": "SE/1234",
-			"source": "MTL",
+			"source": "1845",
 			"propertyNumber1": "Norrmalm 3",
 			"propertyPart1": "1/2",
 			"serialNumber": "12",
@@ -26,14 +26,32 @@
 			"note": "Flyttade in 1875"
 		},
 		{
-			"id": 2,
+			"id": "1845-4",
+			"source": "1845",
+			"firstName": "Brita",
+			"lastName": "Piga",
+			"gender": "1830-06-12",
+			"birthYear": "1830"
+		},
+		{
+			"id": "1890-1",
+			"source": "1890",
+			"firstName": "Isidor",
+			"lastName": "Trolle",
+			"gender": "1",
+			"birthYear": "1840"
+		},
+		{
+			"id": "1890-2",
+			"source": "1890",
 			"firstName": "Anna",
 			"lastName": "Berg",
-			"gender": "kvinna",
+			"gender": "2",
 			"birthYear": "1870"
 		},
 		{
-			"id": 3,
+			"id": "1890-3",
+			"source": "1890",
 			"firstName": "Erik",
 			"lastName": "Nordin",
 			"gender": "man",

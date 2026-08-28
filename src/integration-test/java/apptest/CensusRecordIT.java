@@ -54,7 +54,7 @@ class CensusRecordIT extends AbstractAppTest {
 	@Test
 	void test04_getCensusRecordById() {
 		setupCall()
-			.withServicePath(PATH + "/1")
+			.withServicePath(PATH + "/1845-1")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)
@@ -67,6 +67,20 @@ class CensusRecordIT extends AbstractAppTest {
 			.withServicePath(PATH + "/999")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * The volumes reuse row numbers, so row 1 exists in both — this must be a different person than
+	 * {@code test04}'s {@code 1845-1}.
+	 */
+	@Test
+	void test07_getCensusRecordByIdInOtherVolume() {
+		setupCall()
+			.withServicePath(PATH + "/1890-1")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}

@@ -7,7 +7,7 @@ import java.util.Objects;
 @Schema(description = "How many objects of one type the search matches")
 public class ObjectTypeCount {
 
-	@Schema(description = "Object type (Foto, Föremål, Film, Ljud, Text, Publikation, Person, Juridisk person or Sjöman) — the same value each object reports and the objectType filter accepts",
+	@Schema(description = "Object type (Foto, Föremål, Film, Ljud, Text, Publikation, Person, Juridisk person, Sjöman or Mantal) — the same value each object reports and the objectType filter accepts",
 		examples = "Foto")
 	private String objectType;
 

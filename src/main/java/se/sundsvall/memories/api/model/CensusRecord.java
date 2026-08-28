@@ -6,8 +6,8 @@ import java.util.Objects;
 @Schema(description = "Census record (mantal) model")
 public class CensusRecord {
 
-	@Schema(description = "Census record ID", examples = "123")
-	private Integer id;
+	@Schema(description = "Census record ID: the census volume and the row number within it, joined with '-'. Each volume numbers its rows from 1, so neither part identifies a record on its own.", examples = "1845-123")
+	private String id;
 
 	@Schema(description = "Object number", examples = "SE/1234")
 	private String objectNumber;
@@ -70,15 +70,15 @@ public class CensusRecord {
 		return new CensusRecord();
 	}
 
-	public Integer getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(final Integer id) {
+	public void setId(final String id) {
 		this.id = id;
 	}
 
-	public CensusRecord withId(final Integer id) {
+	public CensusRecord withId(final String id) {
 		this.id = id;
 		return this;
 	}

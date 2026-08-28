@@ -8,10 +8,11 @@
 	},
 	"censusRecords": [
 		{
-			"id": 2,
+			"id": "1890-2",
+			"source": "1890",
 			"firstName": "Anna",
 			"lastName": "Berg",
-			"gender": "kvinna",
+			"gender": "2",
 			"birthYear": "1870"
 		}
 	]

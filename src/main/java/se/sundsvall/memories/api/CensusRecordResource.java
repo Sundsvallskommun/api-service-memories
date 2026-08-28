@@ -54,12 +54,13 @@ class CensusRecordResource {
 	}
 
 	@GetMapping(path = "/{id}", produces = APPLICATION_JSON_VALUE)
-	@Operation(summary = "Get census record by ID", description = "Get a specific census record by its ID")
+	@Operation(summary = "Get census record by ID",
+		description = "Get a specific census record by its ID: the census volume and the row number within it, joined with '-' (e.g. 1845-123) — what the combined search's mantal objectKeys end with.")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
 	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 	ResponseEntity<CensusRecord> getCensusRecord(
 		@PathVariable @ValidMunicipalityId final String municipalityId,
-		@PathVariable final Integer id) {
+		@PathVariable final String id) {
 
 		return ok(censusRecordService.getById(id));
 	}
