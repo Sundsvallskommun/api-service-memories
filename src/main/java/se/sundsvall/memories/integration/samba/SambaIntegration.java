@@ -3,7 +3,6 @@ package se.sundsvall.memories.integration.samba;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,19 +39,6 @@ public class SambaIntegration {
 			.withCredentials(new NtlmPasswordAuthenticator(properties.domain(), properties.username(), properties.password()));
 
 		shareUrl = "smb://%s:%d%s".formatted(properties.host(), properties.port(), properties.share());
-	}
-
-	public void streamFile(final String filePath, final OutputStream outputStream) {
-		final var fullPath = fullPath(filePath);
-		LOGGER.info("Streaming file from SMB share: {}", fullPath);
-
-		try (final var file = new SmbFile(fullPath, context);
-			final var inputStream = new SmbFileInputStream(file)) {
-
-			inputStream.transferTo(outputStream);
-		} catch (final IOException e) {
-			throw mapSmbError(e, filePath, fullPath);
-		}
 	}
 
 	/**

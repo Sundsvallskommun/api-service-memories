@@ -16,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockConstruction;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -26,7 +25,7 @@ import static se.sundsvall.memories.integration.samba.SambaTestProperties.SAMBA_
 class SambaIntegrationTest {
 
 	@Test
-	void streamFile() {
+	void openResourceStreamsFileContent() throws IOException {
 		final var fileContent = "test-file-content".getBytes();
 		final var outputStream = new ByteArrayOutputStream();
 
@@ -38,7 +37,9 @@ class SambaIntegrationTest {
 				}).when(mock).transferTo(any()))) {
 
 			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
-			integration.streamFile("/films/test.mp4", outputStream);
+			try (final var input = integration.openResource("/films/test.mp4").getInputStream()) {
+				input.transferTo(outputStream);
+			}
 
 			assertThat(outputStream.toByteArray()).isEqualTo(fileContent);
 			assertThat(smbInputStreamConstruction.constructed()).hasSize(1);
@@ -46,42 +47,17 @@ class SambaIntegrationTest {
 	}
 
 	@Test
-	void streamFileNotFound() {
-		final var outputStream = new ByteArrayOutputStream();
-
-		try (var _ = mockConstruction(SmbFile.class);
-			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
-				(mock, _) -> doThrow(new IOException("The system cannot find the file specified"))
-					.when(mock).transferTo(any()))) {
+	void openResourceLengthLookupMapsOtherIOExceptionTo500() {
+		try (final var _ = mockConstruction(SmbFile.class,
+			(mock, _) -> org.mockito.Mockito.when(mock.length()).thenThrow(new SmbException("Connection reset")))) {
 
 			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
+			final var resource = integration.openResource("/films/error.mp4");
 
-			final var exception = assertThrows(ThrowableProblem.class,
-				() -> integration.streamFile("/films/missing.mp4", outputStream));
-
-			assertThat(exception.getStatus()).isEqualTo(NOT_FOUND);
-			assertThat(exception.getMessage()).contains("File not found at path '/films/missing.mp4'");
-			assertThat(smbInputStreamConstruction.constructed()).hasSize(1);
-		}
-	}
-
-	@Test
-	void streamFileIOException() {
-		final var outputStream = new ByteArrayOutputStream();
-
-		try (final var _ = mockConstruction(SmbFile.class);
-			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
-				(mock, _) -> doThrow(new IOException("Connection reset"))
-					.when(mock).transferTo(any()))) {
-
-			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
-
-			final var exception = assertThrows(ThrowableProblem.class,
-				() -> integration.streamFile("/films/error.mp4", outputStream));
+			final var exception = assertThrows(ThrowableProblem.class, resource::contentLength);
 
 			assertThat(exception.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
 			assertThat(exception.getMessage()).contains("Failed to read file from SMB share");
-			assertThat(smbInputStreamConstruction.constructed()).hasSize(1);
 		}
 	}
 
@@ -148,22 +124,17 @@ class SambaIntegrationTest {
 	}
 
 	@Test
-	void streamFileIOExceptionWithNullMessage() {
-		final var outputStream = new ByteArrayOutputStream();
-
-		try (final var _ = mockConstruction(SmbFile.class);
-			final MockedConstruction<SmbFileInputStream> smbInputStreamConstruction = mockConstruction(SmbFileInputStream.class,
-				(mock, _) -> doThrow(new IOException((String) null))
-					.when(mock).transferTo(any()))) {
+	void openResourceLengthLookupIOExceptionWithNullMessage() {
+		try (final var _ = mockConstruction(SmbFile.class,
+			(mock, _) -> org.mockito.Mockito.when(mock.length()).thenThrow(new SmbException((String) null)))) {
 
 			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
+			final var resource = integration.openResource("/films/error.mp4");
 
-			final var exception = assertThrows(ThrowableProblem.class,
-				() -> integration.streamFile("/films/error.mp4", outputStream));
+			final var exception = assertThrows(ThrowableProblem.class, resource::contentLength);
 
 			assertThat(exception.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
 			assertThat(exception.getMessage()).contains("Failed to read file from SMB share");
-			assertThat(smbInputStreamConstruction.constructed()).hasSize(1);
 		}
 	}
 }
