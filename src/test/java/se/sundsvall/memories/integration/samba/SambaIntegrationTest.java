@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static se.sundsvall.memories.integration.samba.SambaTestProperties.SAMBA_PROPERTIES;
@@ -49,7 +50,7 @@ class SambaIntegrationTest {
 	@Test
 	void openResourceLengthLookupMapsOtherIOExceptionTo500() {
 		try (final var _ = mockConstruction(SmbFile.class,
-			(mock, _) -> org.mockito.Mockito.when(mock.length()).thenThrow(new SmbException("Connection reset")))) {
+			(mock, _) -> when(mock.length()).thenThrow(new SmbException("Connection reset")))) {
 
 			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 			final var resource = integration.openResource("/films/error.mp4");
@@ -64,7 +65,7 @@ class SambaIntegrationTest {
 	@Test
 	void openResourceExposesLengthAndCachesIt() throws IOException {
 		try (final var smbFileConstruction = mockConstruction(SmbFile.class,
-			(mock, _) -> org.mockito.Mockito.when(mock.length()).thenReturn(4711L))) {
+			(mock, _) -> when(mock.length()).thenReturn(4711L))) {
 
 			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 			final var resource = integration.openResource("/ljud/intervju.mp3");
@@ -98,7 +99,7 @@ class SambaIntegrationTest {
 	@Test
 	void openResourceLengthLookupMapsFileNotFoundTo404() {
 		try (final var _ = mockConstruction(SmbFile.class,
-			(mock, _) -> org.mockito.Mockito.when(mock.length()).thenThrow(new SmbException("The system cannot find the file specified")))) {
+			(mock, _) -> when(mock.length()).thenThrow(new SmbException("The system cannot find the file specified")))) {
 
 			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 			final var resource = integration.openResource("/ljud/missing.mp3");
@@ -126,7 +127,7 @@ class SambaIntegrationTest {
 	@Test
 	void openResourceLengthLookupIOExceptionWithNullMessage() {
 		try (final var _ = mockConstruction(SmbFile.class,
-			(mock, _) -> org.mockito.Mockito.when(mock.length()).thenThrow(new SmbException((String) null)))) {
+			(mock, _) -> when(mock.length()).thenThrow(new SmbException((String) null)))) {
 
 			final var integration = new SambaIntegration(SAMBA_PROPERTIES);
 			final var resource = integration.openResource("/films/error.mp4");
