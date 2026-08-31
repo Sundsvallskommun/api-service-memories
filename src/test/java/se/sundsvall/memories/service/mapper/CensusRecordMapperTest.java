@@ -14,7 +14,7 @@ class CensusRecordMapperTest {
 		return CensusRecordEntity.create()
 			.withId(123)
 			.withObjectNumber("SE/1234")
-			.withSource("MTL")
+			.withSource("1845")
 			.withPropertyNumber1("Norrmalm 3")
 			.withPropertyPart1("1/2")
 			.withHouseholdNumber("3")
@@ -32,9 +32,9 @@ class CensusRecordMapperTest {
 		final var result = CensusRecordMapper.toCensusRecord(sampleEntity());
 
 		assertThat(result).isNotNull();
-		assertThat(result.getId()).isEqualTo(123);
+		assertThat(result.getId()).isEqualTo("1845-123");
 		assertThat(result.getObjectNumber()).isEqualTo("SE/1234");
-		assertThat(result.getSource()).isEqualTo("MTL");
+		assertThat(result.getSource()).isEqualTo("1845");
 		assertThat(result.getPropertyNumber1()).isEqualTo("Norrmalm 3");
 		assertThat(result.getPropertyPart1()).isEqualTo("1/2");
 		assertThat(result.getHouseholdNumber()).isEqualTo("3");
@@ -53,12 +53,18 @@ class CensusRecordMapperTest {
 	}
 
 	@Test
+	void toCensusRecordWithoutBothIdPartsHasNoId() {
+		assertThat(CensusRecordMapper.toCensusRecord(CensusRecordEntity.create().withId(200)).getId()).isNull();
+		assertThat(CensusRecordMapper.toCensusRecord(CensusRecordEntity.create().withSource("1845")).getId()).isNull();
+	}
+
+	@Test
 	void toCensusRecordList() {
-		final var result = CensusRecordMapper.toCensusRecordList(List.of(sampleEntity(), CensusRecordEntity.create().withId(200).withLastName("Berg")));
+		final var result = CensusRecordMapper.toCensusRecordList(List.of(sampleEntity(), CensusRecordEntity.create().withSource("1890").withId(200).withLastName("Berg")));
 
 		assertThat(result).hasSize(2)
 			.extracting("id", "lastName")
-			.containsExactly(tuple(123, "Nordin"), tuple(200, "Berg"));
+			.containsExactly(tuple("1845-123", "Nordin"), tuple("1890-200", "Berg"));
 	}
 
 	@Test

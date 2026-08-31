@@ -6,13 +6,13 @@ import java.util.Objects;
 @Schema(description = "Combined object search hit (any object or register type)")
 public class CombinedObject {
 
-	@Schema(description = "Stable key across types ({type}-{id})", examples = "foto-1001")
+	@Schema(description = "Stable key across types ({type}-{id}; census records key on the volume and the row number, e.g. mantal-1845-123)", examples = "foto-1001")
 	private String objectKey;
 
 	@Schema(description = "Source id within its own type", examples = "1001")
 	private Integer sourceId;
 
-	@Schema(description = "Object type (Foto, Föremål, Film, Ljud, Text, Publikation, Person, Juridisk person or Sjöman)", examples = "Foto")
+	@Schema(description = "Object type (Foto, Föremål, Film, Ljud, Text, Publikation, Person, Juridisk person, Sjöman or Mantal)", examples = "Foto")
 	private String objectType;
 
 	@Schema(description = "Title — the document title for objects, the composed name for Person, Juridisk person and Sjöman", examples = "Stadsvy från Norra berget")

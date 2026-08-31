@@ -10,6 +10,7 @@ import org.springframework.http.HttpRange;
 import org.springframework.util.StreamUtils;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.memories.service.model.StreamPayload;
+import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.springframework.http.HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE;
 
@@ -77,6 +78,7 @@ public final class PlaybackResponses {
 		response.setContentType(payload.mimeType());
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
 			ContentDisposition.inline().filename(payload.filename()).build().toString());
+		FileStreamer.allowCaching(response);
 	}
 
 	private static List<HttpRange> parseRanges(final String rangeHeader) {

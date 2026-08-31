@@ -81,4 +81,32 @@ class PageablesTest {
 
 		assertThat(metaData.getSortBy()).containsExactly("lastName", "firstName");
 	}
+
+	/** A composite id appends — and strips — every part of the key, in order. */
+	@Test
+	void breaksTiesWithEveryPartOfACompositeId() {
+		final var pageable = Pageables.of(parameters(List.of("lastName"), DESC), "source", "id");
+
+		assertThat(pageable.getSort()).containsExactly(Sort.Order.desc("lastName"), Sort.Order.asc("source"), Sort.Order.asc("id"));
+	}
+
+	@Test
+	void metaDataLeavesACompositeTiebreakerOut() {
+		final var page = new PageImpl<>(List.of("a"), PageRequest.of(0, 100, Sort.by(DESC, "lastName", "source", "id")), 1);
+
+		final var metaData = Pageables.metaDataOf(page, "source", "id");
+
+		assertThat(metaData.getSortBy()).containsExactly("lastName");
+		assertThat(metaData.getSortDirection()).isEqualTo(DESC);
+	}
+
+	@Test
+	void metaDataKeepsAPartialTiebreakerMatch() {
+		// Ends with "id" alone, not with the full composite key — nothing is stripped.
+		final var page = new PageImpl<>(List.of("a"), PageRequest.of(0, 100, Sort.by("lastName", "id")), 1);
+
+		final var metaData = Pageables.metaDataOf(page, "source", "id");
+
+		assertThat(metaData.getSortBy()).containsExactly("lastName", "id");
+	}
 }

@@ -9,7 +9,7 @@ import java.util.Objects;
 @Schema(description = "How many objects recording one gender the search matches")
 public class GenderCount {
 
-	@Schema(description = "Gender — the stored value, which the gender filter accepts", examples = "man")
+	@Schema(description = "Gender — Man, Kvinna or Okänt, which the gender filter accepts", examples = "Man")
 	private String gender;
 
 	@Schema(description = "Number of matching objects recording that gender, across every page", examples = "12")

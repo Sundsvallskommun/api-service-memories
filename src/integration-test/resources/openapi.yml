@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.7"
+  version: "3.8"
 servers:
-- url: http://localhost:50806
+- url: http://localhost:53558
   description: Generated server url
 tags:
 - name: Node
@@ -1186,7 +1186,9 @@ paths:
       tags:
       - Census record
       summary: Get census record by ID
-      description: Get a specific census record by its ID
+      description: "Get a specific census record by its ID: the census volume and\
+        \ the row number within it, joined with '-' (e.g. 1845-123) — what the combined\
+        \ search's mantal objectKeys end with."
       operationId: getCensusRecord
       parameters:
       - name: municipalityId
@@ -1198,8 +1200,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: Successful operation
@@ -2788,11 +2789,11 @@ components:
             - Foto
         gender:
           type: string
-          description: "Gender (matched case-insensitively against the stored value).\
+          description: "Gender — Man, Kvinna or Okänt, matched case-insensitively.\
             \ Only the person registers record one, so this filter also excludes every\
             \ other type."
           examples:
-          - man
+          - Man
         creator:
           type: string
           description: "Originator (upphovsman) name (substring, case-insensitive;\
@@ -2823,7 +2824,8 @@ components:
       properties:
         objectKey:
           type: string
-          description: "Stable key across types ({type}-{id})"
+          description: "Stable key across types ({type}-{id}; census records key on\
+            \ the volume and the row number, e.g. mantal-1845-123)"
           examples:
           - foto-1001
         sourceId:
@@ -2835,7 +2837,7 @@ components:
         objectType:
           type: string
           description: "Object type (Foto, Föremål, Film, Ljud, Text, Publikation,\
-            \ Person, Juridisk person or Sjöman)"
+            \ Person, Juridisk person, Sjöman or Mantal)"
           examples:
           - Foto
         title:
@@ -2877,9 +2879,9 @@ components:
       properties:
         gender:
           type: string
-          description: "Gender — the stored value, which the gender filter accepts"
+          description: "Gender — Man, Kvinna or Okänt, which the gender filter accepts"
           examples:
-          - man
+          - Man
         count:
           type: integer
           format: int64
@@ -2894,8 +2896,8 @@ components:
         objectType:
           type: string
           description: "Object type (Foto, Föremål, Film, Ljud, Text, Publikation,\
-            \ Person, Juridisk person or Sjöman) — the same value each object reports\
-            \ and the objectType filter accepts"
+            \ Person, Juridisk person, Sjöman or Mantal) — the same value each object\
+            \ reports and the objectType filter accepts"
           examples:
           - Foto
         count:
@@ -3511,11 +3513,12 @@ components:
       description: Census record (mantal) model
       properties:
         id:
-          type: integer
-          format: int32
-          description: Census record ID
+          type: string
+          description: "Census record ID: the census volume and the row number within\
+            \ it, joined with '-'. Each volume numbers its rows from 1, so neither\
+            \ part identifies a record on its own."
           examples:
-          - 123
+          - 1845-123
         objectNumber:
           type: string
           description: Object number

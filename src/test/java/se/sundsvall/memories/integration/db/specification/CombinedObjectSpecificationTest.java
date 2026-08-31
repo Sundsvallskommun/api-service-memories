@@ -334,7 +334,7 @@ class CombinedObjectSpecificationTest {
 
 		final var parameters = CombinedObjectParameters.create().withGender("MAN");
 
-		assertThat(findKeys(parameters)).containsExactly("mantal-4", "person-3");
+		assertThat(findKeys(parameters)).containsExactly("mantal-1845-4", "person-3");
 	}
 
 	/**
@@ -350,11 +350,11 @@ class CombinedObjectSpecificationTest {
 		entityManager.clear();
 
 		final var parameters = CombinedObjectParameters.create().withGender("man");
-		assertThat(findKeys(parameters)).containsExactly("mantal-4", "person-3");
-		assertThat(countByGender(parameters)).containsExactly(entry("kvinna", 1L), entry("man", 2L));
+		assertThat(findKeys(parameters)).containsExactly("mantal-1845-4", "person-3");
+		assertThat(countByGender(parameters)).containsExactly(entry("Kvinna", 1L), entry("Man", 2L));
 
 		final var mantalOnly = CombinedObjectParameters.create().withObjectType(List.of("Mantal"));
-		assertThat(countByGender(mantalOnly)).containsExactly(entry("man", 1L));
+		assertThat(countByGender(mantalOnly)).containsExactly(entry("Man", 1L));
 	}
 
 	/** Census records are searchable as the object type {@code Mantal}, composed and dated like the other registers. */
@@ -364,8 +364,8 @@ class CombinedObjectSpecificationTest {
 		persistCensusRecord(7, "Anton", "Nordin", "man", "1852");
 		entityManager.clear();
 
-		assertThat(findKeys(CombinedObjectParameters.create().withQuery("Anton Nordin"))).containsExactly("mantal-7");
-		assertThat(findKeys(CombinedObjectParameters.create().withObjectType(List.of("Mantal")))).containsExactly("mantal-7");
+		assertThat(findKeys(CombinedObjectParameters.create().withQuery("Anton Nordin"))).containsExactly("mantal-1845-7");
+		assertThat(findKeys(CombinedObjectParameters.create().withObjectType(List.of("Mantal")))).containsExactly("mantal-1845-7");
 		assertThat(countByType(CombinedObjectParameters.create())).containsExactly(entry("Foto", 1L), entry("Mantal", 1L));
 	}
 
@@ -405,6 +405,7 @@ class CombinedObjectSpecificationTest {
 
 	private void persistCensusRecord(final Integer id, final String firstName, final String lastName, final String gender, final String birthYear) {
 		entityManager.persist(CensusRecordEntity.create()
+			.withSource("1845")
 			.withId(id)
 			.withFirstName(firstName)
 			.withLastName(lastName)

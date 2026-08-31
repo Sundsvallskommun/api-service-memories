@@ -291,18 +291,26 @@ INSERT INTO SJOMAN (POSTNR, FORNAMN, EFTERNAMN1, EFTERNAMN2, FODDAT, FODFORS)
 VALUES (3, 'Erik', 'Holm', 'Nordin', '1889', 'Njurunda');
 
 --
--- MANTAL (mantalslängder) — no OPTIONS/publish column, no parish
+-- MANTAL (mantalslängder) — no OPTIONS/publish column, no parish. Shaped like the delivered data: each volume (KALLA)
+-- numbers its rows from 1, so id 1 exists in both volumes and names two different people; KON mixes words ('man',
+-- 'kvinna'), ISO 5218 codes ('1' = Man, '2' = Kvinna) and junk (a birthdate from a shifted column).
 --
 INSERT INTO MANTAL (ID, OBJEKTSNR, KALLA, MFSTNR1, FSTDEL1, HUSHNR, ORDNR, LOPNR, FNR, YRKREL, RELKOD, MNMNF, MNMNE,
                     KON, FODAR, ANM)
-VALUES (1, 'SE/1234', 'MTL', 'Norrmalm 3', '1/2', '3', '1', '12', '7', 'Bonde', 'H', 'Anton', 'Nordin', 'man', '1852',
+VALUES (1, 'SE/1234', '1845', 'Norrmalm 3', '1/2', '3', '1', '12', '7', 'Bonde', 'H', 'Anton', 'Nordin', 'man', '1852',
         'Flyttade in 1875');
 
-INSERT INTO MANTAL (ID, MNMNF, MNMNE, KON, FODAR)
-VALUES (2, 'Anna', 'Berg', 'kvinna', '1870');
+INSERT INTO MANTAL (ID, KALLA, MNMNF, MNMNE, KON, FODAR)
+VALUES (4, '1845', 'Brita', 'Piga', '1830-06-12', '1830');
 
-INSERT INTO MANTAL (ID, MNMNF, MNMNE, KON, FODAR)
-VALUES (3, 'Erik', 'Nordin', 'man', '1889');
+INSERT INTO MANTAL (ID, KALLA, MNMNF, MNMNE, KON, FODAR)
+VALUES (1, '1890', 'Isidor', 'Trolle', '1', '1840');
+
+INSERT INTO MANTAL (ID, KALLA, MNMNF, MNMNE, KON, FODAR)
+VALUES (2, '1890', 'Anna', 'Berg', '2', '1870');
+
+INSERT INTO MANTAL (ID, KALLA, MNMNF, MNMNE, KON, FODAR)
+VALUES (3, '1890', 'Erik', 'Nordin', 'man', '1889');
 
 --
 -- TBL_NODETYPES / TBL_NODES (arkiv och samlingar) — node 300 is unpublished (bit 4 of OPTIONS not set) and node 400

@@ -40,6 +40,7 @@ class CensusRecordSpecificationTest {
 
 	private CensusRecordEntity persist(final Integer id, final String lastName, final String firstName, final String gender, final String birthYear) {
 		return censusRecordRepository.saveAndFlush(CensusRecordEntity.create()
+			.withSource("1845")
 			.withId(id)
 			.withLastName(lastName)
 			.withFirstName(firstName)

@@ -38,7 +38,7 @@ class CensusRecordResourceTest {
 
 	@Test
 	void searchCensusRecords() {
-		final var censusRecord = CensusRecord.create().withId(1).withLastName("Nordin").withFirstName("Anton");
+		final var censusRecord = CensusRecord.create().withId("1845-1").withLastName("Nordin").withFirstName("Anton");
 		final var pagedResponse = PagedCensusRecordResponse.create()
 			.withCensusRecords(List.of(censusRecord))
 			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
@@ -87,7 +87,7 @@ class CensusRecordResourceTest {
 
 	@Test
 	void getCensusRecordById() {
-		final var id = 1;
+		final var id = "1845-1";
 		final var censusRecord = CensusRecord.create().withId(id).withLastName("Nordin");
 
 		when(serviceMock.getById(id)).thenReturn(censusRecord);

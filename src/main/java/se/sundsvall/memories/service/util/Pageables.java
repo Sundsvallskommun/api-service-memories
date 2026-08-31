@@ -20,32 +20,32 @@ public final class Pageables {
 	private Pageables() {}
 
 	/**
-	 * A page request ordered by what the caller asked for, ending in {@code idAttribute} so that the order is total.
+	 * A page request ordered by what the caller asked for, ending in {@code idAttributes} so that the order is total.
 	 *
-	 * @param  parameters  the paging and sorting parameters of the request
-	 * @param  idAttribute the entity's id attribute, which is unique by definition
-	 * @return             the page request to hand to the repository
+	 * @param  parameters   the paging and sorting parameters of the request
+	 * @param  idAttributes the entity's id attributes, unique by definition — several for a composite id
+	 * @return              the page request to hand to the repository
 	 */
-	public static Pageable of(final AbstractParameterPagingAndSortingBase parameters, final String idAttribute) {
-		return of(parameters, Sort.unsorted(), idAttribute);
+	public static Pageable of(final AbstractParameterPagingAndSortingBase parameters, final String... idAttributes) {
+		return of(parameters, Sort.unsorted(), idAttributes);
 	}
 
 	/**
-	 * As {@link #of(AbstractParameterPagingAndSortingBase, String)}, with an order to fall back to when the caller asks
-	 * for none. Used by the tree listings, which default to the archive's own order.
+	 * As {@link #of(AbstractParameterPagingAndSortingBase, String...)}, with an order to fall back to when the caller
+	 * asks for none. Used by the tree listings, which default to the archive's own order.
 	 *
-	 * @param  parameters  the paging and sorting parameters of the request
-	 * @param  fallback    the order to use when the caller asks for none
-	 * @param  idAttribute the entity's id attribute, which is unique by definition
-	 * @return             the page request to hand to the repository
+	 * @param  parameters   the paging and sorting parameters of the request
+	 * @param  fallback     the order to use when the caller asks for none
+	 * @param  idAttributes the entity's id attributes, unique by definition — several for a composite id
+	 * @return              the page request to hand to the repository
 	 */
-	public static Pageable of(final AbstractParameterPagingAndSortingBase parameters, final Sort fallback, final String idAttribute) {
+	public static Pageable of(final AbstractParameterPagingAndSortingBase parameters, final Sort fallback, final String... idAttributes) {
 		final var requested = parameters.sort();
 		final var order = Optional.of(requested)
 			.filter(Sort::isSorted)
 			.orElse(fallback);
 
-		return PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), order.and(Sort.by(idAttribute)));
+		return PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), order.and(Sort.by(idAttributes)));
 	}
 
 	/**
@@ -80,20 +80,20 @@ public final class Pageables {
 	}
 
 	/**
-	 * The paging metadata for a page ordered by {@link #of(AbstractParameterPagingAndSortingBase, Sort, String)},
+	 * The paging metadata for a page ordered by {@link #of(AbstractParameterPagingAndSortingBase, Sort, String...)},
 	 * reporting the caller's order without the appended id tiebreak.
 	 *
-	 * @param  page        the page returned by the repository
-	 * @param  idAttribute the id attribute the page request ends with
-	 * @return             the metadata to put under {@code _meta}
+	 * @param  page         the page returned by the repository
+	 * @param  idAttributes the id attributes the page request ends with
+	 * @return              the metadata to put under {@code _meta}
 	 */
-	public static PagingAndSortingMetaData metaDataOf(final Page<?> page, final String idAttribute) {
+	public static PagingAndSortingMetaData metaDataOf(final Page<?> page, final String... idAttributes) {
 		final var ordered = page.getSort().stream()
 			.map(Sort.Order::getProperty)
 			.toList();
 		final var withoutTiebreaker = Optional.of(ordered)
-			.filter(properties -> endsWithTiebreaker(properties, idAttribute))
-			.map(properties -> properties.subList(0, properties.size() - 1))
+			.filter(properties -> endsWithTiebreaker(properties, idAttributes))
+			.map(properties -> properties.subList(0, properties.size() - idAttributes.length))
 			.orElse(ordered);
 		final var reported = Optional.of(withoutTiebreaker).filter(not(List::isEmpty));
 
@@ -105,8 +105,9 @@ public final class Pageables {
 				.orElse(null));
 	}
 
-	/** Whether the last property is the appended tiebreak. A caller sorting on the id themselves still sees theirs. */
-	private static boolean endsWithTiebreaker(final List<String> ordered, final String idAttribute) {
-		return !ordered.isEmpty() && ordered.getLast().equals(idAttribute);
+	/** Whether the order ends with the appended tiebreak. A caller sorting on the id themselves still sees theirs. */
+	private static boolean endsWithTiebreaker(final List<String> ordered, final String[] idAttributes) {
+		return ordered.size() >= idAttributes.length
+			&& ordered.subList(ordered.size() - idAttributes.length, ordered.size()).equals(List.of(idAttributes));
 	}
 }

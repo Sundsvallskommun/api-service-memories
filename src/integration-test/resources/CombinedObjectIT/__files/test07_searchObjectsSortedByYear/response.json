@@ -31,7 +31,7 @@
 	],
 	"genderCounts": [
 		{
-			"gender": "man",
+			"gender": "Man",
 			"count": 3
 		}
 	],
@@ -54,7 +54,7 @@
 			"locationText": "Njurunda"
 		},
 		{
-			"objectKey": "mantal-3",
+			"objectKey": "mantal-1890-3",
 			"sourceId": 3,
 			"objectType": "Mantal",
 			"title": "Erik Nordin",
@@ -77,7 +77,7 @@
 			"locationText": "Sundsvall"
 		},
 		{
-			"objectKey": "mantal-1",
+			"objectKey": "mantal-1845-1",
 			"sourceId": 1,
 			"objectType": "Mantal",
 			"title": "Anton Nordin",

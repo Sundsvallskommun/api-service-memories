@@ -18,13 +18,13 @@
 	],
 	"genderCounts": [
 		{
-			"gender": "man",
+			"gender": "Man",
 			"count": 1
 		}
 	],
 	"objects": [
 		{
-			"objectKey": "mantal-3",
+			"objectKey": "mantal-1890-3",
 			"sourceId": 3,
 			"objectType": "Mantal",
 			"title": "Erik Nordin",

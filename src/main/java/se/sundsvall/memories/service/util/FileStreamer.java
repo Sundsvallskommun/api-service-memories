@@ -12,6 +12,7 @@ import se.sundsvall.memories.service.model.FileVariant;
 import se.sundsvall.memories.service.model.StreamPayload;
 
 import static java.util.Optional.ofNullable;
+import static org.springframework.http.HttpHeaders.CACHE_CONTROL;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -30,6 +31,15 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 public class FileStreamer {
 
 	private static final String FILENAME_PREFIX = "sundsvallsminnen";
+
+	/**
+	 * The dept44 starter stamps every response with {@code Cache-Control: no-store} (its
+	 * {@code DisableBrowserCacheFilter}), which is right for API responses but starves clients on the archive files —
+	 * they are immutable, and refetching every thumbnail throttles against the per-client quota. The file responses
+	 * therefore replace the header once the file is known to be servable. The filter's {@code Expires: 0} may stand:
+	 * a {@code max-age} makes caches ignore it (RFC 9111 § 5.3).
+	 */
+	private static final String FILE_CACHE_CONTROL = "public, max-age=2592000, immutable";
 
 	private final SambaIntegration sambaIntegration;
 	private final FileTypeDetector fileTypeDetector;
@@ -144,10 +154,12 @@ public class FileStreamer {
 	 */
 	public void streamAttachment(final String smbPath, final String mimeType, final String filename,
 		final HttpServletResponse response, final String errorContext) {
-		response.addHeader(CONTENT_TYPE, mimeType);
-		response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"%s\"".formatted(filename));
-		try {
-			sambaIntegration.streamFile(smbPath, response.getOutputStream());
+		// The file is opened before any header is written, so an unservable file errors without the cache header.
+		try (final var input = sambaIntegration.openResource(smbPath).getInputStream()) {
+			response.addHeader(CONTENT_TYPE, mimeType);
+			response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"%s\"".formatted(filename));
+			allowCaching(response);
+			input.transferTo(response.getOutputStream());
 		} catch (final IOException e) {
 			throw Problem.valueOf(INTERNAL_SERVER_ERROR, "%s: %s".formatted(errorContext, e.getMessage()));
 		}
@@ -169,6 +181,7 @@ public class FileStreamer {
 	private void streamBinary(final String downloadFilename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
 		response.addHeader(CONTENT_TYPE, detected.mimeType());
 		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(downloadFilename).build().toString());
+		allowCaching(response);
 		detected.writeTo(response.getOutputStream());
 	}
 
@@ -176,7 +189,16 @@ public class FileStreamer {
 		final var htmlFilename = swapExtension(downloadFilename, "html");
 		response.addHeader(CONTENT_TYPE, new MediaType("text", "html", StandardCharsets.UTF_8).toString());
 		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(htmlFilename).build().toString());
+		allowCaching(response);
 		xsltTransformer.transform(detected.fullStream(), response.getOutputStream());
+	}
+
+	/**
+	 * Replaces the {@code no-store} the dept44 filter already stamped on the response with {@value #FILE_CACHE_CONTROL}.
+	 * Called only once the file is known to be servable, so error responses keep the filter's header.
+	 */
+	public static void allowCaching(final HttpServletResponse response) {
+		response.setHeader(CACHE_CONTROL, FILE_CACHE_CONTROL);
 	}
 
 	private static boolean isXmlMimeType(final String mimeType) {

@@ -40,7 +40,7 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		examples = "Foto"))
 	private List<String> objectType;
 
-	@Schema(description = "Gender (matched case-insensitively against the stored value). Only the person registers record one, so this filter also excludes every other type.", examples = "man")
+	@Schema(description = "Gender — Man, Kvinna or Okänt, matched case-insensitively. Only the person registers record one, so this filter also excludes every other type.", examples = "Man")
 	private String gender;
 
 	@Schema(description = "Originator (upphovsman) name (substring, case-insensitive; matches a person or a legal entity). Only object types carry an originator, so this filter also excludes the register types.", examples = "Nordin")

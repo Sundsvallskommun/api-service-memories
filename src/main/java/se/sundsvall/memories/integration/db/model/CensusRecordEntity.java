@@ -3,14 +3,20 @@ package se.sundsvall.memories.integration.db.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import java.util.Objects;
 
 /**
  * Entity for the {@code MANTAL} census-record table. The table has no {@code OPTIONS} (publish) column and no
  * parish columns, so census records carry no publish filter.
+ *
+ * <p>
+ * The id is composite: each census volume ({@code KALLA}) numbers its rows from 1, so {@code ID} alone names a
+ * different person per volume. The delivered table carries no unique column of its own, hence the derived key.
  */
 @Entity
+@IdClass(CensusRecordId.class)
 @Table(name = "MANTAL")
 public class CensusRecordEntity {
 
@@ -21,6 +27,7 @@ public class CensusRecordEntity {
 	@Column(name = "OBJEKTSNR", length = 36)
 	private String objectNumber;
 
+	@Id
 	@Column(name = "KALLA", length = 10)
 	private String source;
 

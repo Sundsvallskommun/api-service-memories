@@ -1,8 +1,6 @@
-package se.sundsvall.memories.api.model;
+package se.sundsvall.memories.integration.db.model;
 
-import java.util.List;
 import org.junit.jupiter.api.Test;
-import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
@@ -13,11 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class PagedCensusRecordResponseTest {
+class CensusRecordIdTest {
 
 	@Test
 	void testBean() {
-		assertThat(PagedCensusRecordResponse.class, allOf(
+		assertThat(CensusRecordId.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
 			hasValidBeanHashCode(),
@@ -26,20 +24,15 @@ class PagedCensusRecordResponseTest {
 	}
 
 	@Test
-	void testBuilderMethods() {
-		final var records = List.of(CensusRecord.create().withId("1845-1"));
-		final var meta = PagingAndSortingMetaData.create().withPage(1).withLimit(100);
+	void testAllArgsConstructor() {
+		final var result = new CensusRecordId("1845", 123);
 
-		final var result = PagedCensusRecordResponse.create()
-			.withCensusRecords(records)
-			.withMetaData(meta);
-
-		assertThat(result.getCensusRecords()).hasSize(1);
-		assertThat(result.getMetaData().getPage()).isEqualTo(1);
+		assertThat(result.getSource()).isEqualTo("1845");
+		assertThat(result.getId()).isEqualTo(123);
 	}
 
 	@Test
 	void testNoDirtOnCreatedBean() {
-		assertThat(PagedCensusRecordResponse.create()).hasAllNullFieldsOrProperties();
+		assertThat(new CensusRecordId()).hasAllNullFieldsOrProperties();
 	}
 }

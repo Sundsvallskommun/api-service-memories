@@ -20,7 +20,7 @@ public final class CensusRecordMapper {
 	public static CensusRecord toCensusRecord(final CensusRecordEntity entity) {
 		return ofNullable(entity)
 			.map(e -> CensusRecord.create()
-				.withId(e.getId())
+				.withId(toApiId(e))
 				.withObjectNumber(e.getObjectNumber())
 				.withSource(e.getSource())
 				.withPropertyNumber1(e.getPropertyNumber1())
@@ -40,6 +40,16 @@ public final class CensusRecordMapper {
 				.withGender(e.getGender())
 				.withBirthYear(e.getBirthYear())
 				.withNote(e.getNote()))
+			.orElse(null);
+	}
+
+	/**
+	 * The API id joins the census volume and the row number with {@code -} (e.g. {@code 1845-123}), matching what the
+	 * combined search's mantal objectKeys end with. A record missing either part has no addressable id.
+	 */
+	private static String toApiId(final CensusRecordEntity entity) {
+		return ofNullable(entity.getSource())
+			.flatMap(source -> ofNullable(entity.getId()).map(id -> source + "-" + id))
 			.orElse(null);
 	}
 

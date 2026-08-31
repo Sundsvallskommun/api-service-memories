@@ -23,11 +23,13 @@ import se.sundsvall.memories.service.util.FileStreamer.MaterialType;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpHeaders.CACHE_CONTROL;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -76,6 +78,7 @@ class FileStreamerTest {
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "image/jpeg");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-publikation-42.jpeg\"");
+		verify(responseMock).setHeader(CACHE_CONTROL, "public, max-age=2592000, immutable");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -93,6 +96,7 @@ class FileStreamerTest {
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/octet-stream");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-foto-7.q9z\"");
+		verify(responseMock).setHeader(CACHE_CONTROL, "public, max-age=2592000, immutable");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -114,6 +118,7 @@ class FileStreamerTest {
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "text/html;charset=UTF-8");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-publikation-9.html\"");
+		verify(responseMock).setHeader(CACHE_CONTROL, "public, max-age=2592000, immutable");
 		verify(xsltTransformerMock).transform(any(InputStream.class), any(OutputStream.class));
 	}
 
@@ -130,6 +135,7 @@ class FileStreamerTest {
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/pdf");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-publikation-11.xml\"");
+		verify(responseMock).setHeader(CACHE_CONTROL, "public, max-age=2592000, immutable");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -145,6 +151,7 @@ class FileStreamerTest {
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "application/xml");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-foto-13.xml\"");
+		verify(responseMock).setHeader(CACHE_CONTROL, "public, max-age=2592000, immutable");
 		verifyNoInteractions(xsltTransformerMock);
 	}
 
@@ -173,29 +180,35 @@ class FileStreamerTest {
 		final var outputStreamMock = mock(ServletOutputStream.class);
 
 		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
+		when(sambaIntegrationMock.openResource("/film/movie.mp4")).thenReturn(new ByteArrayResource(JPEG_BYTES));
 
 		fileStreamer.streamAttachment("/film/movie.mp4", "video/mp4", "movie.mp4", responseMock, "ctx");
 
 		verify(responseMock).addHeader(CONTENT_TYPE, "video/mp4");
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "attachment; filename=\"movie.mp4\"");
-		verify(sambaIntegrationMock).streamFile("/film/movie.mp4", outputStreamMock);
+		verify(responseMock).setHeader(CACHE_CONTROL, "public, max-age=2592000, immutable");
+		verify(outputStreamMock).write(any(byte[].class), anyInt(), anyInt());
 	}
 
 	@Test
-	void streamAttachmentWrapsIOException() throws IOException {
+	void streamAttachmentWrapsIOExceptionWithoutTouchingHeaders() {
 		final var responseMock = mock(HttpServletResponse.class);
-		final var outputStreamMock = mock(ServletOutputStream.class);
 
-		when(responseMock.getOutputStream()).thenReturn(outputStreamMock);
-		doAnswer(invocation -> {
-			throw new IOException("smb-down");
-		}).when(sambaIntegrationMock).streamFile("/film/movie.mp4", outputStreamMock);
+		when(sambaIntegrationMock.openResource("/film/movie.mp4"))
+			.thenReturn(new ByteArrayResource(JPEG_BYTES) {
+				@Override
+				public InputStream getInputStream() throws IOException {
+					throw new IOException("smb-down");
+				}
+			});
 
 		final var exception = assertThrows(ThrowableProblem.class,
 			() -> fileStreamer.streamAttachment("/film/movie.mp4", "video/mp4", "movie.mp4", responseMock, "boom-context"));
 
 		assertThat(exception.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
 		assertThat(exception.getMessage()).contains("boom-context").contains("smb-down");
+		// The file never opened, so neither the attachment headers nor the cache override may have been written.
+		verifyNoInteractions(responseMock);
 	}
 
 	@Test
