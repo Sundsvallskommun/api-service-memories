@@ -80,8 +80,9 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
-	 * Matches rows whose value, lower-cased, is one of the given alternatives, compared lower-cased. Matches every row
-	 * when no alternative is given.
+	 * Matches rows whose value, lower-cased, is one of the given alternatives. The alternatives are trimmed, blank ones
+	 * dropped and the rest lower-cased and deduplicated before the comparison, so {@code " Man "} matches a stored
+	 * {@code man}. Matches every row when no alternative remains.
 	 */
 	public Specification<T> buildInIgnoreCaseFilter(final String attribute, final List<String> values) {
 		final var wanted = distinctNonBlank(values).stream()
