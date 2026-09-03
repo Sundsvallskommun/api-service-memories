@@ -2,6 +2,8 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
 
 import static java.util.Collections.emptyList;
@@ -42,9 +44,34 @@ class CensusRecordMapperTest {
 		assertThat(result.getRelationCode()).isEqualTo("H");
 		assertThat(result.getFirstName()).isEqualTo("Anton");
 		assertThat(result.getLastName()).isEqualTo("Nordin");
-		assertThat(result.getGender()).isEqualTo("man");
+		assertThat(result.getGender()).isEqualTo("Man");
 		assertThat(result.getBirthYear()).isEqualTo("1852");
 		assertThat(result.getNote()).isEqualTo("Flyttade in 1875");
+	}
+
+	/**
+	 * The register mixes words and ISO 5218 codes, and a few rows hold values that name no gender. The API emits the
+	 * canonical label, or nothing.
+	 */
+	@ParameterizedTest
+	@CsvSource(nullValues = "null", value = {
+		"man, Man",
+		"MAN, Man",
+		"1, Man",
+		"kvinna, Kvinna",
+		"Kvinna, Kvinna",
+		"2, Kvinna",
+		"okänt, Okänt",
+		"0, null",
+		"3, null",
+		"1830-06-12, null",
+		"'', null",
+		"null, null"
+	})
+	void toCensusRecordNormalizesTheGender(final String stored, final String expected) {
+		final var result = CensusRecordMapper.toCensusRecord(sampleEntity().withGender(stored));
+
+		assertThat(result.getGender()).isEqualTo(expected);
 	}
 
 	@Test

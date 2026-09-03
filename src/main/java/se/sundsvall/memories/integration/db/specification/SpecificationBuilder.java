@@ -9,6 +9,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
@@ -76,6 +77,29 @@ public class SpecificationBuilder<T> {
 			return Specification.unrestricted();
 		}
 		return (root, _, _) -> root.get(attribute).in(wanted);
+	}
+
+	/**
+	 * Matches rows whose value, lower-cased, is one of the given alternatives, compared lower-cased. Matches every row
+	 * when no alternative is given.
+	 */
+	public Specification<T> buildInIgnoreCaseFilter(final String attribute, final List<String> values) {
+		final var wanted = distinctNonBlank(values).stream()
+			.map(value -> value.toLowerCase(Locale.ROOT))
+			.distinct()
+			.toList();
+		if (wanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> cb.lower(root.get(attribute)).in(wanted);
+	}
+
+	/**
+	 * Matches no row at all — for a filter value that names nothing the data can hold, where matching every row would
+	 * be the wrong reading of "not found".
+	 */
+	public Specification<T> buildNoneFilter() {
+		return (_, _, cb) -> cb.disjunction();
 	}
 
 	/**

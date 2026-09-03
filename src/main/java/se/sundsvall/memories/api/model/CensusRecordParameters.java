@@ -24,7 +24,7 @@ public class CensusRecordParameters extends AbstractParameterPagingAndSortingBas
 	@Schema(description = "Birth year to (inclusive)", examples = "1900")
 	private Integer yearTo;
 
-	@Schema(description = "Gender (matched case-insensitively against the stored value)", examples = "man")
+	@Schema(description = "Gender — Man, Kvinna or Okänt, matched case-insensitively. Matches every spelling the register stores for that gender, words and codes alike.", examples = "Man")
 	private String gender;
 
 	public static CensusRecordParameters create() {
