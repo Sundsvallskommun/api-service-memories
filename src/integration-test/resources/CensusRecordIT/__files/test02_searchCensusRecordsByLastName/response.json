@@ -21,7 +21,7 @@
 			"relationCode": "H",
 			"firstName": "Anton",
 			"lastName": "Nordin",
-			"gender": "man",
+			"gender": "Man",
 			"birthYear": "1852",
 			"note": "Flyttade in 1875"
 		},
@@ -30,7 +30,7 @@
 			"source": "1890",
 			"firstName": "Erik",
 			"lastName": "Nordin",
-			"gender": "man",
+			"gender": "Man",
 			"birthYear": "1889"
 		}
 	]

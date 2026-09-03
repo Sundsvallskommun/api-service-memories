@@ -93,16 +93,28 @@ class CensusRecordSpecificationTest {
 		assertThat(findIds(CensusRecordSpecification.hasFirstName("ann"))).containsExactly(2);
 	}
 
+	/**
+	 * The filter takes the canonical label and matches every spelling the register stores for it — words in any casing
+	 * and the ISO 5218 codes — while the stray values match no label at all.
+	 */
 	@Test
-	void hasGenderMatchesTheWholeValueRegardlessOfCase() {
+	void hasGenderMatchesEverySpellingOfTheLabelRegardlessOfCase() {
 		persist(1, "Nordin", "Anton", "man", "1850");
-		persist(2, "Lindberg", "Anna", "kvinna", "1860");
+		persist(2, "Trolle", "Isidor", "1", "1840");
+		persist(3, "Lindberg", "Anna", "Kvinna", "1860");
+		persist(4, "Berg", "Anna", "2", "1870");
+		persist(5, "Piga", "Brita", "1830-06-12", "1830");
+		persist(6, "Okänd", null, "0", "1800");
 
-		assertThat(findIds(CensusRecordSpecification.hasGender("MAN"))).containsExactly(1);
-		assertThat(findIds(CensusRecordSpecification.hasGender(" kvinna "))).containsExactly(2);
-		// A substring of the value is not a match — unlike the name filters, this one is exact.
+		assertThat(findIds(CensusRecordSpecification.hasGender("MAN"))).containsExactly(1, 2);
+		assertThat(findIds(CensusRecordSpecification.hasGender(" kvinna "))).containsExactly(3, 4);
+		assertThat(findIds(CensusRecordSpecification.hasGender("Okänt"))).isEmpty();
+		// A substring of the label is not a match — unlike the name filters, this one is exact.
 		assertThat(findIds(CensusRecordSpecification.hasGender("kvinn"))).isEmpty();
-		assertThat(findIds(CensusRecordSpecification.hasGender("   "))).containsExactly(1, 2);
+		// Nor is a stored code accepted as a filter value: the API speaks labels only.
+		assertThat(findIds(CensusRecordSpecification.hasGender("1"))).isEmpty();
+		assertThat(findIds(CensusRecordSpecification.hasGender("   "))).containsExactly(1, 2, 3, 4, 5, 6);
+		assertThat(findIds(CensusRecordSpecification.hasGender(null))).containsExactly(1, 2, 3, 4, 5, 6);
 	}
 
 	@Test

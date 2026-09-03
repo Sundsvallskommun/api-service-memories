@@ -3,6 +3,7 @@ package se.sundsvall.memories.service.mapper;
 import java.util.List;
 import se.sundsvall.memories.api.model.CensusRecord;
 import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
+import se.sundsvall.memories.integration.db.model.Gender;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -37,7 +38,7 @@ public final class CensusRecordMapper {
 				.withRelationCode(e.getRelationCode())
 				.withFirstName(e.getFirstName())
 				.withLastName(e.getLastName())
-				.withGender(e.getGender())
+				.withGender(toGender(e.getGender()))
 				.withBirthYear(e.getBirthYear())
 				.withNote(e.getNote()))
 			.orElse(null);
@@ -50,6 +51,15 @@ public final class CensusRecordMapper {
 	private static String toApiId(final CensusRecordEntity entity) {
 		return ofNullable(entity.getSource())
 			.flatMap(source -> ofNullable(entity.getId()).map(id -> source + "-" + id))
+			.orElse(null);
+	}
+
+	/**
+	 * The register stores a mix of words and codes; the API emits the canonical label, and nothing for a stray value.
+	 */
+	private static String toGender(final String stored) {
+		return Gender.fromSource(stored)
+			.map(Gender::getLabel)
 			.orElse(null);
 	}
 

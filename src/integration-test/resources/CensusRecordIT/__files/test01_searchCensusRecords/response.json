@@ -21,7 +21,7 @@
 			"relationCode": "H",
 			"firstName": "Anton",
 			"lastName": "Nordin",
-			"gender": "man",
+			"gender": "Man",
 			"birthYear": "1852",
 			"note": "Flyttade in 1875"
 		},
@@ -30,7 +30,6 @@
 			"source": "1845",
 			"firstName": "Brita",
 			"lastName": "Piga",
-			"gender": "1830-06-12",
 			"birthYear": "1830"
 		},
 		{
@@ -38,7 +37,7 @@
 			"source": "1890",
 			"firstName": "Isidor",
 			"lastName": "Trolle",
-			"gender": "1",
+			"gender": "Man",
 			"birthYear": "1840"
 		},
 		{
@@ -46,7 +45,7 @@
 			"source": "1890",
 			"firstName": "Anna",
 			"lastName": "Berg",
-			"gender": "2",
+			"gender": "Kvinna",
 			"birthYear": "1870"
 		},
 		{
@@ -54,7 +53,7 @@
 			"source": "1890",
 			"firstName": "Erik",
 			"lastName": "Nordin",
-			"gender": "man",
+			"gender": "Man",
 			"birthYear": "1889"
 		}
 	]

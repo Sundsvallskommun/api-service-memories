@@ -11,9 +11,11 @@
 -- The delivered census data cannot live under V1_3's PRIMARY KEY (ID) — the volumes reuse row numbers — and the
 -- delivered table in the shared environments was created without it. Converge on that shape: no single-column key,
 -- plus an index for the (volume, row) lookups the census-record entity now performs. The rows themselves are never
--- touched. (In an environment whose MANTAL never had the V1_3 key, skip the DROP — only the index applies.)
-ALTER TABLE MANTAL DROP PRIMARY KEY;
-ALTER TABLE MANTAL ADD INDEX IDX_MANTAL_KALLA_ID (KALLA, ID);
+-- touched. Both statements are guarded so the script runs to the end whichever shape it meets: the shared
+-- environments' MANTAL never had the V1_3 key, and an unguarded DROP stopped the run in test before the view below
+-- was replaced.
+ALTER TABLE MANTAL DROP INDEX IF EXISTS `PRIMARY`;
+ALTER TABLE MANTAL ADD INDEX IF NOT EXISTS IDX_MANTAL_KALLA_ID (KALLA, ID);
 
 CREATE OR REPLACE VIEW VW_MEMORY_OBJECTS AS
 SELECT CONCAT('foto-', F_ID)  AS OBJECT_KEY,

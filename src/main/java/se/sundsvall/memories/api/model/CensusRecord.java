@@ -57,7 +57,7 @@ public class CensusRecord {
 	@Schema(description = "Last name", examples = "Nordin")
 	private String lastName;
 
-	@Schema(description = "Gender", examples = "man")
+	@Schema(description = "Gender — Man, Kvinna or Okänt, normalised from the words and codes the register stores. Absent when the register holds no readable gender.", examples = "Man")
 	private String gender;
 
 	@Schema(description = "Birth year (stored as free text)", examples = "1852")

@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.8"
+  version: "3.9"
 servers:
-- url: http://localhost:53558
+- url: http://localhost:50663
   description: Generated server url
 tags:
 - name: Node
@@ -1590,10 +1590,10 @@ components:
             $ref: "#/components/schemas/Violation"
         title:
           type: string
-        detail:
-          type: string
         causeAsProblem:
           $ref: "#/components/schemas/ThrowableProblem"
+        detail:
+          type: string
         instance:
           type: string
           format: uri
@@ -3505,9 +3505,11 @@ components:
           - 1900
         gender:
           type: string
-          description: Gender (matched case-insensitively against the stored value)
+          description: "Gender — Man, Kvinna or Okänt, matched case-insensitively.\
+            \ Matches every spelling the register stores for that gender, words and\
+            \ codes alike."
           examples:
-          - man
+          - Man
     CensusRecord:
       type: object
       description: Census record (mantal) model
@@ -3601,9 +3603,11 @@ components:
           - Nordin
         gender:
           type: string
-          description: Gender
+          description: "Gender — Man, Kvinna or Okänt, normalised from the words and\
+            \ codes the register stores. Absent when the register holds no readable\
+            \ gender."
           examples:
-          - man
+          - Man
         birthYear:
           type: string
           description: Birth year (stored as free text)
