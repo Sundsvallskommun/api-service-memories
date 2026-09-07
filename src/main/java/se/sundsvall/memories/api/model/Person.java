@@ -19,7 +19,7 @@ public class Person {
 	@Schema(description = "First name", examples = "Anton")
 	private String firstName;
 
-	@Schema(description = "Gender", examples = "man")
+	@Schema(description = "Gender — Man, Kvinna or Okänt, normalised from what the register stores. A value naming no gender reads as Okänt, so the field is always present.", examples = "Man")
 	private String gender;
 
 	@Schema(description = "Birth date (stored as free text, not necessarily a valid date)", examples = "1852-03-14")

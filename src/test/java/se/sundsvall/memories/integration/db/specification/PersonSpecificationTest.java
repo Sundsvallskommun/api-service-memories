@@ -113,6 +113,26 @@ class PersonSpecificationTest {
 		assertThat(findIds(PersonSpecification.hasGender("MAN"))).containsExactly(1);
 	}
 
+	/**
+	 * The register writes the words, but the filter speaks the labels the API emits — the same values the census
+	 * records and the combined search accept — and Okänt gathers every row storing no readable gender.
+	 */
+	@Test
+	void hasGenderMatchesTheLabelAndGathersTheRestUnderUnknown() {
+		persistSearchable(1, "Nordin", "Anton", "man", "1850");
+		persistSearchable(2, "Lindberg", "Anna", "Kvinna", "1860");
+		persistSearchable(3, "Okänd", null, "okänt", "1870");
+		persistSearchable(4, "Piga", "Brita", "1830-06-12", "1830");
+		persistSearchable(5, "Tom", null, "", "1820");
+		persistSearchable(6, "Saknad", null, null, "1825");
+
+		assertThat(findIds(PersonSpecification.hasGender("Man"))).containsExactly(1);
+		assertThat(findIds(PersonSpecification.hasGender("KVINNA"))).containsExactly(2);
+		assertThat(findIds(PersonSpecification.hasGender("Okänt"))).containsExactly(3, 4, 5, 6);
+		// A label naming no gender matches nothing rather than every row.
+		assertThat(findIds(PersonSpecification.hasGender("Hen"))).isEmpty();
+	}
+
 	@Test
 	void filtersTreatBlankAsNoFilter() {
 		persist(1, PUBLISHED, "Nordin");

@@ -27,7 +27,7 @@ public class PersonParameters extends AbstractParameterPagingAndSortingBase {
 	@Schema(description = "Birth year to (inclusive)", examples = "1900")
 	private Integer yearTo;
 
-	@Schema(description = "Gender (matched case-insensitively against the stored value)", examples = "man")
+	@Schema(description = "Gender — Man, Kvinna or Okänt, matched case-insensitively. Matches every spelling the register stores for that gender, and Okänt also covers the rows storing no readable one.", examples = "Man")
 	private String gender;
 
 	public static PersonParameters create() {

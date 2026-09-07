@@ -51,7 +51,8 @@ class CensusRecordMapperTest {
 
 	/**
 	 * The register mixes words and ISO 5218 codes, and a few rows hold values that name no gender. The API emits the
-	 * canonical label, or nothing.
+	 * canonical label, and reads everything else as unknown — the register knows no more about a stray or missing
+	 * value than about a row spelling it out.
 	 */
 	@ParameterizedTest
 	@CsvSource(nullValues = "null", value = {
@@ -62,11 +63,11 @@ class CensusRecordMapperTest {
 		"Kvinna, Kvinna",
 		"2, Kvinna",
 		"okänt, Okänt",
-		"0, null",
-		"3, null",
-		"1830-06-12, null",
-		"'', null",
-		"null, null"
+		"0, Okänt",
+		"3, Okänt",
+		"1830-06-12, Okänt",
+		"'', Okänt",
+		"null, Okänt"
 	})
 	void toCensusRecordNormalizesTheGender(final String stored, final String expected) {
 		final var result = CensusRecordMapper.toCensusRecord(sampleEntity().withGender(stored));

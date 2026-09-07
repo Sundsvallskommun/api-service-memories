@@ -63,8 +63,22 @@ public class SpecificationBuilder<T> {
 		if (value == null || value.isBlank()) {
 			return Specification.unrestricted();
 		}
-		final var lowerCased = value.trim().toLowerCase();
+		final var lowerCased = value.trim().toLowerCase(Locale.ROOT);
 		return (root, _, cb) -> cb.equal(cb.lower(root.get(attribute)), lowerCased);
+	}
+
+	/**
+	 * Matches rows where the attribute equals the value regardless of case, and every row where the attribute is
+	 * {@code NULL} — a filter over a facet only some rows carry. The rows that carry none are left untouched rather
+	 * than excluded, so selecting a value narrows the rows it can speak for and no others. Matches every row when the
+	 * value is blank.
+	 */
+	public Specification<T> buildEqualIgnoreCaseOrMissingFilter(final String attribute, final String value) {
+		if (value == null || value.isBlank()) {
+			return Specification.unrestricted();
+		}
+		final var lowerCased = value.trim().toLowerCase(Locale.ROOT);
+		return (root, _, cb) -> cb.or(cb.isNull(root.get(attribute)), cb.equal(cb.lower(root.get(attribute)), lowerCased));
 	}
 
 	/**
@@ -93,6 +107,22 @@ public class SpecificationBuilder<T> {
 			return Specification.unrestricted();
 		}
 		return (root, _, cb) -> cb.lower(root.get(attribute)).in(wanted);
+	}
+
+	/**
+	 * Matches rows whose value, lower-cased, is none of the given alternatives — including the rows where it is
+	 * {@code NULL}, which SQL's {@code NOT IN} would leave out on its own. The alternatives are normalised as in
+	 * {@link #buildInIgnoreCaseFilter(String, List)}. Matches every row when no alternative remains.
+	 */
+	public Specification<T> buildNotInIgnoreCaseFilter(final String attribute, final List<String> values) {
+		final var unwanted = distinctNonBlank(values).stream()
+			.map(value -> value.toLowerCase(Locale.ROOT))
+			.distinct()
+			.toList();
+		if (unwanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> cb.or(cb.isNull(root.get(attribute)), cb.not(cb.lower(root.get(attribute)).in(unwanted)));
 	}
 
 	/**
@@ -412,7 +442,7 @@ public class SpecificationBuilder<T> {
 	 */
 	public Expression<Integer> relevance(final Root<T> root, final CriteriaBuilder cb, final String attribute, final String query) {
 		final var words = splitWords(query);
-		final var value = query.trim().toLowerCase();
+		final var value = query.trim().toLowerCase(Locale.ROOT);
 		final var name = cb.lower(root.<String>get(attribute));
 
 		return cb.<Integer>selectCase()
@@ -426,7 +456,7 @@ public class SpecificationBuilder<T> {
 	/** One {@code LIKE} per word, for the caller to combine with {@code and} or {@code or}. */
 	private Predicate[] matchesWords(final Expression<String> name, final CriteriaBuilder cb, final List<String> words) {
 		return words.stream()
-			.map(word -> cb.like(name, "%" + escapeWildcards(word.toLowerCase()) + "%", LIKE_ESCAPE))
+			.map(word -> cb.like(name, "%" + escapeWildcards(word.toLowerCase(Locale.ROOT)) + "%", LIKE_ESCAPE))
 			.toArray(Predicate[]::new);
 	}
 

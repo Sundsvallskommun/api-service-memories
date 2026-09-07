@@ -72,7 +72,8 @@ public interface CombinedObjectSpecification {
 
 	/**
 	 * What the gender counters count over: every filter except the gender selection, mirroring how the type counters
-	 * leave out theirs. Each dimension ignores only its own selection.
+	 * leave out theirs. Each dimension ignores only its own selection. The counters sum to the number of matched rows
+	 * that record a gender at all — the rest of a result carries none rather than an unknown one.
 	 */
 	static Specification<CombinedObjectEntity> filtersExcludingGender(final CombinedObjectParameters parameters) {
 		return filtersExcludingTypeAndGender(parameters)
@@ -89,9 +90,15 @@ public interface CombinedObjectSpecification {
 			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId()));
 	}
 
-	/** Only the person registers record a gender, so this filter also excludes every other type. */
+	/**
+	 * Restricts the rows that record a gender to the given one and leaves every other row untouched. Only the person
+	 * registers record a gender (V2_3 labels every one of their rows, unknown included), so a selection speaks for
+	 * those rows alone rather than excluding the types that record none — a search for photos and men returns both,
+	 * the way the filter reads. The values are the labels {@code genderCounts} counts by, matched case-insensitively;
+	 * one naming no gender matches no register row while still keeping the rows that record none.
+	 */
 	static Specification<CombinedObjectEntity> hasGender(final String gender) {
-		return BUILDER.buildEqualIgnoreCaseFilter(GENDER, gender);
+		return BUILDER.buildEqualIgnoreCaseOrMissingFilter(GENDER, gender);
 	}
 
 	/**

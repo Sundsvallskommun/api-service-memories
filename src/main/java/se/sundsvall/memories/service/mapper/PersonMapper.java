@@ -2,6 +2,7 @@ package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
 import se.sundsvall.memories.api.model.Person;
+import se.sundsvall.memories.integration.db.model.Gender;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 
 import static java.util.Collections.emptyList;
@@ -24,7 +25,7 @@ public final class PersonMapper {
 				.withPersonNumber(e.getPersonNumber())
 				.withLastName(e.getLastName())
 				.withFirstName(e.getFirstName())
-				.withGender(e.getGender())
+				.withGender(toGender(e.getGender()))
 				.withBirthDate(e.getBirthDate())
 				.withBirthParish(e.getBirthParish())
 				.withDeathDate(e.getDeathDate())
@@ -39,6 +40,14 @@ public final class PersonMapper {
 				.withOptions(e.getOptions())
 				.withDeletedDate(e.getDeletedDate()))
 			.orElse(null);
+	}
+
+	/**
+	 * The register writes the gender as a word; the API emits the canonical label, and Okänt for a value naming no
+	 * gender, so a person reads the same here as in the census records and the combined search.
+	 */
+	private static String toGender(final String stored) {
+		return Gender.ofSource(stored).getLabel();
 	}
 
 	/**

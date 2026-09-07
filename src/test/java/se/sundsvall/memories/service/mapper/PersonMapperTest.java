@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 
 import static java.util.Collections.emptyList;
@@ -43,7 +45,7 @@ class PersonMapperTest {
 		assertThat(result.getPersonNumber()).isEqualTo("42");
 		assertThat(result.getLastName()).isEqualTo("Nordin");
 		assertThat(result.getFirstName()).isEqualTo("Anton");
-		assertThat(result.getGender()).isEqualTo("man");
+		assertThat(result.getGender()).isEqualTo("Man");
 		assertThat(result.getBirthDate()).isEqualTo("1852-03-14");
 		assertThat(result.getBirthParish()).isEqualTo("Sundsvall");
 		assertThat(result.getDeathDate()).isEqualTo("1921-11-02");
@@ -57,6 +59,26 @@ class PersonMapperTest {
 		assertThat(result.getBiographyFilename()).isEqualTo("person_123_biografi.xml");
 		assertThat(result.getOptions()).isEqualTo(6);
 		assertThat(result.getDeletedDate()).isEqualTo(LocalDate.of(2026, Month.JANUARY, 15));
+	}
+
+	/**
+	 * The register writes the words; the API emits the canonical label so a person reads the same here as in the
+	 * census records and the combined search, and a value naming no gender reads as unknown rather than as nothing.
+	 */
+	@ParameterizedTest
+	@CsvSource(nullValues = "null", value = {
+		"man, Man",
+		"MAN, Man",
+		"kvinna, Kvinna",
+		"okänt, Okänt",
+		"1830-06-12, Okänt",
+		"'', Okänt",
+		"null, Okänt"
+	})
+	void toPersonNormalizesTheGender(final String stored, final String expected) {
+		final var result = PersonMapper.toPerson(sampleEntity().withGender(stored));
+
+		assertThat(result.getGender()).isEqualTo(expected);
 	}
 
 	@Test

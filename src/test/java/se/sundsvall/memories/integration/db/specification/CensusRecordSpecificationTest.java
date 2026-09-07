@@ -95,7 +95,7 @@ class CensusRecordSpecificationTest {
 
 	/**
 	 * The filter takes the canonical label and matches every spelling the register stores for it — words in any casing
-	 * and the ISO 5218 codes — while the stray values match no label at all.
+	 * and the ISO 5218 codes.
 	 */
 	@Test
 	void hasGenderMatchesEverySpellingOfTheLabelRegardlessOfCase() {
@@ -103,18 +103,33 @@ class CensusRecordSpecificationTest {
 		persist(2, "Trolle", "Isidor", "1", "1840");
 		persist(3, "Lindberg", "Anna", "Kvinna", "1860");
 		persist(4, "Berg", "Anna", "2", "1870");
-		persist(5, "Piga", "Brita", "1830-06-12", "1830");
-		persist(6, "Okänd", null, "0", "1800");
 
 		assertThat(findIds(CensusRecordSpecification.hasGender("MAN"))).containsExactly(1, 2);
 		assertThat(findIds(CensusRecordSpecification.hasGender(" kvinna "))).containsExactly(3, 4);
-		assertThat(findIds(CensusRecordSpecification.hasGender("Okänt"))).isEmpty();
 		// A substring of the label is not a match — unlike the name filters, this one is exact.
 		assertThat(findIds(CensusRecordSpecification.hasGender("kvinn"))).isEmpty();
 		// Nor is a stored code accepted as a filter value: the API speaks labels only.
 		assertThat(findIds(CensusRecordSpecification.hasGender("1"))).isEmpty();
-		assertThat(findIds(CensusRecordSpecification.hasGender("   "))).containsExactly(1, 2, 3, 4, 5, 6);
-		assertThat(findIds(CensusRecordSpecification.hasGender(null))).containsExactly(1, 2, 3, 4, 5, 6);
+		assertThat(findIds(CensusRecordSpecification.hasGender("   "))).containsExactly(1, 2, 3, 4);
+		assertThat(findIds(CensusRecordSpecification.hasGender(null))).containsExactly(1, 2, 3, 4);
+	}
+
+	/**
+	 * Okänt covers every row the register records no readable gender for, not only the ones spelling it out: a stray
+	 * value, a blank and a missing one say exactly as much about the person as the word does.
+	 */
+	@Test
+	void hasGenderUnknownMatchesEveryRowNamingNoGender() {
+		persist(1, "Nordin", "Anton", "man", "1850");
+		persist(2, "Berg", "Anna", "2", "1870");
+		persist(3, "Okänd", null, "Okänt", "1810");
+		persist(4, "Piga", "Brita", "1830-06-12", "1830");
+		persist(5, "Noll", null, "0", "1800");
+		persist(6, "Tre", null, "3", "1805");
+		persist(7, "Tom", null, "", "1820");
+		persist(8, "Saknad", null, null, "1825");
+
+		assertThat(findIds(CensusRecordSpecification.hasGender("okänt"))).containsExactly(3, 4, 5, 6, 7, 8);
 	}
 
 	@Test

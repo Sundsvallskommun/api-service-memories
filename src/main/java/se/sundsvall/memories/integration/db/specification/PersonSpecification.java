@@ -2,8 +2,11 @@ package se.sundsvall.memories.integration.db.specification;
 
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
+import se.sundsvall.memories.integration.db.model.Gender;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 
+import static java.util.Optional.ofNullable;
+import static java.util.function.Predicate.not;
 import static se.sundsvall.memories.integration.db.model.PersonEntity_.BIRTH_DATE;
 import static se.sundsvall.memories.integration.db.model.PersonEntity_.BIRTH_PARISH;
 import static se.sundsvall.memories.integration.db.model.PersonEntity_.DELETED_DATE;
@@ -58,8 +61,27 @@ public interface PersonSpecification {
 		return BUILDER.buildLikeAnyFilter(List.of(BIRTH_PARISH), birthParish);
 	}
 
+	/**
+	 * Accepts the canonical labels (Man, Kvinna, Okänt) case-insensitively and matches every stored spelling of that
+	 * gender, as the census records do — the register writes the words, but the labels are what the API emits and what
+	 * the combined search filters on, so one spelling works everywhere. Okänt also matches the rows whose stored value
+	 * names no gender, stray, blank or missing alike. A label naming no gender matches nothing rather than every row.
+	 */
 	static Specification<PersonEntity> hasGender(final String gender) {
-		return BUILDER.buildEqualIgnoreCaseFilter(GENDER, gender);
+		return ofNullable(gender)
+			.filter(not(String::isBlank))
+			.map(label -> Gender.fromLabel(label)
+				.map(PersonSpecification::genderFilter)
+				.orElseGet(BUILDER::buildNoneFilter))
+			.orElseGet(Specification::unrestricted);
+	}
+
+	/** Every gender is matched by the spellings it is stored as, except the unknown one, which is what is left over. */
+	private static Specification<PersonEntity> genderFilter(final Gender gender) {
+		return switch (gender) {
+			case OKANT -> BUILDER.buildNotInIgnoreCaseFilter(GENDER, gender.getOtherSourceValues());
+			case MAN, KVINNA -> BUILDER.buildInIgnoreCaseFilter(GENDER, gender.getSourceValues());
+		};
 	}
 
 	static Specification<PersonEntity> bornFrom(final Integer yearFrom) {

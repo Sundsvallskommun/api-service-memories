@@ -12,7 +12,9 @@ public class GenderCount {
 	@Schema(description = "Gender — Man, Kvinna or Okänt, which the gender filter accepts", examples = "Man")
 	private String gender;
 
-	@Schema(description = "Number of matching objects recording that gender, across every page", examples = "12")
+	@Schema(
+		description = "Number of matching objects recording that gender, across every page. The counters cover every matched row that records a gender at all, so they sum to fewer than totalRecords whenever the result also holds types that record none.",
+		examples = "12")
 	private Long count;
 
 	public static GenderCount create() {

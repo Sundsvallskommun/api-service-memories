@@ -18,6 +18,7 @@ import se.sundsvall.memories.service.util.FileStreamer;
 import se.sundsvall.memories.service.util.FileVariants;
 import se.sundsvall.memories.service.util.Pageables;
 
+import static java.util.Locale.ROOT;
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.TEXT;
@@ -68,7 +69,7 @@ public class TextService {
 		final var filename = ofNullable(FileVariants.filename(entity, variant))
 			.filter(name -> !name.isBlank())
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
-				"Text with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase())));
+				"Text with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase(ROOT))));
 
 		final var path = FileStreamer.smbPath(sambaProperties.textFolder(), variant, filename);
 
@@ -86,7 +87,7 @@ public class TextService {
 		final var filename = ofNullable(FileVariants.filename(entity, variant))
 			.filter(name -> !name.isBlank())
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
-				"Media file with id '%s' for text with id '%s' has no file for variant '%s'".formatted(mediaId, textId, variant.name().toLowerCase())));
+				"Media file with id '%s' for text with id '%s' has no file for variant '%s'".formatted(mediaId, textId, variant.name().toLowerCase(ROOT))));
 
 		// TEXT_MULTI media files live in their own folder on the share (configured via
 		// integration.samba.text-multi-folder, e.g. .../MEDIA/TEXT_MULTI/); the

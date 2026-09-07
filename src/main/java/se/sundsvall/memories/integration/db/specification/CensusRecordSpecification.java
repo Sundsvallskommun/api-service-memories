@@ -29,15 +29,25 @@ public interface CensusRecordSpecification {
 
 	/**
 	 * Accepts the canonical labels (Man, Kvinna, Okänt) case-insensitively and matches every stored spelling of that
-	 * gender, words and codes alike. A label naming no gender matches nothing rather than every row.
+	 * gender, words and codes alike. Okänt also matches the rows whose stored value names no gender — stray, blank or
+	 * missing — since the register knows no more about those than about the ones spelling it out, and the API reports
+	 * them all as unknown. A label naming no gender matches nothing rather than every row.
 	 */
 	static Specification<CensusRecordEntity> hasGender(final String gender) {
 		return ofNullable(gender)
 			.filter(not(String::isBlank))
 			.map(label -> Gender.fromLabel(label)
-				.map(resolved -> BUILDER.buildInIgnoreCaseFilter(GENDER, resolved.getSourceValues()))
+				.map(CensusRecordSpecification::genderFilter)
 				.orElseGet(BUILDER::buildNoneFilter))
 			.orElseGet(Specification::unrestricted);
+	}
+
+	/** Every gender is matched by the spellings it is stored as, except the unknown one, which is what is left over. */
+	private static Specification<CensusRecordEntity> genderFilter(final Gender gender) {
+		return switch (gender) {
+			case OKANT -> BUILDER.buildNotInIgnoreCaseFilter(GENDER, gender.getOtherSourceValues());
+			case MAN, KVINNA -> BUILDER.buildInIgnoreCaseFilter(GENDER, gender.getSourceValues());
+		};
 	}
 
 	static Specification<CensusRecordEntity> bornFrom(final Integer yearFrom) {
