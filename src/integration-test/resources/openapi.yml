@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.9"
+  version: "3.10"
 servers:
-- url: http://localhost:50663
+- url: http://localhost:60312
   description: Generated server url
 tags:
 - name: Node
@@ -2587,9 +2587,11 @@ components:
           - 1900
         gender:
           type: string
-          description: Gender (matched case-insensitively against the stored value)
+          description: "Gender — Man, Kvinna or Okänt, matched case-insensitively.\
+            \ Matches every spelling the register stores for that gender, and Okä\
+            nt also covers the rows storing no readable one."
           examples:
-          - man
+          - Man
     PagedPersonResponse:
       type: object
       description: Paged person response
@@ -2629,9 +2631,11 @@ components:
           - Anton
         gender:
           type: string
-          description: Gender
+          description: "Gender — Man, Kvinna or Okänt, normalised from what the register\
+            \ stores. A value naming no gender reads as Okänt, so the field is always\
+            \ present."
           examples:
-          - man
+          - Man
         birthDate:
           type: string
           description: "Birth date (stored as free text, not necessarily a valid date)"
@@ -2790,8 +2794,12 @@ components:
         gender:
           type: string
           description: "Gender — Man, Kvinna or Okänt, matched case-insensitively.\
-            \ Only the person registers record one, so this filter also excludes every\
-            \ other type."
+            \ Only the person registers record one, and the filter speaks for those\
+            \ types alone: it narrows them to the chosen gender and leaves every other\
+            \ type untouched, so combining it with objectType=Foto returns the photos\
+            \ and the matching persons rather than nothing. Okänt covers every register\
+            \ row without a readable gender, so the three values account for all of\
+            \ them."
           examples:
           - Man
         creator:
@@ -2886,7 +2894,9 @@ components:
           type: integer
           format: int64
           description: "Number of matching objects recording that gender, across every\
-            \ page"
+            \ page. The counters cover every matched row that records a gender at\
+            \ all, so they sum to fewer than totalRecords whenever the result also\
+            \ holds types that record none."
           examples:
           - 12
     ObjectTypeCount:
@@ -3507,7 +3517,7 @@ components:
           type: string
           description: "Gender — Man, Kvinna or Okänt, matched case-insensitively.\
             \ Matches every spelling the register stores for that gender, words and\
-            \ codes alike."
+            \ codes alike, and Okänt also covers the rows storing no readable one."
           examples:
           - Man
     CensusRecord:
@@ -3604,8 +3614,8 @@ components:
         gender:
           type: string
           description: "Gender — Man, Kvinna or Okänt, normalised from the words and\
-            \ codes the register stores. Absent when the register holds no readable\
-            \ gender."
+            \ codes the register stores. A value naming no gender reads as Okänt,\
+            \ so the field is always present."
           examples:
           - Man
         birthYear:

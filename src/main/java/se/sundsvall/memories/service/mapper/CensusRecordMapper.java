@@ -55,12 +55,11 @@ public final class CensusRecordMapper {
 	}
 
 	/**
-	 * The register stores a mix of words and codes; the API emits the canonical label, and nothing for a stray value.
+	 * The register stores a mix of words and codes; the API emits the canonical label, and Okänt for a value naming no
+	 * gender — the register knows no more about a stray or missing one than about a row spelling it out.
 	 */
 	private static String toGender(final String stored) {
-		return Gender.fromSource(stored)
-			.map(Gender::getLabel)
-			.orElse(null);
+		return Gender.ofSource(stored).getLabel();
 	}
 
 	/**

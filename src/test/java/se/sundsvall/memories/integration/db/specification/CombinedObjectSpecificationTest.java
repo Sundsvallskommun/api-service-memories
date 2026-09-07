@@ -323,9 +323,12 @@ class CombinedObjectSpecificationTest {
 		assertThat(rankedKeys(parameters)).containsExactly("ljud-2", "foto-4", "person-3", "ljud-1");
 	}
 
-	/** The gender filter reads the view's {@code KON}, so it also excludes every type that records none. */
+	/**
+	 * The gender filter narrows the types that record one and leaves the rest of the search alone — the photo is not a
+	 * man, but neither is it a woman, so excluding it would answer a question it was never asked.
+	 */
 	@Test
-	void genderFilterSelectsOnlyRegisterRowsOfThatGender() {
+	void genderFilterNarrowsTheRegistersAndLeavesEveryOtherTypeUntouched() {
 		persistPhoto(1, "Stadsvy", null, "1920", null);
 		persistPerson(2, "Anna", "Berg", "kvinna", null);
 		persistPerson(3, "Anton", "Nordin", "man", null);
@@ -334,7 +337,36 @@ class CombinedObjectSpecificationTest {
 
 		final var parameters = CombinedObjectParameters.create().withGender("MAN");
 
-		assertThat(findKeys(parameters)).containsExactly("mantal-1845-4", "person-3");
+		assertThat(findKeys(parameters)).containsExactly("foto-1", "mantal-1845-4", "person-3");
+	}
+
+	/**
+	 * The registers are where a gender selection bites, so restricting the search to a type that records none returns
+	 * that type whole rather than nothing — what the filter promises when it sits inside the person facet.
+	 */
+	@Test
+	void genderFilterMatchesEveryRowOfATypeRecordingNoGender() {
+		persistPhoto(1, "Stadsvy", null, "1920", null);
+		persistPerson(2, "Anna", "Berg", "kvinna", null);
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create().withObjectType(List.of("Foto")).withGender("Man");
+
+		assertThat(findKeys(parameters)).containsExactly("foto-1");
+	}
+
+	/**
+	 * A label the archive knows no gender by matches no register row, but it still says nothing about the types that
+	 * record none, so those stay in the result.
+	 */
+	@Test
+	void genderFilterOfAnUnknownLabelKeepsOnlyTheTypesRecordingNoGender() {
+		persistPhoto(1, "Stadsvy", null, "1920", null);
+		persistPerson(2, "Anna", "Berg", "kvinna", null);
+		persistCensusRecord(3, "Erik", "Holm", "man", "1889");
+		entityManager.clear();
+
+		assertThat(findKeys(CombinedObjectParameters.create().withGender("Hen"))).containsExactly("foto-1");
 	}
 
 	/**
@@ -350,11 +382,45 @@ class CombinedObjectSpecificationTest {
 		entityManager.clear();
 
 		final var parameters = CombinedObjectParameters.create().withGender("man");
-		assertThat(findKeys(parameters)).containsExactly("mantal-1845-4", "person-3");
+		assertThat(findKeys(parameters)).containsExactly("foto-1", "mantal-1845-4", "person-3");
 		assertThat(countByGender(parameters)).containsExactly(entry("Kvinna", 1L), entry("Man", 2L));
 
 		final var mantalOnly = CombinedObjectParameters.create().withObjectType(List.of("Mantal"));
 		assertThat(countByGender(mantalOnly)).containsExactly(entry("Man", 1L));
+	}
+
+	/**
+	 * Every register row is counted under one of the three labels: a stray, blank or missing value is a gender the
+	 * archive does not know, which is what Okänt says, so the counters add up to the register rows the search matched.
+	 */
+	@Test
+	void countByGenderGathersEveryUnreadableValueUnderUnknown() {
+		persistPhoto(1, "Stadsvy", null, "1920", null);
+		persistPerson(2, "Anna", "Berg", "kvinna", null);
+		persistPerson(3, "Brita", "Piga", "1830-06-12", null);
+		persistPerson(4, "Okänd", "Person", "okänt", null);
+		persistPerson(5, "Tom", "Person", null, null);
+		persistCensusRecord(6, "Erik", "Holm", "0", "1889");
+		entityManager.clear();
+
+		assertThat(countByGender(CombinedObjectParameters.create())).containsExactly(entry("Kvinna", 1L), entry("Okänt", 4L));
+	}
+
+	/**
+	 * The type counters leave out the type selection, not the gender one — but a gender selection no longer empties the
+	 * types that record none, so every chip keeps reporting what selecting it would return.
+	 */
+	@Test
+	void countByTypeCoversEveryTypeWithAGenderSelected() {
+		persistPhoto(1, "Stadsvy", null, "1920", null);
+		persistPerson(2, "Anna", "Berg", "kvinna", null);
+		persistPerson(3, "Anton", "Nordin", "man", null);
+		persistCensusRecord(4, "Erik", "Holm", "man", "1889");
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create().withGender("Man");
+
+		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L), entry("Mantal", 1L), entry("Person", 1L));
 	}
 
 	/** Census records are searchable as the object type {@code Mantal}, composed and dated like the other registers. */

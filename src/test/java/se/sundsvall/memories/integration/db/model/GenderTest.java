@@ -78,6 +78,30 @@ class GenderTest {
 		assertThat(Gender.fromLabel(null)).isEmpty();
 	}
 
+	/** What the unknown gender is filtered against: every spelling that names one of the others. */
+	@Test
+	void otherSourceValues() {
+		assertThat(Gender.MAN.getOtherSourceValues()).containsExactly("kvinna", "2", "okänt");
+		assertThat(Gender.KVINNA.getOtherSourceValues()).containsExactly("man", "1", "okänt");
+		assertThat(Gender.OKANT.getOtherSourceValues()).containsExactly("man", "1", "kvinna", "2");
+	}
+
+	/** Mirrors the view: the spellings resolve, and everything else is a gender the archive does not know. */
+	@ParameterizedTest
+	@CsvSource(nullValues = "null", value = {
+		"man, MAN",
+		"1, MAN",
+		"KVINNA, KVINNA",
+		"okänt, OKANT",
+		"0, OKANT",
+		"1830-06-12, OKANT",
+		"'', OKANT",
+		"null, OKANT"
+	})
+	void ofSource(final String stored, final Gender expected) {
+		assertThat(Gender.ofSource(stored)).isEqualTo(expected);
+	}
+
 	@Test
 	void sourceValuesAreImmutable() {
 		final List<String> values = Gender.MAN.getSourceValues();

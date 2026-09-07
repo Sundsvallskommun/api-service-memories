@@ -236,12 +236,25 @@ class CombinedObjectIT extends AbstractAppTest {
 			.sendRequestAndVerifyResponse();
 	}
 
-	// The gender selection narrows the list and the type counts but not its own counters, which keep counting every
-	// gender the search matches.
+	// The gender selection narrows the registers to the men and leaves the types recording no gender — the photo and
+	// the seamen — where they were. It does not reach its own counters, which keep counting every gender the search
+	// matches, and the type counts still cover every type.
 	@Test
 	void test22_searchObjectsFilteredByGender() {
 		setupCall()
 			.withServicePath(PATH + "?query=Nordin&gender=man&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// Narrowed to a type that records no gender, the selection has nothing to narrow: the seamen come back whole
+	// rather than not at all, and the gender counters are empty because no matched row records one.
+	@Test
+	void test23_searchObjectsFilteredByGenderAndATypeRecordingNone() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&objectType=Sjöman&gender=Kvinna&sortBy=objectKey&sortDirection=ASC")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)

@@ -15,7 +15,7 @@
 			"personId": 4,
 			"lastName": "Okänd",
 			"firstName": "Datum",
-			"gender": "man",
+			"gender": "Man",
 			"birthDate": "okänt",
 			"birthParish": "Sundsvall",
 			"options": 6
@@ -25,7 +25,7 @@
 			"personNumber": "42",
 			"lastName": "Nordin",
 			"firstName": "Anton",
-			"gender": "man",
+			"gender": "Man",
 			"birthDate": "1852-03-14",
 			"birthParish": "Sundsvall",
 			"deathDate": "1921-11-02",
@@ -43,7 +43,7 @@
 			"personId": 2,
 			"lastName": "Berg",
 			"firstName": "Anna",
-			"gender": "kvinna",
+			"gender": "Kvinna",
 			"birthDate": "1870-05-01",
 			"birthParish": "Selånger",
 			"options": 4
