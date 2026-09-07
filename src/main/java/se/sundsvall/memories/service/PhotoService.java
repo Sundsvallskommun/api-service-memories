@@ -16,6 +16,7 @@ import se.sundsvall.memories.service.util.FileStreamer;
 import se.sundsvall.memories.service.util.FileVariants;
 import se.sundsvall.memories.service.util.Pageables;
 
+import static java.util.Locale.ROOT;
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.PHOTO;
@@ -63,7 +64,7 @@ public class PhotoService {
 		final var filename = ofNullable(FileVariants.filename(entity, variant))
 			.filter(name -> !name.isBlank())
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND,
-				"Photo with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase())));
+				"Photo with id '%s' has no file for variant '%s'".formatted(id, variant.name().toLowerCase(ROOT))));
 
 		final var path = FileStreamer.smbPath(sambaProperties.photoFolder(), variant, filename);
 
