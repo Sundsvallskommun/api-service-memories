@@ -188,6 +188,13 @@ VALUES (1002, '1950-06-15', '1950-06-15', 'Brev från Timrå', 0, 1, 2, 'Timrå'
         'TEXT.id_1002_fil_stor.jpeg', null, 'TEXT.id_1002_fil_txt.xml',
         'Brevtext från 1950 om midsommarfirande', null, 20002, 4, 'text', null);
 
+-- Text whose originator is legal entity 20 (Berg Aktiebolag, category 2), so a second category has an object to
+-- count and filter on in the combined search. Its title and comment share no word with the other searches.
+INSERT INTO TEXT (ID_ID, DOKDATUM, DOKTITEL, U_E_ID, U_J_ID, D_T_ID, D_OPLATS, D_O_ID, KOMMENT_DOC, FILNAMN, FIL_LITEN,
+                  NODEID, `OPTIONS`, FIL_FORMAT)
+VALUES (1003, '1925-03-10', 'Bolagsstämma 1925', 0, 20, 2, 'Timrå', 1, 'Protokoll från bolagsstämman', 'stamma_1925.xml',
+        'TEXT.id_1003_fil_liten.jpeg', 20003, 4, 'text');
+
 -- Unpublished text that must never appear in any response
 INSERT INTO TEXT (ID_ID, DOKTITEL, KOMMENT_DOC, NODEID, `OPTIONS`)
 VALUES (1099, 'Draft unpublished text', 'Stadshuset ej publicerad', 20099, 0);
@@ -254,8 +261,10 @@ INSERT INTO PERSON (P_ID, ENAMN, FNAMN, KON, FODDAT, FODFRS, `OPTIONS`)
 VALUES (4, 'Okänd', 'Datum', 'man', 'okänt', 'Sundsvall', 6);
 -- KATEGORI (verksamhetskategorier – lookup)
 --
+-- KAT_ID 1 is the sentinel JURPERS.KAT_ID defaults to ("no category"), blank like the real one; it must never be listed
 INSERT INTO KATEGORI (KAT_ID, KATKOD, KATNAMN)
-VALUES (2, 'AB', 'Aktiebolag'),
+VALUES (1, '', ''),
+       (2, 'AB', 'Aktiebolag'),
        (5, 'KOM', 'Kommitté');
 
 --

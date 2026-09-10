@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
+import se.sundsvall.memories.api.model.CategoryCount;
 import se.sundsvall.memories.api.model.CombinedObject;
 import se.sundsvall.memories.api.model.GenderCount;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
@@ -99,6 +100,33 @@ public final class CombinedObjectMapper {
 	public static List<GenderCount> toGenderCountList(final List<CombinedObjectRepositoryCustom.GenderCount> genderCounts) {
 		return ofNullable(genderCounts).orElse(emptyList()).stream()
 			.map(CombinedObjectMapper::toGenderCount)
+			.toList();
+	}
+
+	/**
+	 * Map one category chip counter.
+	 *
+	 * @param  categoryCount the counter the search grouped
+	 * @return               the mapped {@link CategoryCount}, or {@code null} if {@code categoryCount} is null
+	 */
+	public static CategoryCount toCategoryCount(final CombinedObjectRepositoryCustom.CategoryCount categoryCount) {
+		return ofNullable(categoryCount)
+			.map(count -> CategoryCount.create()
+				.withCategoryId(count.categoryId())
+				.withName(count.name())
+				.withCount(count.total()))
+			.orElse(null);
+	}
+
+	/**
+	 * Map the category chip counters, keeping the order the search counted them in.
+	 *
+	 * @param  categoryCounts the counters the search grouped
+	 * @return                list of mapped {@link CategoryCount} objects (empty if {@code categoryCounts} is null)
+	 */
+	public static List<CategoryCount> toCategoryCountList(final List<CombinedObjectRepositoryCustom.CategoryCount> categoryCounts) {
+		return ofNullable(categoryCounts).orElse(emptyList()).stream()
+			.map(CombinedObjectMapper::toCategoryCount)
 			.toList();
 	}
 

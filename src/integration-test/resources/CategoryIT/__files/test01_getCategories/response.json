@@ -2,11 +2,13 @@
 	{
 		"categoryId": 2,
 		"code": "AB",
-		"name": "Aktiebolag"
+		"name": "Aktiebolag",
+		"legalEntityCount": 1
 	},
 	{
 		"categoryId": 5,
 		"code": "KOM",
-		"name": "Kommitté"
+		"name": "Kommitté",
+		"legalEntityCount": 1
 	}
 ]

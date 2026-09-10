@@ -1,10 +1,10 @@
 {
 	"_meta": {
-		"count": 2,
+		"count": 3,
 		"limit": 100,
 		"page": 1,
 		"totalPages": 1,
-		"totalRecords": 2
+		"totalRecords": 3
 	},
 	"texts": [
 		{
@@ -36,6 +36,22 @@
 			"thumbnailFilename": "TEXT.id_1002_fil_liten.jpeg",
 			"largeImageFilename": "TEXT.id_1002_fil_stor.jpeg",
 			"ocrFilename": "TEXT.id_1002_fil_txt.xml"
+		},
+		{
+			"textId": 1003,
+			"filename": "stamma_1925.xml",
+			"documentDate": "1925-03-10",
+			"documentTitle": "Bolagsstämma 1925",
+			"locationText": "Timrå",
+			"location": "Timrå",
+			"subjectId": 1,
+			"subject": "Allmänt",
+			"comment": "Protokoll från bolagsstämman",
+			"thumbnailFilename": "TEXT.id_1003_fil_liten.jpeg",
+			"creator": {
+				"legalEntity": "Berg Aktiebolag",
+				"legalEntityId": 20
+			}
 		}
 	]
 }

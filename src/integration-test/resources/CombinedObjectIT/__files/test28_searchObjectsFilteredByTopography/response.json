@@ -1,0 +1,94 @@
+{
+	"_meta": {
+		"count": 5,
+		"limit": 100,
+		"page": 1,
+		"sortBy": [
+			"objectKey"
+		],
+		"sortDirection": "ASC",
+		"totalPages": 1,
+		"totalRecords": 5
+	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		},
+		{
+			"objectType": "Juridisk person",
+			"count": 1
+		},
+		{
+			"objectType": "Ljud",
+			"count": 1
+		},
+		{
+			"objectType": "Text",
+			"count": 2
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [
+		{
+			"categoryId": 2,
+			"name": "Aktiebolag",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "foto-1003",
+			"sourceId": 1003,
+			"objectType": "Foto",
+			"title": "Industribild från Timrå",
+			"year": 1960,
+			"topographyId": 2,
+			"location": "Timrå",
+			"locationText": "Timrå"
+		},
+		{
+			"objectKey": "jurpers-20",
+			"sourceId": 20,
+			"objectType": "Juridisk person",
+			"title": "Berg Aktiebolag",
+			"year": 1920,
+			"topographyId": 2,
+			"location": "Timrå"
+		},
+		{
+			"objectKey": "ljud-3",
+			"sourceId": 3,
+			"objectType": "Ljud",
+			"title": "Folkmusik från Timrå 1975",
+			"year": 1975,
+			"topographyId": 2,
+			"location": "Timrå",
+			"locationText": "Timrå"
+		},
+		{
+			"objectKey": "text-1002",
+			"sourceId": 1002,
+			"objectType": "Text",
+			"title": "Brev från Timrå",
+			"year": 1950,
+			"topographyId": 2,
+			"location": "Timrå",
+			"locationText": "Timrå"
+		},
+		{
+			"objectKey": "text-1003",
+			"sourceId": 1003,
+			"objectType": "Text",
+			"title": "Bolagsstämma 1925",
+			"year": 1925,
+			"topographyId": 2,
+			"location": "Timrå",
+			"locationText": "Timrå",
+			"creator": {
+				"legalEntity": "Berg Aktiebolag",
+				"legalEntityId": 20
+			}
+		}
+	]
+}

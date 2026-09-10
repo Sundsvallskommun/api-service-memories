@@ -165,10 +165,63 @@ public class SpecificationBuilder<T> {
 		final var matches = association.attributeGroups().stream()
 			.map(group -> cb.like(joined(cb, join, group), pattern, LIKE_ESCAPE));
 		return cb.and(
-			cb.notEqual(join.get(association.idAttribute()), association.placeholderId()),
-			cb.isNull(join.get(association.deletedAttribute())),
+			isRealRow(cb, join, association.guard()),
 			cb.or(matches.toArray(Predicate[]::new)));
 	}
+
+	/**
+	 * Matches rows whose guarded association points, through a second association, at one of the given ids, which are
+	 * alternatives. The first association is guarded the way {@link #buildAssociationLikeAnyFilter} guards it — its
+	 * sentinel row never matches and neither does a soft-deleted one — and the second has a sentinel of its own that is
+	 * never a match either, so naming it alone matches nothing rather than every row defaulted to it. Only the foreign
+	 * key of the second association is read, so the filter adds no second join. Matches every row when the list yields
+	 * no ids.
+	 */
+	public Specification<T> buildNestedAssociationInFilter(final GuardedAssociation guard, final String nestedAssociation, final String nestedAttribute,
+		final Object nestedPlaceholderId, final List<?> values) {
+		final var wanted = distinctNonNull(values);
+		if (wanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, cb) -> {
+			final var join = reuseFetchOrJoin(root, guard.association());
+			final var nested = join.get(nestedAssociation).get(nestedAttribute);
+			return cb.and(isRealRow(cb, join, guard), cb.notEqual(nested, nestedPlaceholderId), nested.in(wanted));
+		};
+	}
+
+	/**
+	 * Matches rows whose guarded association points at a real row that in turn points, through a second association, at
+	 * something other than that association's sentinel — the rows a counter over the second association can group,
+	 * matched by the same guards as {@link #buildNestedAssociationInFilter}, so the two cannot disagree.
+	 */
+	public Specification<T> buildNestedAssociationPresentFilter(final GuardedAssociation guard, final String nestedAssociation, final String nestedAttribute,
+		final Object nestedPlaceholderId) {
+		return (root, _, cb) -> {
+			final var join = reuseFetchOrJoin(root, guard.association());
+			final var nested = join.get(nestedAssociation).get(nestedAttribute);
+			return cb.and(isRealRow(cb, join, guard), cb.isNotNull(nested), cb.notEqual(nested, nestedPlaceholderId));
+		};
+	}
+
+	/** The associated row is a real one: not the sentinel the foreign key defaults to, and not soft-deleted. */
+	private Predicate isRealRow(final CriteriaBuilder cb, final Join<T, ?> join, final GuardedAssociation guard) {
+		return cb.and(
+			cb.notEqual(join.get(guard.idAttribute()), guard.placeholderId()),
+			cb.isNull(join.get(guard.deletedAttribute())));
+	}
+
+	/**
+	 * An association together with the sentinel row that never counts as a match and the attribute that marks a row as
+	 * soft-deleted. The legacy foreign keys default to a placeholder rather than to {@code NULL}, so every filter through
+	 * such an association has to skip it.
+	 *
+	 * @param association      name of the association attribute
+	 * @param idAttribute      name of the associated entity's id attribute
+	 * @param placeholderId    id of the sentinel row
+	 * @param deletedAttribute name of the associated entity's soft-delete attribute, which must be null to match
+	 */
+	public record GuardedAssociation(String association, String idAttribute, Object placeholderId, String deletedAttribute) {}
 
 	/**
 	 * The attributes of one group as a single space-separated string, so that a value spanning them still matches: a
@@ -196,7 +249,18 @@ public class SpecificationBuilder<T> {
 	 * @param placeholderId    id of the sentinel row
 	 * @param deletedAttribute name of the associated entity's soft-delete attribute, which must be null to match
 	 */
-	public record AssociationAttributes(String association, List<List<String>> attributeGroups, String idAttribute, Object placeholderId, String deletedAttribute) {}
+	public record AssociationAttributes(String association, List<List<String>> attributeGroups, String idAttribute, Object placeholderId, String deletedAttribute) {
+
+		/** The same, over a {@link GuardedAssociation} a caller already holds for other filters through the association. */
+		public AssociationAttributes(final GuardedAssociation guard, final List<List<String>> attributeGroups) {
+			this(guard.association(), attributeGroups, guard.idAttribute(), guard.placeholderId(), guard.deletedAttribute());
+		}
+
+		/** The guards of this association, for the filters that match on its ids rather than its text. */
+		public GuardedAssociation guard() {
+			return new GuardedAssociation(association, idAttribute, placeholderId, deletedAttribute);
+		}
+	}
 
 	/**
 	 * Matches rows where the attribute is {@code NULL}.
@@ -342,6 +406,19 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * As {@link #buildAssociationEqualFilter(String, String, Object)}, for several ids that are alternatives — a lookup
+	 * row is never soft-deleted, so there is nothing to guard. Reads the foreign key only, so it adds no join. Matches
+	 * every row when the list yields no ids.
+	 */
+	public Specification<T> buildAssociationInFilter(final String association, final String attribute, final List<?> values) {
+		final var wanted = distinctNonNull(values);
+		if (wanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, _) -> root.get(association).get(attribute).in(wanted);
+	}
+
+	/**
 	 * As {@link #buildAssociationEqualFilter(String, String, String, Object)}, for several ids that are alternatives.
 	 * Matches every row when the list yields no ids.
 	 */
@@ -369,6 +446,25 @@ public class SpecificationBuilder<T> {
 		coalesce.value(cb.nullif(root.<String>get(textAttribute), ""));
 		associationAttributes.forEach(attribute -> coalesce.value(cb.nullif(join.<String>get(attribute), "")));
 		return coalesce;
+	}
+
+	/**
+	 * The first non-blank of the attributes, in the given order, or {@code NULL} when all are blank — the display name
+	 * of a lookup row, computed in the database so it can be filtered and sorted on. Blank values count as absent, since
+	 * the legacy data uses empty strings rather than {@code NULL}.
+	 */
+	public Expression<String> firstNonBlank(final Root<T> root, final CriteriaBuilder cb, final List<String> attributes) {
+		final var coalesce = cb.<String>coalesce();
+		attributes.forEach(attribute -> coalesce.value(cb.nullif(root.<String>get(attribute), "")));
+		return coalesce;
+	}
+
+	/**
+	 * Matches rows where at least one of the attributes is non-blank — the rows that have a name to show. A lookup
+	 * table's sentinel row is usually blank in every column, so this is also what keeps it out of a dropdown.
+	 */
+	public Specification<T> buildAnyNonBlankFilter(final List<String> attributes) {
+		return (root, _, cb) -> cb.isNotNull(firstNonBlank(root, cb, attributes));
 	}
 
 	/**
@@ -471,14 +567,19 @@ public class SpecificationBuilder<T> {
 	/**
 	 * Reuses the join a fetch of the same association already created, so that filtering on it does not add a second
 	 * {@code LEFT JOIN}. A fetch and a join are separate nodes in the criteria tree, but the same Hibernate object
-	 * implements both. There is no fetch in the count query, where the specification falls back to a plain join.
+	 * implements both. There is no fetch in the count queries, where a plain join is reused the same way — the counter
+	 * that groups on the association creates it first, and every filter through the association then shares it —
+	 * and created when there is none.
 	 */
 	@SuppressWarnings("unchecked")
 	private Join<T, ?> reuseFetchOrJoin(final Root<T> root, final String association) {
-		return root.getFetches().stream()
+		final var fetched = root.getFetches().stream()
 			.filter(fetch -> fetch.getAttribute().getName().equals(association))
 			.filter(Join.class::isInstance)
-			.map(fetch -> (Join<T, ?>) fetch)
+			.map(fetch -> (Join<T, ?>) fetch);
+		final var joined = root.getJoins().stream()
+			.filter(join -> join.getAttribute().getName().equals(association));
+		return Stream.concat(fetched, joined)
 			.findFirst()
 			.orElseGet(() -> root.join(association, JoinType.LEFT));
 	}

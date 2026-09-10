@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.10"
+  version: "3.11"
 servers:
-- url: http://localhost:60312
+- url: http://localhost:63823
   description: Generated server url
 tags:
 - name: Node
@@ -16,18 +16,20 @@ tags:
   description: Audio search and file operations
 - name: Legal entity
   description: Legal entity (juridisk person) search and retrieval
-- name: Person
-  description: Person search and retrieval
 - name: Object
   description: Combined object search across all object and register types
+- name: Topography
+  description: Topography (place) lookup for search form dropdowns
+- name: Photos
+  description: Photo search and file operations
+- name: Person
+  description: Person search and retrieval
 - name: Texts
   description: Text search and file operations
 - name: Census record
   description: Census record (mantal) search and retrieval
 - name: Films
   description: Film search operations
-- name: Photos
-  description: Photo search and file operations
 - name: Publications
   description: Publication search and file operations
 - name: Seaman
@@ -35,6 +37,46 @@ tags:
 - name: Category
   description: Category (verksamhetskategori) lookup for search form dropdowns
 paths:
+  /{municipalityId}/topographies:
+    get:
+      tags:
+      - Topography
+      summary: List topographies
+      description: "List the places (topografier) an object or legal entity can be\
+        \ located in, sorted by display name, for search form dropdowns. The id is\
+        \ what the topographyId filter on /objects accepts; the display name is what\
+        \ an object reports as its location. Rows without a name to show are left\
+        \ out."
+      operationId: getTopographies
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Topography"
   /{municipalityId}/texts:
     get:
       tags:
@@ -687,10 +729,11 @@ paths:
       - Object
       summary: Search objects
       description: "Search across all object types (Foto, Föremål, Film, Ljud, Text,\
-        \ Publikation) and registers (Person, Juridisk person, Sjöman) in one call,\
-        \ with global sorting, pagination and per-type counts. Pass objectType to\
-        \ restrict the search to a selection of types; the counts keep covering every\
-        \ type, so the chips stay selectable."
+        \ Publikation) and registers (Person, Juridisk person, Sjöman, Mantal) in\
+        \ one call, with global sorting, pagination and counts per type, gender and\
+        \ originator category. Pass objectType, gender or categoryId to narrow the\
+        \ search; each counter leaves out only its own selection, so the chips stay\
+        \ selectable."
       operationId: searchObjects
       parameters:
       - name: municipalityId
@@ -1233,8 +1276,9 @@ paths:
       tags:
       - Category
       summary: List categories
-      description: List all verksamhetskategorier (sorted by name) for search form
-        dropdowns.
+      description: "List the verksamhetskategorier (sorted by name) for search form\
+        \ dropdowns, each with the number of legal entities in it. The sentinel every\
+        \ legal entity defaults to is not a category and is left out."
       operationId: getCategories
       parameters:
       - name: municipalityId
@@ -1475,6 +1519,104 @@ paths:
       x-wso2-mutual-ssl: Optional
 components:
   schemas:
+    Problem:
+      type: object
+      properties:
+        title:
+          type: string
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        type:
+          type: string
+          format: uri
+        status:
+          type: integer
+          format: int32
+    ConstraintViolationProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        status:
+          type: integer
+          format: int32
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Violation"
+        title:
+          type: string
+        detail:
+          type: string
+        causeAsProblem:
+          $ref: "#/components/schemas/ThrowableProblem"
+        instance:
+          type: string
+          format: uri
+    ThrowableProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        causeAsProblem: {}
+    Violation:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+    Topography:
+      type: object
+      description: Topography (place) model
+      properties:
+        topographyId:
+          type: integer
+          format: int32
+          description: "Topography ID, which the topographyId filter accepts"
+          examples:
+          - 1
+        displayName:
+          type: string
+          description: "Place name, as shown for an object's location: the name, or\
+            \ failing that the place or the code"
+          examples:
+          - Sundsvall
+        name:
+          type: string
+          description: Name (TOPNAMN)
+          examples:
+          - Sundsvall
+        code:
+          type: string
+          description: Code (TOPKOD)
+          examples:
+          - SUN
+        place:
+          type: string
+          description: "Place (PLATS), typically the municipality"
+          examples:
+          - Sundsvalls kommun
+        country:
+          type: string
+          description: Country (LAND)
+          examples:
+          - Sverige
     Direction:
       type: string
       enum:
@@ -1559,68 +1701,6 @@ components:
           description: "ID of the originator, when it is a legal entity"
           examples:
           - 10
-    Problem:
-      type: object
-      properties:
-        title:
-          type: string
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-        type:
-          type: string
-          format: uri
-        status:
-          type: integer
-          format: int32
-    ConstraintViolationProblem:
-      type: object
-      properties:
-        type:
-          type: string
-          format: uri
-        status:
-          type: integer
-          format: int32
-        violations:
-          type: array
-          items:
-            $ref: "#/components/schemas/Violation"
-        title:
-          type: string
-        causeAsProblem:
-          $ref: "#/components/schemas/ThrowableProblem"
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-    ThrowableProblem:
-      type: object
-      properties:
-        type:
-          type: string
-          format: uri
-        title:
-          type: string
-        status:
-          type: integer
-          format: int32
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-        causeAsProblem: {}
-    Violation:
-      type: object
-      properties:
-        field:
-          type: string
-        message:
-          type: string
     Creator:
       type: object
       description: "The originator (upphovsman) of an object — a person, a legal entity,\
@@ -2778,6 +2858,19 @@ components:
             \ or free-text location)"
           examples:
           - Sundsvall
+        topographyId:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the place, as listed by /topographies — the exact\
+              \ counterpart of location, for a place picked from that list rather\
+              \ than typed. Repeat the parameter, or comma-separate the values, to\
+              \ select several — they are alternatives. Only the object types and\
+              \ legal entities are placed in a topography; the person registers hold\
+              \ a parish as free text, so this filter excludes them."
+            examples:
+            - 1
         objectType:
           type: array
           items:
@@ -2826,6 +2919,44 @@ components:
               \ in one call."
             examples:
             - 10
+        categoryId:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the originator's category (verksamhetskategori), as\
+              \ listed by /categories and counted by categoryCounts. Repeat the parameter,\
+              \ or comma-separate the values, to select several — they are alternatives.\
+              \ A category is a property of the originator, so like creator this filter\
+              \ keeps only the objects with an originator in it and excludes the register\
+              \ types."
+            examples:
+            - 5
+    CategoryCount:
+      type: object
+      description: How many objects with an originator in one category the search
+        matches
+      properties:
+        categoryId:
+          type: integer
+          format: int32
+          description: "Category ID, which the categoryId filter accepts"
+          examples:
+          - 5
+        name:
+          type: string
+          description: Category name
+          examples:
+          - Förening
+        count:
+          type: integer
+          format: int64
+          description: "Number of matching objects whose originator is a legal entity\
+            \ in that category, across every page. The counters cover every matched\
+            \ row with a categorised originator, so they sum to fewer than totalRecords\
+            \ whenever the result also holds rows without one."
+          examples:
+          - 12
     CombinedObject:
       type: object
       description: Combined object search hit (any object or register type)
@@ -2944,6 +3075,19 @@ components:
             \ keeps saying how many objects selecting that gender would return."
           items:
             $ref: "#/components/schemas/GenderCount"
+            readOnly: true
+        categoryCounts:
+          type: array
+          description: "Total number of matching objects per originator category (for\
+            \ chip counters), ordered by category name, over the rows whose originator\
+            \ is a categorised legal entity. A dimension of its own like genderCounts,\
+            \ so these overlap with typeCounts rather than summing with them, and\
+            \ the register rows and objects without an originator are not counted.\
+            \ The counts are independent of the current page and of the categoryId\
+            \ filter — every other filter applies, so a chip keeps saying how many\
+            \ objects selecting that category would return."
+          items:
+            $ref: "#/components/schemas/CategoryCount"
             readOnly: true
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
@@ -3660,6 +3804,14 @@ components:
           description: Category name
           examples:
           - Förening
+        legalEntityCount:
+          type: integer
+          format: int64
+          description: "Number of legal entities in the category — the ones /legal-entities\
+            \ returns when filtered on it, so a category with none can be left out\
+            \ of a form"
+          examples:
+          - 42
     AudioParameters:
       type: object
       description: Audio search parameters

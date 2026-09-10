@@ -13,6 +13,13 @@
 		}
 	],
 	"genderCounts": [],
+	"categoryCounts": [
+		{
+			"categoryId": 5,
+			"name": "Kommitté",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "film-1",

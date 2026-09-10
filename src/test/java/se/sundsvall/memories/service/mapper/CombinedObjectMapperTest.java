@@ -3,6 +3,7 @@ package se.sundsvall.memories.service.mapper;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
@@ -107,5 +108,24 @@ class CombinedObjectMapperTest {
 	@Test
 	void toGenderCountListWhenNull() {
 		assertThat(CombinedObjectMapper.toGenderCountList(null)).isEqualTo(emptyList());
+	}
+
+	@Test
+	void toCategoryCountList() {
+		final var result = CombinedObjectMapper.toCategoryCountList(List.of(new CategoryCount(2, "Aktiebolag", 3L), new CategoryCount(5, "Kommitté", 12L)));
+
+		assertThat(result).extracting(se.sundsvall.memories.api.model.CategoryCount::getCategoryId, se.sundsvall.memories.api.model.CategoryCount::getName,
+			se.sundsvall.memories.api.model.CategoryCount::getCount)
+			.containsExactly(tuple(2, "Aktiebolag", 3L), tuple(5, "Kommitté", 12L));
+	}
+
+	@Test
+	void toCategoryCountWhenNull() {
+		assertThat(CombinedObjectMapper.toCategoryCount(null)).isNull();
+	}
+
+	@Test
+	void toCategoryCountListWhenNull() {
+		assertThat(CombinedObjectMapper.toCategoryCountList(null)).isEqualTo(emptyList());
 	}
 }

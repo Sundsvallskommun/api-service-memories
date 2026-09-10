@@ -1,0 +1,46 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"typeCounts": [
+		{
+			"objectType": "Film",
+			"count": 1
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [
+		{
+			"categoryId": 2,
+			"name": "Aktiebolag",
+			"count": 1
+		},
+		{
+			"categoryId": 5,
+			"name": "Kommitté",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "film-1",
+			"sourceId": 1,
+			"objectType": "Film",
+			"title": "Midsommarfirande i Sundsvall 1985",
+			"year": 1985,
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"locationText": "Sundsvall",
+			"creator": {
+				"legalEntity": "Nödhjälpskommittén 1888-1889",
+				"legalEntityId": 10,
+				"person": "Anton Nordin",
+				"personId": 1
+			}
+		}
+	]
+}

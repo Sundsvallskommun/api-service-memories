@@ -35,6 +35,7 @@ class PagedCombinedObjectResponseTest {
 			.withObjects(objects)
 			.withTypeCounts(List.of(ObjectTypeCount.create().withObjectType("Foto").withCount(1L)))
 			.withGenderCounts(List.of(GenderCount.create().withGender("man").withCount(2L)))
+			.withCategoryCounts(List.of(CategoryCount.create().withCategoryId(5).withName("Kommitté").withCount(3L)))
 			.withMetaData(meta);
 
 		assertThat(result.getObjects()).hasSize(1);
@@ -42,6 +43,8 @@ class PagedCombinedObjectResponseTest {
 			.containsExactly(tuple("Foto", 1L));
 		assertThat(result.getGenderCounts()).extracting(GenderCount::getGender, GenderCount::getCount)
 			.containsExactly(tuple("man", 2L));
+		assertThat(result.getCategoryCounts()).extracting(CategoryCount::getCategoryId, CategoryCount::getName, CategoryCount::getCount)
+			.containsExactly(tuple(5, "Kommitté", 3L));
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 	}
 

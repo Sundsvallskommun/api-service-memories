@@ -11,9 +11,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.Category;
-import se.sundsvall.memories.service.CategoryLookup;
+import se.sundsvall.memories.service.CategoryService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -27,16 +28,16 @@ class CategoryResourceTest {
 	private static final String PATH = "/{municipalityId}/categories";
 
 	@MockitoBean
-	private CategoryLookup categoryLookupMock;
+	private CategoryService categoryServiceMock;
 
 	@Autowired
 	private WebTestClient webTestClient;
 
 	@Test
 	void getCategories() {
-		when(categoryLookupMock.getAllCategories()).thenReturn(List.of(
-			Category.create().withCategoryId(2).withCode("AB").withName("Aktiebolag"),
-			Category.create().withCategoryId(5).withCode("FÖR").withName("Förening")));
+		when(categoryServiceMock.getCategories()).thenReturn(List.of(
+			Category.create().withCategoryId(2).withCode("AB").withName("Aktiebolag").withLegalEntityCount(3L),
+			Category.create().withCategoryId(5).withCode("FÖR").withName("Förening").withLegalEntityCount(0L)));
 
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(PATH).build(Map.of("municipalityId", MUNICIPALITY_ID)))
@@ -47,8 +48,8 @@ class CategoryResourceTest {
 			.getResponseBody();
 
 		assertThat(response).hasSize(2)
-			.extracting(Category::getName)
-			.containsExactly("Aktiebolag", "Förening");
-		verify(categoryLookupMock).getAllCategories();
+			.extracting(Category::getName, Category::getLegalEntityCount)
+			.containsExactly(tuple("Aktiebolag", 3L), tuple("Förening", 0L));
+		verify(categoryServiceMock).getCategories();
 	}
 }

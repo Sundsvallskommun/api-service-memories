@@ -1,0 +1,68 @@
+{
+	"_meta": {
+		"count": 2,
+		"limit": 100,
+		"page": 1,
+		"sortBy": [
+			"objectKey"
+		],
+		"sortDirection": "ASC",
+		"totalPages": 1,
+		"totalRecords": 2
+	},
+	"typeCounts": [
+		{
+			"objectType": "Film",
+			"count": 1
+		},
+		{
+			"objectType": "Text",
+			"count": 1
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [
+		{
+			"categoryId": 2,
+			"name": "Aktiebolag",
+			"count": 1
+		},
+		{
+			"categoryId": 5,
+			"name": "Kommitté",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "film-1",
+			"sourceId": 1,
+			"objectType": "Film",
+			"title": "Midsommarfirande i Sundsvall 1985",
+			"year": 1985,
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"locationText": "Sundsvall",
+			"creator": {
+				"legalEntity": "Nödhjälpskommittén 1888-1889",
+				"legalEntityId": 10,
+				"person": "Anton Nordin",
+				"personId": 1
+			}
+		},
+		{
+			"objectKey": "text-1003",
+			"sourceId": 1003,
+			"objectType": "Text",
+			"title": "Bolagsstämma 1925",
+			"year": 1925,
+			"topographyId": 2,
+			"location": "Timrå",
+			"locationText": "Timrå",
+			"creator": {
+				"legalEntity": "Berg Aktiebolag",
+				"legalEntityId": 20
+			}
+		}
+	]
+}

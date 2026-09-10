@@ -11,7 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
 import se.sundsvall.dept44.problem.violations.Violation;
 import se.sundsvall.memories.Application;
-import se.sundsvall.memories.service.CategoryLookup;
+import se.sundsvall.memories.service.CategoryService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -28,7 +28,7 @@ class CategoryResourceFailureTest {
 	private static final String PATH = "/{municipalityId}/categories";
 
 	@MockitoBean
-	private CategoryLookup categoryLookupMock;
+	private CategoryService categoryServiceMock;
 
 	@Autowired
 	private WebTestClient webTestClient;
@@ -51,6 +51,6 @@ class CategoryResourceFailureTest {
 			.extracting(Violation::field, Violation::message)
 			.containsExactlyInAnyOrder(tuple("getCategories.municipalityId", "not a valid municipality ID"));
 
-		verifyNoInteractions(categoryLookupMock);
+		verifyNoInteractions(categoryServiceMock);
 	}
 }

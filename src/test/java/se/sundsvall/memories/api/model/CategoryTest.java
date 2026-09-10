@@ -28,11 +28,14 @@ class CategoryTest {
 		final var result = Category.create()
 			.withCategoryId(5)
 			.withCode("FÖR")
-			.withName("Förening");
+			.withName("Förening")
+			.withLegalEntityCount(42L);
 
+		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getCategoryId()).isEqualTo(5);
 		assertThat(result.getCode()).isEqualTo("FÖR");
 		assertThat(result.getName()).isEqualTo("Förening");
+		assertThat(result.getLegalEntityCount()).isEqualTo(42L);
 	}
 
 	@Test

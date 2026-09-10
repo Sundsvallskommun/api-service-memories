@@ -18,10 +18,12 @@ import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
+import se.sundsvall.memories.integration.db.model.CategoryEntity;
 import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
@@ -65,6 +67,7 @@ class CombinedObjectSpecificationTest {
 		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM PERSON").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM JURPERS").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM KATEGORI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM MANTAL").executeUpdate();
 		photoRepository.flush();
 	}
@@ -672,5 +675,148 @@ class CombinedObjectSpecificationTest {
 		assertThat(page.getContent()).singleElement()
 			.extracting(object -> object.getTopography().getDisplayName())
 			.isEqualTo("Sundsvall");
+	}
+
+	/**
+	 * A category is a property of the originator, so the filter keeps the objects whose originator is in it: several
+	 * are alternatives, the register rows are excluded like {@code creator} excludes them, and the sentinel category
+	 * every legal entity defaults to is never a match — naming it alone matches nothing, not every uncategorised object.
+	 */
+	@Test
+	void categoryFilterFindsObjectsByTheirOriginatorsCategory() {
+		persistCategorisedOriginators();
+		persistPerson(9, "Anton", "Nordin", null);
+		entityManager.clear();
+
+		assertThat(findKeys(CombinedObjectParameters.create().withCategoryId(List.of(5)))).containsExactly("foto-1");
+		assertThat(findKeys(CombinedObjectParameters.create().withCategoryId(List.of(2, 5)))).containsExactly("foto-1", "foto-2");
+		assertThat(findKeys(CombinedObjectParameters.create().withCategoryId(List.of(1)))).isEmpty();
+		assertThat(findKeys(CombinedObjectParameters.create().withCategoryId(List.of(1, 5)))).containsExactly("foto-1");
+		assertThat(findKeys(CombinedObjectParameters.create().withCategoryId(List.of()))).containsExactly("foto-1", "foto-2", "foto-3", "foto-4", "person-9");
+	}
+
+	/** A deleted legal entity is not served by its own endpoint, so its category must not select objects either. */
+	@Test
+	void categoryFilterSkipsADeletedLegalEntity() {
+		persistCategorisedOriginators();
+		entityManager.createNativeQuery("UPDATE JURPERS SET DELETEDDATE = '2026-01-01' WHERE J_ID = 20").executeUpdate();
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create().withCategoryId(List.of(5));
+
+		assertThat(findKeys(parameters)).isEmpty();
+		assertThat(countByCategory(CombinedObjectParameters.create())).containsExactly(entry("Aktiebolag", 1L));
+	}
+
+	/**
+	 * Selecting a category narrows the list but not its own counters. Every other filter, the type selection included,
+	 * does reach them, and only the rows with a categorised originator are counted — never the sentinel category.
+	 */
+	@Test
+	void countByCategoryIgnoresTheCategorySelectionButNoOtherFilter() {
+		persistCategorisedOriginators();
+		persistPerson(9, "Anton", "Nordin", null);
+		entityManager.clear();
+
+		final var parameters = CombinedObjectParameters.create().withCategoryId(List.of(5));
+		assertThat(findKeys(parameters)).containsExactly("foto-1");
+		assertThat(countByCategory(parameters)).containsExactly(entry("Aktiebolag", 1L), entry("Kommitté", 1L));
+
+		final var byQuery = CombinedObjectParameters.create().withQuery("kommittén").withCategoryId(List.of(2));
+		assertThat(findKeys(byQuery)).isEmpty();
+		assertThat(countByCategory(byQuery)).containsExactly(entry("Kommitté", 1L));
+
+		final var personsOnly = CombinedObjectParameters.create().withObjectType(List.of("Person"));
+		assertThat(countByCategory(personsOnly)).isEmpty();
+	}
+
+	/**
+	 * The counters group on the same join the originator filters match through, so a name filter on the legal entity
+	 * and a category count in one query agree — and the name filter's sentinel guard does not empty the count.
+	 */
+	@Test
+	void countByCategoryAgreesWithTheSearchOnTheOriginatorFilters() {
+		persistCategorisedOriginators();
+		entityManager.clear();
+
+		final var byName = CombinedObjectParameters.create();
+		byName.setCreator("rederi");
+		assertThat(findKeys(byName)).containsExactly("foto-2");
+		assertThat(countByCategory(byName)).containsExactly(entry("Aktiebolag", 1L));
+		assertThat(countByType(byName)).containsExactly(entry("Foto", 1L));
+
+		final var byId = CombinedObjectParameters.create();
+		byId.setCreatorLegalEntityId(List.of(20, 21));
+		assertThat(countByCategory(byId)).containsExactly(entry("Aktiebolag", 1L), entry("Kommitté", 1L));
+	}
+
+	/** The chips carry the category's name, so the client need not look it up, and are ordered by it. */
+	@Test
+	void countByCategoryNamesEachCategory() {
+		persistCategorisedOriginators();
+		entityManager.clear();
+
+		assertThat(combinedObjectRepository.countByCategory(CombinedObjectParameters.create()))
+			.containsExactly(new CategoryCount(2, "Aktiebolag", 1L), new CategoryCount(5, "Kommitté", 1L));
+	}
+
+	/**
+	 * The exact counterpart of the substring location filter: only the rows placed in one of the topographies, which
+	 * are alternatives. A row that merely names the place in its free text is not placed there.
+	 */
+	@Test
+	void topographyFilterFindsTheRowsPlacedInOneOfThePlaces() {
+		final var sundsvall = persistTopography(500, "Sundsvall");
+		final var timra = persistTopography(501, "Timrå");
+		persistPhoto(1, "Stadsvy", null, "1920", sundsvall);
+		persistPhoto(2, "Sågverket", null, "1930", timra);
+		persistAudio(3, "Intervju", "1975", "Sundsvall");
+		persistPerson(4, "Anna", "Berg", null);
+		entityManager.clear();
+
+		assertThat(findKeys(CombinedObjectParameters.create().withTopographyId(List.of(500)))).containsExactly("foto-1");
+		assertThat(findKeys(CombinedObjectParameters.create().withTopographyId(List.of(500, 501)))).containsExactly("foto-1", "foto-2");
+		assertThat(findKeys(CombinedObjectParameters.create().withTopographyId(List.of(999)))).isEmpty();
+		assertThat(findKeys(CombinedObjectParameters.create().withTopographyId(List.of()))).containsExactly("foto-1", "foto-2", "ljud-3", "person-4");
+		assertThat(countByType(CombinedObjectParameters.create().withTopographyId(List.of(501)))).containsExactly(entry("Foto", 1L));
+	}
+
+	/**
+	 * Two categories with one originator each, a photo apiece, plus a photo whose originator is the sentinel legal
+	 * entity (in the sentinel category, as every legal entity is by default) and one without any originator at all.
+	 */
+	private void persistCategorisedOriginators() {
+		final var none = persistCategory(1, null);
+		final var company = persistCategory(2, "Aktiebolag");
+		final var committee = persistCategory(5, "Kommitté");
+		final var placeholder = LegalEntityEntity.create().withLegalEntityId(1).withName("Ingen").withCategory(none);
+		final var first = LegalEntityEntity.create().withLegalEntityId(20).withName("Nödhjälpskommittén").withCategory(committee);
+		final var second = LegalEntityEntity.create().withLegalEntityId(21).withName("Rederiet").withCategory(company);
+		entityManager.persist(placeholder);
+		entityManager.persist(first);
+		entityManager.persist(second);
+		entityManager.flush();
+
+		persistPhoto(1, "Av kommittén", null, "1900", null);
+		persistPhoto(2, "Av rederiet", null, "1900", null);
+		persistPhoto(3, "Av ingen", null, "1900", null);
+		persistPhoto(4, "Utan upphovsman", null, "1900", null);
+		photoRepository.findById(1).ifPresent(photo -> photo.setCreatorLegalEntity(first));
+		photoRepository.findById(2).ifPresent(photo -> photo.setCreatorLegalEntity(second));
+		photoRepository.findById(3).ifPresent(photo -> photo.setCreatorLegalEntity(placeholder));
+		photoRepository.flush();
+	}
+
+	private CategoryEntity persistCategory(final int id, final String name) {
+		final var category = CategoryEntity.create().withCategoryId(id).withName(name);
+		entityManager.persist(category);
+		entityManager.flush();
+		return category;
+	}
+
+	/** Calls the category counters the way the service does, keyed by name since that is what a chip shows. */
+	private Map<String, Long> countByCategory(final CombinedObjectParameters parameters) {
+		return combinedObjectRepository.countByCategory(parameters).stream()
+			.collect(toMap(CategoryCount::name, CategoryCount::total, (first, _) -> first, LinkedHashMap::new));
 	}
 }

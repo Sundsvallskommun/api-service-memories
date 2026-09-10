@@ -31,8 +31,10 @@ class CombinedObjectParametersTest {
 			.withYearFrom(1900)
 			.withYearTo(1950)
 			.withLocation("Sundsvall")
+			.withTopographyId(List.of(1, 4))
 			.withObjectType(List.of("Foto", "Ljud"))
 			.withGender("man")
+			.withCategoryId(List.of(2, 5))
 			.withPage(2)
 			.withLimit(50);
 
@@ -40,8 +42,10 @@ class CombinedObjectParametersTest {
 		assertThat(result.getYearFrom()).isEqualTo(1900);
 		assertThat(result.getYearTo()).isEqualTo(1950);
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
+		assertThat(result.getTopographyId()).containsExactly(1, 4);
 		assertThat(result.getObjectType()).containsExactly("Foto", "Ljud");
 		assertThat(result.getGender()).isEqualTo("man");
+		assertThat(result.getCategoryId()).containsExactly(2, 5);
 		assertThat(result.getPage()).isEqualTo(2);
 		assertThat(result.getLimit()).isEqualTo(50);
 	}
@@ -54,8 +58,10 @@ class CombinedObjectParametersTest {
 		assertThat(result.getYearFrom()).isNull();
 		assertThat(result.getYearTo()).isNull();
 		assertThat(result.getLocation()).isNull();
+		assertThat(result.getTopographyId()).isNull();
 		assertThat(result.getObjectType()).isNull();
 		assertThat(result.getGender()).isNull();
+		assertThat(result.getCategoryId()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
 	}

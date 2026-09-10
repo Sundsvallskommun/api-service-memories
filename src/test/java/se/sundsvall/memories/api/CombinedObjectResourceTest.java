@@ -95,6 +95,35 @@ class CombinedObjectResourceTest {
 			.containsExactly(List.of("Foto", "Ljud"), List.of("Foto", "Ljud"));
 	}
 
+	/** The id lists bind the same way the type list does, whichever way a client spells them. */
+	@Test
+	void searchObjectsBindsRepeatedAndCommaSeparatedCategoryAndTopographyIds() {
+		final var parameters = ArgumentCaptor.forClass(CombinedObjectParameters.class);
+		when(serviceMock.search(any())).thenReturn(PagedCombinedObjectResponse.create());
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("categoryId", "2")
+				.queryParam("categoryId", "5")
+				.queryParam("topographyId", "1")
+				.queryParam("topographyId", "4")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("categoryId", "2,5")
+				.queryParam("topographyId", "1,4")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock, times(2)).search(parameters.capture());
+		assertThat(parameters.getAllValues()).extracting(CombinedObjectParameters::getCategoryId, CombinedObjectParameters::getTopographyId)
+			.containsExactly(tuple(List.of(2, 5), List.of(1, 4)), tuple(List.of(2, 5), List.of(1, 4)));
+	}
+
 	@Test
 	void searchObjectsWithoutFilters() {
 		final var pagedResponse = PagedCombinedObjectResponse.create()

@@ -1,0 +1,18 @@
+{
+	"_meta": {
+		"count": 0,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 0,
+		"totalRecords": 0
+	},
+	"typeCounts": [
+		{
+			"objectType": "Film",
+			"count": 1
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [],
+	"objects": []
+}

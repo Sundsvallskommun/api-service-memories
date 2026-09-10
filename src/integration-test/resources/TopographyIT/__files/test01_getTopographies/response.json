@@ -1,0 +1,34 @@
+[
+	{
+		"topographyId": 1,
+		"displayName": "Sundsvall",
+		"name": "Sundsvall",
+		"code": "SUN",
+		"place": "Sundsvalls kommun",
+		"country": "Sverige"
+	},
+	{
+		"topographyId": 16,
+		"displayName": "Sundsvall stad",
+		"name": "Sundsvall stad",
+		"code": "SUNS",
+		"place": "Sundsvalls kommun",
+		"country": "Sverige"
+	},
+	{
+		"topographyId": 4,
+		"displayName": "Sundsvalls kommun",
+		"name": "Sundsvalls kommun",
+		"code": "SUNK",
+		"place": "Sundsvalls kommun",
+		"country": "Sverige"
+	},
+	{
+		"topographyId": 2,
+		"displayName": "Timrå",
+		"name": "Timrå",
+		"code": "TIM",
+		"place": "Timrå kommun",
+		"country": "Sverige"
+	}
+]

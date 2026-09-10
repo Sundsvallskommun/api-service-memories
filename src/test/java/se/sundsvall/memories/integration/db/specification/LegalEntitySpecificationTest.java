@@ -21,6 +21,7 @@ import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static java.time.Month.JANUARY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 /**
  * Exercises {@link LegalEntitySpecification} against a real MariaDB instance (Testcontainers), because the behaviour
@@ -244,5 +245,29 @@ class LegalEntitySpecificationTest {
 
 		assertThat(page.getTotalElements()).isEqualTo(2);
 		assertThat(page.getContent()).hasSize(1);
+	}
+
+	/**
+	 * A category's size is the number of legal entities the search returns for it: published, undeleted and not the
+	 * sentinel. An unpublished or deleted one is not counted, the sentinel row is not, and a row without a category
+	 * forms no group of its own.
+	 */
+	@Test
+	void countByCategorySizesEachCategoryByTheRowsTheSearchReturns() {
+		final var committee = persistCategory(5, "Kommitté");
+		final var company = persistCategory(6, "Aktiebolag");
+		persist(2, PUBLISHED, "a").setCategory(committee);
+		persist(3, PUBLISHED, "b").setCategory(committee);
+		persist(4, PUBLISHED, "c").setCategory(company);
+		persist(5, 0, "unpublished").setCategory(committee);
+		persist(6, PUBLISHED, "deleted").setCategory(committee);
+		persist(6, PUBLISHED, "deleted").setDeletedDate(LocalDate.of(2026, JANUARY, 1));
+		persist(1, PUBLISHED, "Ingen").setCategory(committee);
+		persist(7, PUBLISHED, "uncategorised");
+		legalEntityRepository.flush();
+
+		assertThat(legalEntityRepository.countByCategory())
+			.extracting("categoryId", "total")
+			.containsExactly(tuple(5, 2L), tuple(6, 1L));
 	}
 }

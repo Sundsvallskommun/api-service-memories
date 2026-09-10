@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
+import se.sundsvall.memories.integration.db.model.CategoryEntity_;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity_;
 import se.sundsvall.memories.integration.db.model.PersonEntity_;
@@ -57,8 +58,10 @@ public interface CombinedObjectSpecification {
 
 	/** Every filter the search applies, without fetch joins or ordering. The counters share the same predicates. */
 	static Specification<CombinedObjectEntity> filters(final CombinedObjectParameters parameters) {
-		return filtersExcludingObjectType(parameters)
-			.and(hasObjectType(parameters.getObjectType()));
+		return filtersExcludingFacets(parameters)
+			.and(hasObjectType(parameters.getObjectType()))
+			.and(hasGender(parameters.getGender()))
+			.and(hasCategory(parameters.getCategoryId()));
 	}
 
 	/**
@@ -66,8 +69,9 @@ public interface CombinedObjectSpecification {
 	 * objects selecting that type would return.
 	 */
 	static Specification<CombinedObjectEntity> filtersExcludingObjectType(final CombinedObjectParameters parameters) {
-		return filtersExcludingTypeAndGender(parameters)
-			.and(hasGender(parameters.getGender()));
+		return filtersExcludingFacets(parameters)
+			.and(hasGender(parameters.getGender()))
+			.and(hasCategory(parameters.getCategoryId()));
 	}
 
 	/**
@@ -76,13 +80,27 @@ public interface CombinedObjectSpecification {
 	 * that record a gender at all — the rest of a result carries none rather than an unknown one.
 	 */
 	static Specification<CombinedObjectEntity> filtersExcludingGender(final CombinedObjectParameters parameters) {
-		return filtersExcludingTypeAndGender(parameters)
-			.and(hasObjectType(parameters.getObjectType()));
+		return filtersExcludingFacets(parameters)
+			.and(hasObjectType(parameters.getObjectType()))
+			.and(hasCategory(parameters.getCategoryId()));
 	}
 
-	private static Specification<CombinedObjectEntity> filtersExcludingTypeAndGender(final CombinedObjectParameters parameters) {
+	/**
+	 * What the category counters count over: every filter except the category selection, the third dimension that
+	 * ignores only its own. The counters sum to the number of matched rows whose originator is a categorised legal
+	 * entity — the register rows and the objects without one carry no category rather than an unknown one.
+	 */
+	static Specification<CombinedObjectEntity> filtersExcludingCategory(final CombinedObjectParameters parameters) {
+		return filtersExcludingFacets(parameters)
+			.and(hasObjectType(parameters.getObjectType()))
+			.and(hasGender(parameters.getGender()));
+	}
+
+	/** The filters no counter leaves out: everything that is not a faceted selection. */
+	private static Specification<CombinedObjectEntity> filtersExcludingFacets(final CombinedObjectParameters parameters) {
 		return matches(parameters.getQuery())
 			.and(matchesLocation(parameters.getLocation()))
+			.and(hasTopography(parameters.getTopographyId()))
 			.and(yearAtLeast(parameters.getYearFrom()))
 			.and(yearAtMost(parameters.getYearTo()))
 			.and(matchesCreator(parameters.getCreator()))
@@ -123,6 +141,16 @@ public interface CombinedObjectSpecification {
 		return BUILDER.buildLocationFilter(TOPOGRAPHY, LOCATION_ATTRIBUTES, LOCATION_TEXT, location);
 	}
 
+	/**
+	 * Restricts to the rows placed in one of the given topographies, which are alternatives — the exact counterpart of
+	 * the substring {@code location} filter, for a client that picked a place from the {@code /topographies} list. Only
+	 * the object types and the legal entities carry a topography; the person registers hold a parish as free text, so
+	 * this filter excludes them the way {@code location} does for census records.
+	 */
+	static Specification<CombinedObjectEntity> hasTopography(final List<Integer> topographyIds) {
+		return BUILDER.buildAssociationInFilter(TOPOGRAPHY, TopographyEntity_.ID, topographyIds);
+	}
+
 	/** The view normalises an unreadable year to {@code NULL}, so a row without a year falls outside every range. */
 	static Specification<CombinedObjectEntity> yearAtLeast(final Integer yearFrom) {
 		return BUILDER.buildAtLeastFilter(YEAR, yearFrom);
@@ -132,17 +160,45 @@ public interface CombinedObjectSpecification {
 		return BUILDER.buildAtMostFilter(YEAR, yearTo);
 	}
 
-	/** The attributes an originator is matched on, and the sentinel id that never counts as a match. */
+	/** The originator associations, each with the sentinel id that never counts as a match. */
+	SpecificationBuilder.GuardedAssociation CREATOR_PERSON_GUARD = new SpecificationBuilder.GuardedAssociation(CREATOR_PERSON, PersonEntity_.PERSON_ID,
+		PersonSpecification.PLACEHOLDER_ID, PersonEntity_.DELETED_DATE);
+
+	SpecificationBuilder.GuardedAssociation CREATOR_LEGAL_ENTITY_GUARD = new SpecificationBuilder.GuardedAssociation(CREATOR_LEGAL_ENTITY,
+		LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntitySpecification.PLACEHOLDER_ID, LegalEntityEntity_.DELETED_DATE);
+
+	/** The attributes an originator is matched on. */
 	List<SpecificationBuilder.AssociationAttributes> CREATOR_ATTRIBUTES = List.of(
 		// a person's name spans two columns and is matched as one string; a legal entity's two names are alternatives
-		new SpecificationBuilder.AssociationAttributes(CREATOR_PERSON, List.of(List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME)), PersonEntity_.PERSON_ID,
-			PersonSpecification.PLACEHOLDER_ID, PersonEntity_.DELETED_DATE),
-		new SpecificationBuilder.AssociationAttributes(CREATOR_LEGAL_ENTITY, List.of(List.of(LegalEntityEntity_.NAME), List.of(LegalEntityEntity_.ALTERNATIVE_NAMES)),
-			LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntitySpecification.PLACEHOLDER_ID, LegalEntityEntity_.DELETED_DATE));
+		new SpecificationBuilder.AssociationAttributes(CREATOR_PERSON_GUARD, List.of(List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME))),
+		new SpecificationBuilder.AssociationAttributes(CREATOR_LEGAL_ENTITY_GUARD, List.of(List.of(LegalEntityEntity_.NAME), List.of(LegalEntityEntity_.ALTERNATIVE_NAMES))));
 
 	/** Only the object branches carry an originator, so this filter also excludes the register types. */
 	static Specification<CombinedObjectEntity> matchesCreator(final String creator) {
 		return BUILDER.buildAssociationLikeAnyFilter(CREATOR_ATTRIBUTES, creator);
+	}
+
+	/**
+	 * Restricts to the objects whose originator is a legal entity in one of the given categories, which are
+	 * alternatives — what a client used to spell out as every {@code creatorLegalEntityId} in the category. A category
+	 * is a property of the originator, so this filter has the shape of {@code creator}: only the object branches carry
+	 * one, and the register types are excluded, a legal entity's own row among them, since the view does not carry its
+	 * category. The sentinel category every legal entity defaults to is never a match — naming it alone matches
+	 * nothing, the way an unknown object type does, rather than every object whose originator is uncategorised.
+	 */
+	static Specification<CombinedObjectEntity> hasCategory(final List<Integer> categoryIds) {
+		return BUILDER.buildNestedAssociationInFilter(CREATOR_LEGAL_ENTITY_GUARD, LegalEntityEntity_.CATEGORY, CategoryEntity_.CATEGORY_ID,
+			CategorySpecification.PLACEHOLDER_ID, categoryIds);
+	}
+
+	/**
+	 * The rows the category counters can group: an originator that is a real, undeleted legal entity with a category
+	 * other than the sentinel. Built from the same guards as {@link #hasCategory}, so a chip never counts a row selecting
+	 * it would not return.
+	 */
+	static Specification<CombinedObjectEntity> hasCategorisedCreator() {
+		return BUILDER.buildNestedAssociationPresentFilter(CREATOR_LEGAL_ENTITY_GUARD, LegalEntityEntity_.CATEGORY, CategoryEntity_.CATEGORY_ID,
+			CategorySpecification.PLACEHOLDER_ID);
 	}
 
 	static Specification<CombinedObjectEntity> hasCreatorPerson(final Integer creatorPersonId) {
