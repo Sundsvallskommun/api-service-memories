@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
@@ -48,6 +49,7 @@ class CombinedObjectServiceTest {
 			.thenReturn(new PageImpl<>(List.of(entity), PAGEABLE, 1));
 		when(repositoryMock.countByType(parameters)).thenReturn(List.of(new TypeCount("Foto", 1L), new TypeCount("Text", 3L)));
 		when(repositoryMock.countByGender(parameters)).thenReturn(List.of(new GenderCount("kvinna", 2L), new GenderCount("man", 5L)));
+		when(repositoryMock.countByCategory(parameters)).thenReturn(List.of(new CategoryCount(5, "Kommitté", 4L)));
 
 		final var result = service.search(parameters);
 
@@ -57,6 +59,9 @@ class CombinedObjectServiceTest {
 			.containsExactly(tuple("Foto", 1L), tuple("Text", 3L));
 		assertThat(result.getGenderCounts()).extracting(se.sundsvall.memories.api.model.GenderCount::getGender, se.sundsvall.memories.api.model.GenderCount::getCount)
 			.containsExactly(tuple("kvinna", 2L), tuple("man", 5L));
+		assertThat(result.getCategoryCounts()).extracting(se.sundsvall.memories.api.model.CategoryCount::getCategoryId, se.sundsvall.memories.api.model.CategoryCount::getName,
+			se.sundsvall.memories.api.model.CategoryCount::getCount)
+			.containsExactly(tuple(5, "Kommitté", 4L));
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 	}
 
@@ -73,12 +78,15 @@ class CombinedObjectServiceTest {
 
 		assertThat(result.getObjects()).isEmpty();
 		assertThat(result.getTypeCounts()).isEmpty();
+		assertThat(result.getGenderCounts()).isEmpty();
+		assertThat(result.getCategoryCounts()).isEmpty();
 
 		final var searchCaptor = ArgumentCaptor.forClass(CombinedObjectParameters.class);
 		verify(repositoryMock).findAllByParameters(searchCaptor.capture(), eq(PAGEABLE));
 		assertThat(searchCaptor.getValue()).isSameAs(parameters);
 		verify(repositoryMock).countByType(parameters);
 		verify(repositoryMock).countByGender(parameters);
+		verify(repositoryMock).countByCategory(parameters);
 	}
 
 	/** The metadata reports the caller's own sort only, not relevance or the id tiebreak. */

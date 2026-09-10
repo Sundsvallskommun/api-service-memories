@@ -15,6 +15,9 @@ public class Category {
 	@Schema(description = "Category name", examples = "Förening")
 	private String name;
 
+	@Schema(description = "Number of legal entities in the category — the ones /legal-entities returns when filtered on it, so a category with none can be left out of a form", examples = "42")
+	private Long legalEntityCount;
+
 	public static Category create() {
 		return new Category();
 	}
@@ -58,17 +61,31 @@ public class Category {
 		return this;
 	}
 
+	public Long getLegalEntityCount() {
+		return legalEntityCount;
+	}
+
+	public void setLegalEntityCount(final Long legalEntityCount) {
+		this.legalEntityCount = legalEntityCount;
+	}
+
+	public Category withLegalEntityCount(final Long legalEntityCount) {
+		this.legalEntityCount = legalEntityCount;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final Category that = (Category) o;
-		return Objects.equals(categoryId, that.categoryId) && Objects.equals(code, that.code) && Objects.equals(name, that.name);
+		return Objects.equals(categoryId, that.categoryId) && Objects.equals(code, that.code) && Objects.equals(name, that.name)
+			&& Objects.equals(legalEntityCount, that.legalEntityCount);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(categoryId, code, name);
+		return Objects.hash(categoryId, code, name, legalEntityCount);
 	}
 
 	@Override
@@ -77,6 +94,7 @@ public class Category {
 			"categoryId=" + categoryId +
 			", code='" + code + '\'' +
 			", name='" + name + '\'' +
+			", legalEntityCount=" + legalEntityCount +
 			'}';
 	}
 }

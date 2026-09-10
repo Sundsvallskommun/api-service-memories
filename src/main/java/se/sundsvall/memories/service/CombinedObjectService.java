@@ -28,10 +28,13 @@ public class CombinedObjectService {
 
 		final var genderCounts = combinedObjectRepository.countByGender(parameters);
 
+		final var categoryCounts = combinedObjectRepository.countByCategory(parameters);
+
 		return PagedCombinedObjectResponse.create()
 			.withObjects(CombinedObjectMapper.toCombinedObjectList(page.getContent()))
 			.withTypeCounts(CombinedObjectMapper.toObjectTypeCountList(typeCounts))
 			.withGenderCounts(CombinedObjectMapper.toGenderCountList(genderCounts))
+			.withCategoryCounts(CombinedObjectMapper.toCategoryCountList(categoryCounts))
 			.withMetaData(Pageables.metaDataOf(page, parameters));
 	}
 }

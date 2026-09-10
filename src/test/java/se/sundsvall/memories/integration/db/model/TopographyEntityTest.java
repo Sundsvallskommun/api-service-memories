@@ -28,17 +28,17 @@ class TopographyEntityTest {
 	void testBuilderMethods() {
 		final var result = TopographyEntity.create()
 			.withId(42)
-			.withName("Sundsvall")
-			.withCode("2281")
-			.withPlace("Sundsvalls kommun")
-			.withCountry("Sverige");
+			.withName("Anundsjö")
+			.withCode("228471")
+			.withPlace("Bredbyn")
+			.withMunicipality("Örnsköldsvik");
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getId()).isEqualTo(42);
-		assertThat(result.getName()).isEqualTo("Sundsvall");
-		assertThat(result.getCode()).isEqualTo("2281");
-		assertThat(result.getPlace()).isEqualTo("Sundsvalls kommun");
-		assertThat(result.getCountry()).isEqualTo("Sverige");
+		assertThat(result.getName()).isEqualTo("Anundsjö");
+		assertThat(result.getCode()).isEqualTo("228471");
+		assertThat(result.getPlace()).isEqualTo("Bredbyn");
+		assertThat(result.getMunicipality()).isEqualTo("Örnsköldsvik");
 	}
 
 	@Test
@@ -47,25 +47,27 @@ class TopographyEntityTest {
 		assertThat(new TopographyEntity()).hasAllNullFieldsOrProperties();
 	}
 
+	/** The place and the parish it sits in, in that order — the parish alone is shared by every place under it. */
 	@Test
-	void getDisplayNamePrefersName() {
-		final var result = TopographyEntity.create().withName("Sundsvall").withPlace("Indal").withCode("0001");
+	void getDisplayNameNamesThePlaceAndTheParish() {
+		final var result = TopographyEntity.create().withName("Anundsjö").withPlace("Bredbyn").withCode("228471");
 
-		assertThat(result.getDisplayName()).isEqualTo("Sundsvall");
+		assertThat(result.getDisplayName()).isEqualTo("Bredbyn, Anundsjö");
 	}
 
+	/** A parish-level row carries no place of its own, and a stray place none of a parish. Either stands alone. */
 	@Test
-	void getDisplayNameFallsBackToPlaceWhenNameIsBlank() {
-		final var result = TopographyEntity.create().withName("  ").withPlace("Indal").withCode("0001");
-
-		assertThat(result.getDisplayName()).isEqualTo("Indal");
+	void getDisplayNameUsesWhicheverColumnIsFilled() {
+		assertThat(TopographyEntity.create().withName("Anundsjö").withPlace("  ").withCode("228471").getDisplayName())
+			.isEqualTo("Anundsjö");
+		assertThat(TopographyEntity.create().withName("").withPlace("Bredbyn").withCode("228471").getDisplayName())
+			.isEqualTo("Bredbyn");
 	}
 
+	/** The code names nothing — it is a parish code shared by every place under it, so it is never a label. */
 	@Test
-	void getDisplayNameFallsBackToCodeWhenNameAndPlaceAreBlank() {
-		final var result = TopographyEntity.create().withName("").withPlace("  ").withCode("0001");
-
-		assertThat(result.getDisplayName()).isEqualTo("0001");
+	void getDisplayNameNeverFallsBackToTheCode() {
+		assertThat(TopographyEntity.create().withName("").withPlace("  ").withCode("228471").getDisplayName()).isNull();
 	}
 
 	@Test

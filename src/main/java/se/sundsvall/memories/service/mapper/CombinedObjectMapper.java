@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
+import se.sundsvall.memories.api.model.CategoryCount;
 import se.sundsvall.memories.api.model.CombinedObject;
 import se.sundsvall.memories.api.model.GenderCount;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
@@ -10,7 +11,9 @@ import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static java.util.Collections.emptyList;
+import static java.util.Comparator.comparing;
 import static java.util.Optional.ofNullable;
+import static se.sundsvall.memories.service.util.Names.swedishOrder;
 
 public final class CombinedObjectMapper {
 
@@ -65,7 +68,8 @@ public final class CombinedObjectMapper {
 	}
 
 	/**
-	 * Map the chip counters, keeping the order the search counted them in.
+	 * Map the chip counters, in the order the chips are shown. The search groups them in the database's collation,
+	 * which is not the one a Swedish list wants — see {@link se.sundsvall.memories.service.util.Names}.
 	 *
 	 * @param  typeCounts the counters the search grouped
 	 * @return            list of mapped {@link ObjectTypeCount} objects (empty if {@code typeCounts} is null)
@@ -73,6 +77,7 @@ public final class CombinedObjectMapper {
 	public static List<ObjectTypeCount> toObjectTypeCountList(final List<TypeCount> typeCounts) {
 		return ofNullable(typeCounts).orElse(emptyList()).stream()
 			.map(CombinedObjectMapper::toObjectTypeCount)
+			.sorted(comparing(ObjectTypeCount::getObjectType, swedishOrder()))
 			.toList();
 	}
 
@@ -91,7 +96,7 @@ public final class CombinedObjectMapper {
 	}
 
 	/**
-	 * Map the gender chip counters, keeping the order the search counted them in.
+	 * Map the gender chip counters, in the order the chips are shown.
 	 *
 	 * @param  genderCounts the counters the search grouped
 	 * @return              list of mapped {@link GenderCount} objects (empty if {@code genderCounts} is null)
@@ -99,6 +104,37 @@ public final class CombinedObjectMapper {
 	public static List<GenderCount> toGenderCountList(final List<CombinedObjectRepositoryCustom.GenderCount> genderCounts) {
 		return ofNullable(genderCounts).orElse(emptyList()).stream()
 			.map(CombinedObjectMapper::toGenderCount)
+			.sorted(comparing(GenderCount::getGender, swedishOrder()))
+			.toList();
+	}
+
+	/**
+	 * Map one category chip counter.
+	 *
+	 * @param  categoryCount the counter the search grouped
+	 * @return               the mapped {@link CategoryCount}, or {@code null} if {@code categoryCount} is null
+	 */
+	public static CategoryCount toCategoryCount(final CombinedObjectRepositoryCustom.CategoryCount categoryCount) {
+		return ofNullable(categoryCount)
+			.map(count -> CategoryCount.create()
+				.withCategoryId(count.categoryId())
+				.withName(count.name())
+				.withCount(count.total()))
+			.orElse(null);
+	}
+
+	/**
+	 * Map the category chip counters, in the order the chips are shown — the same order {@code /categories} lists the
+	 * very same names in, so the chips and the dropdown cannot disagree.
+	 *
+	 * @param  categoryCounts the counters the search grouped
+	 * @return                list of mapped {@link CategoryCount} objects (empty if {@code categoryCounts} is null)
+	 */
+	public static List<CategoryCount> toCategoryCountList(final List<CombinedObjectRepositoryCustom.CategoryCount> categoryCounts) {
+		return ofNullable(categoryCounts).orElse(emptyList()).stream()
+			.map(CombinedObjectMapper::toCategoryCount)
+			.sorted(comparing(CategoryCount::getName, swedishOrder())
+				.thenComparing(CategoryCount::getCategoryId))
 			.toList();
 	}
 

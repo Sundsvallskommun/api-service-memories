@@ -18,7 +18,7 @@ import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.dept44.problem.violations.ConstraintViolationProblem;
 import se.sundsvall.memories.api.model.Category;
-import se.sundsvall.memories.service.CategoryLookup;
+import se.sundsvall.memories.service.CategoryService;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
@@ -36,18 +36,19 @@ import static org.springframework.http.ResponseEntity.ok;
 })
 class CategoryResource {
 
-	private final CategoryLookup categoryLookup;
+	private final CategoryService categoryService;
 
-	CategoryResource(final CategoryLookup categoryLookup) {
-		this.categoryLookup = categoryLookup;
+	CategoryResource(final CategoryService categoryService) {
+		this.categoryService = categoryService;
 	}
 
 	@GetMapping(produces = APPLICATION_JSON_VALUE)
-	@Operation(summary = "List categories", description = "List all verksamhetskategorier (sorted by name) for search form dropdowns.")
+	@Operation(summary = "List categories",
+		description = "List the verksamhetskategorier (sorted by name) for search form dropdowns, each with the number of legal entities in it. The sentinel every legal entity defaults to is not a category and is left out.")
 	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Category.class))))
 	ResponseEntity<List<Category>> getCategories(
 		@PathVariable @ValidMunicipalityId final String municipalityId) {
 
-		return ok(categoryLookup.getAllCategories());
+		return ok(categoryService.getCategories());
 	}
 }

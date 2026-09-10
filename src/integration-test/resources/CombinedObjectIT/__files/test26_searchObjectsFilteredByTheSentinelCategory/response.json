@@ -1,0 +1,24 @@
+{
+	"_meta": {
+		"count": 0,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 0,
+		"totalRecords": 0
+	},
+	"typeCounts": [],
+	"genderCounts": [],
+	"categoryCounts": [
+		{
+			"categoryId": 2,
+			"name": "Aktiebolag",
+			"count": 1
+		},
+		{
+			"categoryId": 5,
+			"name": "Kommitté",
+			"count": 1
+		}
+	],
+	"objects": []
+}

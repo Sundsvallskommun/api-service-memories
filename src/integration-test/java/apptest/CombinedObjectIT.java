@@ -260,4 +260,62 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	// A category is a property of the originator: selecting one keeps the objects whose originator is in it. The
+	// selection narrows the list but not its own counters, which keep counting every category the search matches.
+	@Test
+	void test24_searchObjectsFilteredByCategory() {
+		setupCall()
+			.withServicePath(PATH + "?categoryId=5")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test25_searchObjectsFilteredBySeveralCategories() {
+		setupCall()
+			.withServicePath(PATH + "?categoryId=2,5&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// KAT_ID 1 is the sentinel every legal entity defaults to, not a category: naming it matches nothing rather than
+	// every object whose originator is uncategorised, while the category counters stay as they were.
+	@Test
+	void test26_searchObjectsFilteredByTheSentinelCategory() {
+		setupCall()
+			.withServicePath(PATH + "?categoryId=1")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// Each counter leaves out only its own selection: the type counts still apply the category and so name the film,
+	// while the category counts apply the type and find no photo with a categorised originator.
+	@Test
+	void test27_searchObjectsFilteredByCategoryAndATypeWithoutOne() {
+		setupCall()
+			.withServicePath(PATH + "?categoryId=5&objectType=Foto")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	// The exact counterpart of location: only the rows placed in topography 2 (Timrå), the legal entity among them,
+	// and not the rows that merely name the place in their free text.
+	@Test
+	void test28_searchObjectsFilteredByTopography() {
+		setupCall()
+			.withServicePath(PATH + "?topographyId=2&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

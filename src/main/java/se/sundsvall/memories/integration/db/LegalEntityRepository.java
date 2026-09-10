@@ -25,7 +25,7 @@ import static se.sundsvall.memories.integration.db.specification.LegalEntitySpec
  * Repository for the {@code JURPERS} legal-entity table.
  */
 @CircuitBreaker(name = "legalEntityRepository")
-public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, Integer>, JpaSpecificationExecutor<LegalEntityEntity> {
+public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, Integer>, JpaSpecificationExecutor<LegalEntityEntity>, LegalEntityRepositoryCustom {
 
 	default Page<LegalEntityEntity> findAllByParameters(final LegalEntityParameters parameters, final Pageable pageable) {
 		return findAll(fetchTopography()

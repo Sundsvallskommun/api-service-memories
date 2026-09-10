@@ -7,8 +7,8 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 
 /**
- * Entity for the {@code KATEGORI} lookup table (verksamhetskategorier). Small and effectively static; used by legal
- * entities and archive nodes and exposed via the {@code /categories} dropdown endpoint.
+ * Entity for the {@code KATEGORI} lookup table (verksamhetskategorier). Small and effectively static; what a legal
+ * entity's {@code KAT_ID} points at, and the rows the {@code /categories} dropdown endpoint lists.
  */
 @Entity
 @Table(name = "KATEGORI")

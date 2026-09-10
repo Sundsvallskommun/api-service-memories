@@ -1,0 +1,47 @@
+[
+	{
+		"topographyId": 20,
+		"displayName": "Bergeforsen, Timrå",
+		"name": "Timrå",
+		"code": "TIM",
+		"place": "Bergeforsen",
+		"municipality": "Timrå kommun"
+	},
+	{
+		"topographyId": 4,
+		"displayName": "Kvissleby, Njurunda",
+		"name": "Njurunda",
+		"code": "NJU",
+		"place": "Kvissleby",
+		"municipality": "Sundsvalls kommun"
+	},
+	{
+		"topographyId": 1,
+		"displayName": "Sundsvall",
+		"name": "Sundsvall",
+		"code": "SUN",
+		"municipality": "Sundsvalls kommun"
+	},
+	{
+		"topographyId": 16,
+		"displayName": "Sundsvall stad",
+		"name": "Sundsvall stad",
+		"code": "SUNS",
+		"municipality": "Sundsvalls kommun"
+	},
+	{
+		"topographyId": 21,
+		"displayName": "Söråker, Timrå",
+		"name": "Timrå",
+		"code": "TIM",
+		"place": "Söråker",
+		"municipality": "Timrå kommun"
+	},
+	{
+		"topographyId": 2,
+		"displayName": "Timrå",
+		"name": "Timrå",
+		"code": "TIM",
+		"municipality": "Timrå kommun"
+	}
+]

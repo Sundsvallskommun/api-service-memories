@@ -28,6 +28,13 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 	@Schema(description = "Location (substring, case-insensitive; resolved place name or free-text location)", examples = "Sundsvall")
 	private String location;
 
+	@ArraySchema(schema = @Schema(description = """
+		ID of the place, as listed by /topographies — the exact counterpart of location, for a place picked from \
+		that list rather than typed. Repeat the parameter, or comma-separate the values, to select several — they are \
+		alternatives. Only the object types and legal entities are placed in a topography; the person registers hold a \
+		parish as free text, so this filter excludes them.""", examples = "1"))
+	private List<Integer> topographyId;
+
 	/**
 	 * Not validated against a fixed list: FOTO carries its own {@code OBJTYP}, so the set of types belongs to the
 	 * archive. An unknown value matches nothing rather than failing the request.
@@ -57,6 +64,13 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		ID of the originator, when it is a legal entity. Repeat the parameter, or comma-separate the values, to select \
 		several — they are alternatives, so a category of legal entities can be filtered in one call.""", examples = "10"))
 	private List<Integer> creatorLegalEntityId;
+
+	@ArraySchema(schema = @Schema(description = """
+		ID of the originator's category (verksamhetskategori), as listed by /categories and counted by categoryCounts. \
+		Repeat the parameter, or comma-separate the values, to select several — they are alternatives. A category \
+		is a property of the originator, so like creator this filter keeps only the objects with an originator in \
+		it and excludes the register types.""", examples = "5"))
+	private List<Integer> categoryId;
 
 	public static CombinedObjectParameters create() {
 		return new CombinedObjectParameters();
@@ -114,6 +128,19 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		return this;
 	}
 
+	public List<Integer> getTopographyId() {
+		return topographyId;
+	}
+
+	public void setTopographyId(final List<Integer> topographyId) {
+		this.topographyId = topographyId;
+	}
+
+	public CombinedObjectParameters withTopographyId(final List<Integer> topographyId) {
+		this.topographyId = topographyId;
+		return this;
+	}
+
 	public List<String> getObjectType() {
 		return objectType;
 	}
@@ -164,6 +191,19 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		this.creatorLegalEntityId = creatorLegalEntityId;
 	}
 
+	public List<Integer> getCategoryId() {
+		return categoryId;
+	}
+
+	public void setCategoryId(final List<Integer> categoryId) {
+		this.categoryId = categoryId;
+	}
+
+	public CombinedObjectParameters withCategoryId(final List<Integer> categoryId) {
+		this.categoryId = categoryId;
+		return this;
+	}
+
 	/**
 	 * {@code relevance} and {@code location} are translated by the specification; every other accepted value is an entity
 	 * attribute.
@@ -199,13 +239,14 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			return false;
 		final CombinedObjectParameters that = (CombinedObjectParameters) o;
 		return Objects.equals(query, that.query) && Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location)
-			&& Objects.equals(objectType, that.objectType) && Objects.equals(gender, that.gender) && Objects.equals(creator, that.creator)
-			&& Objects.equals(creatorPersonId, that.creatorPersonId) && Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId);
+			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(objectType, that.objectType) && Objects.equals(gender, that.gender)
+			&& Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId)
+			&& Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId) && Objects.equals(categoryId, that.categoryId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, objectType, gender, creator, creatorPersonId, creatorLegalEntityId);
+		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, topographyId, objectType, gender, creator, creatorPersonId, creatorLegalEntityId, categoryId);
 	}
 
 	@Override
@@ -215,11 +256,13 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
 			", location='" + location + '\'' +
+			", topographyId=" + topographyId +
 			", objectType=" + objectType +
 			", gender='" + gender + '\'' +
 			", creator='" + creator + '\'' +
 			", creatorPersonId=" + creatorPersonId +
 			", creatorLegalEntityId=" + creatorLegalEntityId +
+			", categoryId=" + categoryId +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +
