@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static se.sundsvall.memories.integration.db.specification.TopographySpecification.hasDisplayName;
-import static se.sundsvall.memories.integration.db.specification.TopographySpecification.orderedByDisplayName;
 
 /**
  * Repository for the {@code TOPOGRAFI} place lookup table.
@@ -15,8 +14,8 @@ import static se.sundsvall.memories.integration.db.specification.TopographySpeci
 @CircuitBreaker(name = "topographyRepository")
 public interface TopographyRepository extends JpaRepository<TopographyEntity, Integer>, JpaSpecificationExecutor<TopographyEntity> {
 
-	/** The places a search form can offer, by display name: every row that has one. */
+	/** The places a search form can offer: every row that has a display name. Ordered by the service. */
 	default List<TopographyEntity> findAllSelectable() {
-		return findAll(hasDisplayName().and(orderedByDisplayName()));
+		return findAll(hasDisplayName());
 	}
 }

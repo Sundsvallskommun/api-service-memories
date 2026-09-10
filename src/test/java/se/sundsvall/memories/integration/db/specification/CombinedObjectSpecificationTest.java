@@ -750,6 +750,36 @@ class CombinedObjectSpecificationTest {
 		assertThat(countByCategory(byId)).containsExactly(entry("Aktiebolag", 1L), entry("Kommitté", 1L));
 	}
 
+	/**
+	 * A chip is labelled from the KATEGORI row, so only a row that can label one may become a chip — the same rows
+	 * /categories offers. The foreign key guard does not reach that far on its own: it is read straight off JURPERS,
+	 * so a KAT_ID pointing at no row would group as (null, null), and a blank-named category would become a chip the
+	 * dropdown never lists. Nothing in the schema declares a foreign key, so neither case is hypothetical. The objects
+	 * themselves still match; it is only the chip that is left out.
+	 */
+	@Test
+	void countByCategoryLeavesOutTheCategoriesTheDropdownCannotOffer() {
+		persistCategorisedOriginators();
+		final var blank = persistCategory(7, "   ");
+		final var blankNamed = LegalEntityEntity.create().withLegalEntityId(22).withName("Blanktecknad").withCategory(blank);
+		final var orphaned = LegalEntityEntity.create().withLegalEntityId(23).withName("Utan kategorirad");
+		entityManager.persist(blankNamed);
+		entityManager.persist(orphaned);
+		entityManager.flush();
+
+		persistPhoto(5, "Av den blanktecknade", null, "1900", null);
+		persistPhoto(6, "Av den utan kategorirad", null, "1900", null);
+		photoRepository.findById(5).ifPresent(photo -> photo.setCreatorLegalEntity(blankNamed));
+		photoRepository.findById(6).ifPresent(photo -> photo.setCreatorLegalEntity(orphaned));
+		photoRepository.flush();
+		entityManager.createNativeQuery("UPDATE JURPERS SET KAT_ID = 99 WHERE J_ID = 23").executeUpdate();
+		entityManager.clear();
+
+		assertThat(findKeys(CombinedObjectParameters.create())).contains("foto-5", "foto-6");
+		assertThat(combinedObjectRepository.countByCategory(CombinedObjectParameters.create()))
+			.containsExactly(new CategoryCount(2, "Aktiebolag", 1L), new CategoryCount(5, "Kommitté", 1L));
+	}
+
 	/** The chips carry the category's name, so the client need not look it up, and are ordered by it. */
 	@Test
 	void countByCategoryNamesEachCategory() {

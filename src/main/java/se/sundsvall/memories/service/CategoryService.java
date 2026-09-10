@@ -8,6 +8,9 @@ import se.sundsvall.memories.integration.db.CategoryRepository;
 import se.sundsvall.memories.integration.db.LegalEntityRepository;
 import se.sundsvall.memories.service.mapper.CategoryMapper;
 
+import static java.util.Comparator.comparing;
+import static se.sundsvall.memories.service.util.Names.swedishOrder;
+
 /**
  * The {@code /categories} dropdown. Read per request rather than cached at startup: the table is tiny, and the sizes
  * change as the archive is edited, so a cache would report them stale.
@@ -23,12 +26,16 @@ public class CategoryService {
 		this.legalEntityRepository = legalEntityRepository;
 	}
 
+	/** Ordered here rather than in SQL, see {@link se.sundsvall.memories.service.util.Names}. */
 	@Transactional(readOnly = true)
 	public List<Category> getCategories() {
 		final var categories = categoryRepository.findAllSelectable();
 
 		final var totals = legalEntityRepository.countByCategory();
 
-		return CategoryMapper.toCategoryList(categories, totals);
+		return CategoryMapper.toCategoryList(categories, totals).stream()
+			.sorted(comparing(Category::getName, swedishOrder())
+				.thenComparing(Category::getCategoryId))
+			.toList();
 	}
 }

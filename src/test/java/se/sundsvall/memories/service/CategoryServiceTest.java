@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 // Which categories are selectable and how they are sized is verified against a real database in the specification
-// tests. These cover what the service does: read both, pair them, hand them on in the repository's order.
+// tests. These cover what the service does: read both, pair them, order them.
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
 
@@ -44,6 +44,20 @@ class CategoryServiceTest {
 			.containsExactly(tuple(2, "AB", "Aktiebolag", 0L), tuple(5, "KOM", "Kommitté", 4L));
 		verify(categoryRepositoryMock).findAllSelectable();
 		verify(legalEntityRepositoryMock).countByCategory();
+	}
+
+	/** Swedish order, not the database's: Ö comes after Z, which a {@code general_ci} collation would not give. */
+	@Test
+	void getCategoriesSortsByNameInSwedishOrder() {
+		when(categoryRepositoryMock.findAllSelectable()).thenReturn(List.of(
+			CategoryEntity.create().withCategoryId(2).withName("Övrigt"),
+			CategoryEntity.create().withCategoryId(5).withName("Zonkontor"),
+			CategoryEntity.create().withCategoryId(7).withName("Ångbåtsbolag"),
+			CategoryEntity.create().withCategoryId(9).withName("Aktiebolag")));
+		when(legalEntityRepositoryMock.countByCategory()).thenReturn(List.of());
+
+		assertThat(service.getCategories()).extracting(Category::getName)
+			.containsExactly("Aktiebolag", "Zonkontor", "Ångbåtsbolag", "Övrigt");
 	}
 
 	@Test

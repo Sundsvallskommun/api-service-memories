@@ -119,6 +119,32 @@ class CombinedObjectMapperTest {
 			.containsExactly(tuple(2, "Aktiebolag", 3L), tuple(5, "Kommitté", 12L));
 	}
 
+	/**
+	 * The chips are ordered where the response is shaped, not by the database's collation: Å, Ä and Ö sort after Z
+	 * rather than as A and O, so Föremål follows Foto and not the other way round, and categories sharing a name keep a
+	 * stable order by id. The same order {@code /categories} lists them in.
+	 */
+	@Test
+	void countListsAreOrderedInSwedish() {
+		assertThat(CombinedObjectMapper.toCategoryCountList(List.of(
+			new CategoryCount(2, "Övrigt", 1L),
+			new CategoryCount(5, "Zonkontor", 1L),
+			new CategoryCount(9, "Ångbåtsbolag", 1L),
+			new CategoryCount(7, "Aktiebolag", 1L))))
+			.extracting(se.sundsvall.memories.api.model.CategoryCount::getName)
+			.containsExactly("Aktiebolag", "Zonkontor", "Ångbåtsbolag", "Övrigt");
+
+		assertThat(CombinedObjectMapper.toObjectTypeCountList(List.of(
+			new TypeCount("Föremål", 1L), new TypeCount("Text", 1L), new TypeCount("Foto", 1L))))
+			.extracting(ObjectTypeCount::getObjectType)
+			.containsExactly("Foto", "Föremål", "Text");
+
+		assertThat(CombinedObjectMapper.toGenderCountList(List.of(
+			new GenderCount("Okänt", 1L), new GenderCount("Man", 1L), new GenderCount("Kvinna", 1L))))
+			.extracting(se.sundsvall.memories.api.model.GenderCount::getGender)
+			.containsExactly("Kvinna", "Man", "Okänt");
+	}
+
 	@Test
 	void toCategoryCountWhenNull() {
 		assertThat(CombinedObjectMapper.toCategoryCount(null)).isNull();

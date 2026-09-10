@@ -36,11 +36,12 @@ class CategorySpecificationTest {
 	}
 
 	/**
-	 * The sentinel row and the nameless ones are left out, whether the name is missing or blank, and the rest come in
-	 * name order regardless of id or case.
+	 * The sentinel row and the nameless ones are left out, whether the name is missing or blank — space-padded
+	 * included, whatever the column's collation makes of a trailing space. The order is
+	 * {@link se.sundsvall.memories.service.CategoryService}'s job, and its test covers it.
 	 */
 	@Test
-	void findAllSelectableOffersTheNamedCategoriesButNotTheSentinelByName() {
+	void findAllSelectableOffersTheNamedCategoriesButNotTheSentinel() {
 		persist(1, "", "");
 		persist(5, "KOM", "Kommitté");
 		persist(2, "AB", "aktiebolag");
@@ -50,7 +51,7 @@ class CategorySpecificationTest {
 
 		assertThat(categoryRepository.findAllSelectable())
 			.extracting(CategoryEntity::getCategoryId, CategoryEntity::getName)
-			.containsExactly(tuple(2, "aktiebolag"), tuple(7, "By"), tuple(5, "Kommitté"));
+			.containsExactlyInAnyOrder(tuple(2, "aktiebolag"), tuple(7, "By"), tuple(5, "Kommitté"));
 	}
 
 	/** A named sentinel is still the sentinel: it is the id that makes it one, not the blank name. */

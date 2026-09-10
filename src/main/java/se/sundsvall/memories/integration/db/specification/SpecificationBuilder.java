@@ -406,11 +406,12 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
-	 * As {@link #buildAssociationEqualFilter(String, String, Object)}, for several ids that are alternatives — a lookup
-	 * row is never soft-deleted, so there is nothing to guard. Reads the foreign key only, so it adds no join. Matches
-	 * every row when the list yields no ids.
+	 * As {@link #buildAssociationEqualFilter(String, String, Object)}, for several ids that are alternatives. Named apart
+	 * from {@link #buildAssociationInFilter} because it applies <em>no</em> soft-delete guard: use it only for a lookup
+	 * table whose rows are never soft-deleted, so that the choice is a decision rather than the shorter overload. Reads
+	 * the foreign key only, so it adds no join. Matches every row when the list yields no ids.
 	 */
-	public Specification<T> buildAssociationInFilter(final String association, final String attribute, final List<?> values) {
+	public Specification<T> buildLookupInFilter(final String association, final String attribute, final List<?> values) {
 		final var wanted = distinctNonNull(values);
 		if (wanted.isEmpty()) {
 			return Specification.unrestricted();
@@ -442,20 +443,28 @@ public class SpecificationBuilder<T> {
 	public Expression<String> location(final Root<T> root, final CriteriaBuilder cb, final String textAttribute, final String association,
 		final List<String> associationAttributes) {
 		final var join = reuseFetchOrJoin(root, association);
-		final var coalesce = cb.<String>coalesce();
-		coalesce.value(cb.nullif(root.<String>get(textAttribute), ""));
-		associationAttributes.forEach(attribute -> coalesce.value(cb.nullif(join.<String>get(attribute), "")));
-		return coalesce;
+		return firstNonBlank(cb, Stream.concat(
+			Stream.of(root.<String>get(textAttribute)),
+			associationAttributes.stream().map(join::<String>get)));
 	}
 
 	/**
 	 * The first non-blank of the attributes, in the given order, or {@code NULL} when all are blank — the display name
-	 * of a lookup row, computed in the database so it can be filtered and sorted on. Blank values count as absent, since
-	 * the legacy data uses empty strings rather than {@code NULL}.
+	 * of a lookup row, computed in the database so it can be filtered on. Blank values count as absent, since the legacy
+	 * data uses empty strings rather than {@code NULL}.
 	 */
-	public Expression<String> firstNonBlank(final Root<T> root, final CriteriaBuilder cb, final List<String> attributes) {
+	private Expression<String> firstNonBlank(final Root<T> root, final CriteriaBuilder cb, final List<String> attributes) {
+		return firstNonBlank(cb, attributes.stream().map(root::<String>get));
+	}
+
+	/**
+	 * The shared shape of the two above: coalesce over the values with every blank one read as absent. Trimmed first, so
+	 * that a value padded to a fixed width counts as blank whatever the column's collation does with trailing spaces —
+	 * a {@code NO PAD} one does not treat {@code '  '} as equal to {@code ''}.
+	 */
+	private Expression<String> firstNonBlank(final CriteriaBuilder cb, final Stream<Expression<String>> values) {
 		final var coalesce = cb.<String>coalesce();
-		attributes.forEach(attribute -> coalesce.value(cb.nullif(root.<String>get(attribute), "")));
+		values.forEach(value -> coalesce.value(cb.nullif(cb.trim(value), "")));
 		return coalesce;
 	}
 

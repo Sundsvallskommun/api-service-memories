@@ -16,8 +16,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 /**
- * Exercises {@link TopographySpecification} against a real MariaDB instance (Testcontainers): the display name is
- * computed in the database, and so is the order. Each test is rolled back.
+ * Exercises {@link TopographySpecification} against a real MariaDB instance (Testcontainers): which rows have a display
+ * name is decided in the database. The order is not — {@link se.sundsvall.memories.service.TopographyService} applies
+ * it,
+ * and its test covers it. Each test is rolled back.
  */
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("junit")
@@ -36,12 +38,13 @@ class TopographySpecificationTest {
 	}
 
 	/**
-	 * A row is offered when any of name, place or code is non-blank, and sorted by the first of them that is — the
-	 * same fallback {@link TopographyEntity#getDisplayName()} shows it under. A row blank in all three, which is what
-	 * the sentinel the object tables default to looks like, is left out without the list knowing its id.
+	 * A row is offered when any of name, place or code is non-blank, resolving to the same fallback
+	 * {@link TopographyEntity#getDisplayName()} shows it under. A row blank in all three, which is what the sentinel the
+	 * object tables default to looks like, is left out without the list knowing its id — space-padded included,
+	 * whatever the column's collation makes of a trailing space.
 	 */
 	@Test
-	void findAllSelectableOffersEveryRowWithADisplayNameInDisplayNameOrder() {
+	void findAllSelectableOffersEveryRowWithADisplayName() {
 		persist(1, "", "", "", "");
 		persist(2, "Timrå", "TIM", "Timrå kommun", "Sverige");
 		persist(3, "", "ALK", "Alnö kommun", "Sverige");
@@ -51,18 +54,7 @@ class TopographySpecificationTest {
 
 		assertThat(topographyRepository.findAllSelectable())
 			.extracting(TopographyEntity::getId, TopographyEntity::getDisplayName)
-			.containsExactly(tuple(5, "Alnö"), tuple(3, "Alnö kommun"), tuple(4, "SUN"), tuple(2, "Timrå"));
-	}
-
-	/** Equal display names keep a stable order, by id. */
-	@Test
-	void findAllSelectableBreaksTiesById() {
-		persist(16, "Sundsvall", "SUNS", "Sundsvalls kommun", "Sverige");
-		persist(1, "Sundsvall", "SUN", "Sundsvalls kommun", "Sverige");
-
-		assertThat(topographyRepository.findAllSelectable())
-			.extracting(TopographyEntity::getId)
-			.containsExactly(1, 16);
+			.containsExactlyInAnyOrder(tuple(5, "Alnö"), tuple(3, "Alnö kommun"), tuple(4, "SUN"), tuple(2, "Timrå"));
 	}
 
 	private void persist(final int id, final String name, final String code, final String place, final String country) {

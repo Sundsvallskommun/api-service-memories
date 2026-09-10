@@ -5,7 +5,6 @@ import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
 import static se.sundsvall.memories.integration.db.model.TopographyEntity_.CODE;
-import static se.sundsvall.memories.integration.db.model.TopographyEntity_.ID;
 import static se.sundsvall.memories.integration.db.model.TopographyEntity_.NAME;
 import static se.sundsvall.memories.integration.db.model.TopographyEntity_.PLACE;
 
@@ -23,10 +22,5 @@ public interface TopographySpecification {
 	 */
 	static Specification<TopographyEntity> hasDisplayName() {
 		return BUILDER.buildAnyNonBlankFilter(DISPLAY_ATTRIBUTES);
-	}
-
-	/** Ordered by the name a place is shown under, with the id as tiebreak so equal names keep a stable order. */
-	static Specification<TopographyEntity> orderedByDisplayName() {
-		return BUILDER.buildOrderBy((root, cb) -> List.of(cb.asc(BUILDER.firstNonBlank(root, cb, DISPLAY_ATTRIBUTES)), cb.asc(root.get(ID))));
 	}
 }

@@ -148,7 +148,7 @@ public interface CombinedObjectSpecification {
 	 * this filter excludes them the way {@code location} does for census records.
 	 */
 	static Specification<CombinedObjectEntity> hasTopography(final List<Integer> topographyIds) {
-		return BUILDER.buildAssociationInFilter(TOPOGRAPHY, TopographyEntity_.ID, topographyIds);
+		return BUILDER.buildLookupInFilter(TOPOGRAPHY, TopographyEntity_.ID, topographyIds);
 	}
 
 	/** The view normalises an unreadable year to {@code NULL}, so a row without a year falls outside every range. */

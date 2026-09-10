@@ -95,8 +95,14 @@ class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCust
 		final var predicate = ofNullable(filtersExcludingCategory(parameters).and(hasCategorisedCreator()).toPredicate(root, query, cb))
 			.orElseGet(cb::conjunction);
 
+		// hasCategorisedCreator() guards the foreign key, which Hibernate reads without touching KATEGORI. The chip is
+		// labelled from the joined row instead, so that row needs the guards the dropdown applies as well: a KAT_ID
+		// pointing at no row would group as (null, null) and a blank-named category as a chip /categories never lists.
+		// The same rule as CategorySpecification.hasName(), which is what the frontend picks its categories from.
+		final var listable = cb.and(cb.isNotNull(categoryId), cb.isNotNull(cb.nullif(cb.trim(categoryName), "")));
+
 		query.multiselect(categoryId.alias(CATEGORY_ID_ALIAS), categoryName.alias(CATEGORY_NAME_ALIAS), cb.count(root).alias(TOTAL_ALIAS))
-			.where(predicate)
+			.where(cb.and(predicate, listable))
 			.groupBy(categoryId, categoryName)
 			.orderBy(cb.asc(categoryName), cb.asc(categoryId));
 
