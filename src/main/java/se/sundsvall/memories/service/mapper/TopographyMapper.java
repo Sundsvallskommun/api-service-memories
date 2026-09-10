@@ -26,7 +26,7 @@ public final class TopographyMapper {
 				.withName(e.getName())
 				.withCode(e.getCode())
 				.withPlace(e.getPlace())
-				.withCountry(e.getCountry()))
+				.withMunicipality(e.getMunicipality()))
 			.orElse(null);
 	}
 

@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.11"
 servers:
-- url: http://localhost:63823
+- url: http://localhost:61485
   description: Generated server url
 tags:
 - name: Node
@@ -1593,30 +1593,35 @@ components:
           - 1
         displayName:
           type: string
-          description: "Place name, as shown for an object's location: the name, or\
-            \ failing that the place or the code"
+          description: "The place as it is shown, and as an object reports its location:\
+            \ the specific place and the wider one it sits in. The wider one alone\
+            \ is shared by every place in it, so it is not enough to pick from."
           examples:
-          - Sundsvall
+          - "Bredbyn, Anundsjö"
         name:
           type: string
-          description: Name (TOPNAMN)
+          description: "The wider place (TOPNAMN) — a parish (socken) in the Swedish\
+            \ material, shared by every place in it"
           examples:
-          - Sundsvall
+          - Anundsjö
         code:
           type: string
-          description: Code (TOPKOD)
+          description: "Code of the wider place (TOPKOD), shared by every place under\
+            \ it. A code, not a name."
           examples:
-          - SUN
+          - "228471"
         place:
           type: string
-          description: "Place (PLATS), typically the municipality"
+          description: The specific place (PLATS) — a village or a farm. What tells
+            one row from another.
           examples:
-          - Sundsvalls kommun
-        country:
+          - Bredbyn
+        municipality:
           type: string
-          description: Country (LAND)
+          description: Municipality (LAND). The column is named for a country but
+            holds a municipality.
           examples:
-          - Sverige
+          - Örnsköldsvik
     Direction:
       type: string
       enum:

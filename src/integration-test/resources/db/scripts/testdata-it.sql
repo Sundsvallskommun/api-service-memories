@@ -1,11 +1,16 @@
 --
 -- TOPOGRAFI (place lookup)
 --
+-- TOPNAMN is the parish, TOPKOD its code, PLATS the specific place inside it and LAND the municipality — the column
+-- is named for a country but never holds one. Rows 1, 2 and 16 are parish-level and carry no PLATS; 20 and 21 are two
+-- places in one parish, so the case a label has to tell apart is represented.
 INSERT INTO TOPOGRAFI (T_ID, TOPNAMN, TOPKOD, PLATS, LAND)
-VALUES (1, 'Sundsvall', 'SUN', 'Sundsvalls kommun', 'Sverige'),
-       (2, 'Timrå', 'TIM', 'Timrå kommun', 'Sverige'),
-       (4, 'Sundsvalls kommun', 'SUNK', 'Sundsvalls kommun', 'Sverige'),
-       (16, 'Sundsvall stad', 'SUNS', 'Sundsvalls kommun', 'Sverige');
+VALUES (1, 'Sundsvall', 'SUN', null, 'Sundsvalls kommun'),
+       (2, 'Timrå', 'TIM', null, 'Timrå kommun'),
+       (4, 'Njurunda', 'NJU', 'Kvissleby', 'Sundsvalls kommun'),
+       (16, 'Sundsvall stad', 'SUNS', null, 'Sundsvalls kommun'),
+       (20, 'Timrå', 'TIM', 'Bergeforsen', 'Timrå kommun'),
+       (21, 'Timrå', 'TIM', 'Söråker', 'Timrå kommun');
 
 --
 -- FILM

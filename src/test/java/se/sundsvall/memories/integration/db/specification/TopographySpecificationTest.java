@@ -38,27 +38,27 @@ class TopographySpecificationTest {
 	}
 
 	/**
-	 * A row is offered when any of name, place or code is non-blank, resolving to the same fallback
-	 * {@link TopographyEntity#getDisplayName()} shows it under. A row blank in all three, which is what the sentinel the
-	 * object tables default to looks like, is left out without the list knowing its id — space-padded included,
-	 * whatever the column's collation makes of a trailing space.
+	 * A row is offered when it has something to build a label out of — the parish, the place inside it, or both. The
+	 * code is not a name, so a row carrying only that one is left out, and so is a row blank in every column, which is
+	 * what the sentinel the object tables default to looks like: the list never has to know its id. Space-padded counts
+	 * as blank whatever the column's collation makes of a trailing space.
 	 */
 	@Test
 	void findAllSelectableOffersEveryRowWithADisplayName() {
 		persist(1, "", "", "", "");
-		persist(2, "Timrå", "TIM", "Timrå kommun", "Sverige");
-		persist(3, "", "ALK", "Alnö kommun", "Sverige");
-		persist(4, null, "SUN", null, "Sverige");
-		persist(5, "Alnö", "ALN", "Sundsvalls kommun", "Sverige");
-		persist(6, "  ", "  ", "  ", "Sverige");
+		persist(2, "Anundsjö", "228471", "Bredbyn", "Örnsköldsvik");
+		persist(3, "Anundsjö", "228471", null, "Örnsköldsvik");
+		persist(4, null, "228471", "Björnsjö", "Örnsköldsvik");
+		persist(5, "", "SUN", "", "Sundsvalls kommun");
+		persist(6, "  ", "  ", "  ", "Örnsköldsvik");
 
 		assertThat(topographyRepository.findAllSelectable())
 			.extracting(TopographyEntity::getId, TopographyEntity::getDisplayName)
-			.containsExactlyInAnyOrder(tuple(5, "Alnö"), tuple(3, "Alnö kommun"), tuple(4, "SUN"), tuple(2, "Timrå"));
+			.containsExactlyInAnyOrder(tuple(2, "Bredbyn, Anundsjö"), tuple(3, "Anundsjö"), tuple(4, "Björnsjö"));
 	}
 
-	private void persist(final int id, final String name, final String code, final String place, final String country) {
-		entityManager.persist(TopographyEntity.create().withId(id).withName(name).withCode(code).withPlace(place).withCountry(country));
+	private void persist(final int id, final String name, final String code, final String place, final String municipality) {
+		entityManager.persist(TopographyEntity.create().withId(id).withName(name).withCode(code).withPlace(place).withMunicipality(municipality));
 		entityManager.flush();
 	}
 }

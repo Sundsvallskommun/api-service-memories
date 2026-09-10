@@ -9,20 +9,21 @@ public class Topography {
 	@Schema(description = "Topography ID, which the topographyId filter accepts", examples = "1")
 	private Integer topographyId;
 
-	@Schema(description = "Place name, as shown for an object's location: the name, or failing that the place or the code", examples = "Sundsvall")
+	@Schema(description = "The place as it is shown, and as an object reports its location: the specific place and the wider one it sits in. "
+		+ "The wider one alone is shared by every place in it, so it is not enough to pick from.", examples = "Bredbyn, Anundsjö")
 	private String displayName;
 
-	@Schema(description = "Name (TOPNAMN)", examples = "Sundsvall")
+	@Schema(description = "The wider place (TOPNAMN) — a parish (socken) in the Swedish material, shared by every place in it", examples = "Anundsjö")
 	private String name;
 
-	@Schema(description = "Code (TOPKOD)", examples = "SUN")
+	@Schema(description = "Code of the wider place (TOPKOD), shared by every place under it. A code, not a name.", examples = "228471")
 	private String code;
 
-	@Schema(description = "Place (PLATS), typically the municipality", examples = "Sundsvalls kommun")
+	@Schema(description = "The specific place (PLATS) — a village or a farm. What tells one row from another.", examples = "Bredbyn")
 	private String place;
 
-	@Schema(description = "Country (LAND)", examples = "Sverige")
-	private String country;
+	@Schema(description = "Municipality (LAND). The column is named for a country but holds a municipality.", examples = "Örnsköldsvik")
+	private String municipality;
 
 	public static Topography create() {
 		return new Topography();
@@ -93,16 +94,16 @@ public class Topography {
 		return this;
 	}
 
-	public String getCountry() {
-		return country;
+	public String getMunicipality() {
+		return municipality;
 	}
 
-	public void setCountry(final String country) {
-		this.country = country;
+	public void setMunicipality(final String municipality) {
+		this.municipality = municipality;
 	}
 
-	public Topography withCountry(final String country) {
-		this.country = country;
+	public Topography withMunicipality(final String municipality) {
+		this.municipality = municipality;
 		return this;
 	}
 
@@ -112,12 +113,12 @@ public class Topography {
 			return false;
 		final Topography that = (Topography) o;
 		return Objects.equals(topographyId, that.topographyId) && Objects.equals(displayName, that.displayName) && Objects.equals(name, that.name)
-			&& Objects.equals(code, that.code) && Objects.equals(place, that.place) && Objects.equals(country, that.country);
+			&& Objects.equals(code, that.code) && Objects.equals(place, that.place) && Objects.equals(municipality, that.municipality);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(topographyId, displayName, name, code, place, country);
+		return Objects.hash(topographyId, displayName, name, code, place, municipality);
 	}
 
 	@Override
@@ -128,7 +129,7 @@ public class Topography {
 			", name='" + name + '\'' +
 			", code='" + code + '\'' +
 			", place='" + place + '\'' +
-			", country='" + country + '\'' +
+			", municipality='" + municipality + '\'' +
 			'}';
 	}
 }

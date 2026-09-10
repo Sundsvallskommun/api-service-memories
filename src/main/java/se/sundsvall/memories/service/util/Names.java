@@ -1,9 +1,13 @@
 package se.sundsvall.memories.service.util;
 
+import java.text.CollationKey;
 import java.text.Collator;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
+import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsLast;
 
 /**
@@ -20,11 +24,16 @@ public final class Names {
 	private Names() {}
 
 	/**
-	 * Swedish alphabetical order, missing names last.
+	 * Swedish alphabetical order, missing names last. Compares precomputed {@link CollationKey}s rather than collating
+	 * on every comparison: a list of n names is collated n times instead of the n log n a sort would otherwise ask for,
+	 * which is what the place list, at a couple of thousand entries, actually feels.
 	 *
-	 * @return a comparator, built fresh on every call because {@link Collator} is not thread-safe
+	 * @return a comparator, built fresh on every call — neither the {@link Collator} nor the key cache is thread-safe,
+	 *         so each belongs to the one sort it was built for
 	 */
 	public static Comparator<String> swedishOrder() {
-		return nullsLast(Collator.getInstance(SWEDISH)::compare);
+		final var collator = Collator.getInstance(SWEDISH);
+		final Map<String, CollationKey> keys = new HashMap<>();
+		return nullsLast(comparing((final String name) -> keys.computeIfAbsent(name, collator::getCollationKey)));
 	}
 }

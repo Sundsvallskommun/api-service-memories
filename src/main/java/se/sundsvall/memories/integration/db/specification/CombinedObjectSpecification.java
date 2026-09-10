@@ -35,7 +35,7 @@ public interface CombinedObjectSpecification {
 	List<String> LOCATION_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE);
 
 	/** The topography columns the location sort falls back through, in the display name's order. */
-	List<String> LOCATION_DISPLAY_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE, TopographyEntity_.CODE);
+	List<String> LOCATION_DISPLAY_ATTRIBUTES = List.of(TopographyEntity_.PLACE, TopographyEntity_.NAME);
 
 	/** Sort value for ranking by how well a row matches the query. Computed per request, so not an entity attribute. */
 	String RELEVANCE = "relevance";

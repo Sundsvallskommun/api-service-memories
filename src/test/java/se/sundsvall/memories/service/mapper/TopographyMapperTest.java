@@ -15,18 +15,18 @@ class TopographyMapperTest {
 	void toTopography() {
 		final var result = TopographyMapper.toTopography(TopographyEntity.create()
 			.withId(1)
-			.withName("Sundsvall")
-			.withCode("SUN")
-			.withPlace("Sundsvalls kommun")
-			.withCountry("Sverige"));
+			.withName("Anundsjö")
+			.withCode("228471")
+			.withPlace("Bredbyn")
+			.withMunicipality("Örnsköldsvik"));
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getTopographyId()).isEqualTo(1);
-		assertThat(result.getDisplayName()).isEqualTo("Sundsvall");
-		assertThat(result.getName()).isEqualTo("Sundsvall");
-		assertThat(result.getCode()).isEqualTo("SUN");
-		assertThat(result.getPlace()).isEqualTo("Sundsvalls kommun");
-		assertThat(result.getCountry()).isEqualTo("Sverige");
+		assertThat(result.getDisplayName()).isEqualTo("Bredbyn, Anundsjö");
+		assertThat(result.getName()).isEqualTo("Anundsjö");
+		assertThat(result.getCode()).isEqualTo("228471");
+		assertThat(result.getPlace()).isEqualTo("Bredbyn");
+		assertThat(result.getMunicipality()).isEqualTo("Örnsköldsvik");
 	}
 
 	/** The display name falls back the way an object's location does, so the two agree on what a place is called. */

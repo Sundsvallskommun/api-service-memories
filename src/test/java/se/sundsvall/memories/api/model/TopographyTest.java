@@ -31,7 +31,7 @@ class TopographyTest {
 			.withName("Sundsvall")
 			.withCode("SUN")
 			.withPlace("Sundsvalls kommun")
-			.withCountry("Sverige");
+			.withMunicipality("Sverige");
 
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getTopographyId()).isEqualTo(1);
@@ -39,7 +39,7 @@ class TopographyTest {
 		assertThat(result.getName()).isEqualTo("Sundsvall");
 		assertThat(result.getCode()).isEqualTo("SUN");
 		assertThat(result.getPlace()).isEqualTo("Sundsvalls kommun");
-		assertThat(result.getCountry()).isEqualTo("Sverige");
+		assertThat(result.getMunicipality()).isEqualTo("Sverige");
 	}
 
 	@Test

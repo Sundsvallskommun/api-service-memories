@@ -67,7 +67,7 @@ class TopographyServiceTest {
 		when(repositoryMock.findAllSelectable()).thenReturn(List.of(
 			TopographyEntity.create().withId(1).withName("Sundsvall"),
 			TopographyEntity.create().withId(2).withName("\t").withCode("  ").withPlace(""),
-			TopographyEntity.create().withId(3).withCountry("Sverige")));
+			TopographyEntity.create().withId(3).withMunicipality("Sverige")));
 
 		assertThat(service.getTopographies()).extracting(Topography::getTopographyId).containsExactly(1);
 		verify(repositoryMock).findAllSelectable();

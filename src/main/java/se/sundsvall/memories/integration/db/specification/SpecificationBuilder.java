@@ -18,6 +18,9 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class SpecificationBuilder<T> {
 
+	/** What a composed place label puts between its parts, matching {@code TopographyEntity.getDisplayName()}. */
+	private static final String LABEL_SEPARATOR = ", ";
+
 	private static final char LIKE_ESCAPE = '!';
 
 	private static final int PUBLISHED_BIT = 4;
@@ -436,16 +439,24 @@ public class SpecificationBuilder<T> {
 
 	/**
 	 * The string a row's place sorts on: the free-text attribute when present, otherwise the association's attributes
-	 * in the given order. The registers fill only the free text and the objects often only the association, so without
-	 * the fallback either kind would clump at one end of the order. Blank values count as absent, like in the display
-	 * name they fall back through.
+	 * joined in the given order, the way the place is shown. The registers fill only the free text and the objects
+	 * often only the association, so without the fallback either kind would clump at one end of the order. Blank values
+	 * count as absent, so a row carrying only one of the attributes sorts on that one alone — the same string the
+	 * response labels it with, which is the point: a list cannot sort on one name and show another.
 	 */
 	public Expression<String> location(final Root<T> root, final CriteriaBuilder cb, final String textAttribute, final String association,
 		final List<String> associationAttributes) {
 		final var join = reuseFetchOrJoin(root, association);
-		return firstNonBlank(cb, Stream.concat(
-			Stream.of(root.<String>get(textAttribute)),
-			associationAttributes.stream().map(join::<String>get)));
+		final Stream<Expression<?>> parts = Stream.<Expression<?>>concat(
+			Stream.of(cb.literal(LABEL_SEPARATOR)),
+			associationAttributes.stream().map(attribute -> cb.nullif(cb.trim(join.<String>get(attribute)), "")));
+		// CONCAT_WS drops the blank parts and returns an empty string when every one of them is blank, which the
+		// coalesce then reads as absent, the same as a row with no association at all.
+		final var label = cb.function("concat_ws", String.class, parts.toArray(Expression[]::new));
+		final var coalesce = cb.<String>coalesce();
+		coalesce.value(cb.nullif(cb.trim(root.<String>get(textAttribute)), ""));
+		coalesce.value(cb.nullif(label, ""));
+		return coalesce;
 	}
 
 	/**
