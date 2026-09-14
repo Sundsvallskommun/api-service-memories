@@ -54,9 +54,6 @@ public class Publication extends AbstractCreatedObject<Publication> {
 	@Schema(description = "Full OCR/XML text (only returned on detail lookup)")
 	private String xmltext;
 
-	@Schema(description = "ID of the archive node (arkiv, serie or volym) the publication was created in, or null when it sits in none. Resolve it with /nodes/{id} for the name and the path", examples = "19000")
-	private Integer nodeId;
-
 	public static Publication create() {
 		return new Publication();
 	}
@@ -266,19 +263,6 @@ public class Publication extends AbstractCreatedObject<Publication> {
 
 	public Publication withXmltext(final String xmltext) {
 		this.xmltext = xmltext;
-		return this;
-	}
-
-	public Integer getNodeId() {
-		return nodeId;
-	}
-
-	public void setNodeId(final Integer nodeId) {
-		this.nodeId = nodeId;
-	}
-
-	public Publication withNodeId(final Integer nodeId) {
-		this.nodeId = nodeId;
 		return this;
 	}
 

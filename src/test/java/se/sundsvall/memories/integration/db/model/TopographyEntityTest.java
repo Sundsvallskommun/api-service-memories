@@ -75,4 +75,13 @@ class TopographyEntityTest {
 		assertThat(TopographyEntity.create().getDisplayName()).isNull();
 		assertThat(TopographyEntity.create().withName("").withPlace("  ").withCode("").getDisplayName()).isNull();
 	}
+
+	/** The rule over bare columns is the one the entity applies, so a counter's chip and a place's label agree. */
+	@Test
+	void displayNameOverColumnsMatchesTheEntity() {
+		assertThat(TopographyEntity.displayName("Bredbyn", "Anundsjö")).isEqualTo("Bredbyn, Anundsjö");
+		assertThat(TopographyEntity.displayName(null, " Anundsjö ")).isEqualTo("Anundsjö");
+		assertThat(TopographyEntity.displayName("  ", "")).isNull();
+		assertThat(TopographyEntity.displayName(null, null)).isNull();
+	}
 }

@@ -230,7 +230,7 @@ class NodeIT extends AbstractAppTest {
 	}
 
 	/**
-	 * Ordered by the place the node is placed in, the nodes without one first, and reported under the key the caller
+	 * Ordered by the place the node is placed in, the nodes without one last, and reported under the key the caller
 	 * asked for rather than the columns it stands for.
 	 */
 	@Test

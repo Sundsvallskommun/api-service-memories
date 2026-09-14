@@ -52,9 +52,6 @@ public class Text extends AbstractCreatedObject<Text> {
 	@Schema(description = "Extra media files associated with this text (only returned on detail lookup)")
 	private List<TextMediaFile> mediaFiles;
 
-	@Schema(description = "ID of the archive node (arkiv, serie or volym) the text was created in, or null when it sits in none. Resolve it with /nodes/{id} for the name and the path", examples = "19000")
-	private Integer nodeId;
-
 	public static Text create() {
 		return new Text();
 	}
@@ -251,19 +248,6 @@ public class Text extends AbstractCreatedObject<Text> {
 
 	public Text withMediaFiles(final List<TextMediaFile> mediaFiles) {
 		this.mediaFiles = mediaFiles;
-		return this;
-	}
-
-	public Integer getNodeId() {
-		return nodeId;
-	}
-
-	public void setNodeId(final Integer nodeId) {
-		this.nodeId = nodeId;
-	}
-
-	public Text withNodeId(final Integer nodeId) {
-		this.nodeId = nodeId;
 		return this;
 	}
 

@@ -130,9 +130,6 @@ public class Photo extends AbstractCreatedObject<Photo> {
 	@Schema(description = "Subjects / ämnesklassificering via FOTO_OCM (only returned on detail lookup)")
 	private List<Subject> subjects;
 
-	@Schema(description = "ID of the archive node (arkiv, serie or volym) the photo was created in, or null when it sits in none. Resolve it with /nodes/{id} for the name and the path", examples = "19000")
-	private Integer nodeId;
-
 	public static Photo create() {
 		return new Photo();
 	}
@@ -667,19 +664,6 @@ public class Photo extends AbstractCreatedObject<Photo> {
 
 	public Photo withSubjects(final List<Subject> subjects) {
 		this.subjects = subjects;
-		return this;
-	}
-
-	public Integer getNodeId() {
-		return nodeId;
-	}
-
-	public void setNodeId(final Integer nodeId) {
-		this.nodeId = nodeId;
-	}
-
-	public Photo withNodeId(final Integer nodeId) {
-		this.nodeId = nodeId;
 		return this;
 	}
 

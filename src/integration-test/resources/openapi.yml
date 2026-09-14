@@ -1595,10 +1595,10 @@ components:
             $ref: "#/components/schemas/Violation"
         title:
           type: string
-        causeAsProblem:
-          $ref: "#/components/schemas/ThrowableProblem"
         detail:
           type: string
+        causeAsProblem:
+          $ref: "#/components/schemas/ThrowableProblem"
         instance:
           type: string
           format: uri
@@ -1848,6 +1848,14 @@ components:
       properties:
         creator:
           $ref: "#/components/schemas/Creator"
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the object\
+            \ was created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
         textId:
           type: integer
           format: int32
@@ -1925,14 +1933,6 @@ components:
             on detail lookup)
           items:
             $ref: "#/components/schemas/TextMediaFile"
-        nodeId:
-          type: integer
-          format: int32
-          description: "ID of the archive node (arkiv, serie or volym) the text was\
-            \ created in, or null when it sits in none. Resolve it with /nodes/{id}\
-            \ for the name and the path"
-          examples:
-          - 19000
     TextMediaFile:
       type: object
       description: Extra media file attached to a text (TEXT_MULTI)
@@ -2310,6 +2310,14 @@ components:
       properties:
         creator:
           $ref: "#/components/schemas/Creator"
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the object\
+            \ was created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
         publicationId:
           type: integer
           format: int32
@@ -2390,14 +2398,6 @@ components:
         xmltext:
           type: string
           description: Full OCR/XML text (only returned on detail lookup)
-        nodeId:
-          type: integer
-          format: int32
-          description: "ID of the archive node (arkiv, serie or volym) the publication\
-            \ was created in, or null when it sits in none. Resolve it with /nodes/{id}\
-            \ for the name and the path"
-          examples:
-          - 19000
     PhotoParameters:
       type: object
       description: Photo search parameters
@@ -2507,6 +2507,14 @@ components:
       properties:
         creator:
           $ref: "#/components/schemas/Creator"
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the object\
+            \ was created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
         photoId:
           type: integer
           format: int32
@@ -2647,14 +2655,6 @@ components:
             on detail lookup)
           items:
             $ref: "#/components/schemas/Subject"
-        nodeId:
-          type: integer
-          format: int32
-          description: "ID of the archive node (arkiv, serie or volym) the photo was\
-            \ created in, or null when it sits in none. Resolve it with /nodes/{id}\
-            \ for the name and the path"
-          examples:
-          - 19000
     Subject:
       type: object
       description: Subject / Ämne (OCM)
@@ -3843,6 +3843,14 @@ components:
       properties:
         creator:
           $ref: "#/components/schemas/Creator"
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the object\
+            \ was created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
         filmId:
           type: integer
           format: int32
@@ -3907,12 +3915,6 @@ components:
           description: MIME type
           examples:
           - video/mp4
-        nodeId:
-          type: integer
-          format: int32
-          description: Node ID
-          examples:
-          - 456
         options:
           type: integer
           format: int32
@@ -4234,6 +4236,14 @@ components:
       properties:
         creator:
           $ref: "#/components/schemas/Creator"
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the object\
+            \ was created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
         audioId:
           type: integer
           format: int32
@@ -4303,12 +4313,6 @@ components:
           description: MIME type
           examples:
           - audio/mpeg
-        nodeId:
-          type: integer
-          format: int32
-          description: Node ID
-          examples:
-          - 456
         options:
           type: integer
           format: int32

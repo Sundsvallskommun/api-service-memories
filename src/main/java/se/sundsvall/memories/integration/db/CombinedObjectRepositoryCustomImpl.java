@@ -131,7 +131,8 @@ class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCust
 		final var name = topography.<String>get(TopographyEntity_.NAME);
 		final var place = topography.<String>get(TopographyEntity_.PLACE);
 
-		// Every filter but the topography selection, mirroring the other counters.
+		// Every filter but the topography selection, mirroring the other counters. No order: the mapper orders the
+		// chips by their label in Swedish order, which the database's collation could not give.
 		final var predicate = ofNullable(filtersExcludingTopography(parameters).toPredicate(root, query, cb))
 			.orElseGet(cb::conjunction);
 
@@ -142,8 +143,7 @@ class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCust
 
 		query.multiselect(topographyId.alias(TOPOGRAPHY_ID_ALIAS), name.alias(TOPOGRAPHY_NAME_ALIAS), place.alias(TOPOGRAPHY_PLACE_ALIAS), cb.count(root).alias(TOTAL_ALIAS))
 			.where(cb.and(predicate, listable))
-			.groupBy(topographyId, name, place)
-			.orderBy(cb.asc(topographyId));
+			.groupBy(topographyId, name, place);
 
 		return entityManager.createQuery(query).getResultList().stream()
 			.map(tuple -> new TopographyCount(tuple.get(TOPOGRAPHY_ID_ALIAS, Integer.class), tuple.get(TOPOGRAPHY_NAME_ALIAS, String.class),

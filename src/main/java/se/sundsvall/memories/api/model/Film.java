@@ -43,9 +43,6 @@ public class Film extends AbstractCreatedObject<Film> {
 	@Schema(description = "MIME type", examples = "video/mp4")
 	private String filmMimeType;
 
-	@Schema(description = "Node ID", examples = "456")
-	private Integer nodeId;
-
 	@Schema(description = "Options", examples = "0")
 	private Integer options;
 
@@ -209,19 +206,6 @@ public class Film extends AbstractCreatedObject<Film> {
 
 	public Film withFilmMimeType(final String filmMimeType) {
 		this.filmMimeType = filmMimeType;
-		return this;
-	}
-
-	public Integer getNodeId() {
-		return nodeId;
-	}
-
-	public void setNodeId(final Integer nodeId) {
-		this.nodeId = nodeId;
-	}
-
-	public Film withNodeId(final Integer nodeId) {
-		this.nodeId = nodeId;
 		return this;
 	}
 

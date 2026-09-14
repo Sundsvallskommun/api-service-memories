@@ -141,7 +141,7 @@ public final class CombinedObjectMapper {
 	}
 
 	/**
-	 * Map one place chip counter. The label is built the way {@link TopographyEntity#getDisplayName()} builds it, so a
+	 * Map one place chip counter. The label is built by the rule behind {@link TopographyEntity#getDisplayName()}, so a
 	 * chip reads exactly as the place does in {@code /topographies} and on an object's {@code location}.
 	 *
 	 * @param  topographyCount the counter the search grouped
@@ -151,7 +151,7 @@ public final class CombinedObjectMapper {
 		return ofNullable(topographyCount)
 			.map(count -> TopographyCount.create()
 				.withTopographyId(count.topographyId())
-				.withName(TopographyEntity.create().withName(count.name()).withPlace(count.place()).getDisplayName())
+				.withName(TopographyEntity.displayName(count.place(), count.name()))
 				.withCount(count.total()))
 			.orElse(null);
 	}
