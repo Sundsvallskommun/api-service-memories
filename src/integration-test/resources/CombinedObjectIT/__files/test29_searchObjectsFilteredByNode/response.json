@@ -1,0 +1,37 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "foto-1001",
+			"sourceId": 1001,
+			"objectType": "Foto",
+			"title": "Stadsvy från Norra berget",
+			"year": 1920,
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"locationText": "Sundsvall",
+			"nodeId": 19000
+		}
+	]
+}

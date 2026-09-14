@@ -52,6 +52,9 @@ public class Text extends AbstractCreatedObject<Text> {
 	@Schema(description = "Extra media files associated with this text (only returned on detail lookup)")
 	private List<TextMediaFile> mediaFiles;
 
+	@Schema(description = "ID of the archive node (arkiv, serie or volym) the text was created in, or null when it sits in none. Resolve it with /nodes/{id} for the name and the path", examples = "19000")
+	private Integer nodeId;
+
 	public static Text create() {
 		return new Text();
 	}
@@ -251,6 +254,19 @@ public class Text extends AbstractCreatedObject<Text> {
 		return this;
 	}
 
+	public Integer getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+	}
+
+	public Text withNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -262,13 +278,13 @@ public class Text extends AbstractCreatedObject<Text> {
 			&& Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename)
 			&& Objects.equals(largeImageFilename, that.largeImageFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(mediaFiles, that.mediaFiles)
-			&& Objects.equals(creator, that.creator);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(creator, that.creator);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(textId, filename, documentDate, documentEndDate, documentTitle, locationText, location, subjectId, subject, comment,
-			thumbnailFilename, largeImageFilename, ocrFilename, xmltext, mediaFiles, creator);
+			thumbnailFilename, largeImageFilename, ocrFilename, xmltext, mediaFiles, nodeId, creator);
 	}
 
 	@Override
@@ -289,6 +305,7 @@ public class Text extends AbstractCreatedObject<Text> {
 			", ocrFilename='" + ocrFilename + '\'' +
 			", xmltext='" + xmltext + '\'' +
 			", mediaFiles=" + mediaFiles +
+			", nodeId=" + nodeId +
 			", creator=" + creator +
 			'}';
 	}

@@ -1,0 +1,20 @@
+[
+	{
+		"institutionId": 3,
+		"code": "FAV",
+		"name": "Föreningsarkivet Västernorrland"
+	},
+	{
+		"institutionId": 2,
+		"code": "SVM",
+		"name": "Sundsvalls museum",
+		"description": "Kommunalt museum med arkiv och samlingar",
+		"url": "https://sundsvallsmuseum.se",
+		"email": "museet@sundsvall.se"
+	},
+	{
+		"institutionId": 4,
+		"code": "ÖVM",
+		"name": "Örnsköldsviks museum"
+	}
+]

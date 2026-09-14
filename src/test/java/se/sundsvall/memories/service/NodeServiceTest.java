@@ -201,6 +201,62 @@ class NodeServiceTest {
 		return NodeEntity.create().withId(id).withParentId(parentId).withName("Nod " + id);
 	}
 
+	/**
+	 * The place is not an attribute of the node but of its lookup row, so the sort key is spelled out as the topography
+	 * columns before it reaches the repository — while the response still reports the key the caller asked for.
+	 */
+	@Test
+	void searchTranslatesTheLocationSortAndReportsTheCallersKey() {
+		final var parameters = NodeParameters.create();
+		parameters.setSortBy(List.of("location", "name"));
+		parameters.setSortDirection(Sort.Direction.DESC);
+		final var pageable = PageRequest.of(0, 100, Sort.by(
+			new Sort.Order(Sort.Direction.DESC, "attributes.topography.place", Sort.NullHandling.NULLS_LAST),
+			new Sort.Order(Sort.Direction.DESC, "attributes.topography.name", Sort.NullHandling.NULLS_LAST),
+			Sort.Order.desc("name")).and(Sort.by("id")));
+
+		when(repositoryMock.findAllByParameters(any(NodeParameters.class), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+		final var result = service.search(parameters);
+
+		assertThat(result.getMetaData().getSortBy()).containsExactly("location", "name");
+		assertThat(result.getMetaData().getSortDirection()).isEqualTo(Sort.Direction.DESC);
+		verify(repositoryMock).findAllByParameters(any(NodeParameters.class), eq(pageable));
+	}
+
+	@Test
+	void searchChildrenTranslatesTheLocationSort() {
+		final var parameters = NodeParameters.create();
+		parameters.setSortBy(List.of("location"));
+		final var pageable = PageRequest.of(0, 100, Sort.by(
+			new Sort.Order(Sort.Direction.ASC, "attributes.topography.place", Sort.NullHandling.NULLS_LAST),
+			new Sort.Order(Sort.Direction.ASC, "attributes.topography.name", Sort.NullHandling.NULLS_LAST)).and(Sort.by("id")));
+
+		when(repositoryMock.existsNodeById(100)).thenReturn(true);
+		when(repositoryMock.findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+		final var result = service.searchChildren(100, parameters);
+
+		assertThat(result.getMetaData().getSortBy()).containsExactly("location");
+		verify(repositoryMock).findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable));
+	}
+
+	/** The fallback order is what the response reports, the same as before: the tiebreak stays out of it. */
+	@Test
+	void searchChildrenReportsTheFallbackOrder() {
+		final var pageable = PageRequest.of(0, 100, Sort.by("sortOrder", "name").and(Sort.by("id")));
+		when(repositoryMock.existsNodeById(100)).thenReturn(true);
+		when(repositoryMock.findChildrenByParameters(eq(100), any(NodeParameters.class), eq(pageable)))
+			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+		final var result = service.searchChildren(100, NodeParameters.create());
+
+		assertThat(result.getMetaData().getSortBy()).containsExactly("sortOrder", "name");
+		assertThat(result.getMetaData().getSortDirection()).isEqualTo(Sort.Direction.ASC);
+	}
+
 	@Test
 	void searchAppliesRequestedPaging() {
 		final var pageable = PageRequest.of(2, 25, Sort.by("id"));
@@ -210,6 +266,7 @@ class NodeServiceTest {
 
 		final var result = service.search(NodeParameters.create().withPage(3).withLimit(25));
 
+		assertThat(result.getMetaData().getSortBy()).isNull();
 		assertThat(result.getMetaData().getPage()).isEqualTo(3);
 		assertThat(result.getMetaData().getLimit()).isEqualTo(25);
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(51);

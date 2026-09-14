@@ -2,6 +2,7 @@ package se.sundsvall.memories.integration.db.specification;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Nulls;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Root;
 import java.util.List;
@@ -22,6 +23,7 @@ import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.C
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.GENDER;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.LOCATION_TEXT;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.NAME_TEXT;
+import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.NODE_ID;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.OBJECT_KEY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.OBJECT_TYPE;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.SEARCH_TEXT;
@@ -61,7 +63,8 @@ public interface CombinedObjectSpecification {
 		return filtersExcludingFacets(parameters)
 			.and(hasObjectType(parameters.getObjectType()))
 			.and(hasGender(parameters.getGender()))
-			.and(hasCategory(parameters.getCategoryId()));
+			.and(hasCategory(parameters.getCategoryId()))
+			.and(hasTopography(parameters.getTopographyId()));
 	}
 
 	/**
@@ -71,7 +74,8 @@ public interface CombinedObjectSpecification {
 	static Specification<CombinedObjectEntity> filtersExcludingObjectType(final CombinedObjectParameters parameters) {
 		return filtersExcludingFacets(parameters)
 			.and(hasGender(parameters.getGender()))
-			.and(hasCategory(parameters.getCategoryId()));
+			.and(hasCategory(parameters.getCategoryId()))
+			.and(hasTopography(parameters.getTopographyId()));
 	}
 
 	/**
@@ -82,7 +86,8 @@ public interface CombinedObjectSpecification {
 	static Specification<CombinedObjectEntity> filtersExcludingGender(final CombinedObjectParameters parameters) {
 		return filtersExcludingFacets(parameters)
 			.and(hasObjectType(parameters.getObjectType()))
-			.and(hasCategory(parameters.getCategoryId()));
+			.and(hasCategory(parameters.getCategoryId()))
+			.and(hasTopography(parameters.getTopographyId()));
 	}
 
 	/**
@@ -93,19 +98,43 @@ public interface CombinedObjectSpecification {
 	static Specification<CombinedObjectEntity> filtersExcludingCategory(final CombinedObjectParameters parameters) {
 		return filtersExcludingFacets(parameters)
 			.and(hasObjectType(parameters.getObjectType()))
-			.and(hasGender(parameters.getGender()));
+			.and(hasGender(parameters.getGender()))
+			.and(hasTopography(parameters.getTopographyId()));
+	}
+
+	/**
+	 * What the place counters count over: every filter except the topography selection, the fourth dimension that
+	 * ignores only its own. The substring {@code location} filter is not a facet and still applies: a place typed in
+	 * narrows the places the counters can offer, the way a query does. The counters sum to the number of matched rows
+	 * placed in a topography — the person registers hold a parish as free text and carry none.
+	 */
+	static Specification<CombinedObjectEntity> filtersExcludingTopography(final CombinedObjectParameters parameters) {
+		return filtersExcludingFacets(parameters)
+			.and(hasObjectType(parameters.getObjectType()))
+			.and(hasGender(parameters.getGender()))
+			.and(hasCategory(parameters.getCategoryId()));
 	}
 
 	/** The filters no counter leaves out: everything that is not a faceted selection. */
 	private static Specification<CombinedObjectEntity> filtersExcludingFacets(final CombinedObjectParameters parameters) {
 		return matches(parameters.getQuery())
 			.and(matchesLocation(parameters.getLocation()))
-			.and(hasTopography(parameters.getTopographyId()))
 			.and(yearAtLeast(parameters.getYearFrom()))
 			.and(yearAtMost(parameters.getYearTo()))
 			.and(matchesCreator(parameters.getCreator()))
 			.and(hasCreatorPerson(parameters.getCreatorPersonId()))
-			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId()));
+			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId()))
+			.and(hasNode(parameters.getNodeId()));
+	}
+
+	/**
+	 * Restricts to the objects created in one of the given archive nodes, which are alternatives — what a node's own
+	 * page lists under it. Only the object types are placed in the tree; the registers carry no node and are excluded,
+	 * the way {@code creator} excludes them. A node's descendants are not searched: an object sits in exactly one node,
+	 * and the archive lists it there alone.
+	 */
+	static Specification<CombinedObjectEntity> hasNode(final List<Integer> nodeIds) {
+		return BUILDER.buildIdInFilter(NODE_ID, nodeIds);
 	}
 
 	/**
@@ -247,7 +276,9 @@ public interface CombinedObjectSpecification {
 
 	/**
 	 * Translates one sort key into a criteria order. {@link #RELEVANCE} is computed and {@link #LOCATION} is renamed,
-	 * every other key is an attribute.
+	 * every other key is an attribute. A row without a place sorts last under {@link #LOCATION} whichever way the list
+	 * runs: a list of places should open on the places, not on the rows that have none, and the database would put
+	 * the empty ones first in ascending order on its own.
 	 */
 	private static Order toOrder(final Root<CombinedObjectEntity> root, final CriteriaBuilder cb, final Sort.Order order, final String query) {
 		final Expression<?> expression = switch (order.getProperty()) {
@@ -255,11 +286,21 @@ public interface CombinedObjectSpecification {
 			case LOCATION -> BUILDER.location(root, cb, LOCATION_TEXT, TOPOGRAPHY, LOCATION_DISPLAY_ATTRIBUTES);
 			default -> root.get(order.getProperty());
 		};
+		final var nulls = nullsOf(order);
 
 		return Optional.of(order)
 			.filter(Sort.Order::isAscending)
-			.map(_ -> cb.asc(expression))
-			.orElseGet(() -> cb.desc(expression));
+			.map(_ -> cb.asc(expression, nulls))
+			.orElseGet(() -> cb.desc(expression, nulls));
+	}
+
+	/** Where the rows without a value go: last for {@link #LOCATION}, wherever the database puts them otherwise. */
+	private static Nulls nullsOf(final Sort.Order order) {
+		return Optional.of(order)
+			.map(Sort.Order::getProperty)
+			.filter(LOCATION::equals)
+			.map(_ -> Nulls.LAST)
+			.orElse(Nulls.NONE);
 	}
 
 	private static boolean hasQuery(final String query) {

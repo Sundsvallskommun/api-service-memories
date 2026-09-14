@@ -30,6 +30,7 @@ class TextMapperTest {
 			.withLargeImageFilename("TEXT.id_1001_fil_stor.jpeg")
 			.withOcrFilename("TEXT.id_1001_fil_txt.xml")
 			.withXmltext("<text>OCR content</text>")
+			.withNodeId(20001)
 			.withOptions(4);
 
 		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
@@ -48,6 +49,7 @@ class TextMapperTest {
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getSubjectId()).isEqualTo(20);
 		assertThat(result.getSubject()).isEqualTo("Musik");
+		assertThat(result.getNodeId()).isEqualTo(20001);
 		assertThat(result.getCreator().getPersonId()).isEqualTo(1);
 		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
 		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");

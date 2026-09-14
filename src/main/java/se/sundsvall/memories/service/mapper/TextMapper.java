@@ -94,7 +94,8 @@ public final class TextMapper {
 				.withCreator(CreatorMapper.toCreator(e.getCreatorPerson(), e.getCreatorLegalEntity()))
 				.withThumbnailFilename(e.getThumbnailFilename())
 				.withLargeImageFilename(e.getLargeImageFilename())
-				.withOcrFilename(e.getOcrFilename()))
+				.withOcrFilename(e.getOcrFilename())
+				.withNodeId(e.getNodeId()))
 			.orElse(null);
 	}
 }

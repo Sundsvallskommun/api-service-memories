@@ -3,6 +3,7 @@ package se.sundsvall.memories.api;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
@@ -12,6 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.Node;
+import se.sundsvall.memories.api.model.NodeParameters;
 import se.sundsvall.memories.api.model.PagedNodeResponse;
 import se.sundsvall.memories.service.NodeService;
 
@@ -62,6 +64,31 @@ class NodeResourceTest {
 		assertThat(response.getNodes().getFirst().getNodeType()).isEqualTo("Arkiv");
 		assertThat(response.getMetaData().getTotalRecords()).isEqualTo(1);
 		verify(serviceMock).search(any());
+	}
+
+	/** The archive-search filters bind, the id lists whichever way a client spells them. */
+	@Test
+	void searchNodesBindsTheArchiveFilters() {
+		final var parameters = ArgumentCaptor.forClass(NodeParameters.class);
+		when(serviceMock.search(any())).thenReturn(PagedNodeResponse.create());
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("nodeType", "Arkiv")
+				.queryParam("institutionId", "2")
+				.queryParam("institutionId", "3")
+				.queryParam("categoryId", "5")
+				.queryParam("topographyId", "1,4")
+				.queryParam("location", "Njurunda")
+				.queryParam("sortBy", "location")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock).search(parameters.capture());
+		assertThat(parameters.getValue()).extracting(NodeParameters::getNodeType, NodeParameters::getInstitutionId, NodeParameters::getCategoryId,
+			NodeParameters::getTopographyId, NodeParameters::getLocation, NodeParameters::getSortBy)
+			.containsExactly("Arkiv", List.of(2, 3), List.of(5), List.of(1, 4), "Njurunda", List.of("location"));
 	}
 
 	@Test

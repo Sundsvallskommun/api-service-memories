@@ -1,0 +1,58 @@
+{
+	"_meta": {
+		"count": 2,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 2
+	},
+	"nodes": [
+		{
+			"id": 200,
+			"name": "Fotosamlingen",
+			"nodeTypeId": 3,
+			"nodeType": "Samling",
+			"startYear": 1900,
+			"description": "Glasplåtar från stadens fotografer",
+			"sortOrder": 40,
+			"subItemCount": 5,
+			"publishedSubItemCount": 5,
+			"options": 6,
+			"creator": {
+				"personId": 1,
+				"person": "Anton Nordin"
+			},
+			"institutionId": 3,
+			"institution": "Föreningsarkivet Västernorrland",
+			"institutionCode": "FAV",
+			"topographyId": 4,
+			"location": "Kvissleby, Njurunda",
+			"locationText": "Obestämd by"
+		},
+		{
+			"id": 600,
+			"name": "Berg Aktiebolag",
+			"nodeTypeId": 1,
+			"nodeType": "Arkiv",
+			"startYear": 1920,
+			"stopYear": 1960,
+			"description": "Företagsarkiv utan eget namn, uppkallat efter arkivbildaren",
+			"sortOrder": 80,
+			"subItemCount": 0,
+			"publishedSubItemCount": 0,
+			"options": 6,
+			"creator": {
+				"legalEntityId": 20,
+				"legalEntity": "Berg Aktiebolag"
+			},
+			"activityStartDate": "1920",
+			"institutionId": 3,
+			"institution": "Föreningsarkivet Västernorrland",
+			"institutionCode": "FAV",
+			"categoryId": 2,
+			"category": "Aktiebolag",
+			"topographyId": 2,
+			"location": "Timrå"
+		}
+	]
+}

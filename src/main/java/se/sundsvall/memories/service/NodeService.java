@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,16 @@ public class NodeService {
 	 */
 	private static final Sort CHILD_ORDER = Sort.by("sortOrder", "name");
 
+	/** The sort key for the place a node is placed in, which is not an attribute of the node but of its lookup row. */
+	private static final String LOCATION = "location";
+
+	/**
+	 * What {@link #LOCATION} sorts on: the topography columns in the order the place is shown, so the list sorts on the
+	 * name it labels a node with. Spring Data left-joins the path. The nodes without a place come last whichever way
+	 * the list runs — a list of places should open on the places — which the database would not do on its own.
+	 */
+	private static final List<String> LOCATION_PATHS = List.of("attributes.topography.place", "attributes.topography.name");
+
 	/**
 	 * Depth cap for the walk up the tree. The archive nests a handful of levels; anything deeper means the data is
 	 * cyclic, and a cycle that revisits a node is caught before this cap is ever reached.
@@ -46,9 +57,10 @@ public class NodeService {
 
 	@Transactional(readOnly = true)
 	public PagedNodeResponse search(final NodeParameters parameters) {
-		final var pageable = Pageables.of(parameters, "id");
+		final var order = parameters.sort();
+		final var pageable = Pageables.ordered(parameters, translate(order), "id");
 
-		return toResponse(nodeRepository.findAllByParameters(parameters, pageable));
+		return toResponse(nodeRepository.findAllByParameters(parameters, pageable), order);
 	}
 
 	/**
@@ -57,13 +69,33 @@ public class NodeService {
 	 */
 	@Transactional(readOnly = true)
 	public PagedNodeResponse searchChildren(final Integer parentId, final NodeParameters parameters) {
-		final var pageable = Pageables.of(parameters, CHILD_ORDER, "id");
+		final var order = Optional.of(parameters.sort())
+			.filter(Sort::isSorted)
+			.orElse(CHILD_ORDER);
+		final var pageable = Pageables.ordered(parameters, translate(order), "id");
 
 		if (!nodeRepository.existsNodeById(parentId)) {
 			throw Problem.valueOf(NOT_FOUND, NODE_NOT_FOUND.formatted(parentId));
 		}
 
-		return toResponse(nodeRepository.findChildrenByParameters(parentId, parameters, pageable));
+		return toResponse(nodeRepository.findChildrenByParameters(parentId, parameters, pageable), order);
+	}
+
+	/**
+	 * The caller's sort keys as the paths the entity sorts on. Every key but {@link #LOCATION} is an attribute of the
+	 * node and passes through; that one is spelled out as the topography columns it stands for.
+	 */
+	private static Sort translate(final Sort order) {
+		return Sort.by(order.stream()
+			.flatMap(NodeService::translate)
+			.toList());
+	}
+
+	private static Stream<Sort.Order> translate(final Sort.Order order) {
+		return Optional.of(order)
+			.filter(o -> LOCATION.equals(o.getProperty()))
+			.map(o -> LOCATION_PATHS.stream().map(path -> new Sort.Order(o.getDirection(), path, Sort.NullHandling.NULLS_LAST)))
+			.orElseGet(() -> Stream.of(order));
 	}
 
 	/**
@@ -107,9 +139,9 @@ public class NodeService {
 			.flatMap(nodeRepository::findNodeById);
 	}
 
-	private static PagedNodeResponse toResponse(final Page<NodeEntity> page) {
+	private static PagedNodeResponse toResponse(final Page<NodeEntity> page, final Sort order) {
 		return PagedNodeResponse.create()
 			.withNodes(NodeMapper.toNodeList(page.getContent()))
-			.withMetaData(Pageables.metaDataOf(page, "id"));
+			.withMetaData(Pageables.metaDataOf(page, order));
 	}
 }

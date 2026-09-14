@@ -5,6 +5,7 @@ import se.sundsvall.memories.api.model.CategoryCount;
 import se.sundsvall.memories.api.model.CombinedObject;
 import se.sundsvall.memories.api.model.GenderCount;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
+import se.sundsvall.memories.api.model.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
@@ -37,7 +38,8 @@ public final class CombinedObjectMapper {
 				.withTopographyId(topographyId(e))
 				.withLocationText(e.getLocationText())
 				.withLocation(location(e))
-				.withCreator(CreatorMapper.toCreator(e.getCreatorPerson(), e.getCreatorLegalEntity())))
+				.withCreator(CreatorMapper.toCreator(e.getCreatorPerson(), e.getCreatorLegalEntity()))
+				.withNodeId(e.getNodeId()))
 			.orElse(null);
 	}
 
@@ -135,6 +137,37 @@ public final class CombinedObjectMapper {
 			.map(CombinedObjectMapper::toCategoryCount)
 			.sorted(comparing(CategoryCount::getName, swedishOrder())
 				.thenComparing(CategoryCount::getCategoryId))
+			.toList();
+	}
+
+	/**
+	 * Map one place chip counter. The label is built the way {@link TopographyEntity#getDisplayName()} builds it, so a
+	 * chip reads exactly as the place does in {@code /topographies} and on an object's {@code location}.
+	 *
+	 * @param  topographyCount the counter the search grouped
+	 * @return                 the mapped {@link TopographyCount}, or {@code null} if {@code topographyCount} is null
+	 */
+	public static TopographyCount toTopographyCount(final CombinedObjectRepositoryCustom.TopographyCount topographyCount) {
+		return ofNullable(topographyCount)
+			.map(count -> TopographyCount.create()
+				.withTopographyId(count.topographyId())
+				.withName(TopographyEntity.create().withName(count.name()).withPlace(count.place()).getDisplayName())
+				.withCount(count.total()))
+			.orElse(null);
+	}
+
+	/**
+	 * Map the place chip counters, in the order the chips are shown — the same order {@code /topographies} lists the
+	 * very same names in.
+	 *
+	 * @param  topographyCounts the counters the search grouped
+	 * @return                  list of mapped {@link TopographyCount} objects (empty if {@code topographyCounts} is null)
+	 */
+	public static List<TopographyCount> toTopographyCountList(final List<CombinedObjectRepositoryCustom.TopographyCount> topographyCounts) {
+		return ofNullable(topographyCounts).orElse(emptyList()).stream()
+			.map(CombinedObjectMapper::toTopographyCount)
+			.sorted(comparing(TopographyCount::getName, swedishOrder())
+				.thenComparing(TopographyCount::getTopographyId))
 			.toList();
 	}
 

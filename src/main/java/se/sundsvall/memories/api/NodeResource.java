@@ -44,7 +44,8 @@ class NodeResource {
 	}
 
 	@GetMapping(produces = APPLICATION_JSON_VALUE)
-	@Operation(summary = "Search archive and collection nodes", description = "Search the archive tree (arkiv, serier, volymer, samlingar) by free text, node type and period. Returns paginated results.")
+	@Operation(summary = "Search archive and collection nodes",
+		description = "Search the archive tree (arkiv, serier, volymer, samlingar) by free text, node type (by id or by name — nodeType=Arkiv is the list of arkiv och samlingar), period, institution, category and place. Every node carries what the archive records about it — institution, arkivbildare, place, signum and so on — and the objects it holds are listed by /objects?nodeId=. Returns paginated results.")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
 	ResponseEntity<PagedNodeResponse> searchNodes(
 		@PathVariable @ValidMunicipalityId final String municipalityId,

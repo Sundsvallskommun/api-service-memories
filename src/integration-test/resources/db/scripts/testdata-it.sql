@@ -350,3 +350,33 @@ VALUES (100, null, 'Sundsvalls stads arkiv', 1, 1862, 1951, 'Handlingar från st
 INSERT INTO TBL_NODES (ID, PARENTID, NAME, NODETYPEID, STARTYEAR, STOPYEAR, DESCRIPTION, `OPTIONS`, SORT, SUBITEMS,
                        SUBITEMS_4, DELETEDDATE)
 VALUES (500, 100, 'Raderad serie', 2, 1900, 1950, 'Serie som raderats', 6, 70, 0, 0, '2024-03-01');
+
+-- Root node with an empty NAME: an archive named after its arkivbildare, the way the legacy site's own view names it.
+-- The API falls back to the legal entity in TBL_NODEATTRIBUTES.FIELD1 (20, Berg Aktiebolag, category 2).
+INSERT INTO TBL_NODES (ID, PARENTID, NAME, NODETYPEID, STARTYEAR, STOPYEAR, DESCRIPTION, `OPTIONS`, SORT, SUBITEMS,
+                       SUBITEMS_4)
+VALUES (600, null, '', 1, 1920, 1960, 'Företagsarkiv utan eget namn, uppkallat efter arkivbildaren', 6, 80, 0, 0);
+
+--
+-- INSTITUTION (arkivinstitution) — row 1 is a blank sentinel and must never be listed
+--
+INSERT INTO INSTITUTION (I_ID, INSTNAMN, INSTKOD, BESKRIVNING, URL, EPOST)
+VALUES (1, '', '', null, null, null),
+       (2, 'Sundsvalls museum', 'SVM', 'Kommunalt museum med arkiv och samlingar', 'https://sundsvallsmuseum.se', 'museet@sundsvall.se'),
+       (3, 'Föreningsarkivet Västernorrland', 'FAV', null, null, null),
+       (4, 'Örnsköldsviks museum', 'ÖVM', null, null, null);
+
+--
+-- TBL_NODEATTRIBUTES — what the archive records about a node beyond the tree. FIELD1 arkivbildare (JURPERS),
+-- FIELD2 arkivbildare (PERSON), FIELD3 INSTITUTION, FIELD4 KATEGORI, FIELD5 TOPOGRAFI, FIELD6 volymnummer,
+-- FIELD7 hyllmeter, FIELD8 volymantal, FIELD9 OCM, FIELD10 gammalt seriesignum, FIELD11 seriesignum,
+-- FIELD12 accessionsnummer, FIELD13 beståndskod, FIELD14 obestämd plats, FIELD15 volymplacering, FIELD16 historikfil.
+-- Node 120 and 400 have no row at all, which the API must read as "nothing recorded" rather than fail on.
+--
+INSERT INTO TBL_NODEATTRIBUTES (NODEID, FIELD1, FIELD2, FIELD3, FIELD4, FIELD5, FIELD6, FIELD7, FIELD8, FIELD9, FIELD10,
+                                FIELD11, FIELD12, FIELD13, FIELD14, FIELD15, FIELD16, SUBITEMS)
+VALUES (100, 10, null, 2, 5, 1, null, 12.55, 3, null, null, null, 'ACC-1862', 'B1', null, null, 'arkiv_100_historik.xml', 0),
+       (110, null, null, null, null, null, null, null, null, 20, 'A I', 'A1', null, null, null, null, null, 0),
+       (111, null, null, null, null, null, '001', null, null, null, null, null, null, null, null, 'Hylla 3', null, 0),
+       (200, null, 1, 3, null, 4, null, null, null, null, null, null, null, null, 'Obestämd by', null, null, 0),
+       (600, 20, null, 3, 2, 2, null, null, null, null, null, null, null, null, null, null, null, 0);

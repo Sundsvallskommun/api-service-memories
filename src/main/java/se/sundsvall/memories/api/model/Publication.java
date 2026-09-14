@@ -54,6 +54,9 @@ public class Publication extends AbstractCreatedObject<Publication> {
 	@Schema(description = "Full OCR/XML text (only returned on detail lookup)")
 	private String xmltext;
 
+	@Schema(description = "ID of the archive node (arkiv, serie or volym) the publication was created in, or null when it sits in none. Resolve it with /nodes/{id} for the name and the path", examples = "19000")
+	private Integer nodeId;
+
 	public static Publication create() {
 		return new Publication();
 	}
@@ -266,6 +269,19 @@ public class Publication extends AbstractCreatedObject<Publication> {
 		return this;
 	}
 
+	public Integer getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+	}
+
+	public Publication withNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -277,13 +293,13 @@ public class Publication extends AbstractCreatedObject<Publication> {
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location) && Objects.equals(comment, that.comment)
 			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
-			&& Objects.equals(creator, that.creator);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(creator, that.creator);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, publisherLocation, documentTitle,
-			locationText, location, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext, creator);
+			locationText, location, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext, nodeId, creator);
 	}
 
 	@Override
@@ -305,6 +321,7 @@ public class Publication extends AbstractCreatedObject<Publication> {
 			", largeImageFilename='" + largeImageFilename + '\'' +
 			", ocrFilename='" + ocrFilename + '\'' +
 			", xmltext='" + xmltext + '\'' +
+			", nodeId=" + nodeId +
 			", creator=" + creator +
 			'}';
 	}

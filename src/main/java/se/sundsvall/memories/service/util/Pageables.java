@@ -49,6 +49,40 @@ public final class Pageables {
 	}
 
 	/**
+	 * A page request in exactly the given order, ending in {@code idAttributes} so that the order is total — for a
+	 * search that has translated the caller's sort keys into the paths the entity sorts on, and so cannot hand the
+	 * parameters over as they are.
+	 *
+	 * @param  parameters   the paging parameters of the request
+	 * @param  order        the order to page in, possibly unsorted
+	 * @param  idAttributes the entity's id attributes, unique by definition — several for a composite id
+	 * @return              the page request to hand to the repository
+	 */
+	public static Pageable ordered(final AbstractParameterPagingAndSortingBase parameters, final Sort order, final String... idAttributes) {
+		return PageRequest.of(parameters.getPage() - 1, parameters.getLimit(), order.and(Sort.by(idAttributes)));
+	}
+
+	/**
+	 * The paging metadata for a page ordered by {@link #ordered(AbstractParameterPagingAndSortingBase, Sort, String...)},
+	 * reporting the order the caller sees rather than the paths the page was sorted on.
+	 *
+	 * @param  page     the page returned by the repository
+	 * @param  reported the order to report, possibly unsorted
+	 * @return          the metadata to put under {@code _meta}
+	 */
+	public static PagingAndSortingMetaData metaDataOf(final Page<?> page, final Sort reported) {
+		final var orders = Optional.of(reported)
+			.filter(Sort::isSorted)
+			.map(Sort::stream)
+			.map(stream -> stream.toList());
+
+		return PagingAndSortingMetaData.create()
+			.withPageData(page)
+			.withSortBy(orders.map(list -> list.stream().map(Sort.Order::getProperty).toList()).orElse(null))
+			.withSortDirection(orders.map(List::getFirst).map(Sort.Order::getDirection).orElse(null));
+	}
+
+	/**
 	 * An unordered page request, for the combined object search: it orders itself from its specification, which Spring
 	 * Data would override if the page request carried a sort. It appends the id tiebreak itself.
 	 *

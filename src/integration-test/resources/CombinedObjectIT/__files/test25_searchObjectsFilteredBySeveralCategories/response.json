@@ -33,6 +33,18 @@
 			"count": 1
 		}
 	],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 1
+		},
+		{
+			"topographyId": 2,
+			"name": "Timrå",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "film-1",
@@ -43,6 +55,7 @@
 			"topographyId": 1,
 			"location": "Sundsvall",
 			"locationText": "Sundsvall",
+			"nodeId": 100,
 			"creator": {
 				"legalEntity": "Nödhjälpskommittén 1888-1889",
 				"legalEntityId": 10,
@@ -59,6 +72,7 @@
 			"topographyId": 2,
 			"location": "Timrå",
 			"locationText": "Timrå",
+			"nodeId": 20003,
 			"creator": {
 				"legalEntity": "Berg Aktiebolag",
 				"legalEntityId": 20

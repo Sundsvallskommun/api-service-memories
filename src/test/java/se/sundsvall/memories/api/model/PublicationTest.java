@@ -59,6 +59,7 @@ class PublicationTest {
 			.withThumbnailFilename(thumbnailFilename)
 			.withLargeImageFilename(largeImageFilename)
 			.withOcrFilename(ocrFilename)
+			.withNodeId(18407)
 			.withXmltext(xmltext);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
@@ -79,6 +80,7 @@ class PublicationTest {
 		assertThat(result.getThumbnailFilename()).isEqualTo(thumbnailFilename);
 		assertThat(result.getLargeImageFilename()).isEqualTo(largeImageFilename);
 		assertThat(result.getOcrFilename()).isEqualTo(ocrFilename);
+		assertThat(result.getNodeId()).isEqualTo(18407);
 		assertThat(result.getXmltext()).isEqualTo(xmltext);
 	}
 

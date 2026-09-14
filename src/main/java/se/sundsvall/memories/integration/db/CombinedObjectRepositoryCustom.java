@@ -27,6 +27,13 @@ public interface CombinedObjectRepositoryCustom {
 	 */
 	List<CategoryCount> countByCategory(CombinedObjectParameters parameters);
 
+	/**
+	 * The place counters, over the rows placed in a topography. A fourth dimension of its own, overlapping the others
+	 * the same way, and the topography selection is not applied — see
+	 * {@link se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification#filtersExcludingTopography}.
+	 */
+	List<TopographyCount> countByTopography(CombinedObjectParameters parameters);
+
 	/** One chip: an object type, and how many rows of it the search matches across every page. */
 	record TypeCount(String objectType, long total) {
 	}
@@ -37,5 +44,12 @@ public interface CombinedObjectRepositoryCustom {
 
 	/** One chip: a category, by id and name, and how many rows with an originator in it the search matches. */
 	record CategoryCount(Integer categoryId, String name, long total) {
+	}
+
+	/**
+	 * One chip: a place, by id and by the two columns its label is built from, and how many rows placed in it the
+	 * search matches.
+	 */
+	record TopographyCount(Integer topographyId, String name, String place, long total) {
 	}
 }

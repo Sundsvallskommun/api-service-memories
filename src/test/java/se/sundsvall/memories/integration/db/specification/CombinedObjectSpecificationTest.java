@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
@@ -20,6 +21,7 @@ import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.PhotoRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
@@ -36,6 +38,7 @@ import static java.time.Month.JANUARY;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.groups.Tuple.tuple;
 
 /**
  * Exercises {@link CombinedObjectSpecification} against a real MariaDB instance (Testcontainers). Rows are set up in
@@ -226,6 +229,25 @@ class CombinedObjectSpecificationTest {
 		return person;
 	}
 
+	/**
+	 * A node selection keeps the objects created in it and nothing else: a register row is not placed in the tree and
+	 * never matches, and the ids are alternatives.
+	 */
+	@Test
+	void nodeFilterKeepsTheObjectsInTheNodesAndNoRegisterRow() {
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(1).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I noden").withNodeId(100));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(2).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I en annan").withNodeId(200));
+		persistAudio(3, "Utan nod", "1975", null);
+		persistPerson(4, "Anton", "Nordin", null);
+
+		assertThat(findKeys(CombinedObjectParameters.create().withNodeId(List.of(100)))).containsExactly("foto-1");
+		assertThat(findKeys(CombinedObjectParameters.create().withNodeId(List.of(100, 200)))).containsExactly("foto-1", "foto-2");
+		assertThat(findKeys(CombinedObjectParameters.create().withNodeId(List.of(999)))).isEmpty();
+		assertThat(findKeys(CombinedObjectParameters.create().withNodeId(List.of()))).hasSize(4);
+		assertThat(combinedObjectRepository.findAllByParameters(CombinedObjectParameters.create().withNodeId(List.of(100)), Pageable.unpaged()).getContent())
+			.extracting(CombinedObjectEntity::getNodeId).containsExactly(100);
+	}
+
 	/** Every word has to occur, in any order and not necessarily in the same column. */
 	@Test
 	void matchesRequiresEveryWordSomewhereInTheText() {
@@ -324,6 +346,68 @@ class CombinedObjectSpecificationTest {
 		parameters.setSortBy(List.of("location"));
 
 		assertThat(rankedKeys(parameters)).containsExactly("ljud-2", "foto-4", "person-3", "ljud-1");
+	}
+
+	/**
+	 * A row without a place sorts last whichever way the list runs, so a list of places opens on the places. The
+	 * database would put the empty values first in ascending order on its own.
+	 */
+	@Test
+	void locationSortPutsRowsWithoutAPlaceLastInEitherDirection() {
+		persistAudio(1, "Intervju", "1975", "Njurunda");
+		persistAudio(2, "Intervju", "1975", null);
+		persistAudio(3, "Intervju", "1975", "Alnö");
+
+		final var ascending = CombinedObjectParameters.create();
+		ascending.setSortBy(List.of("location"));
+		final var descending = CombinedObjectParameters.create();
+		descending.setSortBy(List.of("location"));
+		descending.setSortDirection(Sort.Direction.DESC);
+
+		assertThat(rankedKeys(ascending)).containsExactly("ljud-3", "ljud-1", "ljud-2");
+		assertThat(rankedKeys(descending)).containsExactly("ljud-1", "ljud-3", "ljud-2");
+	}
+
+	/**
+	 * Selecting a place narrows the list but not its own counters. Every other filter, the substring location filter
+	 * included, does reach them, and only the rows placed in a listable topography are counted: a row with no place, or
+	 * with one the dropdown could not offer, is not a chip, though the row itself still matches.
+	 */
+	@Test
+	void countByTopographyIgnoresTheTopographySelectionButNoOtherFilter() {
+		final var sundsvall = persistTopography(500, "Sundsvall");
+		final var timra = persistTopography(501, "Timrå");
+		final var blank = persistTopography(502, "  ");
+		persistPhoto(1, "Stadsvy", null, "1920", sundsvall);
+		persistPhoto(2, "Hamnen", null, "1930", timra);
+		persistPhoto(3, "Sågverket", null, "1930", timra);
+		persistPhoto(4, "Utan plats", null, "1930", null);
+		persistPhoto(5, "Blank plats", null, "1930", blank);
+		persistPerson(6, "Anton", "Nordin", null);
+
+		final var parameters = CombinedObjectParameters.create().withTopographyId(List.of(500));
+		assertThat(findKeys(parameters)).containsExactly("foto-1");
+		assertThat(countByTopography(parameters)).containsExactly(entry(500, 1L), entry(501, 2L));
+
+		final var byQuery = CombinedObjectParameters.create().withQuery("hamnen").withTopographyId(List.of(500));
+		assertThat(findKeys(byQuery)).isEmpty();
+		assertThat(countByTopography(byQuery)).containsExactly(entry(501, 1L));
+
+		assertThat(countByTopography(CombinedObjectParameters.create().withLocation("timr"))).containsExactly(entry(501, 2L));
+		assertThat(countByTopography(CombinedObjectParameters.create().withObjectType(List.of("Person")))).isEmpty();
+		assertThat(combinedObjectRepository.countByTopography(CombinedObjectParameters.create()))
+			.extracting(TopographyCount::topographyId, TopographyCount::name, TopographyCount::place)
+			.containsExactly(tuple(500, "Sundsvall", null), tuple(501, "Timrå", null));
+	}
+
+	/** The type counters see the topography selection the way they see every other selection. */
+	@Test
+	void countByTypeAppliesTheTopographySelection() {
+		final var sundsvall = persistTopography(500, "Sundsvall");
+		persistPhoto(1, "Stadsvy", null, "1920", sundsvall);
+		persistAudio(2, "Intervju", "1975", null);
+
+		assertThat(countByType(CombinedObjectParameters.create().withTopographyId(List.of(500)))).containsExactly(entry("Foto", 1L));
 	}
 
 	/**
@@ -842,6 +926,11 @@ class CombinedObjectSpecificationTest {
 		entityManager.persist(category);
 		entityManager.flush();
 		return category;
+	}
+
+	private Map<Integer, Long> countByTopography(final CombinedObjectParameters parameters) {
+		return combinedObjectRepository.countByTopography(parameters).stream()
+			.collect(toMap(TopographyCount::topographyId, TopographyCount::total, (first, _) -> first, LinkedHashMap::new));
 	}
 
 	/** Calls the category counters the way the service does, keyed by name since that is what a chip shows. */

@@ -36,6 +36,13 @@
 		}
 	],
 	"categoryCounts": [],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "foto-1005",

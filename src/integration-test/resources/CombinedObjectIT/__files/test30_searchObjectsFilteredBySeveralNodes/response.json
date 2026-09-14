@@ -1,0 +1,71 @@
+{
+	"_meta": {
+		"count": 2,
+		"limit": 100,
+		"page": 1,
+		"sortBy": [
+			"objectKey"
+		],
+		"sortDirection": "ASC",
+		"totalPages": 1,
+		"totalRecords": 2
+	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		},
+		{
+			"objectType": "Text",
+			"count": 1
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [
+		{
+			"categoryId": 2,
+			"name": "Aktiebolag",
+			"count": 1
+		}
+	],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 1
+		},
+		{
+			"topographyId": 2,
+			"name": "Timrå",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "foto-1001",
+			"sourceId": 1001,
+			"objectType": "Foto",
+			"title": "Stadsvy från Norra berget",
+			"year": 1920,
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"locationText": "Sundsvall",
+			"nodeId": 19000
+		},
+		{
+			"objectKey": "text-1003",
+			"sourceId": 1003,
+			"objectType": "Text",
+			"title": "Bolagsstämma 1925",
+			"year": 1925,
+			"topographyId": 2,
+			"location": "Timrå",
+			"locationText": "Timrå",
+			"nodeId": 20003,
+			"creator": {
+				"legalEntity": "Berg Aktiebolag",
+				"legalEntityId": 20
+			}
+		}
+	]
+}

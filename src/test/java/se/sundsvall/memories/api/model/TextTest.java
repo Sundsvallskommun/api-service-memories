@@ -57,6 +57,7 @@ class TextTest {
 			.withThumbnailFilename(thumbnailFilename)
 			.withLargeImageFilename(largeImageFilename)
 			.withOcrFilename(ocrFilename)
+			.withNodeId(20001)
 			.withXmltext(xmltext)
 			.withMediaFiles(mediaFiles);
 
@@ -76,6 +77,7 @@ class TextTest {
 		assertThat(result.getThumbnailFilename()).isEqualTo(thumbnailFilename);
 		assertThat(result.getLargeImageFilename()).isEqualTo(largeImageFilename);
 		assertThat(result.getOcrFilename()).isEqualTo(ocrFilename);
+		assertThat(result.getNodeId()).isEqualTo(20001);
 		assertThat(result.getXmltext()).isEqualTo(xmltext);
 		assertThat(result.getMediaFiles()).isEqualTo(mediaFiles);
 	}

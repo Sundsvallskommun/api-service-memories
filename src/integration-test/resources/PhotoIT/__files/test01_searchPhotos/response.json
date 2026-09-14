@@ -22,7 +22,8 @@
 			"conditionCategory": "Bra",
 			"conditionAssessment": "Inga skador",
 			"thumbnailFilename": "FOTO.id_1001_fil_liten.jpg",
-			"largeImageFilename": "FOTO.id_1001_fil_stor.jpg"
+			"largeImageFilename": "FOTO.id_1001_fil_stor.jpg",
+			"nodeId": 19000
 		},
 		{
 			"photoId": 1002,
@@ -35,7 +36,8 @@
 			"objectType": "Foto",
 			"colorMode": "Färg",
 			"thumbnailFilename": "FOTO.id_1002_fil_liten.jpg",
-			"largeImageFilename": "FOTO.id_1002_fil_stor.jpg"
+			"largeImageFilename": "FOTO.id_1002_fil_stor.jpg",
+			"nodeId": 19001
 		},
 		{
 			"photoId": 1003,
@@ -47,7 +49,8 @@
 			"location": "Timrå",
 			"objectType": "Foto",
 			"thumbnailFilename": "FOTO.id_1003_fil_liten.jpg",
-			"largeImageFilename": "FOTO.id_1003_fil_stor.jpg"
+			"largeImageFilename": "FOTO.id_1003_fil_stor.jpg",
+			"nodeId": 19002
 		},
 		{
 			"photoId": 1004,

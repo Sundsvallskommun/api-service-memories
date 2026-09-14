@@ -22,7 +22,8 @@
 			"comment": "Tidningsnummer från 1841",
 			"thumbnailFilename": "PUBL.id_207_fil_liten.jpeg",
 			"largeImageFilename": "PUBL.id_207_fil_stor.jpeg",
-			"ocrFilename": "PUBL.id_207_fil_txt.xml"
+			"ocrFilename": "PUBL.id_207_fil_txt.xml",
+			"nodeId": 18407
 		}
 	]
 }

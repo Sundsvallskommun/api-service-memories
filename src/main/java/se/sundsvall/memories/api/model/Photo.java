@@ -130,6 +130,9 @@ public class Photo extends AbstractCreatedObject<Photo> {
 	@Schema(description = "Subjects / ämnesklassificering via FOTO_OCM (only returned on detail lookup)")
 	private List<Subject> subjects;
 
+	@Schema(description = "ID of the archive node (arkiv, serie or volym) the photo was created in, or null when it sits in none. Resolve it with /nodes/{id} for the name and the path", examples = "19000")
+	private Integer nodeId;
+
 	public static Photo create() {
 		return new Photo();
 	}
@@ -667,6 +670,19 @@ public class Photo extends AbstractCreatedObject<Photo> {
 		return this;
 	}
 
+	public Integer getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+	}
+
+	public Photo withNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -686,7 +702,7 @@ public class Photo extends AbstractCreatedObject<Photo> {
 			&& Objects.equals(restricted, that.restricted) && Objects.equals(restrictionNote, that.restrictionNote) && Objects.equals(provenance, that.provenance)
 			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(relatedPhotoIds, that.relatedPhotoIds) && Objects.equals(subjects, that.subjects)
-			&& Objects.equals(creator, that.creator);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(creator, that.creator);
 	}
 
 	@Override
@@ -695,7 +711,7 @@ public class Photo extends AbstractCreatedObject<Photo> {
 			earliest, latest, observationDate, locationText, location, storageLocation, objectType, colorMode, negativePositive, transmissiveReflective,
 			imageCarrier, material, technique, function, height, width, diameter, framed, conditionCategory, conditionAssessment,
 			observerName, treatment, treatmentDate, signature, rights, restricted, restrictionNote, provenance,
-			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects, creator);
+			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects, nodeId, creator);
 	}
 
 	@Override
@@ -742,6 +758,7 @@ public class Photo extends AbstractCreatedObject<Photo> {
 			", largeImageFilename='" + largeImageFilename + '\'' +
 			", relatedPhotoIds=" + relatedPhotoIds +
 			", subjects=" + subjects +
+			", nodeId=" + nodeId +
 			", creator=" + creator +
 			'}';
 	}

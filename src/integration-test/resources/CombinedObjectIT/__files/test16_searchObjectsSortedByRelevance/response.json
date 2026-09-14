@@ -35,6 +35,13 @@
 		}
 	],
 	"categoryCounts": [],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "mantal-1845-1",

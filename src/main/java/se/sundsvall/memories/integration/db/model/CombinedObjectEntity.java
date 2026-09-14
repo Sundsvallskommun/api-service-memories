@@ -69,6 +69,14 @@ public class CombinedObjectEntity {
 	@JoinColumn(name = "CREATOR_LEGAL_ENTITY_ID")
 	private LegalEntityEntity creatorLegalEntity;
 
+	/**
+	 * The archive node (arkiv, serie or volym) the object was created in — {@code NODEID} on the object tables. The
+	 * registers are not placed in the tree and emit {@code NULL}. Kept as a plain id: the search only ever filters on
+	 * it and reports it, and resolving it into a name and a path is what {@code /nodes/{id}} is for.
+	 */
+	@Column(name = "NODE_ID")
+	private Integer nodeId;
+
 	public static CombinedObjectEntity create() {
 		return new CombinedObjectEntity();
 	}
@@ -229,6 +237,19 @@ public class CombinedObjectEntity {
 		return this;
 	}
 
+	public Integer getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+	}
+
+	public CombinedObjectEntity withNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -236,12 +257,12 @@ public class CombinedObjectEntity {
 		final CombinedObjectEntity that = (CombinedObjectEntity) o;
 		return Objects.equals(objectKey, that.objectKey) && Objects.equals(sourceId, that.sourceId) && Objects.equals(objectType, that.objectType)
 			&& Objects.equals(title, that.title) && Objects.equals(nameText, that.nameText) && Objects.equals(searchText, that.searchText) && Objects.equals(year, that.year)
-			&& Objects.equals(locationText, that.locationText) && Objects.equals(gender, that.gender);
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(gender, that.gender) && Objects.equals(nodeId, that.nodeId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(objectKey, sourceId, objectType, title, nameText, searchText, year, locationText, gender);
+		return Objects.hash(objectKey, sourceId, objectType, title, nameText, searchText, year, locationText, gender, nodeId);
 	}
 
 	@Override
@@ -256,6 +277,7 @@ public class CombinedObjectEntity {
 			", year=" + year +
 			", locationText='" + locationText + '\'' +
 			", gender='" + gender + '\'' +
+			", nodeId=" + nodeId +
 			'}';
 	}
 }

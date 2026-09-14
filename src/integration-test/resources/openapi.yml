@@ -5,7 +5,7 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.11"
+  version: "3.12"
 servers:
 - url: http://localhost:61485
   description: Generated server url
@@ -30,6 +30,8 @@ tags:
   description: Census record (mantal) search and retrieval
 - name: Films
   description: Film search operations
+- name: Institution
+  description: Institution (arkivinstitution) lookup for search form dropdowns
 - name: Publications
   description: Publication search and file operations
 - name: Seaman
@@ -730,10 +732,10 @@ paths:
       summary: Search objects
       description: "Search across all object types (Foto, Föremål, Film, Ljud, Text,\
         \ Publikation) and registers (Person, Juridisk person, Sjöman, Mantal) in\
-        \ one call, with global sorting, pagination and counts per type, gender and\
-        \ originator category. Pass objectType, gender or categoryId to narrow the\
-        \ search; each counter leaves out only its own selection, so the chips stay\
-        \ selectable."
+        \ one call, with global sorting, pagination and counts per type, gender, originator\
+        \ category and place. Pass objectType, gender, categoryId or topographyId\
+        \ to narrow the search; each counter leaves out only its own selection, so\
+        \ the chips stay selectable. Pass nodeId to list what an archive node holds."
       operationId: searchObjects
       parameters:
       - name: municipalityId
@@ -773,7 +775,11 @@ paths:
       - Node
       summary: Search archive and collection nodes
       description: "Search the archive tree (arkiv, serier, volymer, samlingar) by\
-        \ free text, node type and period. Returns paginated results."
+        \ free text, node type (by id or by name — nodeType=Arkiv is the list of arkiv\
+        \ och samlingar), period, institution, category and place. Every node carries\
+        \ what the archive records about it — institution, arkivbildare, place, signum\
+        \ and so on — and the objects it holds are listed by /objects?nodeId=. Returns\
+        \ paginated results."
       operationId: searchNodes
       parameters:
       - name: municipalityId
@@ -992,6 +998,45 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/institutions:
+    get:
+      tags:
+      - Institution
+      summary: List institutions
+      description: "List the institutions (arkivinstitutioner) that hold the archives\
+        \ and collections, sorted by name, for search form dropdowns. The id is what\
+        \ the institutionId filter on /nodes accepts, and the name is what a node\
+        \ reports as its institution. Rows without a name are left out."
+      operationId: getInstitutions
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Institution"
   /{municipalityId}/films:
     get:
       tags:
@@ -1550,10 +1595,10 @@ components:
             $ref: "#/components/schemas/Violation"
         title:
           type: string
-        detail:
-          type: string
         causeAsProblem:
           $ref: "#/components/schemas/ThrowableProblem"
+        detail:
+          type: string
         instance:
           type: string
           format: uri
@@ -1880,6 +1925,14 @@ components:
             on detail lookup)
           items:
             $ref: "#/components/schemas/TextMediaFile"
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the text was\
+            \ created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
     TextMediaFile:
       type: object
       description: Extra media file attached to a text (TEXT_MULTI)
@@ -2337,6 +2390,14 @@ components:
         xmltext:
           type: string
           description: Full OCR/XML text (only returned on detail lookup)
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the publication\
+            \ was created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
     PhotoParameters:
       type: object
       description: Photo search parameters
@@ -2586,6 +2647,14 @@ components:
             on detail lookup)
           items:
             $ref: "#/components/schemas/Subject"
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the photo was\
+            \ created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
     Subject:
       type: object
       description: Subject / Ämne (OCM)
@@ -2870,10 +2939,11 @@ components:
             format: int32
             description: "ID of the place, as listed by /topographies — the exact\
               \ counterpart of location, for a place picked from that list rather\
-              \ than typed. Repeat the parameter, or comma-separate the values, to\
-              \ select several — they are alternatives. Only the object types and\
-              \ legal entities are placed in a topography; the person registers hold\
-              \ a parish as free text, so this filter excludes them."
+              \ than typed, and counted by topographyCounts. Repeat the parameter,\
+              \ or comma-separate the values, to select several — they are alternatives.\
+              \ Only the object types and legal entities are placed in a topography;\
+              \ the person registers hold a parish as free text, so this filter excludes\
+              \ them."
             examples:
             - 1
         objectType:
@@ -2937,6 +3007,20 @@ components:
               \ types."
             examples:
             - 5
+        nodeId:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the archive node (arkiv, serie or volym) to list the\
+              \ objects of, as returned by /nodes — what the node's own page shows\
+              \ under it. Repeat the parameter, or comma-separate the values, to select\
+              \ several — they are alternatives. An object sits in exactly one node,\
+              \ so a node's descendants are not searched; list them with /nodes/{id}/children.\
+              \ Only the object types are placed in the tree, so this filter excludes\
+              \ the register types."
+            examples:
+            - 19000
     CategoryCount:
       type: object
       description: How many objects with an originator in one category the search
@@ -3015,6 +3099,14 @@ components:
             when set)
           examples:
           - Sundsvall
+        nodeId:
+          type: integer
+          format: int32
+          description: "ID of the archive node (arkiv, serie or volym) the object\
+            \ was created in, or null when it sits in none. Resolve it with /nodes/{id}\
+            \ for the name and the path"
+          examples:
+          - 19000
         creator:
           $ref: "#/components/schemas/Creator"
     GenderCount:
@@ -3094,14 +3186,54 @@ components:
           items:
             $ref: "#/components/schemas/CategoryCount"
             readOnly: true
+        topographyCounts:
+          type: array
+          description: "How many matching objects are placed in each topography (place),\
+            \ by id and by the name /topographies lists it under, sorted by name —\
+            \ for a place picker that can hide the empty places and show the numbers.\
+            \ Covers the rows placed in a topography: the object types and the legal\
+            \ entities, not the person registers, which hold a parish as free text.\
+            \ A dimension of its own like the other counters, so these overlap with\
+            \ typeCounts rather than summing with them. The counts are independent\
+            \ of the current page and of the topographyId filter — every other filter\
+            \ applies, the substring location filter included, so a chip keeps saying\
+            \ how many objects selecting that place would return."
+          items:
+            $ref: "#/components/schemas/TopographyCount"
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true
+    TopographyCount:
+      type: object
+      description: How many objects placed in one topography the search matches
+      properties:
+        topographyId:
+          type: integer
+          format: int32
+          description: "Topography ID, which the topographyId filter accepts"
+          examples:
+          - 4
+        name:
+          type: string
+          description: "The place's display name, the same one /topographies lists\
+            \ it under and an object reports as its location"
+          examples:
+          - "Kvissleby, Njurunda"
+        count:
+          type: integer
+          format: int64
+          description: "Number of matching objects placed in that topography, across\
+            \ every page. The counters cover every matched row placed in a topography,\
+            \ so they sum to fewer than totalRecords whenever the result also holds\
+            \ rows without one."
+          examples:
+          - 12
     NodeParameters:
       type: object
       description: "Archive and collection node search parameters. All filters are\
-        \ optional and combined with AND. Sort on one of: name, startYear, stopYear\
-        \ or sortOrder."
+        \ optional and combined with AND, except that several values of institutionId,\
+        \ categoryId and topographyId are alternatives. Sort on one of: name, startYear,\
+        \ stopYear, sortOrder or location."
       properties:
         page:
           type: integer
@@ -3123,12 +3255,14 @@ components:
           type: array
           items:
             type: string
-            description: Property to sort on
+            description: "Property to sort on. location orders by the place a node\
+              \ is placed in, nodes without one last whichever way the list runs"
             enum:
             - name
             - startYear
             - stopYear
             - sortOrder
+            - location
             examples:
             - name
         sortDirection:
@@ -3138,8 +3272,8 @@ components:
           - ASC
         query:
           type: string
-          description: "Free text search (substring, case-insensitive) across name\
-            \ and description"
+          description: "Free text search (substring, case-insensitive) across name,\
+            \ description and the name of the arkivbildare"
           examples:
           - stadsfullmäktige
         nodeTypeId:
@@ -3147,7 +3281,53 @@ components:
           format: int32
           description: Node type ID
           examples:
-          - 1
+          - 2
+        nodeType:
+          type: string
+          description: "Node type by name, matched case-insensitively — Arkiv for\
+            \ the archives and collections themselves, which is what a list of arkiv\
+            \ och samlingar shows, Serie or Volym for the levels under them"
+          examples:
+          - Arkiv
+        institutionId:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the institution (arkivinstitution) holding the archive,\
+              \ as listed by /institutions. Repeat the parameter, or comma-separate\
+              \ the values, to select several — they are alternatives."
+            examples:
+            - 3
+        categoryId:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the arkivbildare's category (verksamhetskategori),\
+              \ as listed by /categories. Repeat the parameter, or comma-separate\
+              \ the values, to select several — they are alternatives. The sentinel\
+              \ every legal entity defaults to is not a category, and naming it alone\
+              \ matches nothing."
+            examples:
+            - 5
+        topographyId:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the place (topografi) the archive is about or comes\
+              \ from, as listed by /topographies — the exact counterpart of location,\
+              \ for a place picked from that list rather than typed. Repeat the parameter,\
+              \ or comma-separate the values, to select several — they are alternatives."
+            examples:
+            - 4
+        location:
+          type: string
+          description: "Place (substring, case-insensitive; the resolved place name\
+            \ or the free-text place)"
+          examples:
+          - Njurunda
         yearFrom:
           type: integer
           format: int32
@@ -3178,7 +3358,9 @@ components:
           - 10
         name:
           type: string
-          description: Node name
+          description: "Node name. An archive named after its arkivbildare carries\
+            \ no name of its own, and is then named after the legal entity, or the\
+            \ person as Efternamn, Förnamn"
           examples:
           - Sundsvalls stads arkiv
         nodeTypeId:
@@ -3233,6 +3415,122 @@ components:
           description: Status bitmask; bit 4 marks the node as published
           examples:
           - 6
+        creator:
+          $ref: "#/components/schemas/Creator"
+          description: "The arkivbildare — the person or legal entity whose archive\
+            \ this is. Set on archives, not on the series and volumes under them"
+          readOnly: true
+        activityStartDate:
+          type: string
+          description: "First year of the arkivbildare's activity (verksamhetstid),\
+            \ when it is a legal entity. Free text in the archive"
+          examples:
+          - "1862"
+        activityEndDate:
+          type: string
+          description: "Last year of the arkivbildare's activity (verksamhetstid),\
+            \ when it is a legal entity"
+          examples:
+          - "1951"
+        institutionId:
+          type: integer
+          format: int32
+          description: "ID of the institution (arkivinstitution) holding the archive,\
+            \ as listed by /institutions"
+          examples:
+          - 3
+        institution:
+          type: string
+          description: Name of the institution holding the archive
+          examples:
+          - Sundsvalls museum
+        institutionCode:
+          type: string
+          description: Code (institutionskod) of the institution holding the archive
+          examples:
+          - SVM
+        categoryId:
+          type: integer
+          format: int32
+          description: "ID of the arkivbildare's category (verksamhetskategori), as\
+            \ listed by /categories"
+          examples:
+          - 5
+        category:
+          type: string
+          description: Name of the arkivbildare's category
+          examples:
+          - Företag
+        topographyId:
+          type: integer
+          format: int32
+          description: "ID of the place (topografi) the archive is about or comes\
+            \ from, as listed by /topographies"
+          examples:
+          - 4
+        location:
+          type: string
+          description: "Resolved place name from TOPOGRAFI, the same name /topographies\
+            \ lists it under"
+          examples:
+          - "Kvissleby, Njurunda"
+        locationText:
+          type: string
+          description: "Free-text place (obestämd plats), used when no topography\
+            \ fits"
+          examples:
+          - Okänd by i Medelpad
+        subject:
+          $ref: "#/components/schemas/Subject"
+          description: "Subject (ämne, OCM) of the node. Set on series"
+          readOnly: true
+        seriesSignum:
+          type: string
+          description: Series signum (seriesignum). Set on series
+          examples:
+          - A1
+        oldSeriesSignum:
+          type: string
+          description: Earlier series signum (gammalt seriesignum). Set on series
+          examples:
+          - A I
+        volumeNumber:
+          type: string
+          description: Volume number (volymnummer). Set on volumes
+          examples:
+          - "001"
+        volumeCount:
+          type: integer
+          format: int32
+          description: Number of volumes (volymantal). Set on archives
+          examples:
+          - 3
+        shelfMeters:
+          type: number
+          description: Shelf metres (hyllmeter) the archive takes up
+          examples:
+          - 12.5
+        volumePlacement:
+          type: string
+          description: Where the volume is kept (volymplacering). Set on volumes
+          examples:
+          - Hylla 3
+        accessionNumber:
+          type: string
+          description: Accession number (accessionsnummer)
+          examples:
+          - ACC-1862
+        holdingsCode:
+          type: string
+          description: Holdings code (beståndskod)
+          examples:
+          - B1
+        historyFilename:
+          type: string
+          description: "Name of the history (historik/biografi) file the archive has\
+            \ uploaded for the node, when there is one"
+          examples:
+          - arkiv_100_historik.xml
     PagedNodeResponse:
       type: object
       description: Paged archive and collection node response
@@ -3426,6 +3724,42 @@ components:
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true
+    Institution:
+      type: object
+      description: Institution (arkivinstitution) model — the institution that holds
+        an archive or collection
+      properties:
+        institutionId:
+          type: integer
+          format: int32
+          description: Institution ID
+          examples:
+          - 3
+        code:
+          type: string
+          description: Institution code (institutionskod)
+          examples:
+          - SVM
+        name:
+          type: string
+          description: Institution name
+          examples:
+          - Sundsvalls museum
+        description:
+          type: string
+          description: Description of the organisation
+          examples:
+          - Kommunalt museum med arkiv och samlingar
+        url:
+          type: string
+          description: Web address
+          examples:
+          - https://sundsvallsmuseum.se
+        email:
+          type: string
+          description: E-mail address
+          examples:
+          - museet@sundsvall.se
     FilmParameters:
       type: object
       description: Film search parameters

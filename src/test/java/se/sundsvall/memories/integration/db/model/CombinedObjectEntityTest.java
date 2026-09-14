@@ -33,7 +33,8 @@ class CombinedObjectEntityTest {
 			.withYear(1920)
 			.withTopography(TopographyEntity.create().withId(1).withName("Sundsvalls kommun"))
 			.withLocationText("Sundsvall")
-			.withGender("man");
+			.withGender("man")
+			.withNodeId(19000);
 
 		assertThat(result.getObjectKey()).isEqualTo("foto-1001");
 		assertThat(result.getSourceId()).isEqualTo(1001);
@@ -43,6 +44,7 @@ class CombinedObjectEntityTest {
 		assertThat(result.getTopography().getId()).isEqualTo(1);
 		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
 		assertThat(result.getGender()).isEqualTo("man");
+		assertThat(result.getNodeId()).isEqualTo(19000);
 	}
 
 	@Test

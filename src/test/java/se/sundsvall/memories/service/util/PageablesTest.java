@@ -82,6 +82,45 @@ class PageablesTest {
 		assertThat(metaData.getSortBy()).containsExactly("lastName", "firstName");
 	}
 
+	/** The given order is paged in as it is, with the id appended — the parameters lend only the page and the limit. */
+	@Test
+	void orderedPagesInTheGivenOrderBeforeTheId() {
+		final var pageable = Pageables.ordered(parameters(List.of("lastName"), DESC), Sort.by(DESC, "attributes.topography.place"), "id");
+
+		assertThat(pageable.getSort()).containsExactly(Sort.Order.desc("attributes.topography.place"), Sort.Order.asc("id"));
+		assertThat(pageable.getPageNumber()).isZero();
+		assertThat(pageable.getPageSize()).isEqualTo(100);
+	}
+
+	@Test
+	void orderedFallsBackToTheIdAlone() {
+		final var pageable = Pageables.ordered(parameters(null, null), Sort.unsorted(), "id");
+
+		assertThat(pageable.getSort()).containsExactly(Sort.Order.asc("id"));
+	}
+
+	/** The reported order is the one handed in, not the paths the page was actually sorted on. */
+	@Test
+	void metaDataReportsTheGivenOrder() {
+		final var page = new PageImpl<>(List.of("a"), PageRequest.of(0, 100, Sort.by(DESC, "attributes.topography.place", "id")), 1);
+
+		final var metaData = Pageables.metaDataOf(page, Sort.by(DESC, "location"));
+
+		assertThat(metaData.getSortBy()).containsExactly("location");
+		assertThat(metaData.getSortDirection()).isEqualTo(DESC);
+		assertThat(metaData.getTotalRecords()).isEqualTo(1);
+	}
+
+	@Test
+	void metaDataReportsNoOrderWhenTheGivenOneIsUnsorted() {
+		final var page = new PageImpl<>(List.of("a"), PageRequest.of(0, 100, Sort.by("id")), 1);
+
+		final var metaData = Pageables.metaDataOf(page, Sort.unsorted());
+
+		assertThat(metaData.getSortBy()).isNull();
+		assertThat(metaData.getSortDirection()).isNull();
+	}
+
 	/** A composite id appends — and strips — every part of the key, in order. */
 	@Test
 	void breaksTiesWithEveryPartOfACompositeId() {

@@ -1,0 +1,153 @@
+{
+	"_meta": {
+		"count": 7,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 7,
+		"sortBy": [
+			"location"
+		],
+		"sortDirection": "ASC"
+	},
+	"nodes": [
+		{
+			"id": 200,
+			"name": "Fotosamlingen",
+			"nodeTypeId": 3,
+			"nodeType": "Samling",
+			"startYear": 1900,
+			"description": "Glasplåtar från stadens fotografer",
+			"sortOrder": 40,
+			"subItemCount": 5,
+			"publishedSubItemCount": 5,
+			"options": 6,
+			"creator": {
+				"personId": 1,
+				"person": "Anton Nordin"
+			},
+			"institutionId": 3,
+			"institution": "Föreningsarkivet Västernorrland",
+			"institutionCode": "FAV",
+			"topographyId": 4,
+			"location": "Kvissleby, Njurunda",
+			"locationText": "Obestämd by"
+		},
+		{
+			"id": 100,
+			"name": "Sundsvalls stads arkiv",
+			"nodeTypeId": 1,
+			"nodeType": "Arkiv",
+			"startYear": 1862,
+			"stopYear": 1951,
+			"description": "Handlingar från stadsfullmäktige",
+			"sortOrder": 10,
+			"subItemCount": 3,
+			"publishedSubItemCount": 2,
+			"options": 6,
+			"creator": {
+				"legalEntityId": 10,
+				"legalEntity": "Nödhjälpskommittén 1888-1889"
+			},
+			"activityStartDate": "1888",
+			"activityEndDate": "1889",
+			"institutionId": 2,
+			"institution": "Sundsvalls museum",
+			"institutionCode": "SVM",
+			"categoryId": 5,
+			"category": "Kommitté",
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"volumeCount": 3,
+			"shelfMeters": 12.55,
+			"accessionNumber": "ACC-1862",
+			"holdingsCode": "B1",
+			"historyFilename": "arkiv_100_historik.xml"
+		},
+		{
+			"id": 600,
+			"name": "Berg Aktiebolag",
+			"nodeTypeId": 1,
+			"nodeType": "Arkiv",
+			"startYear": 1920,
+			"stopYear": 1960,
+			"description": "Företagsarkiv utan eget namn, uppkallat efter arkivbildaren",
+			"sortOrder": 80,
+			"subItemCount": 0,
+			"publishedSubItemCount": 0,
+			"options": 6,
+			"creator": {
+				"legalEntityId": 20,
+				"legalEntity": "Berg Aktiebolag"
+			},
+			"activityStartDate": "1920",
+			"institutionId": 3,
+			"institution": "Föreningsarkivet Västernorrland",
+			"institutionCode": "FAV",
+			"categoryId": 2,
+			"category": "Aktiebolag",
+			"topographyId": 2,
+			"location": "Timrå"
+		},
+		{
+			"id": 110,
+			"parentId": 100,
+			"name": "Protokoll",
+			"nodeTypeId": 2,
+			"nodeType": "Serie",
+			"startYear": 1862,
+			"stopYear": 1900,
+			"description": "Stadsfullmäktiges protokoll",
+			"sortOrder": 20,
+			"subItemCount": 2,
+			"publishedSubItemCount": 2,
+			"options": 6,
+			"subject": {
+				"code": "MUS",
+				"text": "Musik",
+				"description": "Musikinspelning"
+			},
+			"seriesSignum": "A1",
+			"oldSeriesSignum": "A I"
+		},
+		{
+			"id": 111,
+			"parentId": 110,
+			"name": "Volym 1",
+			"nodeTypeId": 4,
+			"nodeType": "Volym",
+			"startYear": 1862,
+			"stopYear": 1863,
+			"description": "Protokoll 1862-1863",
+			"sortOrder": 10,
+			"subItemCount": 0,
+			"publishedSubItemCount": 0,
+			"options": 6,
+			"volumeNumber": "001",
+			"volumePlacement": "Hylla 3"
+		},
+		{
+			"id": 120,
+			"parentId": 100,
+			"name": "Räkenskaper",
+			"nodeTypeId": 2,
+			"nodeType": "Serie",
+			"startYear": 1900,
+			"stopYear": 0,
+			"description": "Huvudböcker, pågående serie",
+			"sortOrder": 30,
+			"subItemCount": 1,
+			"publishedSubItemCount": 0,
+			"options": 4
+		},
+		{
+			"id": 400,
+			"name": "Nod utan typ",
+			"description": "Pekar på en nodtyp som saknas",
+			"sortOrder": 60,
+			"subItemCount": 0,
+			"publishedSubItemCount": 0,
+			"options": 6
+		}
+	]
+}

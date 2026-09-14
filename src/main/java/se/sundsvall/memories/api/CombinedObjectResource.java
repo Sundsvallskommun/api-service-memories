@@ -44,7 +44,7 @@ class CombinedObjectResource {
 
 	@GetMapping(produces = APPLICATION_JSON_VALUE)
 	@Operation(summary = "Search objects",
-		description = "Search across all object types (Foto, Föremål, Film, Ljud, Text, Publikation) and registers (Person, Juridisk person, Sjöman, Mantal) in one call, with global sorting, pagination and counts per type, gender and originator category. Pass objectType, gender or categoryId to narrow the search; each counter leaves out only its own selection, so the chips stay selectable.")
+		description = "Search across all object types (Foto, Föremål, Film, Ljud, Text, Publikation) and registers (Person, Juridisk person, Sjöman, Mantal) in one call, with global sorting, pagination and counts per type, gender, originator category and place. Pass objectType, gender, categoryId or topographyId to narrow the search; each counter leaves out only its own selection, so the chips stay selectable. Pass nodeId to list what an archive node holds.")
 	@ApiResponse(responseCode = "200", description = "Successful operation")
 	ResponseEntity<PagedCombinedObjectResponse> searchObjects(
 		@PathVariable @ValidMunicipalityId final String municipalityId,

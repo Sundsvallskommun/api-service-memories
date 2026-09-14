@@ -14,6 +14,13 @@
 	],
 	"genderCounts": [],
 	"categoryCounts": [],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 2
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "foto-1001",
@@ -23,7 +30,8 @@
 			"year": 1920,
 			"topographyId": 1,
 			"location": "Sundsvall",
-			"locationText": "Sundsvall"
+			"locationText": "Sundsvall",
+			"nodeId": 19000
 		},
 		{
 			"objectKey": "foto-1005",

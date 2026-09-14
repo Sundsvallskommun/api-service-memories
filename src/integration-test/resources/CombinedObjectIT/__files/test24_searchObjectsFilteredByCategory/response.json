@@ -25,6 +25,13 @@
 			"count": 1
 		}
 	],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "film-1",
@@ -35,6 +42,7 @@
 			"topographyId": 1,
 			"location": "Sundsvall",
 			"locationText": "Sundsvall",
+			"nodeId": 100,
 			"creator": {
 				"legalEntity": "Nödhjälpskommittén 1888-1889",
 				"legalEntityId": 10,

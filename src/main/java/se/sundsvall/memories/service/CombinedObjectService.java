@@ -30,11 +30,14 @@ public class CombinedObjectService {
 
 		final var categoryCounts = combinedObjectRepository.countByCategory(parameters);
 
+		final var topographyCounts = combinedObjectRepository.countByTopography(parameters);
+
 		return PagedCombinedObjectResponse.create()
 			.withObjects(CombinedObjectMapper.toCombinedObjectList(page.getContent()))
 			.withTypeCounts(CombinedObjectMapper.toObjectTypeCountList(typeCounts))
 			.withGenderCounts(CombinedObjectMapper.toGenderCountList(genderCounts))
 			.withCategoryCounts(CombinedObjectMapper.toCategoryCountList(categoryCounts))
+			.withTopographyCounts(CombinedObjectMapper.toTopographyCountList(topographyCounts))
 			.withMetaData(Pageables.metaDataOf(page, parameters));
 	}
 }

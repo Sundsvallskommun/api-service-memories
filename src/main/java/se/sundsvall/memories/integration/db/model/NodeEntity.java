@@ -6,6 +6,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -18,6 +20,10 @@ import java.util.Objects;
  * <p>
  * {@code PARENTID} is kept as a plain id rather than a self-association: the search only ever reports which node a hit
  * sits under, and walking the tree is done by id.
+ *
+ * <p>
+ * What the archive records beyond the tree itself — institution, arkivbildare, place, signum and so on — lives in
+ * {@code TBL_NODEATTRIBUTES}, one row per node under the node's own id, reached through {@link #getAttributes()}.
  */
 @Entity
 @Table(name = "TBL_NODES")
@@ -65,6 +71,15 @@ public class NodeEntity {
 
 	@Column(name = "DELETEDDATE")
 	private LocalDate deletedDate;
+
+	/**
+	 * The node's row in {@code TBL_NODEATTRIBUTES}, which shares the node's id. Absent for a node the archive has
+	 * recorded nothing about beyond the tree. Fetched together with the node by the searches, since Hibernate cannot
+	 * leave a shared-key one-to-one unloaded without knowing whether the row exists.
+	 */
+	@OneToOne(fetch = FetchType.LAZY)
+	@PrimaryKeyJoinColumn
+	private NodeAttributesEntity attributes;
 
 	public static NodeEntity create() {
 		return new NodeEntity();
@@ -223,6 +238,19 @@ public class NodeEntity {
 
 	public NodeEntity withDeletedDate(final LocalDate deletedDate) {
 		this.deletedDate = deletedDate;
+		return this;
+	}
+
+	public NodeAttributesEntity getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(final NodeAttributesEntity attributes) {
+		this.attributes = attributes;
+	}
+
+	public NodeEntity withAttributes(final NodeAttributesEntity attributes) {
+		this.attributes = attributes;
 		return this;
 	}
 
