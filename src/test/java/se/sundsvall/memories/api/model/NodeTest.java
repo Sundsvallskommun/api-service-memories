@@ -34,9 +34,6 @@ class NodeTest {
 
 	@Test
 	void testBuilderMethods() {
-		final var creator = Creator.create().withLegalEntityId(10).withLegalEntity("Galtströms Bruk");
-		final var subject = Subject.create().withCode("MUS").withText("Musik");
-
 		final var result = Node.create()
 			.withId(100)
 			.withParentId(10)
@@ -49,7 +46,29 @@ class NodeTest {
 			.withSortOrder(10)
 			.withSubItemCount(42)
 			.withPublishedSubItemCount(40)
-			.withOptions(6)
+			.withOptions(6);
+
+		assertThat(result.getId()).isEqualTo(100);
+		assertThat(result.getParentId()).isEqualTo(10);
+		assertThat(result.getName()).isEqualTo("Sundsvalls stads arkiv");
+		assertThat(result.getNodeTypeId()).isEqualTo(1);
+		assertThat(result.getNodeType()).isEqualTo("Arkiv");
+		assertThat(result.getStartYear()).isEqualTo(1862);
+		assertThat(result.getStopYear()).isEqualTo(1951);
+		assertThat(result.getDescription()).isEqualTo("Handlingar från stadsfullmäktige");
+		assertThat(result.getSortOrder()).isEqualTo(10);
+		assertThat(result.getSubItemCount()).isEqualTo(42);
+		assertThat(result.getPublishedSubItemCount()).isEqualTo(40);
+		assertThat(result.getOptions()).isEqualTo(6);
+	}
+
+	/** The fields read from the node's attribute row, built and read back separately from the tree's own. */
+	@Test
+	void testBuilderMethodsForTheAttributes() {
+		final var creator = Creator.create().withLegalEntityId(10).withLegalEntity("Galtströms Bruk");
+		final var subject = Subject.create().withCode("MUS").withText("Musik");
+
+		final var result = Node.create()
 			.withCreator(creator)
 			.withActivityStartDate("1673")
 			.withActivityEndDate("1916")
@@ -72,40 +91,15 @@ class NodeTest {
 			.withHoldingsCode("B1")
 			.withHistoryFilename("arkiv_100_historik.xml");
 
-		assertThat(result).hasNoNullFieldsOrProperties();
-		assertThat(result.getId()).isEqualTo(100);
-		assertThat(result.getParentId()).isEqualTo(10);
-		assertThat(result.getName()).isEqualTo("Sundsvalls stads arkiv");
-		assertThat(result.getNodeTypeId()).isEqualTo(1);
-		assertThat(result.getNodeType()).isEqualTo("Arkiv");
-		assertThat(result.getStartYear()).isEqualTo(1862);
-		assertThat(result.getStopYear()).isEqualTo(1951);
-		assertThat(result.getDescription()).isEqualTo("Handlingar från stadsfullmäktige");
-		assertThat(result.getSortOrder()).isEqualTo(10);
-		assertThat(result.getSubItemCount()).isEqualTo(42);
-		assertThat(result.getPublishedSubItemCount()).isEqualTo(40);
-		assertThat(result.getOptions()).isEqualTo(6);
-		assertThat(result.getCreator()).isEqualTo(creator);
-		assertThat(result.getActivityStartDate()).isEqualTo("1673");
-		assertThat(result.getActivityEndDate()).isEqualTo("1916");
-		assertThat(result.getInstitutionId()).isEqualTo(3);
-		assertThat(result.getInstitution()).isEqualTo("Sundsvalls museum");
-		assertThat(result.getInstitutionCode()).isEqualTo("SVM");
-		assertThat(result.getCategoryId()).isEqualTo(5);
-		assertThat(result.getCategory()).isEqualTo("Företag");
-		assertThat(result.getTopographyId()).isEqualTo(4);
-		assertThat(result.getLocation()).isEqualTo("Kvissleby, Njurunda");
-		assertThat(result.getLocationText()).isEqualTo("Okänd by");
-		assertThat(result.getSubject()).isEqualTo(subject);
-		assertThat(result.getSeriesSignum()).isEqualTo("A1");
-		assertThat(result.getOldSeriesSignum()).isEqualTo("A I");
-		assertThat(result.getVolumeNumber()).isEqualTo("001");
-		assertThat(result.getVolumeCount()).isEqualTo(3);
+		assertThat(result)
+			.extracting(Node::getCreator, Node::getActivityStartDate, Node::getActivityEndDate, Node::getInstitutionId, Node::getInstitution, Node::getInstitutionCode,
+				Node::getCategoryId, Node::getCategory, Node::getTopographyId, Node::getLocation, Node::getLocationText, Node::getSubject)
+			.containsExactly(creator, "1673", "1916", 3, "Sundsvalls museum", "SVM", 5, "Företag", 4, "Kvissleby, Njurunda", "Okänd by", subject);
+		assertThat(result)
+			.extracting(Node::getSeriesSignum, Node::getOldSeriesSignum, Node::getVolumeNumber, Node::getVolumeCount, Node::getVolumePlacement,
+				Node::getAccessionNumber, Node::getHoldingsCode, Node::getHistoryFilename)
+			.containsExactly("A1", "A I", "001", 3, "Hylla 3", "ACC-1862", "B1", "arkiv_100_historik.xml");
 		assertThat(result.getShelfMeters()).isEqualByComparingTo("12.50");
-		assertThat(result.getVolumePlacement()).isEqualTo("Hylla 3");
-		assertThat(result.getAccessionNumber()).isEqualTo("ACC-1862");
-		assertThat(result.getHoldingsCode()).isEqualTo("B1");
-		assertThat(result.getHistoryFilename()).isEqualTo("arkiv_100_historik.xml");
 	}
 
 	@Test

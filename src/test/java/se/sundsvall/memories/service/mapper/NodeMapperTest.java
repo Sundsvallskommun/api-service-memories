@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import se.sundsvall.memories.api.model.Creator;
+import se.sundsvall.memories.api.model.Node;
+import se.sundsvall.memories.api.model.Subject;
 import se.sundsvall.memories.integration.db.model.CategoryEntity;
 import se.sundsvall.memories.integration.db.model.InstitutionEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
@@ -14,6 +17,7 @@ import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
+import static java.time.Month.MARCH;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -78,35 +82,29 @@ class NodeMapperTest {
 	}
 
 	@Test
-	void toNodeMapsTheAttributeRow() {
+	void toNodeMapsTheLookupsOfTheAttributeRow() {
 		final var result = NodeMapper.toNode(sampleEntity().withAttributes(sampleAttributes()));
 
 		assertThat(result.getName()).isEqualTo("Sundsvalls stads arkiv");
-		assertThat(result.getCreator().getLegalEntityId()).isEqualTo(10);
-		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Galtströms Bruk");
-		assertThat(result.getCreator().getPersonId()).isNull();
-		assertThat(result.getActivityStartDate()).isEqualTo("1673");
-		assertThat(result.getActivityEndDate()).isEqualTo("1916");
-		assertThat(result.getInstitutionId()).isEqualTo(3);
-		assertThat(result.getInstitution()).isEqualTo("Sundsvalls museum");
-		assertThat(result.getInstitutionCode()).isEqualTo("SVM");
-		assertThat(result.getCategoryId()).isEqualTo(5);
-		assertThat(result.getCategory()).isEqualTo("Företag");
-		assertThat(result.getTopographyId()).isEqualTo(4);
-		assertThat(result.getLocation()).isEqualTo("Kvissleby, Njurunda");
-		assertThat(result.getLocationText()).isEqualTo("Okänd by");
-		assertThat(result.getSubject().getCode()).isEqualTo("MUS");
-		assertThat(result.getSubject().getText()).isEqualTo("Musik");
-		assertThat(result.getSubject().getDescription()).isEqualTo("Musikinspelning");
-		assertThat(result.getSeriesSignum()).isEqualTo("A1");
-		assertThat(result.getOldSeriesSignum()).isEqualTo("A I");
-		assertThat(result.getVolumeNumber()).isEqualTo("001");
-		assertThat(result.getVolumeCount()).isEqualTo(3);
+		assertThat(result.getCreator()).extracting(Creator::getLegalEntityId, Creator::getLegalEntity, Creator::getPersonId)
+			.containsExactly(10, "Galtströms Bruk", null);
+		assertThat(result)
+			.extracting(Node::getActivityStartDate, Node::getActivityEndDate, Node::getInstitutionId, Node::getInstitution, Node::getInstitutionCode,
+				Node::getCategoryId, Node::getCategory, Node::getTopographyId, Node::getLocation, Node::getLocationText)
+			.containsExactly("1673", "1916", 3, "Sundsvalls museum", "SVM", 5, "Företag", 4, "Kvissleby, Njurunda", "Okänd by");
+		assertThat(result.getSubject()).extracting(Subject::getCode, Subject::getText, Subject::getDescription)
+			.containsExactly("MUS", "Musik", "Musikinspelning");
+	}
+
+	@Test
+	void toNodeMapsTheValuesOfTheAttributeRow() {
+		final var result = NodeMapper.toNode(sampleEntity().withAttributes(sampleAttributes()));
+
+		assertThat(result)
+			.extracting(Node::getSeriesSignum, Node::getOldSeriesSignum, Node::getVolumeNumber, Node::getVolumeCount, Node::getVolumePlacement,
+				Node::getAccessionNumber, Node::getHoldingsCode, Node::getHistoryFilename)
+			.containsExactly("A1", "A I", "001", 3, "Hylla 3", "ACC-1862", "B1", "arkiv_100_historik.xml");
 		assertThat(result.getShelfMeters()).isEqualByComparingTo("12.50");
-		assertThat(result.getVolumePlacement()).isEqualTo("Hylla 3");
-		assertThat(result.getAccessionNumber()).isEqualTo("ACC-1862");
-		assertThat(result.getHoldingsCode()).isEqualTo("B1");
-		assertThat(result.getHistoryFilename()).isEqualTo("arkiv_100_historik.xml");
 	}
 
 	/**
@@ -153,7 +151,7 @@ class NodeMapperTest {
 	@Test
 	void toNodeSkipsASentinelOrDeletedCreator() {
 		final var sentinel = LegalEntityEntity.create().withLegalEntityId(1).withName("Ingen").withStartDate("1900");
-		final var deleted = LegalEntityEntity.create().withLegalEntityId(10).withName("Raderad").withStartDate("1900").withDeletedDate(LocalDate.of(2024, 3, 1));
+		final var deleted = LegalEntityEntity.create().withLegalEntityId(10).withName("Raderad").withStartDate("1900").withDeletedDate(LocalDate.of(2024, MARCH, 1));
 		final var sentinelPerson = PersonEntity.create().withPersonId(0).withLastName("Ingen");
 
 		for (final var legalEntity : List.of(sentinel, deleted)) {
