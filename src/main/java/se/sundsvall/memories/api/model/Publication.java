@@ -277,13 +277,13 @@ public class Publication extends AbstractCreatedObject<Publication> {
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location) && Objects.equals(comment, that.comment)
 			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
-			&& Objects.equals(creator, that.creator);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(creator, that.creator);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, publisherLocation, documentTitle,
-			locationText, location, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext, creator);
+			locationText, location, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext, nodeId, creator);
 	}
 
 	@Override
@@ -305,6 +305,7 @@ public class Publication extends AbstractCreatedObject<Publication> {
 			", largeImageFilename='" + largeImageFilename + '\'' +
 			", ocrFilename='" + ocrFilename + '\'' +
 			", xmltext='" + xmltext + '\'' +
+			", nodeId=" + nodeId +
 			", creator=" + creator +
 			'}';
 	}

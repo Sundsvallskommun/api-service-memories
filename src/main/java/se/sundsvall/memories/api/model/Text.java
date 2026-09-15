@@ -262,13 +262,13 @@ public class Text extends AbstractCreatedObject<Text> {
 			&& Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename)
 			&& Objects.equals(largeImageFilename, that.largeImageFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(mediaFiles, that.mediaFiles)
-			&& Objects.equals(creator, that.creator);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(creator, that.creator);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(textId, filename, documentDate, documentEndDate, documentTitle, locationText, location, subjectId, subject, comment,
-			thumbnailFilename, largeImageFilename, ocrFilename, xmltext, mediaFiles, creator);
+			thumbnailFilename, largeImageFilename, ocrFilename, xmltext, mediaFiles, nodeId, creator);
 	}
 
 	@Override
@@ -289,6 +289,7 @@ public class Text extends AbstractCreatedObject<Text> {
 			", ocrFilename='" + ocrFilename + '\'' +
 			", xmltext='" + xmltext + '\'' +
 			", mediaFiles=" + mediaFiles +
+			", nodeId=" + nodeId +
 			", creator=" + creator +
 			'}';
 	}

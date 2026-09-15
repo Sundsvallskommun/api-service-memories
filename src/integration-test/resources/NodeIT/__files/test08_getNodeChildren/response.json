@@ -24,7 +24,14 @@
 			"sortOrder": 20,
 			"subItemCount": 2,
 			"publishedSubItemCount": 2,
-			"options": 6
+			"options": 6,
+			"subject": {
+				"code": "MUS",
+				"text": "Musik",
+				"description": "Musikinspelning"
+			},
+			"seriesSignum": "A1",
+			"oldSeriesSignum": "A I"
 		},
 		{
 			"id": 120,

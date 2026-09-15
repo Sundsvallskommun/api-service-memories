@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -23,7 +24,8 @@ class CombinedObjectMapperTest {
 			.withTitle("Stadsvy")
 			.withYear(1920)
 			.withTopography(TopographyEntity.create().withId(1).withName("Sundsvalls kommun"))
-			.withLocationText("Sundsvall");
+			.withLocationText("Sundsvall")
+			.withNodeId(19000);
 	}
 
 	@Test
@@ -39,6 +41,13 @@ class CombinedObjectMapperTest {
 		assertThat(result.getTopographyId()).isEqualTo(1);
 		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
 		assertThat(result.getLocation()).isEqualTo("Sundsvalls kommun");
+		assertThat(result.getNodeId()).isEqualTo(19000);
+	}
+
+	/** A register row is not placed in the tree, and comes through with no node rather than a made-up one. */
+	@Test
+	void toCombinedObjectWithoutNode() {
+		assertThat(CombinedObjectMapper.toCombinedObject(CombinedObjectEntity.create().withObjectKey("person-1")).getNodeId()).isNull();
 	}
 
 	/**
@@ -153,5 +162,31 @@ class CombinedObjectMapperTest {
 	@Test
 	void toCategoryCountListWhenNull() {
 		assertThat(CombinedObjectMapper.toCategoryCountList(null)).isEqualTo(emptyList());
+	}
+
+	/** The chip is labelled the way /topographies labels the place, so a place with only a parish shows that alone. */
+	@Test
+	void toTopographyCountBuildsTheDisplayName() {
+		final var result = CombinedObjectMapper.toTopographyCount(new TopographyCount(4, "Njurunda", "Kvissleby", 12L));
+
+		assertThat(result.getTopographyId()).isEqualTo(4);
+		assertThat(result.getName()).isEqualTo("Kvissleby, Njurunda");
+		assertThat(result.getCount()).isEqualTo(12L);
+		assertThat(CombinedObjectMapper.toTopographyCount(new TopographyCount(1, "Sundsvall", " ", 1L)).getName()).isEqualTo("Sundsvall");
+		assertThat(CombinedObjectMapper.toTopographyCount(null)).isNull();
+	}
+
+	/** Ordered by the label in Swedish order, ties by id — the order /topographies lists the same names in. */
+	@Test
+	void toTopographyCountListSortsByDisplayNameInSwedishOrder() {
+		assertThat(CombinedObjectMapper.toTopographyCountList(List.of(
+			new TopographyCount(3, "Örnsköldsvik", null, 1L),
+			new TopographyCount(2, "Timrå", "Söråker", 1L),
+			new TopographyCount(9, "Sundsvall", null, 1L),
+			new TopographyCount(4, "Njurunda", "Kvissleby", 1L),
+			new TopographyCount(1, "Sundsvall", null, 1L))))
+			.extracting(se.sundsvall.memories.api.model.TopographyCount::getTopographyId, se.sundsvall.memories.api.model.TopographyCount::getName)
+			.containsExactly(tuple(4, "Kvissleby, Njurunda"), tuple(1, "Sundsvall"), tuple(9, "Sundsvall"), tuple(2, "Söråker, Timrå"), tuple(3, "Örnsköldsvik"));
+		assertThat(CombinedObjectMapper.toTopographyCountList(null)).isEqualTo(emptyList());
 	}
 }

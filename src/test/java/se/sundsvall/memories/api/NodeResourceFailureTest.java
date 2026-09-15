@@ -72,7 +72,7 @@ class NodeResourceFailureTest {
 		assertThat(response.getStatus()).isEqualTo(BAD_REQUEST);
 		assertThat(response.getViolations())
 			.extracting(Violation::message)
-			.containsExactly("must be one of: name, startYear, stopYear, sortOrder");
+			.containsExactly("must be one of: name, startYear, stopYear, sortOrder, location");
 
 		verifyNoInteractions(serviceMock);
 	}

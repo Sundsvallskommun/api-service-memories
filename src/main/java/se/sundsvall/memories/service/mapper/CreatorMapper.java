@@ -72,13 +72,20 @@ final class CreatorMapper {
 			.orElse(null);
 	}
 
-	private static Optional<PersonEntity> realPerson(final PersonEntity person) {
+	/**
+	 * The person when it is a real one — not the sentinel, not soft-deleted — for the callers that name a node after them.
+	 */
+	static Optional<PersonEntity> realPerson(final PersonEntity person) {
 		return ofNullable(person)
 			.filter(candidate -> !PERSON_PLACEHOLDER_ID.equals(candidate.getPersonId()))
 			.filter(candidate -> candidate.getDeletedDate() == null);
 	}
 
-	private static Optional<LegalEntityEntity> realLegalEntity(final LegalEntityEntity legalEntity) {
+	/**
+	 * The legal entity when it is a real one — not the sentinel, not soft-deleted — for the callers that read more of
+	 * it than its name, so that they cannot disagree with the creator this mapper names.
+	 */
+	static Optional<LegalEntityEntity> realLegalEntity(final LegalEntityEntity legalEntity) {
 		return ofNullable(legalEntity)
 			.filter(candidate -> !LEGAL_ENTITY_PLACEHOLDER_ID.equals(candidate.getLegalEntityId()))
 			.filter(candidate -> candidate.getDeletedDate() == null);

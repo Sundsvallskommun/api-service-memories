@@ -318,4 +318,37 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/** What a node's own page lists under it: the objects created in that node, and no register row. */
+	@Test
+	void test29_searchObjectsFilteredByNode() {
+		setupCall()
+			.withServicePath(PATH + "?nodeId=19000")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/** The ids are alternatives, and every hit reports the node it sits in. */
+	@Test
+	void test30_searchObjectsFilteredBySeveralNodes() {
+		setupCall()
+			.withServicePath(PATH + "?nodeId=19000,20003&sortBy=objectKey&sortDirection=ASC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/** Rows without a place come last whichever way the list runs, so a list of places never opens on the empty ones. */
+	@Test
+	void test31_searchObjectsSortedByLocationDescending() {
+		setupCall()
+			.withServicePath(PATH + "?query=Nordin&sortBy=location&sortDirection=DESC")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

@@ -17,7 +17,8 @@
 			"location": "Timrå",
 			"objectType": "Foto",
 			"thumbnailFilename": "FOTO.id_1003_fil_liten.jpg",
-			"largeImageFilename": "FOTO.id_1003_fil_stor.jpg"
+			"largeImageFilename": "FOTO.id_1003_fil_stor.jpg",
+			"nodeId": 19002
 		}
 	]
 }

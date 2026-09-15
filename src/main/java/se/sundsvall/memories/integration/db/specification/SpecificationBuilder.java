@@ -2,6 +2,8 @@ package se.sundsvall.memories.integration.db.specification;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Fetch;
+import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -97,6 +99,18 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows whose attribute is one of the ids, which are alternatives. Nulls are dropped, so an empty selection
+	 * matches every row. The id counterpart of {@link #buildInFilter(String, List)}, which is for text.
+	 */
+	public Specification<T> buildIdInFilter(final String attribute, final List<?> values) {
+		final var wanted = distinctNonNull(values);
+		if (wanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, _) -> root.get(attribute).in(wanted);
+	}
+
+	/**
 	 * Matches rows whose value, lower-cased, is one of the given alternatives. The alternatives are trimmed, blank ones
 	 * dropped and the rest lower-cased and deduplicated before the comparison, so {@code " Man "} matches a stored
 	 * {@code man}. Matches every row when no alternative remains.
@@ -163,8 +177,31 @@ public class SpecificationBuilder<T> {
 			.toArray(Predicate[]::new));
 	}
 
-	private Predicate matchesAssociation(final Root<T> root, final CriteriaBuilder cb, final AssociationAttributes association, final String pattern) {
-		final var join = reuseFetchOrJoin(root, association.association());
+	/**
+	 * Matches rows where the value occurs in one of the entity's own attributes, or in an attribute of one of the
+	 * guarded associations reached through {@code association} — a lookup row of the entity's that in turn names other
+	 * rows. The archive nodes need this: a node named after its arkivbildare has an empty name of its own, and the
+	 * name is found one row further in. The associations are guarded as in {@link #buildAssociationLikeAnyFilter}.
+	 * Matches every row when the value is blank.
+	 */
+	public Specification<T> buildLikeAnyFilter(final List<String> attributes, final String association, final List<AssociationAttributes> nestedAssociations,
+		final String value) {
+		if (value == null || value.isBlank()) {
+			return Specification.unrestricted();
+		}
+		final var trimmed = value.trim();
+		final var pattern = "%" + escapeWildcards(trimmed) + "%";
+		return (root, _, cb) -> {
+			final var holder = reuseFetchOrJoin(root, association);
+			final var nested = nestedAssociations.stream()
+				.map(nestedAssociation -> matchesAssociation(holder, cb, nestedAssociation, pattern));
+			return cb.or(Stream.concat(Stream.of(matchesAnyAttribute(root, cb, attributes, trimmed)), nested)
+				.toArray(Predicate[]::new));
+		};
+	}
+
+	private Predicate matchesAssociation(final From<?, ?> from, final CriteriaBuilder cb, final AssociationAttributes association, final String pattern) {
+		final var join = reuseFetchOrJoin(from, association.association());
 		final var matches = association.attributeGroups().stream()
 			.map(group -> cb.like(joined(cb, join, group), pattern, LIKE_ESCAPE));
 		return cb.and(
@@ -208,7 +245,7 @@ public class SpecificationBuilder<T> {
 	}
 
 	/** The associated row is a real one: not the sentinel the foreign key defaults to, and not soft-deleted. */
-	private Predicate isRealRow(final CriteriaBuilder cb, final Join<T, ?> join, final GuardedAssociation guard) {
+	private Predicate isRealRow(final CriteriaBuilder cb, final Join<?, ?> join, final GuardedAssociation guard) {
 		return cb.and(
 			cb.notEqual(join.get(guard.idAttribute()), guard.placeholderId()),
 			cb.isNull(join.get(guard.deletedAttribute())));
@@ -231,7 +268,7 @@ public class SpecificationBuilder<T> {
 	 * person's name lives in two columns, and a search for "Anton Nordin" is in neither of them on its own. A missing
 	 * attribute reads as empty rather than turning the whole expression into {@code NULL}.
 	 */
-	private Expression<String> joined(final CriteriaBuilder cb, final Join<T, ?> join, final List<String> attributes) {
+	private Expression<String> joined(final CriteriaBuilder cb, final Join<?, ?> join, final List<String> attributes) {
 		return attributes.stream()
 			.map(attribute -> cb.coalesce(join.<String>get(attribute), ""))
 			.map(Expression.class::cast)
@@ -309,6 +346,28 @@ public class SpecificationBuilder<T> {
 			final var matches = Stream.concat(
 				associationAttributes.stream().map(attribute -> cb.like(topography.<String>get(attribute), pattern, LIKE_ESCAPE)),
 				Stream.of(cb.like(root.<String>get(textAttribute), pattern, LIKE_ESCAPE)));
+			return cb.or(matches.toArray(Predicate[]::new));
+		};
+	}
+
+	/**
+	 * As {@link #buildLocationFilter}, for an entity whose place lives one association further in: the topography and
+	 * the free-text place are both attributes of the row {@code association} points at. Every join is a left join, so
+	 * a row without that lookup row, or with one that names no place, simply does not match. Matches every row when the
+	 * location is blank.
+	 */
+	public Specification<T> buildNestedLocationFilter(final String association, final String nestedAssociation, final List<String> nestedAttributes,
+		final String textAttribute, final String location) {
+		if (location == null || location.isBlank()) {
+			return Specification.unrestricted();
+		}
+		final var pattern = "%" + escapeWildcards(location.trim()) + "%";
+		return (root, _, cb) -> {
+			final var holder = reuseFetchOrJoin(root, association);
+			final var topography = reuseFetchOrJoin(holder, nestedAssociation);
+			final var matches = Stream.concat(
+				nestedAttributes.stream().map(attribute -> cb.like(topography.<String>get(attribute), pattern, LIKE_ESCAPE)),
+				Stream.of(cb.like(holder.<String>get(textAttribute), pattern, LIKE_ESCAPE)));
 			return cb.or(matches.toArray(Predicate[]::new));
 		};
 	}
@@ -394,6 +453,19 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows whose association's attribute equals the value regardless of case — a lookup row matched by its
+	 * name rather than its id. Reuses a fetch or join of the association already in the query. Matches every row when
+	 * the value is blank.
+	 */
+	public Specification<T> buildAssociationEqualIgnoreCaseFilter(final String association, final String attribute, final String value) {
+		if (value == null || value.isBlank()) {
+			return Specification.unrestricted();
+		}
+		final var lowerCased = value.trim().toLowerCase(Locale.ROOT);
+		return (root, _, cb) -> cb.equal(cb.lower(reuseFetchOrJoin(root, association).get(attribute)), lowerCased);
+	}
+
+	/**
 	 * As {@link #buildAssociationEqualFilter(String, String, Object)}, and the associated row must not be soft-deleted.
 	 * The originator filters need that: a deleted register record is not served by its own endpoint, so it must not
 	 * select objects here either.
@@ -420,6 +492,21 @@ public class SpecificationBuilder<T> {
 			return Specification.unrestricted();
 		}
 		return (root, _, _) -> root.get(association).get(attribute).in(wanted);
+	}
+
+	/**
+	 * As {@link #buildLookupInFilter}, one association further in: the rows whose lookup row, reached through
+	 * {@code association}, points through a second association at one of the ids. The first association reuses a fetch
+	 * or join already in the query, or is left-joined; only the foreign key of the second is read, so it adds no join of
+	 * its own. Applies no soft-delete guard, like the filter it extends, so it is for lookup tables only. Matches every
+	 * row when the list yields no ids.
+	 */
+	public Specification<T> buildNestedLookupInFilter(final String association, final String nestedAssociation, final String attribute, final List<?> values) {
+		final var wanted = distinctNonNull(values);
+		if (wanted.isEmpty()) {
+			return Specification.unrestricted();
+		}
+		return (root, _, _) -> reuseFetchOrJoin(root, association).get(nestedAssociation).get(attribute).in(wanted);
 	}
 
 	/**
@@ -538,6 +625,30 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Left-fetches an association and, through it, the given nested ones, so a row's lookup row and the rows it names
+	 * arrive in the one query. Reuses a fetch of the association already in the query rather than adding a second.
+	 * Skipped for the derived count query, like {@link #buildFetchJoin}.
+	 */
+	public Specification<T> buildNestedFetchJoin(final String association, final List<String> nestedAssociations) {
+		return (root, query, cb) -> {
+			if (query == null || !Long.class.equals(query.getResultType())) {
+				final var fetch = reuseFetch(root, association);
+				nestedAssociations.forEach(nested -> fetch.fetch(nested, JoinType.LEFT));
+			}
+			return cb.conjunction();
+		};
+	}
+
+	/** The fetch of the association already in the query, or a new left fetch of it. */
+	private Fetch<?, ?> reuseFetch(final Root<T> root, final String association) {
+		return root.getFetches().stream()
+			.filter(fetch -> fetch.getAttribute().getName().equals(association))
+			.map(fetch -> (Fetch<?, ?>) fetch)
+			.findFirst()
+			.orElseGet(() -> root.fetch(association, JoinType.LEFT));
+	}
+
+	/**
 	 * Orders the query without restricting it, so an order can be a computed expression rather than a column. Only
 	 * applies while the {@code Pageable} carries no sort of its own, which Spring Data would otherwise use instead.
 	 * Skipped for the derived count query.
@@ -589,19 +700,20 @@ public class SpecificationBuilder<T> {
 	 * {@code LEFT JOIN}. A fetch and a join are separate nodes in the criteria tree, but the same Hibernate object
 	 * implements both. There is no fetch in the count queries, where a plain join is reused the same way — the counter
 	 * that groups on the association creates it first, and every filter through the association then shares it —
-	 * and created when there is none.
+	 * and created when there is none. Works from the root and from a join alike, so a lookup row's own associations
+	 * are reused the same way.
 	 */
-	@SuppressWarnings("unchecked")
-	private Join<T, ?> reuseFetchOrJoin(final Root<T> root, final String association) {
-		final var fetched = root.getFetches().stream()
+	private Join<?, ?> reuseFetchOrJoin(final From<?, ?> from, final String association) {
+		final var fetched = from.getFetches().stream()
 			.filter(fetch -> fetch.getAttribute().getName().equals(association))
 			.filter(Join.class::isInstance)
-			.map(fetch -> (Join<T, ?>) fetch);
-		final var joined = root.getJoins().stream()
-			.filter(join -> join.getAttribute().getName().equals(association));
+			.map(fetch -> (Join<?, ?>) fetch);
+		final var joined = from.getJoins().stream()
+			.filter(join -> join.getAttribute().getName().equals(association))
+			.map(join -> (Join<?, ?>) join);
 		return Stream.concat(fetched, joined)
 			.findFirst()
-			.orElseGet(() -> root.join(association, JoinType.LEFT));
+			.orElseGet(() -> from.join(association, JoinType.LEFT));
 	}
 
 	/**

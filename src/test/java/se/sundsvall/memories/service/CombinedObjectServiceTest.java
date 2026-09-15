@@ -14,6 +14,7 @@ import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -50,6 +51,7 @@ class CombinedObjectServiceTest {
 		when(repositoryMock.countByType(parameters)).thenReturn(List.of(new TypeCount("Foto", 1L), new TypeCount("Text", 3L)));
 		when(repositoryMock.countByGender(parameters)).thenReturn(List.of(new GenderCount("kvinna", 2L), new GenderCount("man", 5L)));
 		when(repositoryMock.countByCategory(parameters)).thenReturn(List.of(new CategoryCount(5, "Kommitté", 4L)));
+		when(repositoryMock.countByTopography(parameters)).thenReturn(List.of(new TopographyCount(4, "Njurunda", "Kvissleby", 2L)));
 
 		final var result = service.search(parameters);
 
@@ -62,6 +64,9 @@ class CombinedObjectServiceTest {
 		assertThat(result.getCategoryCounts()).extracting(se.sundsvall.memories.api.model.CategoryCount::getCategoryId, se.sundsvall.memories.api.model.CategoryCount::getName,
 			se.sundsvall.memories.api.model.CategoryCount::getCount)
 			.containsExactly(tuple(5, "Kommitté", 4L));
+		assertThat(result.getTopographyCounts()).extracting(se.sundsvall.memories.api.model.TopographyCount::getTopographyId,
+			se.sundsvall.memories.api.model.TopographyCount::getName, se.sundsvall.memories.api.model.TopographyCount::getCount)
+			.containsExactly(tuple(4, "Kvissleby, Njurunda", 2L));
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 	}
 
@@ -80,6 +85,7 @@ class CombinedObjectServiceTest {
 		assertThat(result.getTypeCounts()).isEmpty();
 		assertThat(result.getGenderCounts()).isEmpty();
 		assertThat(result.getCategoryCounts()).isEmpty();
+		assertThat(result.getTopographyCounts()).isEmpty();
 
 		final var searchCaptor = ArgumentCaptor.forClass(CombinedObjectParameters.class);
 		verify(repositoryMock).findAllByParameters(searchCaptor.capture(), eq(PAGEABLE));
@@ -87,6 +93,7 @@ class CombinedObjectServiceTest {
 		verify(repositoryMock).countByType(parameters);
 		verify(repositoryMock).countByGender(parameters);
 		verify(repositoryMock).countByCategory(parameters);
+		verify(repositoryMock).countByTopography(parameters);
 	}
 
 	/** The metadata reports the caller's own sort only, not relevance or the id tiebreak. */

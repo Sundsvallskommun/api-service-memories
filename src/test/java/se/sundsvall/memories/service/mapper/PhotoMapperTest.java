@@ -28,6 +28,7 @@ class PhotoMapperTest {
 			.withLargeImageFilename("FOTO.id_1234_fil_stor.jpg")
 			.withRights("Free use")
 			.withRestricted("Nej")
+			.withNodeId(19000)
 			.withOptions(4);
 
 		// the originator associations live on AbstractCreatedEntity and carry no fluent builder
@@ -48,6 +49,7 @@ class PhotoMapperTest {
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
 		assertThat(result.getLargeImageFilename()).isEqualTo("FOTO.id_1234_fil_stor.jpg");
 		assertThat(result.getRights()).isEqualTo("Free use");
+		assertThat(result.getNodeId()).isEqualTo(19000);
 		assertThat(result.getCreator().getPersonId()).isEqualTo(1);
 		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
 		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");

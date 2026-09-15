@@ -20,7 +20,8 @@
 			"comment": "Handskrivna minnen från stadshuset",
 			"thumbnailFilename": "TEXT.id_1001_fil_liten.jpeg",
 			"largeImageFilename": "TEXT.id_1001_fil_stor.jpeg",
-			"ocrFilename": "TEXT.id_1001_fil_txt.xml"
+			"ocrFilename": "TEXT.id_1001_fil_txt.xml",
+			"nodeId": 20001
 		},
 		{
 			"textId": 1002,
@@ -35,7 +36,8 @@
 			"comment": "Brev från lokal invånare",
 			"thumbnailFilename": "TEXT.id_1002_fil_liten.jpeg",
 			"largeImageFilename": "TEXT.id_1002_fil_stor.jpeg",
-			"ocrFilename": "TEXT.id_1002_fil_txt.xml"
+			"ocrFilename": "TEXT.id_1002_fil_txt.xml",
+			"nodeId": 20002
 		},
 		{
 			"textId": 1003,
@@ -48,6 +50,7 @@
 			"subject": "Allmänt",
 			"comment": "Protokoll från bolagsstämman",
 			"thumbnailFilename": "TEXT.id_1003_fil_liten.jpeg",
+			"nodeId": 20003,
 			"creator": {
 				"legalEntity": "Berg Aktiebolag",
 				"legalEntityId": 20

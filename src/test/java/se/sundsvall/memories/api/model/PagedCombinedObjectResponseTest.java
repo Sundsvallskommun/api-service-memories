@@ -36,6 +36,7 @@ class PagedCombinedObjectResponseTest {
 			.withTypeCounts(List.of(ObjectTypeCount.create().withObjectType("Foto").withCount(1L)))
 			.withGenderCounts(List.of(GenderCount.create().withGender("man").withCount(2L)))
 			.withCategoryCounts(List.of(CategoryCount.create().withCategoryId(5).withName("Kommitté").withCount(3L)))
+			.withTopographyCounts(List.of(TopographyCount.create().withTopographyId(4).withName("Kvissleby, Njurunda").withCount(2L)))
 			.withMetaData(meta);
 
 		assertThat(result.getObjects()).hasSize(1);
@@ -45,6 +46,8 @@ class PagedCombinedObjectResponseTest {
 			.containsExactly(tuple("man", 2L));
 		assertThat(result.getCategoryCounts()).extracting(CategoryCount::getCategoryId, CategoryCount::getName, CategoryCount::getCount)
 			.containsExactly(tuple(5, "Kommitté", 3L));
+		assertThat(result.getTopographyCounts()).extracting(TopographyCount::getTopographyId, TopographyCount::getName, TopographyCount::getCount)
+			.containsExactly(tuple(4, "Kvissleby, Njurunda", 2L));
 		assertThat(result.getMetaData().getPage()).isEqualTo(1);
 	}
 

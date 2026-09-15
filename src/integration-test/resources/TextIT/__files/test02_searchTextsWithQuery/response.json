@@ -20,7 +20,8 @@
 			"comment": "Handskrivna minnen från stadshuset",
 			"thumbnailFilename": "TEXT.id_1001_fil_liten.jpeg",
 			"largeImageFilename": "TEXT.id_1001_fil_stor.jpeg",
-			"ocrFilename": "TEXT.id_1001_fil_txt.xml"
+			"ocrFilename": "TEXT.id_1001_fil_txt.xml",
+			"nodeId": 20001
 		}
 	]
 }

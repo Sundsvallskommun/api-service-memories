@@ -30,9 +30,9 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 
 	@ArraySchema(schema = @Schema(description = """
 		ID of the place, as listed by /topographies — the exact counterpart of location, for a place picked from \
-		that list rather than typed. Repeat the parameter, or comma-separate the values, to select several — they are \
-		alternatives. Only the object types and legal entities are placed in a topography; the person registers hold a \
-		parish as free text, so this filter excludes them.""", examples = "1"))
+		that list rather than typed, and counted by topographyCounts. Repeat the parameter, or comma-separate the values, \
+		to select several — they are alternatives. Only the object types and legal entities are placed in a topography; \
+		the person registers hold a parish as free text, so this filter excludes them.""", examples = "1"))
 	private List<Integer> topographyId;
 
 	/**
@@ -71,6 +71,14 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		is a property of the originator, so like creator this filter keeps only the objects with an originator in \
 		it and excludes the register types.""", examples = "5"))
 	private List<Integer> categoryId;
+
+	@ArraySchema(schema = @Schema(description = """
+		ID of the archive node (arkiv, serie or volym) to list the objects of, as returned by /nodes — what the node's \
+		own page shows under it. Repeat the parameter, or comma-separate the values, to select several — they are \
+		alternatives. An object sits in exactly one node, so a node's descendants are not searched; list them with \
+		/nodes/{id}/children. Only the object types are placed in the tree, so this filter excludes the register types.""",
+		examples = "19000"))
+	private List<Integer> nodeId;
 
 	public static CombinedObjectParameters create() {
 		return new CombinedObjectParameters();
@@ -208,6 +216,19 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 	 * {@code relevance} and {@code location} are translated by the specification; every other accepted value is an entity
 	 * attribute.
 	 */
+	public List<Integer> getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(final List<Integer> nodeId) {
+		this.nodeId = nodeId;
+	}
+
+	public CombinedObjectParameters withNodeId(final List<Integer> nodeId) {
+		this.nodeId = nodeId;
+		return this;
+	}
+
 	@Override
 	@ArraySchema(schema = @Schema(description = """
 		Property to sort on. 'relevance' ranks the best match first and is the default when a query is \
@@ -241,12 +262,14 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		return Objects.equals(query, that.query) && Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(location, that.location)
 			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(objectType, that.objectType) && Objects.equals(gender, that.gender)
 			&& Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId)
-			&& Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId) && Objects.equals(categoryId, that.categoryId);
+			&& Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId) && Objects.equals(categoryId, that.categoryId)
+			&& Objects.equals(nodeId, that.nodeId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, topographyId, objectType, gender, creator, creatorPersonId, creatorLegalEntityId, categoryId);
+		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, topographyId, objectType, gender, creator, creatorPersonId, creatorLegalEntityId, categoryId,
+			nodeId);
 	}
 
 	@Override
@@ -263,6 +286,7 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			", creatorPersonId=" + creatorPersonId +
 			", creatorLegalEntityId=" + creatorLegalEntityId +
 			", categoryId=" + categoryId +
+			", nodeId=" + nodeId +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

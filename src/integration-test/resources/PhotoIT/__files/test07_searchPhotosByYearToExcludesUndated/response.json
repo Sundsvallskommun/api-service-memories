@@ -22,7 +22,8 @@
 			"conditionCategory": "Bra",
 			"conditionAssessment": "Inga skador",
 			"thumbnailFilename": "FOTO.id_1001_fil_liten.jpg",
-			"largeImageFilename": "FOTO.id_1001_fil_stor.jpg"
+			"largeImageFilename": "FOTO.id_1001_fil_stor.jpg",
+			"nodeId": 19000
 		},
 		{
 			"photoId": 1005,

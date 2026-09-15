@@ -24,8 +24,8 @@ final class SortableProperties {
 	static final String LEGAL_ENTITY = "name|startDate|endDate|legalEntityId";
 	static final String LEGAL_ENTITY_MESSAGE = "must be one of: name, startDate, endDate, legalEntityId";
 
-	static final String NODE = "name|startYear|stopYear|sortOrder";
-	static final String NODE_MESSAGE = "must be one of: name, startYear, stopYear, sortOrder";
+	static final String NODE = "name|startYear|stopYear|sortOrder|location";
+	static final String NODE_MESSAGE = "must be one of: name, startYear, stopYear, sortOrder, location";
 
 	static final String PERSON = "lastName|firstName|birthDate|birthParish";
 	static final String PERSON_MESSAGE = "must be one of: lastName, firstName, birthDate, birthParish";

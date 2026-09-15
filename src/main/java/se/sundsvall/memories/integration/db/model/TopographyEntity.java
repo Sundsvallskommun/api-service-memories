@@ -117,6 +117,17 @@ public class TopographyEntity {
 	 * @return the display name, or {@code null} if neither column holds anything
 	 */
 	public String getDisplayName() {
+		return displayName(place, name);
+	}
+
+	/**
+	 * The same rule over bare columns, for a counter that has grouped on them and holds no entity.
+	 *
+	 * @param  place {@code PLATS}
+	 * @param  name  {@code TOPNAMN}
+	 * @return       the display name, or {@code null} if neither holds anything
+	 */
+	public static String displayName(final String place, final String name) {
 		final var label = Stream.of(place, name)
 			.map(part -> ofNullable(part).map(String::trim).orElse(""))
 			.filter(not(String::isEmpty))

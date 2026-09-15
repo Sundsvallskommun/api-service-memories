@@ -18,6 +18,13 @@
 	],
 	"genderCounts": [],
 	"categoryCounts": [],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 2
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "jurpers-10",

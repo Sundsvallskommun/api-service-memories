@@ -11,7 +11,9 @@
 		"sortOrder": 10,
 		"subItemCount": 0,
 		"publishedSubItemCount": 0,
-		"options": 6
+		"options": 6,
+		"volumeNumber": "001",
+		"volumePlacement": "Hylla 3"
 	},
 	"path": [
 		{
@@ -25,7 +27,25 @@
 			"sortOrder": 10,
 			"subItemCount": 3,
 			"publishedSubItemCount": 2,
-			"options": 6
+			"options": 6,
+			"creator": {
+				"legalEntityId": 10,
+				"legalEntity": "Nödhjälpskommittén 1888-1889"
+			},
+			"activityStartDate": "1888",
+			"activityEndDate": "1889",
+			"institutionId": 2,
+			"institution": "Sundsvalls museum",
+			"institutionCode": "SVM",
+			"categoryId": 5,
+			"category": "Kommitté",
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"volumeCount": 3,
+			"shelfMeters": 12.55,
+			"accessionNumber": "ACC-1862",
+			"holdingsCode": "B1",
+			"historyFilename": "arkiv_100_historik.xml"
 		},
 		{
 			"id": 110,
@@ -39,7 +59,14 @@
 			"sortOrder": 20,
 			"subItemCount": 2,
 			"publishedSubItemCount": 2,
-			"options": 6
+			"options": 6,
+			"subject": {
+				"code": "MUS",
+				"text": "Musik",
+				"description": "Musikinspelning"
+			},
+			"seriesSignum": "A1",
+			"oldSeriesSignum": "A I"
 		}
 	]
 }

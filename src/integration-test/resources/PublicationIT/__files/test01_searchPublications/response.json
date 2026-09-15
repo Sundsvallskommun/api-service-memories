@@ -22,7 +22,8 @@
 			"comment": "Tidningsnummer från 1841",
 			"thumbnailFilename": "PUBL.id_207_fil_liten.jpeg",
 			"largeImageFilename": "PUBL.id_207_fil_stor.jpeg",
-			"ocrFilename": "PUBL.id_207_fil_txt.xml"
+			"ocrFilename": "PUBL.id_207_fil_txt.xml",
+			"nodeId": 18407
 		},
 		{
 			"publicationId": 300,
@@ -36,7 +37,8 @@
 			"comment": "Kommunens informationsbroschyr",
 			"thumbnailFilename": "PUBL.id_300_fil_liten.jpeg",
 			"largeImageFilename": "PUBL.id_300_fil_stor.jpeg",
-			"ocrFilename": "PUBL.id_300_fil_txt.xml"
+			"ocrFilename": "PUBL.id_300_fil_txt.xml",
+			"nodeId": 18500
 		},
 		{
 			"publicationId": 400,
@@ -50,7 +52,8 @@
 			"comment": "Reklamaffisch för årlig stämma",
 			"thumbnailFilename": "PUBL.id_400_fil_liten.jpeg",
 			"largeImageFilename": "PUBL.id_400_fil_stor.jpeg",
-			"ocrFilename": "PUBL.id_400_fil_txt.xml"
+			"ocrFilename": "PUBL.id_400_fil_txt.xml",
+			"nodeId": 18600
 		}
 	]
 }

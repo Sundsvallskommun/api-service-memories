@@ -36,6 +36,28 @@
 			"count": 1
 		}
 	],
+	"topographyCounts": [
+		{
+			"topographyId": 4,
+			"name": "Kvissleby, Njurunda",
+			"count": 1
+		},
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 11
+		},
+		{
+			"topographyId": 16,
+			"name": "Sundsvall stad",
+			"count": 2
+		},
+		{
+			"topographyId": 2,
+			"name": "Timrå",
+			"count": 5
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "foto-1003",
@@ -45,7 +67,8 @@
 			"year": 1960,
 			"topographyId": 2,
 			"location": "Timrå",
-			"locationText": "Timrå"
+			"locationText": "Timrå",
+			"nodeId": 19002
 		},
 		{
 			"objectKey": "jurpers-20",
@@ -64,7 +87,8 @@
 			"year": 1975,
 			"topographyId": 2,
 			"location": "Timrå",
-			"locationText": "Timrå"
+			"locationText": "Timrå",
+			"nodeId": 202
 		},
 		{
 			"objectKey": "text-1002",
@@ -74,7 +98,8 @@
 			"year": 1950,
 			"topographyId": 2,
 			"location": "Timrå",
-			"locationText": "Timrå"
+			"locationText": "Timrå",
+			"nodeId": 20002
 		},
 		{
 			"objectKey": "text-1003",
@@ -85,6 +110,7 @@
 			"topographyId": 2,
 			"location": "Timrå",
 			"locationText": "Timrå",
+			"nodeId": 20003,
 			"creator": {
 				"legalEntity": "Berg Aktiebolag",
 				"legalEntityId": 20

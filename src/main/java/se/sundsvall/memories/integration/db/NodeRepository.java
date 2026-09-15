@@ -12,11 +12,17 @@ import se.sundsvall.memories.integration.db.model.NodeEntity;
 
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.activeFrom;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.activeUntil;
+import static se.sundsvall.memories.integration.db.specification.NodeSpecification.fetchAttributes;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.fetchNodeType;
+import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasCategory;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasId;
+import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasInstitution;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasNodeType;
+import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasNodeTypeName;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasParent;
+import static se.sundsvall.memories.integration.db.specification.NodeSpecification.hasTopography;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.matches;
+import static se.sundsvall.memories.integration.db.specification.NodeSpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.NodeSpecification.published;
 
@@ -42,6 +48,7 @@ public interface NodeRepository extends JpaRepository<NodeEntity, Integer>, JpaS
 	 */
 	default Optional<NodeEntity> findNodeById(final Integer id) {
 		return findOne(fetchNodeType()
+			.and(fetchAttributes())
 			.and(notDeleted())
 			.and(hasId(id)));
 	}
@@ -57,10 +64,16 @@ public interface NodeRepository extends JpaRepository<NodeEntity, Integer>, JpaS
 
 	private static Specification<NodeEntity> byParameters(final NodeParameters parameters) {
 		return fetchNodeType()
+			.and(fetchAttributes())
 			.and(notDeleted())
 			.and(published())
 			.and(matches(parameters.getQuery()))
 			.and(hasNodeType(parameters.getNodeTypeId()))
+			.and(hasNodeTypeName(parameters.getNodeType()))
+			.and(hasInstitution(parameters.getInstitutionId()))
+			.and(hasCategory(parameters.getCategoryId()))
+			.and(hasTopography(parameters.getTopographyId()))
+			.and(matchesLocation(parameters.getLocation()))
 			.and(activeFrom(parameters.getYearFrom()))
 			.and(activeUntil(parameters.getYearTo()));
 	}

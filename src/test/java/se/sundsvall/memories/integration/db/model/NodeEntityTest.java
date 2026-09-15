@@ -28,15 +28,16 @@ class NodeEntityTest {
 		assertThat(NodeEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("nodeType"),
-			hasValidBeanEqualsExcluding("nodeType"),
-			hasValidBeanToStringExcluding("nodeType")));
+			hasValidBeanHashCodeExcluding("nodeType", "attributes"),
+			hasValidBeanEqualsExcluding("nodeType", "attributes"),
+			hasValidBeanToStringExcluding("nodeType", "attributes")));
 	}
 
 	@Test
 	void testBuilderMethods() {
 		final var nodeType = NodeTypeEntity.create().withId(1).withName("Arkiv");
 		final var deletedDate = LocalDate.of(2026, JANUARY, 15);
+		final var attributes = NodeAttributesEntity.create().withNodeId(100).withSeriesSignum("A1");
 
 		final var result = NodeEntity.create()
 			.withId(100)
@@ -50,7 +51,8 @@ class NodeEntityTest {
 			.withSubItemCount(42)
 			.withPublishedSubItemCount(40)
 			.withOptions(6)
-			.withDeletedDate(deletedDate);
+			.withDeletedDate(deletedDate)
+			.withAttributes(attributes);
 
 		assertThat(result.getId()).isEqualTo(100);
 		assertThat(result.getParentId()).isEqualTo(10);
@@ -64,6 +66,7 @@ class NodeEntityTest {
 		assertThat(result.getPublishedSubItemCount()).isEqualTo(40);
 		assertThat(result.getOptions()).isEqualTo(6);
 		assertThat(result.getDeletedDate()).isEqualTo(deletedDate);
+		assertThat(result.getAttributes()).isEqualTo(attributes);
 	}
 
 	@Test

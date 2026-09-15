@@ -163,4 +163,97 @@ class NodeIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/** The institution is read from the node's attribute row; a node without one never matches. */
+	@Test
+	void test12_searchNodesByInstitution() {
+		setupCall()
+			.withServicePath(PATH + "?institutionId=3")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/** The ids are alternatives. */
+	@Test
+	void test13_searchNodesBySeveralCategories() {
+		setupCall()
+			.withServicePath(PATH + "?categoryId=2,5")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/** The sentinel category is not a category, and naming it alone matches nothing. */
+	@Test
+	void test14_searchNodesByTheSentinelCategory() {
+		setupCall()
+			.withServicePath(PATH + "?categoryId=1")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test15_searchNodesByTopography() {
+		setupCall()
+			.withServicePath(PATH + "?topographyId=2")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/** The place is matched through the topography the node is placed in, case-insensitively. */
+	@Test
+	void test16_searchNodesByLocation() {
+		setupCall()
+			.withServicePath(PATH + "?location=njurunda")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/** The archives themselves, by the type's name: what a list of arkiv och samlingar shows. */
+	@Test
+	void test17_searchNodesByNodeTypeName() {
+		setupCall()
+			.withServicePath(PATH + "?nodeType=arkiv")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Ordered by the place the node is placed in, the nodes without one last, and reported under the key the caller
+	 * asked for rather than the columns it stands for.
+	 */
+	@Test
+	void test18_searchNodesSortedByLocation() {
+		setupCall()
+			.withServicePath(PATH + "?sortBy=location")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	/**
+	 * Node 600 has an empty name of its own and is named after its arkivbildare, so a search for that name has to find
+	 * it — and the name the response reports is the arkivbildare's.
+	 */
+	@Test
+	void test19_searchNodesByTheArchiveCreatorsName() {
+		setupCall()
+			.withServicePath(PATH + "?query=Berg")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

@@ -9,14 +9,18 @@ import se.sundsvall.memories.integration.db.model.CategoryEntity_;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity_;
+import se.sundsvall.memories.integration.db.model.TopographyEntity;
+import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static java.util.Optional.ofNullable;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.CREATOR_LEGAL_ENTITY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.GENDER;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.OBJECT_TYPE;
+import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.TOPOGRAPHY;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingCategory;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingGender;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingObjectType;
+import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingTopography;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.hasCategorisedCreator;
 
 class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCustom {
@@ -25,6 +29,9 @@ class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCust
 	private static final String GENDER_ALIAS = "gender";
 	private static final String CATEGORY_ID_ALIAS = "categoryId";
 	private static final String CATEGORY_NAME_ALIAS = "categoryName";
+	private static final String TOPOGRAPHY_ID_ALIAS = "topographyId";
+	private static final String TOPOGRAPHY_NAME_ALIAS = "topographyName";
+	private static final String TOPOGRAPHY_PLACE_ALIAS = "topographyPlace";
 	private static final String TOTAL_ALIAS = "total";
 
 	private final EntityManager entityManager;
@@ -108,6 +115,39 @@ class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCust
 
 		return entityManager.createQuery(query).getResultList().stream()
 			.map(tuple -> new CategoryCount(tuple.get(CATEGORY_ID_ALIAS, Integer.class), tuple.get(CATEGORY_NAME_ALIAS, String.class), tuple.get(TOTAL_ALIAS, Long.class)))
+			.toList();
+	}
+
+	@Override
+	public List<TopographyCount> countByTopography(final CombinedObjectParameters parameters) {
+		final var cb = entityManager.getCriteriaBuilder();
+		final var query = cb.createTupleQuery();
+		final var root = query.from(CombinedObjectEntity.class);
+
+		// The join is created before the filters, which then reuse it instead of joining TOPOGRAFI again. Both label
+		// columns are grouped on alongside the id, so the chip can be labelled the way /topographies labels the place.
+		final var topography = root.<CombinedObjectEntity, TopographyEntity>join(TOPOGRAPHY, JoinType.LEFT);
+		final var topographyId = topography.<Integer>get(TopographyEntity_.ID);
+		final var name = topography.<String>get(TopographyEntity_.NAME);
+		final var place = topography.<String>get(TopographyEntity_.PLACE);
+
+		// Every filter but the topography selection, mirroring the other counters. No order: the mapper orders the
+		// chips by their label in Swedish order, which the database's collation could not give.
+		final var predicate = ofNullable(filtersExcludingTopography(parameters).toPredicate(root, query, cb))
+			.orElseGet(cb::conjunction);
+
+		// Only a place with a name to show becomes a chip — the same rule TopographySpecification.hasName() applies to
+		// the dropdown, so a chip never names a place the list cannot offer. A TOPOGRAPHY_ID pointing at no row, and the
+		// blank sentinel the object tables default to, are left out the same way; the objects themselves still match.
+		final var listable = cb.and(cb.isNotNull(topographyId), cb.isNotNull(cb.coalesce(cb.nullif(cb.trim(place), ""), cb.nullif(cb.trim(name), ""))));
+
+		query.multiselect(topographyId.alias(TOPOGRAPHY_ID_ALIAS), name.alias(TOPOGRAPHY_NAME_ALIAS), place.alias(TOPOGRAPHY_PLACE_ALIAS), cb.count(root).alias(TOTAL_ALIAS))
+			.where(cb.and(predicate, listable))
+			.groupBy(topographyId, name, place);
+
+		return entityManager.createQuery(query).getResultList().stream()
+			.map(tuple -> new TopographyCount(tuple.get(TOPOGRAPHY_ID_ALIAS, Integer.class), tuple.get(TOPOGRAPHY_NAME_ALIAS, String.class),
+				tuple.get(TOPOGRAPHY_PLACE_ALIAS, String.class), tuple.get(TOTAL_ALIAS, Long.class)))
 			.toList();
 	}
 }

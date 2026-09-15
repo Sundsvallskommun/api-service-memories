@@ -30,6 +30,9 @@ public class CombinedObject {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
+	@Schema(description = "ID of the archive node (arkiv, serie or volym) the object was created in, or null when it sits in none. Resolve it with /nodes/{id} for the name and the path", examples = "19000")
+	private Integer nodeId;
+
 	@Schema(implementation = Creator.class)
 	private Creator creator;
 
@@ -154,6 +157,19 @@ public class CombinedObject {
 		return this;
 	}
 
+	public Integer getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+	}
+
+	public CombinedObject withNodeId(final Integer nodeId) {
+		this.nodeId = nodeId;
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass())
@@ -162,12 +178,12 @@ public class CombinedObject {
 		return Objects.equals(objectKey, that.objectKey) && Objects.equals(sourceId, that.sourceId) && Objects.equals(objectType, that.objectType)
 			&& Objects.equals(title, that.title) && Objects.equals(year, that.year) && Objects.equals(topographyId, that.topographyId)
 			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location)
-			&& Objects.equals(creator, that.creator);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(creator, that.creator);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(objectKey, sourceId, objectType, title, year, topographyId, locationText, location, creator);
+		return Objects.hash(objectKey, sourceId, objectType, title, year, topographyId, locationText, location, nodeId, creator);
 	}
 
 	@Override
@@ -181,6 +197,7 @@ public class CombinedObject {
 			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", nodeId=" + nodeId +
 			", creator=" + creator +
 			'}';
 	}

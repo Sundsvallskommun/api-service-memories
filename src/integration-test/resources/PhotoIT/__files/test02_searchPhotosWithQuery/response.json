@@ -18,7 +18,8 @@
 			"objectType": "Foto",
 			"colorMode": "Färg",
 			"thumbnailFilename": "FOTO.id_1002_fil_liten.jpg",
-			"largeImageFilename": "FOTO.id_1002_fil_stor.jpg"
+			"largeImageFilename": "FOTO.id_1002_fil_stor.jpg",
+			"nodeId": 19001
 		}
 	]
 }

@@ -14,6 +14,13 @@
 	],
 	"genderCounts": [],
 	"categoryCounts": [],
+	"topographyCounts": [
+		{
+			"topographyId": 2,
+			"name": "Timrå",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "ljud-3",
@@ -23,7 +30,8 @@
 			"year": 1975,
 			"topographyId": 2,
 			"location": "Timrå",
-			"locationText": "Timrå"
+			"locationText": "Timrå",
+			"nodeId": 202
 		}
 	]
 }

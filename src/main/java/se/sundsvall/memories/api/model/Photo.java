@@ -686,7 +686,7 @@ public class Photo extends AbstractCreatedObject<Photo> {
 			&& Objects.equals(restricted, that.restricted) && Objects.equals(restrictionNote, that.restrictionNote) && Objects.equals(provenance, that.provenance)
 			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(relatedPhotoIds, that.relatedPhotoIds) && Objects.equals(subjects, that.subjects)
-			&& Objects.equals(creator, that.creator);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(creator, that.creator);
 	}
 
 	@Override
@@ -695,7 +695,7 @@ public class Photo extends AbstractCreatedObject<Photo> {
 			earliest, latest, observationDate, locationText, location, storageLocation, objectType, colorMode, negativePositive, transmissiveReflective,
 			imageCarrier, material, technique, function, height, width, diameter, framed, conditionCategory, conditionAssessment,
 			observerName, treatment, treatmentDate, signature, rights, restricted, restrictionNote, provenance,
-			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects, creator);
+			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects, nodeId, creator);
 	}
 
 	@Override
@@ -742,6 +742,7 @@ public class Photo extends AbstractCreatedObject<Photo> {
 			", largeImageFilename='" + largeImageFilename + '\'' +
 			", relatedPhotoIds=" + relatedPhotoIds +
 			", subjects=" + subjects +
+			", nodeId=" + nodeId +
 			", creator=" + creator +
 			'}';
 	}

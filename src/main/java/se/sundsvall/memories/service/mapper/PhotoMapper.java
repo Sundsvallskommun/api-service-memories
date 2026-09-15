@@ -104,7 +104,8 @@ public final class PhotoMapper {
 				.withRestrictionNote(e.getRestrictionNote())
 				.withProvenance(e.getProvenance())
 				.withThumbnailFilename(e.getThumbnailFilename())
-				.withLargeImageFilename(e.getLargeImageFilename()))
+				.withLargeImageFilename(e.getLargeImageFilename())
+				.withNodeId(e.getNodeId()))
 			.orElse(null);
 	}
 }

@@ -33,7 +33,8 @@ class CombinedObjectTest {
 			.withYear(1920)
 			.withTopographyId(1)
 			.withLocationText("Sundsvall")
-			.withLocation("Sundsvalls kommun");
+			.withLocation("Sundsvalls kommun")
+			.withNodeId(19000);
 
 		assertThat(result.getObjectKey()).isEqualTo("foto-1001");
 		assertThat(result.getSourceId()).isEqualTo(1001);
@@ -43,6 +44,7 @@ class CombinedObjectTest {
 		assertThat(result.getTopographyId()).isEqualTo(1);
 		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
 		assertThat(result.getLocation()).isEqualTo("Sundsvalls kommun");
+		assertThat(result.getNodeId()).isEqualTo(19000);
 	}
 
 	@Test

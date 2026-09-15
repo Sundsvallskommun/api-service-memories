@@ -1,0 +1,67 @@
+{
+	"_meta": {
+		"count": 2,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 2
+	},
+	"nodes": [
+		{
+			"id": 100,
+			"name": "Sundsvalls stads arkiv",
+			"nodeTypeId": 1,
+			"nodeType": "Arkiv",
+			"startYear": 1862,
+			"stopYear": 1951,
+			"description": "Handlingar från stadsfullmäktige",
+			"sortOrder": 10,
+			"subItemCount": 3,
+			"publishedSubItemCount": 2,
+			"options": 6,
+			"creator": {
+				"legalEntityId": 10,
+				"legalEntity": "Nödhjälpskommittén 1888-1889"
+			},
+			"activityStartDate": "1888",
+			"activityEndDate": "1889",
+			"institutionId": 2,
+			"institution": "Sundsvalls museum",
+			"institutionCode": "SVM",
+			"categoryId": 5,
+			"category": "Kommitté",
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"volumeCount": 3,
+			"shelfMeters": 12.55,
+			"accessionNumber": "ACC-1862",
+			"holdingsCode": "B1",
+			"historyFilename": "arkiv_100_historik.xml"
+		},
+		{
+			"id": 600,
+			"name": "Berg Aktiebolag",
+			"nodeTypeId": 1,
+			"nodeType": "Arkiv",
+			"startYear": 1920,
+			"stopYear": 1960,
+			"description": "Företagsarkiv utan eget namn, uppkallat efter arkivbildaren",
+			"sortOrder": 80,
+			"subItemCount": 0,
+			"publishedSubItemCount": 0,
+			"options": 6,
+			"creator": {
+				"legalEntityId": 20,
+				"legalEntity": "Berg Aktiebolag"
+			},
+			"activityStartDate": "1920",
+			"institutionId": 3,
+			"institution": "Föreningsarkivet Västernorrland",
+			"institutionCode": "FAV",
+			"categoryId": 2,
+			"category": "Aktiebolag",
+			"topographyId": 2,
+			"location": "Timrå"
+		}
+	]
+}
