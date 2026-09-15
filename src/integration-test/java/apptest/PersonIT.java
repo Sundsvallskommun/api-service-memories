@@ -129,4 +129,18 @@ class PersonIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * Person 2 carries no BIOGRAFI, which is the ordinary case: only 23 of the 50 412 persons have one. The file itself is served from the SMB share, which the app tests do not stand up, so the
+	 * streaming path is covered by the service and resource tests instead.
+	 */
+	@Test
+	void test10_getPersonBiographyNotFoundWhenTheRecordHasNone() {
+		setupCall()
+			.withServicePath(PATH + "/2/biography")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

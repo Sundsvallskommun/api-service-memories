@@ -43,7 +43,7 @@ public interface FilmSpecification {
 	}
 
 	static Specification<FilmEntity> matches(final String query) {
-		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, query);
 	}
 
 	static Specification<FilmEntity> matchesLocation(final String location) {

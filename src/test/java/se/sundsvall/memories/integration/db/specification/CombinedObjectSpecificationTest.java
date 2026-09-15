@@ -24,6 +24,7 @@ import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.Gende
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.PhotoRepository;
+import se.sundsvall.memories.integration.db.PublicationRepository;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.CategoryEntity;
 import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
@@ -31,6 +32,7 @@ import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
+import se.sundsvall.memories.integration.db.model.PublicationEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 import se.sundsvall.memories.service.util.Pageables;
 
@@ -60,6 +62,9 @@ class CombinedObjectSpecificationTest {
 	@Autowired
 	private AudioRepository audioRepository;
 
+	@Autowired
+	private PublicationRepository publicationRepository;
+
 	@PersistenceContext
 	private EntityManager entityManager;
 
@@ -67,6 +72,7 @@ class CombinedObjectSpecificationTest {
 	void clearTables() {
 		photoRepository.deleteAll();
 		audioRepository.deleteAll();
+		publicationRepository.deleteAll();
 		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM PERSON").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM JURPERS").executeUpdate();
@@ -201,6 +207,31 @@ class CombinedObjectSpecificationTest {
 		entityManager.persist(topography);
 		entityManager.flush();
 		return topography;
+	}
+
+	/**
+	 * The bug Lars reported: searching "Drunkningsolycka" returned one hit where the source holds four, because three
+	 * of them carry the word only inside the digitised page. The combined search reads SEARCH_TEXT, and the PUBL branch
+	 * of the view left XMLTEXT out while the per-type /publications search read it — so the two disagreed on the same
+	 * data.
+	 */
+	@Test
+	void searchReachesAPublicationBodyAndNotOnlyItsTitle() {
+		persistPublication(1, "Drunkningsolycka i Selångersån", null, "en notis om samma olycka");
+		persistPublication(2, "Katastrofartade översvämningar", null, "Hur drunkningsolyckan tillgått är oklart");
+		persistPublication(3, "Helt orelaterad titel", null, "ingenting av intresse här");
+
+		assertThat(findKeys(CombinedObjectParameters.create().withQuery("Drunkningsolycka")))
+			.containsExactly("publ-1", "publ-2");
+	}
+
+	private void persistPublication(final Integer id, final String title, final String comment, final String body) {
+		publicationRepository.saveAndFlush(PublicationEntity.create()
+			.withId(id)
+			.withOptions(PUBLISHED)
+			.withDocumentTitle(title)
+			.withComment(comment)
+			.withXmltext(body));
 	}
 
 	private List<String> findKeys(final CombinedObjectParameters parameters) {

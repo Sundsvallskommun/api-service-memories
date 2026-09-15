@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PublicationParameters;
@@ -57,7 +58,22 @@ class PublicationSpecificationTest {
 			.withComment(comment));
 	}
 
+	/**
+	 * Commits what the test has set up, then continues in a fresh transaction.
+	 * <p>
+	 * InnoDB writes a {@code FULLTEXT} index at commit, so a row that has only been flushed is invisible to
+	 * {@code MATCH} while {@code LIKE} still finds it. The rollback-per-test model therefore cannot exercise a
+	 * fulltext search at all, and the rows are cleaned up by the {@code @BeforeEach} instead of by the rollback.
+	 */
+	private void commitSetup() {
+		entityManager.flush();
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+		TestTransaction.start();
+	}
+
 	private List<Integer> findIds(final Specification<PublicationEntity> specification) {
+		commitSetup();
 		return publicationRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
 			.map(PublicationEntity::getId)
 			.sorted()
@@ -302,11 +318,12 @@ class PublicationSpecificationTest {
 	}
 
 	@Test
-	void matchesEscapesTheEscapeCharacterItself() {
+	void matchesIgnoresPunctuationTheIndexDoesNotStore() {
 		persist(1, 4, "Vilken tur!", null);
 		persist(2, 4, "Vilken tur", null);
 
-		assertThat(findIds(PublicationSpecification.matches("tur!"))).containsExactly(1);
+		// The index stores words, not punctuation, so "tur!" and "tur" are the same token and both rows match.
+		assertThat(findIds(PublicationSpecification.matches("tur!"))).containsExactly(1, 2);
 	}
 
 	@Test
@@ -332,6 +349,8 @@ class PublicationSpecificationTest {
 		persist(3, 4, "Tidning raderad", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(4, 4, "Storgatan", null);
 		publicationRepository.flush();
+
+		commitSetup();
 
 		final var page = publicationRepository.findAllByParameters(PublicationParameters.create().withQuery("tidning"), Pageable.unpaged());
 
@@ -364,6 +383,8 @@ class PublicationSpecificationTest {
 		persist(1, 4, "Tidning från Sundsvall", null);
 		persist(2, 4, "Tidning från Timrå", null);
 		persist(3, 0, "Tidning från Härnösand", null);
+
+		commitSetup();
 
 		final var specification = Specification.allOf(
 			PublicationSpecification.published(),

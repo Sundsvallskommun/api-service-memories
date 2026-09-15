@@ -1,11 +1,12 @@
 package se.sundsvall.memories.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
@@ -17,14 +18,18 @@ import se.sundsvall.memories.integration.db.LegalEntityRepository;
 import se.sundsvall.memories.integration.db.model.CategoryEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
+import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.integration.samba.SambaTestProperties.SAMBA_PROPERTIES;
 
 @ExtendWith(MockitoExtension.class)
 class LegalEntityServiceTest {
@@ -32,8 +37,15 @@ class LegalEntityServiceTest {
 	@Mock
 	private LegalEntityRepository repositoryMock;
 
-	@InjectMocks
+	@Mock
+	private FileStreamer fileStreamerMock;
+
 	private LegalEntityService service;
+
+	@BeforeEach
+	void setUp() {
+		service = new LegalEntityService(repositoryMock, SAMBA_PROPERTIES, fileStreamerMock);
+	}
 
 	@Test
 	void searchDelegatesAndResolvesAssociations() {
@@ -119,5 +131,42 @@ class LegalEntityServiceTest {
 			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
 			.hasMessageContaining("Legal entity with id '1' not found");
 		verify(repositoryMock).findVisibleById(1);
+	}
+
+	@Test
+	void streamHistoryDelegatesToFileStreamer() {
+		final var responseMock = mock(HttpServletResponse.class);
+		when(repositoryMock.findVisibleById(any())).thenReturn(Optional.of(LegalEntityEntity.create().withHistoryFilename("JURPERS.id_82_historia.xml")));
+
+		service.streamHistory(82, responseMock);
+
+		// The document is XML on the share, so it is transformed to HTML on the way out.
+		verify(fileStreamerMock).streamInline("/jurpers/historia/JURPERS.id_82_historia.xml", "JURPERS.id_82_historia.xml", "sundsvallsminnen-jurpers-82.xml", true, responseMock,
+			"IOException occurred when streaming history for legal entity with id '82'");
+	}
+
+	@Test
+	void streamHistoryNotFoundWhenTheRecordIsMissing() {
+		final var responseMock = mock(HttpServletResponse.class);
+		when(repositoryMock.findVisibleById(any())).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.streamHistory(999, responseMock))
+			.isInstanceOf(ThrowableProblem.class)
+			.hasMessageContaining("Legal entity with id '999' not found");
+
+		verifyNoInteractions(fileStreamerMock);
+	}
+
+	@Test
+	void streamHistoryNotFoundWhenTheRecordHasNoFile() {
+		final var responseMock = mock(HttpServletResponse.class);
+		// The ordinary case: almost no legal entity carries one.
+		when(repositoryMock.findVisibleById(any())).thenReturn(Optional.of(LegalEntityEntity.create().withHistoryFilename("   ")));
+
+		assertThatThrownBy(() -> service.streamHistory(82, responseMock))
+			.isInstanceOf(ThrowableProblem.class)
+			.hasMessageContaining("Legal entity with id '82' has no history");
+
+		verifyNoInteractions(fileStreamerMock);
 	}
 }

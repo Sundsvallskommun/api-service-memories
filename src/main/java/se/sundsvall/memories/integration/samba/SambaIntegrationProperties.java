@@ -17,5 +17,7 @@ public record SambaIntegrationProperties(
 	@NotBlank String photoFolder,
 	@NotBlank String audioFolder,
 	@NotBlank String textFolder,
-	@NotBlank String textMultiFolder) {
+	@NotBlank String textMultiFolder,
+	@NotBlank String personFolder,
+	@NotBlank String legalEntityFolder) {
 }

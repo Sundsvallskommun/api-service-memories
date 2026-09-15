@@ -53,7 +53,7 @@ public interface PhotoSpecification {
 	}
 
 	static Specification<PhotoEntity> matches(final String query) {
-		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, query);
 	}
 
 	static Specification<PhotoEntity> matchesLocation(final String location) {

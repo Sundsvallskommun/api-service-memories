@@ -46,7 +46,7 @@ public interface PublicationSpecification {
 	}
 
 	static Specification<PublicationEntity> matches(final String query) {
-		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, query);
 	}
 
 	static Specification<PublicationEntity> matchesLocation(final String location) {

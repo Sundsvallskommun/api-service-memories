@@ -1,5 +1,6 @@
 package se.sundsvall.memories.api;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import se.sundsvall.memories.service.PersonService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -29,6 +31,7 @@ class PersonResourceTest {
 	private static final String MUNICIPALITY_ID = "2281";
 	private static final String SEARCH_PATH = "/{municipalityId}/persons";
 	private static final String GET_PATH = "/{municipalityId}/persons/{id}";
+	private static final String BIOGRAPHY_PATH = "/{municipalityId}/persons/{id}/biography";
 
 	@MockitoBean
 	private PersonService serviceMock;
@@ -105,5 +108,17 @@ class PersonResourceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getPersonId()).isEqualTo(personId);
 		verify(serviceMock).getById(personId);
+	}
+
+	@Test
+	void getPersonBiography() {
+		final var id = 8238;
+
+		webTestClient.get()
+			.uri(builder -> builder.path(BIOGRAPHY_PATH).build(Map.of("municipalityId", MUNICIPALITY_ID, "id", id)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock).streamBiography(eq(id), any(HttpServletResponse.class));
 	}
 }

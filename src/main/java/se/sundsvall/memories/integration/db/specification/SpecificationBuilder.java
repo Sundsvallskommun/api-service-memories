@@ -13,10 +13,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.springframework.data.jpa.domain.Specification;
+import se.sundsvall.memories.integration.db.FullTextFunctionContributor;
 
 public class SpecificationBuilder<T> {
 
@@ -34,6 +36,15 @@ public class SpecificationBuilder<T> {
 	private static final int RELEVANCE_ALL_WORDS_IN_NAME = 2;
 	private static final int RELEVANCE_ANY_WORD_IN_NAME = 3;
 	private static final int RELEVANCE_BODY_ONLY = 4;
+
+	/**
+	 * InnoDB refuses to index a token shorter than {@code innodb_ft_min_token_size} (three by default), so a shorter
+	 * word can never match through the index however the query is written.
+	 */
+	private static final int MIN_TOKEN_LENGTH = 3;
+
+	/** The characters boolean mode reads as operators rather than as part of a word. */
+	private static final Pattern BOOLEAN_OPERATORS = Pattern.compile("[+\\-<>()~*\"@]");
 
 	private static final Pattern LIKE_WILDCARDS = Pattern.compile("([!%_])");
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
@@ -328,6 +339,76 @@ public class SpecificationBuilder<T> {
 		return (root, _, cb) -> cb.and(words.stream()
 			.map(word -> matchesAnyAttribute(root, cb, attributes, word))
 			.toArray(Predicate[]::new));
+	}
+
+	/**
+	 * Matches rows through the {@code FULLTEXT} index over the given attributes, requiring every word of the query and
+	 * allowing each to match as a prefix — the semantics the legacy search had. The attributes must be exactly the
+	 * column list of an existing index, in any order: MariaDB answers a partial list with error 1191 rather than
+	 * falling back to a scan.
+	 * <p>
+	 * Unlike {@link #buildLikeAllWordsFilter} this matches whole words, so {@code olycka} no longer finds
+	 * {@code drunkningsolycka}. That is the price of using the index, and it is what makes the search able to read the
+	 * digitised document bodies at all.
+	 * <p>
+	 * Falls back to {@code LIKE} when any word is too short to have been indexed, so that a short query keeps finding
+	 * what it always found instead of silently returning nothing.
+	 */
+	public Specification<T> buildFullTextFilter(final List<String> attributes, final String query) {
+		final var expression = booleanModeExpression(query);
+		if (expression.isEmpty()) {
+			return buildLikeAllWordsFilter(attributes, query);
+		}
+		return (root, _, cb) -> fullTextMatches(root, cb, attributes, expression.get());
+	}
+
+	/**
+	 * Matches rows through the {@code FULLTEXT} index over the entity's own attributes, or, as
+	 * {@link #buildLikeAnyFilter(List, String, List, String)} does, in an attribute of one of the guarded associations
+	 * reached through {@code association}. The associated names live in other tables and other indexes, so they cannot
+	 * join the same {@code MATCH} and keep matching with {@code LIKE}.
+	 * <p>
+	 * Falls back wholesale to {@code LIKE} when the query is too short to have been indexed, so that both halves keep
+	 * answering the same way.
+	 */
+	public Specification<T> buildFullTextOrAssociationFilter(final List<String> attributes, final String association,
+		final List<AssociationAttributes> nestedAssociations, final String value) {
+		if (value == null || value.isBlank()) {
+			return Specification.unrestricted();
+		}
+		final var expression = booleanModeExpression(value);
+		if (expression.isEmpty()) {
+			return buildLikeAnyFilter(attributes, association, nestedAssociations, value);
+		}
+		final var pattern = "%" + escapeWildcards(value.trim()) + "%";
+		return (root, _, cb) -> {
+			final var holder = reuseFetchOrJoin(root, association);
+			final var nested = nestedAssociations.stream()
+				.map(nestedAssociation -> matchesAssociation(holder, cb, nestedAssociation, pattern));
+			return cb.or(Stream.concat(Stream.of(fullTextMatches(root, cb, attributes, expression.get())), nested)
+				.toArray(Predicate[]::new));
+		};
+	}
+
+	/**
+	 * The query as a boolean-mode expression requiring every word and allowing each to match as a prefix, or empty
+	 * when the caller should use {@code LIKE} instead — either because there is nothing to search for, or because a
+	 * word is shorter than the index stores and would therefore match nothing.
+	 */
+	private static Optional<String> booleanModeExpression(final String query) {
+		final var words = splitWords(query).stream()
+			.map(SpecificationBuilder::stripBooleanOperators)
+			.filter(word -> !word.isEmpty())
+			.toList();
+		if (words.isEmpty() || words.stream().anyMatch(word -> word.length() < MIN_TOKEN_LENGTH)) {
+			return Optional.empty();
+		}
+		return Optional.of(String.join(" ", words.stream().map("+%s*"::formatted).toList()));
+	}
+
+	private Predicate fullTextMatches(final Root<T> root, final CriteriaBuilder cb, final List<String> attributes, final String expression) {
+		final var function = FullTextFunctionContributor.FUNCTION_PREFIX + attributes.size();
+		return cb.gt(cb.function(function, Double.class, matchArguments(root, cb, attributes, expression)), 0d);
 	}
 
 	/**
@@ -744,6 +825,19 @@ public class SpecificationBuilder<T> {
 
 	private static String asYearString(final Integer year) {
 		return "%04d".formatted(year);
+	}
+
+	/** The matched columns followed by the search expression, which is what the registered pattern function expects. */
+	private Expression<?>[] matchArguments(final Root<T> root, final CriteriaBuilder cb, final List<String> attributes, final String expression) {
+		return Stream.concat(
+			attributes.stream().map(attribute -> (Expression<?>) root.get(attribute)),
+			Stream.<Expression<?>>of(cb.literal(expression)))
+			.toArray(Expression[]::new);
+	}
+
+	/** Drops the characters boolean mode would read as operators, so a user's punctuation cannot change the query. */
+	private static String stripBooleanOperators(final String word) {
+		return BOOLEAN_OPERATORS.matcher(word).replaceAll("");
 	}
 
 	private Predicate matchesAnyAttribute(final Root<T> root, final CriteriaBuilder cb, final List<String> attributes, final String word) {

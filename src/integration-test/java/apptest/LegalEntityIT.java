@@ -98,4 +98,18 @@ class LegalEntityIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	/**
+	 * Legal entity 20 carries no HISTORIA, which is the ordinary case: only 18 of the 6 727 have one. The file itself is served from the SMB share, which the app tests do not stand up, so the
+	 * streaming path is covered by the service and resource tests instead.
+	 */
+	@Test
+	void test08_getLegalEntityHistoryNotFoundWhenTheRecordHasNone() {
+		setupCall()
+			.withServicePath(PATH + "/20/history")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(NOT_FOUND)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }
