@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,18 @@ class FilmSpecificationTest {
 			.withOptions(options)
 			.withDocumentTitle(title)
 			.withComment(comment));
+	}
+
+	/**
+	 * Undoes the commit. Rows committed by {@link #commitSetup()} outlive the test the way a rollback never did, and
+	 * the database is shared with every other test class in the JVM — a row left behind here surfaces as a phantom hit
+	 * in whichever class runs next. Clearing before each test is not enough for that: the last test of the class would
+	 * still leave its rows behind.
+	 */
+	@AfterEach
+	void removeCommittedRows() {
+		clearTable();
+		commitSetup();
 	}
 
 	/**
