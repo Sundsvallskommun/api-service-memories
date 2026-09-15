@@ -1,5 +1,6 @@
 package se.sundsvall.memories.api;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import se.sundsvall.memories.service.LegalEntityService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -29,6 +31,7 @@ class LegalEntityResourceTest {
 	private static final String MUNICIPALITY_ID = "2281";
 	private static final String SEARCH_PATH = "/{municipalityId}/legal-entities";
 	private static final String GET_PATH = "/{municipalityId}/legal-entities/{id}";
+	private static final String HISTORY_PATH = "/{municipalityId}/legal-entities/{id}/history";
 
 	@MockitoBean
 	private LegalEntityService serviceMock;
@@ -104,5 +107,17 @@ class LegalEntityResourceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getLegalEntityId()).isEqualTo(id);
 		verify(serviceMock).getById(id);
+	}
+
+	@Test
+	void getLegalEntityHistory() {
+		final var id = 82;
+
+		webTestClient.get()
+			.uri(builder -> builder.path(HISTORY_PATH).build(Map.of("municipalityId", MUNICIPALITY_ID, "id", id)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock).streamHistory(eq(id), any(HttpServletResponse.class));
 	}
 }

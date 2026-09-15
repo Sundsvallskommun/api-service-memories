@@ -112,7 +112,21 @@ public class FileStreamer {
 	 * @return          the full path on the share
 	 */
 	public static String smbPath(final String folder, final FileVariant variant, final String filename) {
-		return folder + variant.getSubfolder() + "/" + filename;
+		return smbPath(folder, variant.getSubfolder(), filename);
+	}
+
+	/**
+	 * As {@link #smbPath(String, FileVariant, String)}, for the material whose file sits in a fixed subfolder rather
+	 * than in one per variant: a person has only a biography and a legal entity only a history, so there is no variant
+	 * to name and nothing for the caller to choose between.
+	 *
+	 * @param  folder    the material type's folder on the share, e.g. {@code /person/}
+	 * @param  subfolder the subfolder holding the file, e.g. {@code biografi}
+	 * @param  filename  the filename within that subfolder
+	 * @return           the full path on the share
+	 */
+	public static String smbPath(final String folder, final String subfolder, final String filename) {
+		return folder + subfolder + "/" + filename;
 	}
 
 	/**
@@ -236,7 +250,9 @@ public class FileStreamer {
 		FILM("film"),
 		AUDIO("ljud"),
 		TEXT("text"),
-		PUBLICATION("publikation");
+		PUBLICATION("publikation"),
+		PERSON("person"),
+		LEGAL_ENTITY("jurpers");
 
 		private final String segment;
 

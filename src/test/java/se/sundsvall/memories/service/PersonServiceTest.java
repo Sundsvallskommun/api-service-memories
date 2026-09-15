@@ -1,11 +1,12 @@
 package se.sundsvall.memories.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
@@ -15,15 +16,19 @@ import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.api.model.PersonParameters;
 import se.sundsvall.memories.integration.db.PersonRepository;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
+import se.sundsvall.memories.service.util.FileStreamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static se.sundsvall.memories.integration.samba.SambaTestProperties.SAMBA_PROPERTIES;
 
 // Which rows the filters select — including the published bit and the "ingen person" placeholder — is verified against
 // a real database in PersonSpecificationTest. These tests cover what the service itself does: build the pageable,
@@ -34,8 +39,15 @@ class PersonServiceTest {
 	@Mock
 	private PersonRepository repositoryMock;
 
-	@InjectMocks
+	@Mock
+	private FileStreamer fileStreamerMock;
+
 	private PersonService service;
+
+	@BeforeEach
+	void setUp() {
+		service = new PersonService(repositoryMock, SAMBA_PROPERTIES, fileStreamerMock);
+	}
 
 	@Test
 	void searchDelegatesAndMaps() {
@@ -131,5 +143,42 @@ class PersonServiceTest {
 			.hasFieldOrPropertyWithValue("status", NOT_FOUND)
 			.hasMessageContaining("Person with id '0' not found");
 		verify(repositoryMock).findVisibleById(0);
+	}
+
+	@Test
+	void streamBiographyDelegatesToFileStreamer() {
+		final var responseMock = mock(HttpServletResponse.class);
+		when(repositoryMock.findVisibleById(any())).thenReturn(Optional.of(PersonEntity.create().withBiographyFilename("PERSON.id_8238_biografi.xml")));
+
+		service.streamBiography(8238, responseMock);
+
+		// The document is XML on the share, so it is transformed to HTML on the way out.
+		verify(fileStreamerMock).streamInline("/person/biografi/PERSON.id_8238_biografi.xml", "PERSON.id_8238_biografi.xml", "sundsvallsminnen-person-8238.xml", true, responseMock,
+			"IOException occurred when streaming biography for person with id '8238'");
+	}
+
+	@Test
+	void streamBiographyNotFoundWhenTheRecordIsMissing() {
+		final var responseMock = mock(HttpServletResponse.class);
+		when(repositoryMock.findVisibleById(any())).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.streamBiography(999, responseMock))
+			.isInstanceOf(ThrowableProblem.class)
+			.hasMessageContaining("Person with id '999' not found");
+
+		verifyNoInteractions(fileStreamerMock);
+	}
+
+	@Test
+	void streamBiographyNotFoundWhenTheRecordHasNoFile() {
+		final var responseMock = mock(HttpServletResponse.class);
+		// The ordinary case: almost no person carries one.
+		when(repositoryMock.findVisibleById(any())).thenReturn(Optional.of(PersonEntity.create().withBiographyFilename("   ")));
+
+		assertThatThrownBy(() -> service.streamBiography(8238, responseMock))
+			.isInstanceOf(ThrowableProblem.class)
+			.hasMessageContaining("Person with id '8238' has no biography");
+
+		verifyNoInteractions(fileStreamerMock);
 	}
 }

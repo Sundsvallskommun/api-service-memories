@@ -44,7 +44,7 @@ public interface AudioSpecification {
 	}
 
 	static Specification<AudioEntity> matches(final String query) {
-		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, query);
 	}
 
 	static Specification<AudioEntity> matchesLocation(final String location) {

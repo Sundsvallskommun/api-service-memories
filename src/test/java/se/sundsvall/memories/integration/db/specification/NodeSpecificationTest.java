@@ -3,6 +3,7 @@ package se.sundsvall.memories.integration.db.specification;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.integration.db.NodeRepository;
@@ -55,6 +57,9 @@ class NodeSpecificationTest {
 		entityManager.createNativeQuery("DELETE FROM TBL_NODEATTRIBUTES").executeUpdate();
 		nodeRepository.deleteAll();
 		nodeRepository.flush();
+		// The node types outlive the rollback now that the setup is committed, and a node references one, so they have
+		// to go after the nodes and before the next test inserts them again.
+		entityManager.createNativeQuery("DELETE FROM TBL_NODETYPES").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM INSTITUTION").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM JURPERS").executeUpdate();
@@ -102,7 +107,34 @@ class NodeSpecificationTest {
 			.withPublishedSubItemCount(0));
 	}
 
+	/**
+	 * Undoes the commit. Rows committed by {@link #commitSetup()} outlive the test the way a rollback never did, and
+	 * the database is shared with every other test class in the JVM — a row left behind here surfaces as a phantom hit
+	 * in whichever class runs next. Clearing before each test is not enough for that: the last test of the class would
+	 * still leave its rows behind.
+	 */
+	@AfterEach
+	void removeCommittedRows() {
+		clearTable();
+		commitSetup();
+	}
+
+	/**
+	 * Commits what the test has set up, then continues in a fresh transaction.
+	 * <p>
+	 * InnoDB writes a {@code FULLTEXT} index at commit, so a row that has only been flushed is invisible to
+	 * {@code MATCH} while {@code LIKE} still finds it. The rollback-per-test model therefore cannot exercise a
+	 * fulltext search at all, and the rows are cleaned up by the {@code @BeforeEach} instead of by the rollback.
+	 */
+	private void commitSetup() {
+		entityManager.flush();
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+		TestTransaction.start();
+	}
+
 	private List<Integer> findIds(final Specification<NodeEntity> specification) {
+		commitSetup();
 		return nodeRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
 			.map(NodeEntity::getId)
 			.sorted()

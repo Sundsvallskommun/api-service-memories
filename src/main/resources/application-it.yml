@@ -23,3 +23,5 @@ integration:
     audio-folder: /ljud/
     text-folder: /text/
     text-multi-folder: /text_multi/
+    person-folder: /person/
+    legal-entity-folder: /jurpers/

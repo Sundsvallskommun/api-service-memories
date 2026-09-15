@@ -725,6 +725,52 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/persons/{id}/biography:
+    get:
+      tags:
+      - Person
+      summary: Get person biography
+      description: "Get the biography of a person. The source is an XML document on\
+        \ the archive share, returned inline as HTML so browsers render it directly.\
+        \ Most persons have no biography, in which case this answers 404."
+      operationId: getPersonBiography
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            '*/*': {}
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/objects:
     get:
       tags:
@@ -978,6 +1024,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LegalEntity"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: "#/components/schemas/Problem"
+                - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/legal-entities/{id}/history:
+    get:
+      tags:
+      - Legal entity
+      summary: Get legal entity history
+      description: "Get the history of a legal entity. The source is an XML document\
+        \ on the archive share, returned inline as HTML so browsers render it directly.\
+        \ Most legal entities have no history, in which case this answers 404."
+      operationId: getLegalEntityHistory
+      parameters:
+      - name: municipalityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            '*/*': {}
         "404":
           description: Not found
           content:

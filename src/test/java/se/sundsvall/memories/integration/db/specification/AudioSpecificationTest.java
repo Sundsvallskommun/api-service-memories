@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.AudioParameters;
@@ -58,7 +60,34 @@ class AudioSpecificationTest {
 			.withComment(comment));
 	}
 
+	/**
+	 * Undoes the commit. Rows committed by {@link #commitSetup()} outlive the test the way a rollback never did, and
+	 * the database is shared with every other test class in the JVM — a row left behind here surfaces as a phantom hit
+	 * in whichever class runs next. Clearing before each test is not enough for that: the last test of the class would
+	 * still leave its rows behind.
+	 */
+	@AfterEach
+	void removeCommittedRows() {
+		clearTables();
+		commitSetup();
+	}
+
+	/**
+	 * Commits what the test has set up, then continues in a fresh transaction.
+	 * <p>
+	 * InnoDB writes a {@code FULLTEXT} index at commit, so a row that has only been flushed is invisible to
+	 * {@code MATCH} while {@code LIKE} still finds it. The rollback-per-test model therefore cannot exercise a
+	 * fulltext search at all, and the rows are cleaned up by the {@code @BeforeEach} instead of by the rollback.
+	 */
+	private void commitSetup() {
+		entityManager.flush();
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+		TestTransaction.start();
+	}
+
 	private List<Integer> findIds(final Specification<AudioEntity> specification) {
+		commitSetup();
 		return audioRepository.findAll(specification, Pageable.unpaged()).getContent().stream()
 			.map(AudioEntity::getId)
 			.sorted()
@@ -377,11 +406,12 @@ class AudioSpecificationTest {
 	}
 
 	@Test
-	void matchesEscapesTheEscapeCharacterItself() {
+	void matchesIgnoresPunctuationTheIndexDoesNotStore() {
 		persist(1, 4, "Vilken tur!", null);
 		persist(2, 4, "Vilken tur", null);
 
-		assertThat(findIds(AudioSpecification.matches("tur!"))).containsExactly(1);
+		// The index stores words, not punctuation, so "tur!" and "tur" are the same token and both rows match.
+		assertThat(findIds(AudioSpecification.matches("tur!"))).containsExactly(1, 2);
 	}
 
 	@Test
@@ -407,6 +437,8 @@ class AudioSpecificationTest {
 		persist(3, 4, "Intervju raderad", null).setDeletedDate(LocalDate.of(2024, MARCH, 1));
 		persist(4, 4, "Storgatan", null);
 		audioRepository.flush();
+
+		commitSetup();
 
 		final var page = audioRepository.findAllByParameters(AudioParameters.create().withQuery("intervju"), Pageable.unpaged());
 
@@ -455,6 +487,8 @@ class AudioSpecificationTest {
 		persist(1, 4, "Intervju i Sundsvall", null);
 		persist(2, 4, "Intervju i Timrå", null);
 		persist(3, 0, "Intervju i Härnösand", null);
+
+		commitSetup();
 
 		final var specification = Specification.allOf(
 			AudioSpecification.published(),

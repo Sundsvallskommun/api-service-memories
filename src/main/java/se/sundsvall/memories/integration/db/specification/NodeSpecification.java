@@ -58,7 +58,7 @@ public interface NodeSpecification {
 	 * name the API reports, so a search for that name has to find the node.
 	 */
 	static Specification<NodeEntity> matches(final String query) {
-		return BUILDER.buildLikeAnyFilter(List.of(NAME, DESCRIPTION), ATTRIBUTES, CREATOR_ATTRIBUTES, query);
+		return BUILDER.buildFullTextOrAssociationFilter(List.of(NAME, DESCRIPTION), ATTRIBUTES, CREATOR_ATTRIBUTES, query);
 	}
 
 	static Specification<NodeEntity> hasId(final Integer id) {
