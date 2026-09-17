@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.util;
 
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.springframework.http.ContentDisposition;
@@ -200,11 +201,17 @@ public class FileStreamer {
 	}
 
 	private void streamTransformedXml(final String downloadFilename, final FileTypeDetector.Detected detected, final HttpServletResponse response) throws IOException {
+		// The transform runs into a buffer before any header is written. A malformed source document throws here, and
+		// the resulting 500 must not carry the headers below — above all not FILE_CACHE_CONTROL, which would pin the
+		// error in every client and proxy cache for a month. The transformed HTML is a few tens of kilobytes.
+		final var html = new ByteArrayOutputStream();
+		xsltTransformer.transform(detected.fullStream(), html);
+
 		final var htmlFilename = swapExtension(downloadFilename, "html");
 		response.addHeader(CONTENT_TYPE, new MediaType("text", "html", StandardCharsets.UTF_8).toString());
 		response.addHeader(CONTENT_DISPOSITION, ContentDisposition.inline().filename(htmlFilename).build().toString());
 		allowCaching(response);
-		xsltTransformer.transform(detected.fullStream(), response.getOutputStream());
+		html.writeTo(response.getOutputStream());
 	}
 
 	/**
