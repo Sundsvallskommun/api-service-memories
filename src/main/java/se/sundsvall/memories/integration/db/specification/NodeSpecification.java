@@ -51,6 +51,11 @@ public interface NodeSpecification {
 		new SpecificationBuilder.AssociationAttributes(PERSON_GUARD, List.of(List.of(PersonEntity_.FIRST_NAME, PersonEntity_.LAST_NAME))),
 		new SpecificationBuilder.AssociationAttributes(LEGAL_ENTITY_GUARD, List.of(List.of(LegalEntityEntity_.NAME), List.of(LegalEntityEntity_.ALTERNATIVE_NAMES))));
 
+	/** The index {@code MATCH} needs for {@link #matches}; without it the search falls back to {@code LIKE}. */
+	String FULLTEXT_TABLE = "TBL_NODES";
+
+	List<String> FULLTEXT_COLUMNS = List.of("NAME", "DESCRIPTION");
+
 	/**
 	 * The free text has to reach the description as well as the name: a series is often findable only through what its
 	 * description says it contains. It reaches the arkivbildare too, since an archive named after its arkivbildare has
@@ -58,7 +63,7 @@ public interface NodeSpecification {
 	 * name the API reports, so a search for that name has to find the node.
 	 */
 	static Specification<NodeEntity> matches(final String query) {
-		return BUILDER.buildLikeAnyFilter(List.of(NAME, DESCRIPTION), ATTRIBUTES, CREATOR_ATTRIBUTES, query);
+		return BUILDER.buildFullTextOrAssociationFilter(List.of(NAME, DESCRIPTION), FULLTEXT_TABLE, FULLTEXT_COLUMNS, ATTRIBUTES, CREATOR_ATTRIBUTES, query);
 	}
 
 	static Specification<NodeEntity> hasId(final Integer id) {

@@ -19,14 +19,22 @@ import static se.sundsvall.memories.integration.db.model.TextEntity_.LOCATION_TE
 import static se.sundsvall.memories.integration.db.model.TextEntity_.OPTIONS;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.SUBJECT;
 import static se.sundsvall.memories.integration.db.model.TextEntity_.TOPOGRAPHY;
+import static se.sundsvall.memories.integration.db.model.TextEntity_.XMLTEXT;
 
 public interface TextSpecification {
 
 	SpecificationBuilder<TextEntity> BUILDER = new SpecificationBuilder<>();
 
-	// The native query this replaces also searched XMLTEXT. Measured against production the column holds zero bytes
-	// across all 3 942 rows, so including it would match nothing while making every search scan a longtext column.
-	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
+	// XMLTEXT is back, not because it holds anything — it is empty across all 3 942 rows — but because MATCH only
+	// accepts the exact column list of an index, and the one that exists here is (DOKTITEL, KOMMENT_DOC, XMLTEXT).
+	// Naming two of the three would fail with error 1191. The earlier objection, that reading the column forced a scan
+	// over a longtext, no longer applies now that the index answers the query.
+	/** The index {@code MATCH} needs for {@link #matches}; without it the search falls back to {@code LIKE}. */
+	String FULLTEXT_TABLE = "TEXT";
+
+	List<String> FULLTEXT_COLUMNS = List.of("DOKTITEL", "KOMMENT_DOC", "XMLTEXT");
+
+	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT, XMLTEXT);
 
 	List<String> LOCATION_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE);
 
@@ -50,7 +58,7 @@ public interface TextSpecification {
 	}
 
 	static Specification<TextEntity> matches(final String query) {
-		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, FULLTEXT_TABLE, FULLTEXT_COLUMNS, query);
 	}
 
 	static Specification<TextEntity> matchesLocation(final String location) {

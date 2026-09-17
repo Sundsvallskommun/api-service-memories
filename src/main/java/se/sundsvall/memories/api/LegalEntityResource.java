@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +22,7 @@ import se.sundsvall.memories.api.model.LegalEntityParameters;
 import se.sundsvall.memories.api.model.PagedLegalEntityResponse;
 import se.sundsvall.memories.service.LegalEntityService;
 
+import static org.springframework.http.MediaType.ALL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 import static org.springframework.http.ResponseEntity.ok;
@@ -62,5 +64,18 @@ class LegalEntityResource {
 		@PathVariable final Integer id) {
 
 		return ok(legalEntityService.getById(id));
+	}
+
+	@GetMapping(path = "/{id}/history")
+	@Operation(summary = "Get legal entity history",
+		description = "Get the history of a legal entity. The source is an XML document on the archive share, returned inline as HTML so browsers render it directly. Most legal entities have no history, in which case this answers 404.")
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = ALL_VALUE))
+	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	void getLegalEntityHistory(
+		@PathVariable @ValidMunicipalityId final String municipalityId,
+		@PathVariable final Integer id,
+		final HttpServletResponse response) {
+
+		legalEntityService.streamHistory(id, response);
 	}
 }

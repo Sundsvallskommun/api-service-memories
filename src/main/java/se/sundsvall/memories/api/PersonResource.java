@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +22,7 @@ import se.sundsvall.memories.api.model.Person;
 import se.sundsvall.memories.api.model.PersonParameters;
 import se.sundsvall.memories.service.PersonService;
 
+import static org.springframework.http.MediaType.ALL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 import static org.springframework.http.ResponseEntity.ok;
@@ -62,5 +64,18 @@ class PersonResource {
 		@PathVariable final Integer id) {
 
 		return ok(personService.getById(id));
+	}
+
+	@GetMapping(path = "/{id}/biography")
+	@Operation(summary = "Get person biography",
+		description = "Get the biography of a person. The source is an XML document on the archive share, returned inline as HTML so browsers render it directly. Most persons have no biography, in which case this answers 404.")
+	@ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = ALL_VALUE))
+	@ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	void getPersonBiography(
+		@PathVariable @ValidMunicipalityId final String municipalityId,
+		@PathVariable final Integer id,
+		final HttpServletResponse response) {
+
+		personService.streamBiography(id, response);
 	}
 }

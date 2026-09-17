@@ -25,6 +25,11 @@ public interface PublicationSpecification {
 
 	// XMLTEXT is searched here but not on TEXT, where the column is empty. PUBL holds roughly 68 MB of digitised text
 	// across 20 326 rows, and a LIKE over a longtext column cannot use an index — worth measuring once this is live.
+	/** The index {@code MATCH} needs for {@link #matches}; without it the search falls back to {@code LIKE}. */
+	String FULLTEXT_TABLE = "PUBL";
+
+	List<String> FULLTEXT_COLUMNS = List.of("DOKTITEL", "KOMMENT_PUBL", "XMLTEXT");
+
 	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT, XMLTEXT);
 
 	List<String> LOCATION_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE);
@@ -46,7 +51,7 @@ public interface PublicationSpecification {
 	}
 
 	static Specification<PublicationEntity> matches(final String query) {
-		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, FULLTEXT_TABLE, FULLTEXT_COLUMNS, query);
 	}
 
 	static Specification<PublicationEntity> matchesLocation(final String location) {

@@ -23,6 +23,11 @@ public interface AudioSpecification {
 
 	SpecificationBuilder<AudioEntity> BUILDER = new SpecificationBuilder<>();
 
+	/** The index {@code MATCH} needs for {@link #matches}; without it the search falls back to {@code LIKE}. */
+	String FULLTEXT_TABLE = "LJUD";
+
+	List<String> FULLTEXT_COLUMNS = List.of("DOKTITEL", "KOMMENT_LJUD");
+
 	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
 
 	List<String> LOCATION_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE);
@@ -44,7 +49,7 @@ public interface AudioSpecification {
 	}
 
 	static Specification<AudioEntity> matches(final String query) {
-		return BUILDER.buildLikeAllWordsFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, FULLTEXT_TABLE, FULLTEXT_COLUMNS, query);
 	}
 
 	static Specification<AudioEntity> matchesLocation(final String location) {

@@ -10,5 +10,5 @@ public final class SambaTestProperties {
 	private SambaTestProperties() {}
 
 	public static final SambaIntegrationProperties SAMBA_PROPERTIES = new SambaIntegrationProperties(
-		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/", "/text_multi/");
+		"localhost", 445, "WORKGROUP", "user", "password", "/share/", "/film/", "/publ/", "/foto/", "/ljud/", "/text/", "/text_multi/", "/person/", "/jurpers/");
 }
