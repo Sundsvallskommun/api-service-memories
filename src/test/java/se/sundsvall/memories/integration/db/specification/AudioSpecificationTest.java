@@ -61,6 +61,43 @@ class AudioSpecificationTest {
 	}
 
 	/**
+	 * A hyphen is a token boundary to the index, not a character to delete: fusing the halves into {@code AnnaLisa}
+	 * would look for a token nothing stored. Swedish double names make this the common case, not the exotic one.
+	 */
+	@Test
+	void matchesFindsAHyphenatedName() {
+		persist(1, 4, "Intervju med Anna-Lisa Nordin", null);
+		persist(2, 4, "Intervju med Erik Berg", null);
+
+		assertThat(findIds(AudioSpecification.matches("Anna-Lisa"))).containsExactly(1);
+	}
+
+	/**
+	 * {@code S:t} splits into {@code s} and {@code t}, neither of which the index stores, so the fulltext branch would
+	 * match nothing. The query has to fall back to {@code LIKE} rather than return an empty page.
+	 */
+	@Test
+	void matchesFallsBackWhenAWordSplitsIntoTokensTooShortToIndex() {
+		persist(1, 4, "S:t Olofs kyrka", null);
+		persist(2, 4, "Gustav Adolfs kyrka", null);
+
+		assertThat(findIds(AudioSpecification.matches("S:t Olofs"))).containsExactly(1);
+	}
+
+	/**
+	 * A stopword is absent from the index however long it is, so requiring it with {@code +} makes the whole
+	 * expression unsatisfiable. {@code www} is on InnoDB's default list, which would otherwise make every search for a
+	 * web address return nothing.
+	 */
+	@Test
+	void matchesFallsBackOnAStopword() {
+		persist(1, 4, "Se www.sundsvall.se för mer", null);
+		persist(2, 4, "Ingen adress här", null);
+
+		assertThat(findIds(AudioSpecification.matches("www.sundsvall.se"))).containsExactly(1);
+	}
+
+	/**
 	 * Undoes the commit. Rows committed by {@link #commitSetup()} outlive the test the way a rollback never did, and
 	 * the database is shared with every other test class in the JVM — a row left behind here surfaces as a phantom hit
 	 * in whichever class runs next. Clearing before each test is not enough for that: the last test of the class would

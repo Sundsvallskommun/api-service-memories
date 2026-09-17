@@ -22,6 +22,11 @@ public interface FilmSpecification {
 
 	SpecificationBuilder<FilmEntity> BUILDER = new SpecificationBuilder<>();
 
+	/** The index {@code MATCH} needs for {@link #matches}; without it the search falls back to {@code LIKE}. */
+	String FULLTEXT_TABLE = "FILM";
+
+	List<String> FULLTEXT_COLUMNS = List.of("DOKTITEL", "KOMMENT_FILM");
+
 	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
 
 	List<String> LOCATION_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE);
@@ -43,7 +48,7 @@ public interface FilmSpecification {
 	}
 
 	static Specification<FilmEntity> matches(final String query) {
-		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, FULLTEXT_TABLE, FULLTEXT_COLUMNS, query);
 	}
 
 	static Specification<FilmEntity> matchesLocation(final String location) {

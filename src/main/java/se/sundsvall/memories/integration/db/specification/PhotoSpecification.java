@@ -24,6 +24,11 @@ public interface PhotoSpecification {
 
 	SpecificationBuilder<PhotoEntity> BUILDER = new SpecificationBuilder<>();
 
+	/** The index {@code MATCH} needs for {@link #matches}; without it the search falls back to {@code LIKE}. */
+	String FULLTEXT_TABLE = "FOTO";
+
+	List<String> FULLTEXT_COLUMNS = List.of("DOKTITEL", "KOMMENT_FF");
+
 	List<String> SEARCHABLE_ATTRIBUTES = List.of(DOCUMENT_TITLE, COMMENT);
 
 	List<String> LOCATION_ATTRIBUTES = List.of(TopographyEntity_.NAME, TopographyEntity_.PLACE);
@@ -53,7 +58,7 @@ public interface PhotoSpecification {
 	}
 
 	static Specification<PhotoEntity> matches(final String query) {
-		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, query);
+		return BUILDER.buildFullTextFilter(SEARCHABLE_ATTRIBUTES, FULLTEXT_TABLE, FULLTEXT_COLUMNS, query);
 	}
 
 	static Specification<PhotoEntity> matchesLocation(final String location) {

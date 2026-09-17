@@ -14,6 +14,8 @@ import se.sundsvall.memories.integration.db.model.CategoryEntity_;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity_;
 import se.sundsvall.memories.integration.db.model.PersonEntity_;
+import se.sundsvall.memories.integration.db.model.PublicationEntity;
+import se.sundsvall.memories.integration.db.model.PublicationEntity_;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static java.util.function.Predicate.not;
@@ -27,6 +29,7 @@ import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.N
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.OBJECT_KEY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.OBJECT_TYPE;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.SEARCH_TEXT;
+import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.SOURCE_ID;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.TOPOGRAPHY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.YEAR;
 
@@ -50,12 +53,25 @@ public interface CombinedObjectSpecification {
 	 */
 	String LOCATION = "location";
 
+	/** The {@code OBJTYP} the view gives the PUBL branch, and the only kind of row that carries a digitised body. */
+	String PUBLICATION_TYPE = "Publikation";
+
 	/**
-	 * Matches rows where every word of the query occurs in {@code SEARCH_TEXT} (title and comment), in any order.
-	 * {@code NAME_TEXT} is a subset of it and would add no rows, so it decides the order instead.
+	 * Matches rows where every word of the query occurs in {@code SEARCH_TEXT} (title and comment), in any order, or —
+	 * for a publication — inside its digitised page.
+	 * <p>
+	 * The body is reached with a correlated subquery rather than concatenated into {@code SEARCH_TEXT}, because that
+	 * column is selected with every row: putting roughly 65 MB of scanned text into it would load a slice of that onto
+	 * the heap on every request to this endpoint, searching or not. {@code NAME_TEXT} is a subset of
+	 * {@code SEARCH_TEXT} and would add no rows, so it decides the order instead.
 	 */
 	static Specification<CombinedObjectEntity> matches(final String query) {
-		return BUILDER.buildLikeAllWordsFilter(List.of(SEARCH_TEXT), query);
+		if (query == null || query.isBlank()) {
+			return Specification.unrestricted();
+		}
+		return BUILDER.buildLikeAllWordsFilter(List.of(SEARCH_TEXT), query)
+			.or(BUILDER.buildRelatedTextFilter(PublicationEntity.class, PublicationEntity_.ID, PublicationEntity_.XMLTEXT,
+				SOURCE_ID, OBJECT_TYPE, PUBLICATION_TYPE, query));
 	}
 
 	/** Every filter the search applies, without fetch joins or ordering. The counters share the same predicates. */

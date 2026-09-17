@@ -57,8 +57,13 @@ public interface NodeSpecification {
 	 * an empty name of its own — the archive's own view falls back to the legal entity or the person, and so does the
 	 * name the API reports, so a search for that name has to find the node.
 	 */
+	/** The index {@code MATCH} needs for {@link #matches}; without it the search falls back to {@code LIKE}. */
+	String FULLTEXT_TABLE = "TBL_NODES";
+
+	List<String> FULLTEXT_COLUMNS = List.of("NAME", "DESCRIPTION");
+
 	static Specification<NodeEntity> matches(final String query) {
-		return BUILDER.buildFullTextOrAssociationFilter(List.of(NAME, DESCRIPTION), ATTRIBUTES, CREATOR_ATTRIBUTES, query);
+		return BUILDER.buildFullTextOrAssociationFilter(List.of(NAME, DESCRIPTION), FULLTEXT_TABLE, FULLTEXT_COLUMNS, ATTRIBUTES, CREATOR_ATTRIBUTES, query);
 	}
 
 	static Specification<NodeEntity> hasId(final Integer id) {

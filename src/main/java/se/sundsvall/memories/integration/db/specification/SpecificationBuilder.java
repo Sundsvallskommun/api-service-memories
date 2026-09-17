@@ -14,11 +14,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.FullTextFunctionContributor;
+import se.sundsvall.memories.integration.db.FullTextIndexes;
 
 public class SpecificationBuilder<T> {
 
@@ -43,8 +45,23 @@ public class SpecificationBuilder<T> {
 	 */
 	private static final int MIN_TOKEN_LENGTH = 3;
 
-	/** The characters boolean mode reads as operators rather than as part of a word. */
-	private static final Pattern BOOLEAN_OPERATORS = Pattern.compile("[+\\-<>()~*\"@]");
+	/**
+	 * What InnoDB treats as a word boundary — everything that is not a letter or a digit. Splitting on this is how the
+	 * query is broken into the same tokens the index actually holds, rather than into whitespace-separated words:
+	 * {@code Anna-Lisa} is two tokens to the index, and {@code S:t} is one unusable one. The underscore is kept —
+	 * InnoDB's default parser counts it as part of a word, so {@code fil_namn} is one token and does not match
+	 * {@code filXnamn}.
+	 */
+	private static final Pattern TOKEN_BOUNDARY = Pattern.compile("[^\\p{L}\\p{N}_]+");
+
+	/**
+	 * InnoDB's default stopword list ({@code innodb_ft_default_stopword}). A stopword is not in the index, so requiring
+	 * it with {@code +} makes the whole expression unsatisfiable however long the word is — {@code www.sundsvall.se}
+	 * would otherwise return nothing at all.
+	 */
+	private static final Set<String> STOPWORDS = Set.of(
+		"a", "about", "an", "are", "as", "at", "be", "by", "com", "de", "en", "for", "from", "how", "i", "in", "is", "it", "la",
+		"of", "on", "or", "that", "the", "this", "to", "und", "was", "what", "when", "where", "who", "will", "with", "www");
 
 	private static final Pattern LIKE_WILDCARDS = Pattern.compile("([!%_])");
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
@@ -328,6 +345,39 @@ public class SpecificationBuilder<T> {
 	}
 
 	/**
+	 * Matches rows of one kind whose body text lives on another entity rather than on this one, without selecting that
+	 * body: the words are tested inside an {@code EXISTS} subquery, correlated on the id.
+	 * <p>
+	 * The combined search needs this for the digitised page of a publication. Concatenating it into the view's
+	 * {@code SEARCH_TEXT} would have been simpler, but that column is mapped and selected with every row, so each page
+	 * of results would drag tens of megabytes of scanned text onto the heap for a value no response field reads.
+	 * <p>
+	 * Matches nothing when the query yields no words — the caller combines this with {@code or}, where an
+	 * unrestricted branch would match every row instead.
+	 */
+	public <E> Specification<T> buildRelatedTextFilter(final Class<E> relatedType, final String relatedIdAttribute,
+		final String relatedTextAttribute, final String idAttribute, final String discriminatorAttribute,
+		final String discriminatorValue, final String query) {
+		final var words = splitWords(query);
+		if (words.isEmpty()) {
+			return (_, _, cb) -> cb.disjunction();
+		}
+		return (root, criteriaQuery, cb) -> {
+			if (criteriaQuery == null) {
+				return cb.disjunction();
+			}
+			final var subquery = criteriaQuery.subquery(Integer.class);
+			final var related = subquery.from(relatedType);
+			final var matchesEveryWord = words.stream()
+				.map(word -> cb.like(related.<String>get(relatedTextAttribute), "%" + escapeWildcards(word) + "%", LIKE_ESCAPE))
+				.toArray(Predicate[]::new);
+			subquery.select(cb.literal(1))
+				.where(cb.and(cb.equal(related.get(relatedIdAttribute), root.get(idAttribute)), cb.and(matchesEveryWord)));
+			return cb.and(cb.equal(root.get(discriminatorAttribute), discriminatorValue), cb.exists(subquery));
+		};
+	}
+
+	/**
 	 * Matches rows where every word in the query occurs in at least one of the attributes, in any order and not
 	 * necessarily the same one. Wildcards in the query are escaped. Matches every row when the query yields no words.
 	 */
@@ -351,12 +401,15 @@ public class SpecificationBuilder<T> {
 	 * {@code drunkningsolycka}. That is the price of using the index, and it is what makes the search able to read the
 	 * digitised document bodies at all.
 	 * <p>
-	 * Falls back to {@code LIKE} when any word is too short to have been indexed, so that a short query keeps finding
-	 * what it always found instead of silently returning nothing.
+	 * Falls back to {@code LIKE} when any word is too short to have been indexed, when a word is a stopword, or when
+	 * the database has no index over {@code indexColumns} of {@code indexTable} — the deployed legacy tables are not
+	 * built by this repository's migrations, and {@code MATCH} answers a column list it cannot pair with an index
+	 * with error 1191 rather than with a scan.
 	 */
-	public Specification<T> buildFullTextFilter(final List<String> attributes, final String query) {
+	public Specification<T> buildFullTextFilter(final List<String> attributes, final String indexTable, final List<String> indexColumns,
+		final String query) {
 		final var expression = booleanModeExpression(query);
-		if (expression.isEmpty()) {
+		if (expression.isEmpty() || !FullTextIndexes.covers(indexTable, indexColumns)) {
 			return buildLikeAllWordsFilter(attributes, query);
 		}
 		return (root, _, cb) -> fullTextMatches(root, cb, attributes, expression.get());
@@ -371,13 +424,13 @@ public class SpecificationBuilder<T> {
 	 * Falls back wholesale to {@code LIKE} when the query is too short to have been indexed, so that both halves keep
 	 * answering the same way.
 	 */
-	public Specification<T> buildFullTextOrAssociationFilter(final List<String> attributes, final String association,
-		final List<AssociationAttributes> nestedAssociations, final String value) {
+	public Specification<T> buildFullTextOrAssociationFilter(final List<String> attributes, final String indexTable,
+		final List<String> indexColumns, final String association, final List<AssociationAttributes> nestedAssociations, final String value) {
 		if (value == null || value.isBlank()) {
 			return Specification.unrestricted();
 		}
 		final var expression = booleanModeExpression(value);
-		if (expression.isEmpty()) {
+		if (expression.isEmpty() || !FullTextIndexes.covers(indexTable, indexColumns)) {
 			return buildLikeAnyFilter(attributes, association, nestedAssociations, value);
 		}
 		final var pattern = "%" + escapeWildcards(value.trim()) + "%";
@@ -396,14 +449,26 @@ public class SpecificationBuilder<T> {
 	 * word is shorter than the index stores and would therefore match nothing.
 	 */
 	private static Optional<String> booleanModeExpression(final String query) {
-		final var words = splitWords(query).stream()
-			.map(SpecificationBuilder::stripBooleanOperators)
-			.filter(word -> !word.isEmpty())
-			.toList();
-		if (words.isEmpty() || words.stream().anyMatch(word -> word.length() < MIN_TOKEN_LENGTH)) {
+		if (query == null || query.isBlank()) {
 			return Optional.empty();
 		}
-		return Optional.of(String.join(" ", words.stream().map("+%s*"::formatted).toList()));
+		final var tokens = Arrays.stream(TOKEN_BOUNDARY.split(query.trim()))
+			.filter(token -> !token.isEmpty())
+			.toList();
+		if (tokens.isEmpty() || tokens.stream().anyMatch(SpecificationBuilder::unsearchable)) {
+			return Optional.empty();
+		}
+		return Optional.of(String.join(" ", tokens.stream().map("+%s*"::formatted).toList()));
+	}
+
+	/**
+	 * Whether the index can answer for this token at all. Two ways it cannot: the token is shorter than
+	 * {@code innodb_ft_min_token_size} and was never stored, or it is a stopword and was deliberately dropped. Either
+	 * way {@code +token*} matches nothing and takes the whole {@code AND} down with it, so the caller has to use
+	 * {@code LIKE} for the entire query rather than return an empty page.
+	 */
+	private static boolean unsearchable(final String token) {
+		return token.length() < MIN_TOKEN_LENGTH || STOPWORDS.contains(token.toLowerCase(Locale.ROOT));
 	}
 
 	private Predicate fullTextMatches(final Root<T> root, final CriteriaBuilder cb, final List<String> attributes, final String expression) {
@@ -833,11 +898,6 @@ public class SpecificationBuilder<T> {
 			attributes.stream().map(attribute -> (Expression<?>) root.get(attribute)),
 			Stream.<Expression<?>>of(cb.literal(expression)))
 			.toArray(Expression[]::new);
-	}
-
-	/** Drops the characters boolean mode would read as operators, so a user's punctuation cannot change the query. */
-	private static String stripBooleanOperators(final String word) {
-		return BOOLEAN_OPERATORS.matcher(word).replaceAll("");
 	}
 
 	private Predicate matchesAnyAttribute(final Root<T> root, final CriteriaBuilder cb, final List<String> attributes, final String word) {
