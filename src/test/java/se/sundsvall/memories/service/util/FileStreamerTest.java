@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import se.sundsvall.dept44.problem.Problem;
 import se.sundsvall.dept44.problem.ThrowableProblem;
 import se.sundsvall.memories.integration.samba.SambaIntegration;
 import se.sundsvall.memories.service.util.FileStreamer.MaterialType;
@@ -25,7 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -120,6 +123,25 @@ class FileStreamerTest {
 		verify(responseMock).addHeader(CONTENT_DISPOSITION, "inline; filename=\"sundsvallsminnen-publikation-9.html\"");
 		verify(responseMock).setHeader(CACHE_CONTROL, "public, max-age=2592000, immutable");
 		verify(xsltTransformerMock).transform(any(InputStream.class), any(OutputStream.class));
+	}
+
+	@Test
+	void streamInlineWritesNoHeadersWhenTransformFails() {
+		// Four documents on the share are malformed XML. The transform runs into a buffer first precisely so the
+		// resulting 500 carries none of the success headers — above all not the 30-day cache header, which would pin
+		// the error in every client and proxy cache.
+		final var responseMock = mock(HttpServletResponse.class);
+
+		when(sambaIntegrationMock.openResource("/jurpers/historia/doc.xml")).thenReturn(new ByteArrayResource(XML.getBytes()));
+		doThrow(Problem.valueOf(INTERNAL_SERVER_ERROR, "Failed to transform XML: malformed"))
+			.when(xsltTransformerMock).transform(any(InputStream.class), any(OutputStream.class));
+
+		final var exception = assertThrows(ThrowableProblem.class,
+			() -> fileStreamer.streamInline("/jurpers/historia/doc.xml", "doc.xml", "sundsvallsminnen-jurpers-1092.xml", true, responseMock, "ctx"));
+
+		assertThat(exception.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+		verify(responseMock, never()).setHeader(any(), any());
+		verify(responseMock, never()).addHeader(any(), any());
 	}
 
 	@Test
