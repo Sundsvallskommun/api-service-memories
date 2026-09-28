@@ -25,7 +25,7 @@ public class LegalEntity {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
-	@Schema(description = "The place resolved from TOPOGRAFI, broken into its parts: name is the wider place (TOPNAMN, the legacy site's Ort) and place the specific one (PLATS, the legacy site's Plats)")
+	@Schema(description = "The place resolved from TOPOGRAFI, broken into its parts: name is the wider place (TOPNAMN, the legacy site's Topografiskt namn), code its code (TOPKOD, Topografisk kod) and place the specific one (PLATS, Plats)")
 	private Topography topography;
 
 	@Schema(description = "Start date (stored as free text)", examples = "1888")

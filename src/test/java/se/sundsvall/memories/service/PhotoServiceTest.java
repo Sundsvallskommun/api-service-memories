@@ -130,7 +130,7 @@ class PhotoServiceTest {
 		final var entity = entity().withSubjects(new LinkedHashSet<>(List.of(
 			OcmEntity.create().withId(10).withCode("ALM").withText("Allmänt"),
 			OcmEntity.create().withId(20).withCode("MUS").withText("Musik"))));
-		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity));
+		when(photoRepositoryMock.findVisibleDetailById(anyInt())).thenReturn(Optional.of(entity));
 		when(photoRepositoryMock.findRelatedPhotoIds(1234)).thenReturn(List.of(2001, 2002));
 
 		final var result = service.getById(1234);
@@ -145,7 +145,7 @@ class PhotoServiceTest {
 
 	@Test
 	void getByIdWithoutSubjectsReturnsAnEmptyList() {
-		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.of(entity()));
+		when(photoRepositoryMock.findVisibleDetailById(anyInt())).thenReturn(Optional.of(entity()));
 		when(photoRepositoryMock.findRelatedPhotoIds(1234)).thenReturn(List.of());
 
 		assertThat(service.getById(1234).getSubjects()).isEmpty();
@@ -153,7 +153,7 @@ class PhotoServiceTest {
 
 	@Test
 	void getByIdNotFound() {
-		when(photoRepositoryMock.findVisibleById(anyInt())).thenReturn(Optional.empty());
+		when(photoRepositoryMock.findVisibleDetailById(anyInt())).thenReturn(Optional.empty());
 
 		final var exception = assertThrows(ThrowableProblem.class, () -> service.getById(999));
 

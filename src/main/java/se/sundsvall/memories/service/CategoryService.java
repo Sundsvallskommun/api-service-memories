@@ -12,8 +12,10 @@ import static java.util.Comparator.comparing;
 import static se.sundsvall.memories.service.util.Names.swedishOrder;
 
 /**
- * The {@code /categories} dropdown. Read per request rather than cached at startup: the table is tiny, and the sizes
- * change as the archive is edited, so a cache would report them stale.
+ * The {@code /categories} dropdown. Read per request rather than cached: the table is tiny and the count behind the
+ * sizes is one cheap GROUP BY, so a cache would buy nothing to set against sizes gone stale after an archive edit. The
+ * {@code /objects} facet counts are cached despite that staleness because each of them is a pass over the combined
+ * view.
  */
 @Service
 public class CategoryService {

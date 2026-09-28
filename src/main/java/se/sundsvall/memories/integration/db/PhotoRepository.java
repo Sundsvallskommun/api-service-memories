@@ -50,6 +50,14 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, Jp
 	default Optional<PhotoEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
 			.and(fetchCreators())
+			.and(hasId(id))
+			.and(notDeleted()));
+	}
+
+	/** {@link #findVisibleById} plus the institution, which only the detail response shows. */
+	default Optional<PhotoEntity> findVisibleDetailById(final Integer id) {
+		return findOne(fetchTopography()
+			.and(fetchCreators())
 			.and(fetchInstitution())
 			.and(hasId(id))
 			.and(notDeleted()));

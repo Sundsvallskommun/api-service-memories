@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.integration.db.PhotoRepository;
+import se.sundsvall.memories.integration.db.model.InstitutionEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
@@ -57,6 +58,7 @@ class PhotoSpecificationTest {
 		entityManager.createNativeQuery("DELETE FROM OCM").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM PERSON").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM JURPERS").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM INSTITUTION").executeUpdate();
 		photoRepository.flush();
 	}
 
@@ -596,6 +598,27 @@ class PhotoSpecificationTest {
 		photo.setEarliest(earliest);
 		photo.setLatest(latest);
 		photoRepository.flush();
+	}
+
+	@Test
+	void findVisibleDetailByIdResolvesTheInstitution() {
+		final var institution = InstitutionEntity.create().withId(23).withName("Medelpads fornminnesförening");
+		entityManager.persist(institution);
+		persist(1, 4, "a", null, "Foto").setInstitution(institution);
+		photoRepository.flush();
+		entityManager.clear();
+
+		assertThat(photoRepository.findVisibleDetailById(1).orElseThrow().getInstitution().getName()).isEqualTo("Medelpads fornminnesförening");
+	}
+
+	@Test
+	void findVisibleDetailByIdLeavesADanglingInstitutionNull() {
+		persist(1, 4, "a", null, "Foto");
+		entityManager.createNativeQuery("UPDATE FOTO SET M_I_ID = 999 WHERE F_ID = 1").executeUpdate();
+		entityManager.clear();
+
+		assertThat(photoRepository.findVisibleDetailById(1).orElseThrow().getInstitution()).isNull();
+		assertThat(photoRepository.findVisibleDetailById(999)).isEmpty();
 	}
 
 	@Test

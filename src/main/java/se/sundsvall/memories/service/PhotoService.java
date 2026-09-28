@@ -24,6 +24,8 @@ import static se.sundsvall.memories.service.util.FileStreamer.MaterialType.PHOTO
 @Service
 public class PhotoService {
 
+	private static final String PHOTO_NOT_FOUND = "Photo with id '%s' not found";
+
 	private final PhotoRepository photoRepository;
 	private final SambaIntegrationProperties sambaProperties;
 	private final FileStreamer fileStreamer;
@@ -48,12 +50,13 @@ public class PhotoService {
 
 	private PhotoEntity findVisible(final Integer id) {
 		return photoRepository.findVisibleById(id)
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Photo with id '%s' not found".formatted(id)));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, PHOTO_NOT_FOUND.formatted(id)));
 	}
 
 	@Transactional(readOnly = true)
 	public Photo getById(final Integer id) {
-		final var entity = findVisible(id);
+		final var entity = photoRepository.findVisibleDetailById(id)
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, PHOTO_NOT_FOUND.formatted(id)));
 
 		return PhotoMapper.toPhoto(entity, photoRepository.findRelatedPhotoIds(id));
 	}

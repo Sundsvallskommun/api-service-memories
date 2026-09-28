@@ -19,7 +19,8 @@ import static se.sundsvall.memories.configuration.CacheNames.OBJECT_FACETS_CACHE
  * The four facet counts {@code /objects} returns next to a page. Each is a full pass over the combined view, so they
  * are cached: a page turn, a change of sort or a class of pupils sending the same search reuse them. The key holds
  * only the filters — paging and sorting do not change a count. An edit to the archive shows up in the counts once the
- * entry expires (see {@code spring.cache} in the application configuration).
+ * entry expires (see {@code spring.cache} in the application configuration). Loading is synchronized, so searches
+ * that arrive together while the entry is missing wait for the one count instead of each running it.
  */
 @Service
 public class CombinedObjectFacetService {
@@ -31,7 +32,7 @@ public class CombinedObjectFacetService {
 	}
 
 	@Transactional(readOnly = true)
-	@Cacheable(cacheNames = OBJECT_FACETS_CACHE, key = "T(se.sundsvall.memories.service.CombinedObjectFacetService).key(#parameters)")
+	@Cacheable(cacheNames = OBJECT_FACETS_CACHE, key = "T(se.sundsvall.memories.service.CombinedObjectFacetService).key(#parameters)", sync = true)
 	public Facets getFacets(final CombinedObjectParameters parameters) {
 		return new Facets(
 			CombinedObjectMapper.toObjectTypeCountList(combinedObjectRepository.countByType(parameters)),

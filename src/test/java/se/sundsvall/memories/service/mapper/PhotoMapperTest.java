@@ -115,6 +115,7 @@ class PhotoMapperTest {
 
 		assertThat(PhotoMapper.toPhoto(entity, List.of()).getInstitution()).isNull();
 		assertThat(PhotoMapper.toPhoto(sampleEntity(), List.of()).getInstitution()).isNull();
+		assertThat(PhotoMapper.toPhoto(sampleEntity().withInstitution(InstitutionEntity.create().withId(9)), List.of()).getInstitution()).isNull();
 	}
 
 	@Test

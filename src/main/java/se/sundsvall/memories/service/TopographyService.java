@@ -29,7 +29,7 @@ public class TopographyService {
 	 * every search form asks for.
 	 */
 	@Transactional(readOnly = true)
-	@Cacheable(TOPOGRAPHIES_CACHE)
+	@Cacheable(cacheNames = TOPOGRAPHIES_CACHE, sync = true)
 	public List<Topography> getTopographies() {
 		return TopographyMapper.toTopographyList(topographyRepository.findAllSelectable()).stream()
 			.filter(topography -> topography.getDisplayName() != null)
