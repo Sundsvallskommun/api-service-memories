@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service;
 
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.memories.api.model.Topography;
@@ -8,6 +9,7 @@ import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.service.mapper.TopographyMapper;
 
 import static java.util.Comparator.comparing;
+import static se.sundsvall.memories.configuration.CacheConfiguration.TOPOGRAPHIES_CACHE;
 import static se.sundsvall.memories.service.util.Names.swedishOrder;
 
 @Service
@@ -23,9 +25,11 @@ public class TopographyService {
 	 * The places a search form can offer. The repository leaves out the rows blank in every column, but in the
 	 * database's terms; {@link Topography#getDisplayName()} is what the response actually shows, so it has the last word
 	 * on whether a row has a name to show. Ordered here rather than in SQL, see
-	 * {@link se.sundsvall.memories.service.util.Names}.
+	 * {@link se.sundsvall.memories.service.util.Names}. Cached, since it reads and sorts a couple of thousand rows that
+	 * every search form asks for.
 	 */
 	@Transactional(readOnly = true)
+	@Cacheable(TOPOGRAPHIES_CACHE)
 	public List<Topography> getTopographies() {
 		return TopographyMapper.toTopographyList(topographyRepository.findAllSelectable()).stream()
 			.filter(topography -> topography.getDisplayName() != null)

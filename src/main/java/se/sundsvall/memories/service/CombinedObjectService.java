@@ -12,9 +12,11 @@ import se.sundsvall.memories.service.util.Pageables;
 public class CombinedObjectService {
 
 	private final CombinedObjectRepository combinedObjectRepository;
+	private final CombinedObjectFacetService combinedObjectFacetService;
 
-	public CombinedObjectService(final CombinedObjectRepository combinedObjectRepository) {
+	public CombinedObjectService(final CombinedObjectRepository combinedObjectRepository, final CombinedObjectFacetService combinedObjectFacetService) {
 		this.combinedObjectRepository = combinedObjectRepository;
+		this.combinedObjectFacetService = combinedObjectFacetService;
 	}
 
 	@Transactional(readOnly = true)
@@ -24,20 +26,14 @@ public class CombinedObjectService {
 
 		final var page = combinedObjectRepository.findAllByParameters(parameters, pageable);
 
-		final var typeCounts = combinedObjectRepository.countByType(parameters);
-
-		final var genderCounts = combinedObjectRepository.countByGender(parameters);
-
-		final var categoryCounts = combinedObjectRepository.countByCategory(parameters);
-
-		final var topographyCounts = combinedObjectRepository.countByTopography(parameters);
+		final var facets = combinedObjectFacetService.getFacets(parameters);
 
 		return PagedCombinedObjectResponse.create()
 			.withObjects(CombinedObjectMapper.toCombinedObjectList(page.getContent()))
-			.withTypeCounts(CombinedObjectMapper.toObjectTypeCountList(typeCounts))
-			.withGenderCounts(CombinedObjectMapper.toGenderCountList(genderCounts))
-			.withCategoryCounts(CombinedObjectMapper.toCategoryCountList(categoryCounts))
-			.withTopographyCounts(CombinedObjectMapper.toTopographyCountList(topographyCounts))
+			.withTypeCounts(facets.typeCounts())
+			.withGenderCounts(facets.genderCounts())
+			.withCategoryCounts(facets.categoryCounts())
+			.withTopographyCounts(facets.topographyCounts())
 			.withMetaData(Pageables.metaDataOf(page, parameters));
 	}
 }
