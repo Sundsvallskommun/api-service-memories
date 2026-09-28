@@ -13,7 +13,7 @@ import se.sundsvall.memories.api.model.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
 import se.sundsvall.memories.service.mapper.CombinedObjectMapper;
 
-import static se.sundsvall.memories.configuration.CacheConfiguration.OBJECT_FACETS_CACHE;
+import static se.sundsvall.memories.configuration.CacheNames.OBJECT_FACETS_CACHE;
 
 /**
  * The four facet counts {@code /objects} returns next to a page. Each is a full pass over the combined view, so they

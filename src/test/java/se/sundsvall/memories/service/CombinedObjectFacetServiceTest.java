@@ -25,7 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.domain.Sort.Direction.DESC;
-import static se.sundsvall.memories.configuration.CacheConfiguration.OBJECT_FACETS_CACHE;
+import static se.sundsvall.memories.configuration.CacheNames.OBJECT_FACETS_CACHE;
 
 @SpringJUnitConfig
 class CombinedObjectFacetServiceTest {

@@ -9,7 +9,7 @@ import se.sundsvall.memories.integration.db.TopographyRepository;
 import se.sundsvall.memories.service.mapper.TopographyMapper;
 
 import static java.util.Comparator.comparing;
-import static se.sundsvall.memories.configuration.CacheConfiguration.TOPOGRAPHIES_CACHE;
+import static se.sundsvall.memories.configuration.CacheNames.TOPOGRAPHIES_CACHE;
 import static se.sundsvall.memories.service.util.Names.swedishOrder;
 
 @Service
