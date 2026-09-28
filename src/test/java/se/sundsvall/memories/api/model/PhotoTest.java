@@ -32,6 +32,8 @@ class PhotoTest {
 			.withLatest("1925")
 			.withLocationText("Sundsvall")
 			.withLocation("Sundsvalls kommun")
+			.withTopography(Topography.create().withTopographyId(22).withName("Sundsvalls Gustav Adolf (Sundsvalls stad)").withPlace("Stenstan"))
+			.withInstitution(Institution.create().withInstitutionId(23).withName("Medelpads fornminnesförening"))
 			.withThumbnailFilename("FOTO.id_1234_fil_liten.jpg")
 			.withLargeImageFilename("FOTO.id_1234_fil_stor.jpg")
 			.withRights("Free")
@@ -39,6 +41,9 @@ class PhotoTest {
 			.withNodeId(19000)
 			.withCreator(Creator.create().withPersonId(1).withPerson("Anton Nordin").withLegalEntityId(10).withLegalEntity("Nödhjälpskommittén 1888-1889"));
 
+		assertThat(result.getTopography().getName()).isEqualTo("Sundsvalls Gustav Adolf (Sundsvalls stad)");
+		assertThat(result.getTopography().getPlace()).isEqualTo("Stenstan");
+		assertThat(result.getInstitution().getName()).isEqualTo("Medelpads fornminnesförening");
 		assertThat(result.getPhotoId()).isEqualTo(1234);
 		assertThat(result.getDocumentTitle()).isEqualTo("Stadsvy");
 		assertThat(result.getEarliest()).isEqualTo("1920");

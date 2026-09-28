@@ -29,6 +29,7 @@ public final class LegalEntityMapper {
 				.withTopographyId(topographyId(e))
 				.withLocationText(e.getLocationText())
 				.withLocation(location(e))
+				.withTopography(TopographyMapper.toTopography(e.getTopography()))
 				.withStartDate(e.getStartDate())
 				.withEndDate(e.getEndDate())
 				.withPrincipal(e.getPrincipal())

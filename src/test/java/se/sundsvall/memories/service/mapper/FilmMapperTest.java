@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import se.sundsvall.memories.api.model.Film;
+import se.sundsvall.memories.api.model.Topography;
 import se.sundsvall.memories.integration.db.model.FilmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
 
@@ -46,6 +47,7 @@ class FilmMapperTest {
 					.withTopographyId(2)
 					.withLocationText("Sundsvall")
 					.withLocation("Sundsvall kommun")
+					.withTopography(Topography.create().withTopographyId(2).withDisplayName("Sundsvall kommun").withName("Sundsvall kommun"))
 					.withOrganizationId(3)
 					.withComment("A comment")
 					.withFilmMimeType("video/mp4")

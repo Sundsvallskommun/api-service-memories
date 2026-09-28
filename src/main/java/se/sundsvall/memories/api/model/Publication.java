@@ -15,8 +15,11 @@ public class Publication extends AbstractCreatedObject<Publication> {
 	@Schema(description = "Publication type (denormalized PUBLIKTYP value)", examples = "Tidning")
 	private String publicationType;
 
-	@Schema(description = "Publication date", examples = "1841-02-18")
+	@Schema(description = "Publication date (DATUM), when the publication was issued. The legacy site's Utgivningsdatum", examples = "1841-02-18")
 	private String date;
+
+	@Schema(description = "Document date (DOKDATUM), the date of the document itself. The legacy site's Dokumentdatum", examples = "1621-08-23")
+	private String documentDate;
 
 	@Schema(description = "Periodical title (newspaper/magazine name)", examples = "Alfwar och Skämt")
 	private String periodicalTitle;
@@ -38,6 +41,9 @@ public class Publication extends AbstractCreatedObject<Publication> {
 
 	@Schema(description = "Resolved place name from TOPOGRAFI (via P_T_ID; preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
+
+	@Schema(description = "The place resolved from TOPOGRAFI, broken into its parts: name is the wider place (TOPNAMN, the legacy site's Ort) and place the specific one (PLATS, the legacy site's Plats)")
+	private Topography topography;
 
 	@Schema(description = "Comment / description", examples = "Newspaper issue from 1841")
 	private String comment;
@@ -107,6 +113,19 @@ public class Publication extends AbstractCreatedObject<Publication> {
 
 	public Publication withDate(final String date) {
 		this.date = date;
+		return this;
+	}
+
+	public String getDocumentDate() {
+		return documentDate;
+	}
+
+	public void setDocumentDate(final String documentDate) {
+		this.documentDate = documentDate;
+	}
+
+	public Publication withDocumentDate(final String documentDate) {
+		this.documentDate = documentDate;
 		return this;
 	}
 
@@ -201,6 +220,19 @@ public class Publication extends AbstractCreatedObject<Publication> {
 		return this;
 	}
 
+	public Topography getTopography() {
+		return topography;
+	}
+
+	public void setTopography(final Topography topography) {
+		this.topography = topography;
+	}
+
+	public Publication withTopography(final Topography topography) {
+		this.topography = topography;
+		return this;
+	}
+
 	public String getComment() {
 		return comment;
 	}
@@ -272,9 +304,11 @@ public class Publication extends AbstractCreatedObject<Publication> {
 			return false;
 		final Publication that = (Publication) o;
 		return Objects.equals(publicationId, that.publicationId) && Objects.equals(filename, that.filename) && Objects.equals(publicationType, that.publicationType)
-			&& Objects.equals(date, that.date) && Objects.equals(periodicalTitle, that.periodicalTitle) && Objects.equals(issueNumber, that.issueNumber)
+			&& Objects.equals(date, that.date)
+			&& Objects.equals(documentDate, that.documentDate) && Objects.equals(periodicalTitle, that.periodicalTitle) && Objects.equals(issueNumber, that.issueNumber)
 			&& Objects.equals(pageNumber, that.pageNumber) && Objects.equals(publisherLocation, that.publisherLocation) && Objects.equals(documentTitle, that.documentTitle)
-			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location) && Objects.equals(comment, that.comment)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location)
+			&& Objects.equals(topography, that.topography) && Objects.equals(comment, that.comment)
 			&& Objects.equals(thumbnailFilename, that.thumbnailFilename) && Objects.equals(largeImageFilename, that.largeImageFilename)
 			&& Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(creator, that.creator);
@@ -282,8 +316,8 @@ public class Publication extends AbstractCreatedObject<Publication> {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(publicationId, filename, publicationType, date, periodicalTitle, issueNumber, pageNumber, publisherLocation, documentTitle,
-			locationText, location, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext, nodeId, creator);
+		return Objects.hash(publicationId, filename, publicationType, date, documentDate, periodicalTitle, issueNumber, pageNumber, publisherLocation, documentTitle,
+			locationText, location, topography, comment, thumbnailFilename, largeImageFilename, ocrFilename, xmltext, nodeId, creator);
 	}
 
 	@Override
@@ -293,6 +327,7 @@ public class Publication extends AbstractCreatedObject<Publication> {
 			", filename='" + filename + '\'' +
 			", publicationType='" + publicationType + '\'' +
 			", date='" + date + '\'' +
+			", documentDate='" + documentDate + '\'' +
 			", periodicalTitle='" + periodicalTitle + '\'' +
 			", issueNumber='" + issueNumber + '\'' +
 			", pageNumber='" + pageNumber + '\'' +
@@ -300,6 +335,7 @@ public class Publication extends AbstractCreatedObject<Publication> {
 			", documentTitle='" + documentTitle + '\'' +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", topography=" + topography +
 			", comment='" + comment + '\'' +
 			", thumbnailFilename='" + thumbnailFilename + '\'' +
 			", largeImageFilename='" + largeImageFilename + '\'' +

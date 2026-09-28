@@ -20,6 +20,7 @@ class PublicationMapperTest {
 			.withFilename("alfwar-1841.xml")
 			.withPublicationType("Tidningar")
 			.withDate("1841-02-18")
+			.withDocumentDate("1841-92-18")
 			.withPeriodicalTitle("Alfwar och Skämt")
 			.withIssueNumber("8")
 			.withPageNumber("3")
@@ -55,7 +56,10 @@ class PublicationMapperTest {
 		assertThat(result.getPublicationId()).isEqualTo(207);
 		assertThat(result.getNodeId()).isEqualTo(18407);
 		assertThat(result.getPublicationType()).isEqualTo("Tidningar");
+		assertThat(result.getDate()).isEqualTo("1841-02-18");
+		assertThat(result.getDocumentDate()).isEqualTo("1841-92-18");
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
+		assertThat(result.getTopography().getTopographyId()).isEqualTo(4);
 		assertThat(result.getXmltext()).isNull();
 		assertThat(result.getDocumentTitle()).isEqualTo("Page 3 Alfwar och Skämt nr 8 1841");
 	}

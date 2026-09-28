@@ -15,6 +15,13 @@
 			"latest": "1925",
 			"locationText": "Sundsvall",
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"objectType": "Foto",
 			"colorMode": "Svartvit",
 			"material": "Glas",
@@ -33,6 +40,13 @@
 			"latest": "1955",
 			"locationText": "Sundsvall",
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"objectType": "Foto",
 			"colorMode": "Färg",
 			"thumbnailFilename": "FOTO.id_1002_fil_liten.jpg",
@@ -47,6 +61,13 @@
 			"latest": "1962",
 			"locationText": "Timrå",
 			"location": "Timrå",
+			"topography": {
+				"topographyId": 2,
+				"displayName": "Timrå",
+				"name": "Timrå",
+				"code": "TIM",
+				"municipality": "Timrå kommun"
+			},
 			"objectType": "Foto",
 			"thumbnailFilename": "FOTO.id_1003_fil_liten.jpg",
 			"largeImageFilename": "FOTO.id_1003_fil_stor.jpg",
@@ -58,7 +79,14 @@
 			"comment": "Bild utan känt datum",
 			"earliest": "okänt",
 			"objectType": "Foto",
-			"location": "Sundsvall"
+			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			}
 		},
 		{
 			"photoId": 1005,
@@ -66,7 +94,14 @@
 			"comment": "Fotografi av Anton Nordin, skänkt av Nödhjälpskommittén. Stadsvy i bakgrunden.",
 			"earliest": "1890",
 			"objectType": "Foto",
-			"location": "Sundsvall"
+			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			}
 		}
 	]
 }

@@ -15,6 +15,13 @@
 			"latest": "1925",
 			"locationText": "Sundsvall",
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"objectType": "Foto",
 			"colorMode": "Svartvit",
 			"material": "Glas",
@@ -31,7 +38,14 @@
 			"comment": "Fotografi av Anton Nordin, skänkt av Nödhjälpskommittén. Stadsvy i bakgrunden.",
 			"earliest": "1890",
 			"objectType": "Foto",
-			"location": "Sundsvall"
+			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			}
 		}
 	]
 }

@@ -31,9 +31,9 @@ class PhotoEntityTest {
 		assertThat(PhotoEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity"),
-			hasValidBeanEqualsExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity"),
-			hasValidBeanToStringExcluding("topography", "subjects", "creatorPerson", "creatorLegalEntity")));
+			hasValidBeanHashCodeExcluding("topography", "institution", "subjects", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanEqualsExcluding("topography", "institution", "subjects", "creatorPerson", "creatorLegalEntity"),
+			hasValidBeanToStringExcluding("topography", "institution", "subjects", "creatorPerson", "creatorLegalEntity")));
 	}
 
 	@Test
@@ -43,6 +43,7 @@ class PhotoEntityTest {
 		final var result = PhotoEntity.create()
 			.withId(1234)
 			.withTopography(TopographyEntity.create().withId(42).withName("Sundsvall"))
+			.withInstitution(InstitutionEntity.create().withId(23).withName("Medelpads fornminnesförening"))
 			.withSubjects(Set.of(OcmEntity.create().withId(7).withText("Musik")))
 			.withFilename("original.jpg")
 			.withAccessionNumber("ACC-1")
@@ -93,6 +94,7 @@ class PhotoEntityTest {
 		assertThat(result).hasNoNullFieldsOrProperties();
 		assertThat(result.getId()).isEqualTo(1234);
 		assertThat(result.getTopography().getId()).isEqualTo(42);
+		assertThat(result.getInstitution().getId()).isEqualTo(23);
 		assertThat(result.getSubjects()).extracting(OcmEntity::getId).containsExactly(7);
 		assertThat(result.getFilename()).isEqualTo("original.jpg");
 		assertThat(result.getAccessionNumber()).isEqualTo("ACC-1");

@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import se.sundsvall.memories.api.model.Audio;
+import se.sundsvall.memories.api.model.Topography;
 import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -47,6 +48,7 @@ class AudioMapperTest {
 					.withTopographyId(2)
 					.withLocationText("Sundsvall")
 					.withLocation("Sundsvalls kommun")
+					.withTopography(Topography.create().withTopographyId(2).withDisplayName("Sundsvalls kommun").withName("Sundsvalls kommun"))
 					.withSubjectId(7)
 					.withSubject("Intervju")
 					.withComment("A comment")

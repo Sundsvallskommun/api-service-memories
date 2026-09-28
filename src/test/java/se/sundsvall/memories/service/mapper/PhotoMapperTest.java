@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.api.model.Subject;
+import se.sundsvall.memories.integration.db.model.InstitutionEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.OcmEntity;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
@@ -47,6 +48,9 @@ class PhotoMapperTest {
 		assertThat(result.getDocumentTitle()).isEqualTo("Stadsvy från Norra berget");
 		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
+		assertThat(result.getTopography().getTopographyId()).isEqualTo(42);
+		assertThat(result.getTopography().getName()).isEqualTo("Sundsvall");
+		assertThat(result.getInstitution()).isNull();
 		assertThat(result.getLargeImageFilename()).isEqualTo("FOTO.id_1234_fil_stor.jpg");
 		assertThat(result.getRights()).isEqualTo("Free use");
 		assertThat(result.getNodeId()).isEqualTo(19000);
@@ -72,6 +76,7 @@ class PhotoMapperTest {
 		final var entity = sampleEntity().withTopography(null);
 
 		assertThat(PhotoMapper.toPhotoSummary(entity).getLocation()).isNull();
+		assertThat(PhotoMapper.toPhotoSummary(entity).getTopography()).isNull();
 		assertThat(PhotoMapper.toPhotoSummary(entity).getLocationText()).isEqualTo("Sundsvall");
 	}
 
@@ -91,6 +96,25 @@ class PhotoMapperTest {
 			.containsExactly(
 				tuple("ALM", "Allmänt", "Allmänt ämne"),
 				tuple("MUS", "Musik", "Musikinspelning"));
+	}
+
+	@Test
+	void toPhotoDetailAttachesTheInstitution() {
+		final var entity = sampleEntity().withInstitution(InstitutionEntity.create().withId(23).withName("Medelpads fornminnesförening"));
+
+		final var result = PhotoMapper.toPhoto(entity, List.of());
+
+		assertThat(result.getInstitution().getInstitutionId()).isEqualTo(23);
+		assertThat(result.getInstitution().getName()).isEqualTo("Medelpads fornminnesförening");
+	}
+
+	@Test
+	void toPhotoDetailReadsTheBlankSentinelInstitutionAsNone() {
+		// M_I_ID defaults to row 1, which carries no name
+		final var entity = sampleEntity().withInstitution(InstitutionEntity.create().withId(1).withName(""));
+
+		assertThat(PhotoMapper.toPhoto(entity, List.of()).getInstitution()).isNull();
+		assertThat(PhotoMapper.toPhoto(sampleEntity(), List.of()).getInstitution()).isNull();
 	}
 
 	@Test

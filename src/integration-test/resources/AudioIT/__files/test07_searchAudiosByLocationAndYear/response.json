@@ -17,6 +17,13 @@
 			"topographyId": 2,
 			"locationText": "Timrå",
 			"location": "Timrå",
+			"topography": {
+				"topographyId": 2,
+				"displayName": "Timrå",
+				"name": "Timrå",
+				"code": "TIM",
+				"municipality": "Timrå kommun"
+			},
 			"subjectId": 20,
 			"subject": "Musik",
 			"comment": "Folkmusikinspelning från Timrå",

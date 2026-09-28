@@ -49,8 +49,14 @@ public class Photo extends AbstractCreatedObject<Photo> {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)")
 	private String location;
 
+	@Schema(description = "The place resolved from TOPOGRAFI, broken into its parts: name is the wider place (TOPNAMN, the legacy site's Ort) and place the specific one (PLATS, the legacy site's Plats)")
+	private Topography topography;
+
 	@Schema(description = "Storage location")
 	private String storageLocation;
+
+	@Schema(description = "The institution holding the photo or object (M_I_ID). Only on the detail response; absent when the photo names none")
+	private Institution institution;
 
 	@Schema(description = "Object type", examples = "Foto")
 	private String objectType;
@@ -316,6 +322,19 @@ public class Photo extends AbstractCreatedObject<Photo> {
 		return this;
 	}
 
+	public Topography getTopography() {
+		return topography;
+	}
+
+	public void setTopography(final Topography topography) {
+		this.topography = topography;
+	}
+
+	public Photo withTopography(final Topography topography) {
+		this.topography = topography;
+		return this;
+	}
+
 	public String getStorageLocation() {
 		return storageLocation;
 	}
@@ -326,6 +345,19 @@ public class Photo extends AbstractCreatedObject<Photo> {
 
 	public Photo withStorageLocation(final String storageLocation) {
 		this.storageLocation = storageLocation;
+		return this;
+	}
+
+	public Institution getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(final Institution institution) {
+		this.institution = institution;
+	}
+
+	public Photo withInstitution(final Institution institution) {
+		this.institution = institution;
 		return this;
 	}
 
@@ -676,7 +708,9 @@ public class Photo extends AbstractCreatedObject<Photo> {
 			&& Objects.equals(referenceCode, that.referenceCode) && Objects.equals(inventoryNumber, that.inventoryNumber) && Objects.equals(earlierReference, that.earlierReference)
 			&& Objects.equals(documentTitle, that.documentTitle) && Objects.equals(subjectKeyword, that.subjectKeyword) && Objects.equals(comment, that.comment)
 			&& Objects.equals(earliest, that.earliest) && Objects.equals(latest, that.latest) && Objects.equals(observationDate, that.observationDate)
-			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location) && Objects.equals(storageLocation, that.storageLocation)
+			&& Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location)
+			&& Objects.equals(topography, that.topography) && Objects.equals(storageLocation, that.storageLocation)
+			&& Objects.equals(institution, that.institution)
 			&& Objects.equals(objectType, that.objectType) && Objects.equals(colorMode, that.colorMode) && Objects.equals(negativePositive, that.negativePositive)
 			&& Objects.equals(transmissiveReflective, that.transmissiveReflective) && Objects.equals(imageCarrier, that.imageCarrier) && Objects.equals(material, that.material)
 			&& Objects.equals(technique, that.technique) && Objects.equals(function, that.function) && Objects.equals(height, that.height) && Objects.equals(width, that.width)
@@ -692,7 +726,7 @@ public class Photo extends AbstractCreatedObject<Photo> {
 	@Override
 	public int hashCode() {
 		return Objects.hash(photoId, filename, accessionNumber, referenceCode, inventoryNumber, earlierReference, documentTitle, subjectKeyword, comment,
-			earliest, latest, observationDate, locationText, location, storageLocation, objectType, colorMode, negativePositive, transmissiveReflective,
+			earliest, latest, observationDate, locationText, location, topography, storageLocation, institution, objectType, colorMode, negativePositive, transmissiveReflective,
 			imageCarrier, material, technique, function, height, width, diameter, framed, conditionCategory, conditionAssessment,
 			observerName, treatment, treatmentDate, signature, rights, restricted, restrictionNote, provenance,
 			thumbnailFilename, largeImageFilename, relatedPhotoIds, subjects, nodeId, creator);
@@ -715,7 +749,9 @@ public class Photo extends AbstractCreatedObject<Photo> {
 			", observationDate='" + observationDate + '\'' +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", topography=" + topography +
 			", storageLocation='" + storageLocation + '\'' +
+			", institution=" + institution +
 			", objectType='" + objectType + '\'' +
 			", colorMode='" + colorMode + '\'' +
 			", negativePositive='" + negativePositive + '\'' +

@@ -45,14 +45,14 @@ INSERT INTO FILM (FILM_ID, FILNAMN, FILM_OBJ_FIL, OBJTYP, DATUM, DOKTITEL, FILM_
 VALUES (5, 'raderad.mp4', '/media/film/raderad.mp4', 'VIDEO', '1985-06-21', 'Midsommarfirande raderad', 1, 'Sundsvall',
         1, 0, 1, 'Film som raderats', 'video/mp4', 'ASV005', 104, 4, '2024-03-01');
 --
--- PUBL
+-- PUBL — DATUM is the issue date, DOKDATUM the document's own; 207 has them differ
 --
 INSERT INTO PUBL (P_ID, FILNAMN, PUBLIKTYP, DATUM, TIDTITEL, TIDNR, TIDSIDA, BF_J_ID, FORLAG_T_ID, FORLAG_OPLATS,
                   DOKDATUM, DOKTITEL, F_E_ID, R_E_ID, U_J_ID, U_E_ID, P_T_ID, P_OPLATS, ME_O_ID, KOMMENT_PUBL,
                   FIL_LITEN, FIL_STOR, FIL_ORIGINAL, FIL_TXT, XMLTEXT, FIL_XTRA, NODEID, `OPTIONS`, FIL_FORMAT,
                   DELETEDDATE)
 VALUES (207, 'F21051/1841-02-18_Sida 3 Alfwar och Skämt nr 8 1841.xml', '', '1841-02-18', 'Alfwar och Skämt', '8', '3',
-        1, 1, 'Sundsvall', '1841-02-18', 'Sida 3 Alfwar och Skämt nr 8 1841', 0, 0, 1, 0, 16, 'Sundsvall', 1,
+        1, 1, 'Sundsvall', '1841-02-16', 'Sida 3 Alfwar och Skämt nr 8 1841', 0, 0, 1, 0, 16, 'Sundsvall', 1,
         'Tidningsnummer från 1841', 'PUBL.id_207_fil_liten.jpeg', 'PUBL.id_207_fil_stor.jpeg',
         'PUBL.id_207_fil_original.jpeg', 'PUBL.id_207_fil_txt.xml',
         'Alfwar och Skämt No 8 Thorsdagen den 18 februarii 1841 Landsortspressens frihet och Drunkningsolycka i Sundsvall',
@@ -365,6 +365,9 @@ VALUES (1, '', '', null, null, null),
        (2, 'Sundsvalls museum', 'SVM', 'Kommunalt museum med arkiv och samlingar', 'https://sundsvallsmuseum.se', 'museet@sundsvall.se'),
        (3, 'Föreningsarkivet Västernorrland', 'FAV', null, null, null),
        (4, 'Örnsköldsviks museum', 'ÖVM', null, null, null);
+
+-- FOTO.M_I_ID — the institution holding a photo. Every other photo keeps the blank sentinel default, row 1.
+UPDATE FOTO SET M_I_ID = 2 WHERE F_ID = 1001;
 
 --
 -- TBL_NODEATTRIBUTES — what the archive records about a node beyond the tree. FIELD1 arkivbildare (JURPERS),

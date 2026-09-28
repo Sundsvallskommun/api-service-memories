@@ -17,6 +17,13 @@
 			"topographyId": 1,
 			"locationText": "Sundsvall",
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"subjectId": 10,
 			"subject": "Intervju",
 			"comment": "Ljudupptagning av intervju med dåvarande borgmästaren",

@@ -31,6 +31,7 @@ public final class AudioMapper {
 				.withTopographyId(topographyId(e))
 				.withLocationText(e.getLocationText())
 				.withLocation(location(e))
+				.withTopography(TopographyMapper.toTopography(e.getTopography()))
 				.withSubjectId(subjectId(e))
 				.withSubject(subject(e))
 				.withComment(e.getComment())

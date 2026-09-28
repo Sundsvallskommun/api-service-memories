@@ -13,6 +13,7 @@ import se.sundsvall.memories.api.model.PhotoParameters;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
 
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.fetchCreators;
+import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.fetchInstitution;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasCreatorLegalEntity;
 import static se.sundsvall.memories.integration.db.specification.PhotoSpecification.hasCreatorPerson;
@@ -49,6 +50,7 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, Integer>, Jp
 	default Optional<PhotoEntity> findVisibleById(final Integer id) {
 		return findOne(fetchTopography()
 			.and(fetchCreators())
+			.and(fetchInstitution())
 			.and(hasId(id))
 			.and(notDeleted()));
 	}

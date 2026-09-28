@@ -13,6 +13,13 @@
 			"alternativeNames": "Nödhjälpskommittén",
 			"topographyId": 1,
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"startDate": "1888",
 			"endDate": "1889",
 			"principal": "Sundsvalls stad",

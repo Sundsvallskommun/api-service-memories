@@ -34,6 +34,9 @@ public class Audio extends AbstractCreatedObject<Audio> {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
+	@Schema(description = "The place resolved from TOPOGRAFI, broken into its parts: name is the wider place (TOPNAMN, the legacy site's Ort) and place the specific one (PLATS, the legacy site's Plats)")
+	private Topography topography;
+
 	@Schema(description = "OCM subject ID", examples = "1")
 	private Integer subjectId;
 
@@ -173,6 +176,19 @@ public class Audio extends AbstractCreatedObject<Audio> {
 		return this;
 	}
 
+	public Topography getTopography() {
+		return topography;
+	}
+
+	public void setTopography(final Topography topography) {
+		this.topography = topography;
+	}
+
+	public Audio withTopography(final Topography topography) {
+		this.topography = topography;
+		return this;
+	}
+
 	public Integer getSubjectId() {
 		return subjectId;
 	}
@@ -259,6 +275,7 @@ public class Audio extends AbstractCreatedObject<Audio> {
 		return Objects.equals(audioId, audio.audioId) && Objects.equals(filename, audio.filename) && Objects.equals(objectFilePath, audio.objectFilePath)
 			&& Objects.equals(objectType, audio.objectType) && Objects.equals(date, audio.date) && Objects.equals(documentTitle, audio.documentTitle)
 			&& Objects.equals(topographyId, audio.topographyId) && Objects.equals(locationText, audio.locationText) && Objects.equals(location, audio.location)
+			&& Objects.equals(topography, audio.topography)
 			&& Objects.equals(subjectId, audio.subjectId) && Objects.equals(subject, audio.subject)
 			&& Objects.equals(comment, audio.comment) && Objects.equals(audioMimeType, audio.audioMimeType)
 			&& Objects.equals(nodeId, audio.nodeId) && Objects.equals(options, audio.options) && Objects.equals(deletedDate, audio.deletedDate)
@@ -267,7 +284,7 @@ public class Audio extends AbstractCreatedObject<Audio> {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, subjectId, subject, comment,
+		return Objects.hash(audioId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, topography, subjectId, subject, comment,
 			audioMimeType, nodeId, options, deletedDate, creator);
 	}
 
@@ -283,6 +300,7 @@ public class Audio extends AbstractCreatedObject<Audio> {
 			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", topography=" + topography +
 			", subjectId=" + subjectId +
 			", subject='" + subject + '\'' +
 			", comment='" + comment + '\'' +

@@ -28,6 +28,9 @@ public class Text extends AbstractCreatedObject<Text> {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
+	@Schema(description = "The place resolved from TOPOGRAFI, broken into its parts: name is the wider place (TOPNAMN, the legacy site's Ort) and place the specific one (PLATS, the legacy site's Plats)")
+	private Topography topography;
+
 	@Schema(description = "OCM subject ID (D_O_ID)", examples = "20")
 	private Integer subjectId;
 
@@ -147,6 +150,19 @@ public class Text extends AbstractCreatedObject<Text> {
 		return this;
 	}
 
+	public Topography getTopography() {
+		return topography;
+	}
+
+	public void setTopography(final Topography topography) {
+		this.topography = topography;
+	}
+
+	public Text withTopography(final Topography topography) {
+		this.topography = topography;
+		return this;
+	}
+
 	public Integer getSubjectId() {
 		return subjectId;
 	}
@@ -256,9 +272,11 @@ public class Text extends AbstractCreatedObject<Text> {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final Text that = (Text) o;
-		return Objects.equals(textId, that.textId) && Objects.equals(filename, that.filename) && Objects.equals(documentDate, that.documentDate)
+		return Objects.equals(textId, that.textId) && Objects.equals(filename, that.filename)
+			&& Objects.equals(documentDate, that.documentDate)
 			&& Objects.equals(documentEndDate, that.documentEndDate) && Objects.equals(documentTitle, that.documentTitle) && Objects.equals(locationText, that.locationText)
-			&& Objects.equals(location, that.location) && Objects.equals(subjectId, that.subjectId) && Objects.equals(subject, that.subject)
+			&& Objects.equals(location, that.location)
+			&& Objects.equals(topography, that.topography) && Objects.equals(subjectId, that.subjectId) && Objects.equals(subject, that.subject)
 			&& Objects.equals(comment, that.comment) && Objects.equals(thumbnailFilename, that.thumbnailFilename)
 			&& Objects.equals(largeImageFilename, that.largeImageFilename) && Objects.equals(ocrFilename, that.ocrFilename) && Objects.equals(xmltext, that.xmltext)
 			&& Objects.equals(mediaFiles, that.mediaFiles)
@@ -267,7 +285,7 @@ public class Text extends AbstractCreatedObject<Text> {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(textId, filename, documentDate, documentEndDate, documentTitle, locationText, location, subjectId, subject, comment,
+		return Objects.hash(textId, filename, documentDate, documentEndDate, documentTitle, locationText, location, topography, subjectId, subject, comment,
 			thumbnailFilename, largeImageFilename, ocrFilename, xmltext, mediaFiles, nodeId, creator);
 	}
 
@@ -281,6 +299,7 @@ public class Text extends AbstractCreatedObject<Text> {
 			", documentTitle='" + documentTitle + '\'' +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", topography=" + topography +
 			", subjectId=" + subjectId +
 			", subject='" + subject + '\'' +
 			", comment='" + comment + '\'' +

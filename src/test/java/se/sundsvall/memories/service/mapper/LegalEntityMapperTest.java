@@ -39,6 +39,7 @@ class LegalEntityMapperTest {
 		assertThat(result.getTopographyId()).isEqualTo(42);
 		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
 		assertThat(result.getLocation()).isEqualTo("Sundsvalls kommun");
+		assertThat(result.getTopography().getTopographyId()).isEqualTo(42);
 		assertThat(result.getStartDate()).isEqualTo("1888");
 		assertThat(result.getEndDate()).isEqualTo("1889");
 		assertThat(result.getPrincipal()).isEqualTo("Sundsvalls stad");

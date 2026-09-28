@@ -25,6 +25,9 @@ public class LegalEntity {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
+	@Schema(description = "The place resolved from TOPOGRAFI, broken into its parts: name is the wider place (TOPNAMN, the legacy site's Ort) and place the specific one (PLATS, the legacy site's Plats)")
+	private Topography topography;
+
 	@Schema(description = "Start date (stored as free text)", examples = "1888")
 	private String startDate;
 
@@ -131,6 +134,19 @@ public class LegalEntity {
 
 	public LegalEntity withLocation(final String location) {
 		this.location = location;
+		return this;
+	}
+
+	public Topography getTopography() {
+		return topography;
+	}
+
+	public void setTopography(final Topography topography) {
+		this.topography = topography;
+	}
+
+	public LegalEntity withTopography(final Topography topography) {
+		this.topography = topography;
 		return this;
 	}
 
@@ -258,6 +274,7 @@ public class LegalEntity {
 		final LegalEntity that = (LegalEntity) o;
 		return Objects.equals(legalEntityId, that.legalEntityId) && Objects.equals(name, that.name) && Objects.equals(alternativeNames, that.alternativeNames)
 			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(locationText, that.locationText) && Objects.equals(location, that.location)
+			&& Objects.equals(topography, that.topography)
 			&& Objects.equals(startDate, that.startDate) && Objects.equals(endDate, that.endDate) && Objects.equals(principal, that.principal)
 			&& Objects.equals(comment, that.comment) && Objects.equals(historyFilename, that.historyFilename) && Objects.equals(categoryId, that.categoryId)
 			&& Objects.equals(category, that.category) && Objects.equals(options, that.options) && Objects.equals(deletedDate, that.deletedDate);
@@ -265,7 +282,7 @@ public class LegalEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(legalEntityId, name, alternativeNames, topographyId, locationText, location, startDate, endDate, principal, comment, historyFilename, categoryId, category, options,
+		return Objects.hash(legalEntityId, name, alternativeNames, topographyId, locationText, location, topography, startDate, endDate, principal, comment, historyFilename, categoryId, category, options,
 			deletedDate);
 	}
 
@@ -278,6 +295,7 @@ public class LegalEntity {
 			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", topography=" + topography +
 			", startDate='" + startDate + '\'' +
 			", endDate='" + endDate + '\'' +
 			", principal='" + principal + '\'' +

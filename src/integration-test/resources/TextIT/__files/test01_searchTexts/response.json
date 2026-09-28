@@ -15,6 +15,13 @@
 			"documentTitle": "Minne från Sundsvall stadshus",
 			"locationText": "Sundsvall",
 			"location": "Sundsvall stad",
+			"topography": {
+				"topographyId": 16,
+				"displayName": "Sundsvall stad",
+				"name": "Sundsvall stad",
+				"code": "SUNS",
+				"municipality": "Sundsvalls kommun"
+			},
 			"subjectId": 20,
 			"subject": "Musik",
 			"comment": "Handskrivna minnen från stadshuset",
@@ -31,6 +38,13 @@
 			"documentTitle": "Brev från Timrå",
 			"locationText": "Timrå",
 			"location": "Timrå",
+			"topography": {
+				"topographyId": 2,
+				"displayName": "Timrå",
+				"name": "Timrå",
+				"code": "TIM",
+				"municipality": "Timrå kommun"
+			},
 			"subjectId": 10,
 			"subject": "Intervju",
 			"comment": "Brev från lokal invånare",
@@ -46,6 +60,13 @@
 			"documentTitle": "Bolagsstämma 1925",
 			"locationText": "Timrå",
 			"location": "Timrå",
+			"topography": {
+				"topographyId": 2,
+				"displayName": "Timrå",
+				"name": "Timrå",
+				"code": "TIM",
+				"municipality": "Timrå kommun"
+			},
 			"subjectId": 1,
 			"subject": "Allmänt",
 			"comment": "Protokoll från bolagsstämman",

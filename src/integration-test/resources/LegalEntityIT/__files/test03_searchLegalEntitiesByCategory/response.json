@@ -12,6 +12,13 @@
 			"name": "Berg Aktiebolag",
 			"topographyId": 2,
 			"location": "Timrå",
+			"topography": {
+				"topographyId": 2,
+				"displayName": "Timrå",
+				"name": "Timrå",
+				"code": "TIM",
+				"municipality": "Timrå kommun"
+			},
 			"startDate": "1920",
 			"categoryId": 2,
 			"category": "Aktiebolag",
