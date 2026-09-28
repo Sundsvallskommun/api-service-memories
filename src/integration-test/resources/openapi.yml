@@ -2186,6 +2186,11 @@ components:
           description: Birth place
           examples:
           - Sundsvall
+        birthParishCode:
+          type: string
+          description: SCB code of the birth parish (FSCBKOD)
+          examples:
+          - "228101"
         homeParish:
           type: string
           description: Home parish
@@ -2241,6 +2246,22 @@ components:
           description: Sign-on date
           examples:
           - 1876-05-01
+        wage:
+          type: string
+          description: "Wage (HYRA), an amount in the given currency per the given\
+            \ period"
+          examples:
+          - "50"
+        wagePeriod:
+          type: string
+          description: What period the wage is paid per (BETTID)
+          examples:
+          - Månad
+        currency:
+          type: string
+          description: Currency of the wage (VALUTA)
+          examples:
+          - Kr
         signOffPlace:
           type: string
           description: Sign-off place
@@ -2251,11 +2272,22 @@ components:
           description: Sign-off date
           examples:
           - 1877-09-01
+        signOffReason:
+          type: string
+          description: "Reason for signing off, as the source records it (ORSAK),\
+            \ a one-letter code"
+          examples:
+          - A
         ship:
           type: string
           description: Ship
           examples:
           - Briggen Freja
+        registrationNumber:
+          type: string
+          description: Registration number of the ship (REGNR)
+          examples:
+          - "4070"
         homePort:
           type: string
           description: Home port

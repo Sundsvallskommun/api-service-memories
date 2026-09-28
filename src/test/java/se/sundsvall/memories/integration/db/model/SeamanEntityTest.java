@@ -49,6 +49,12 @@ class SeamanEntityTest {
 			.withSignOffPlace("Göteborg")
 			.withSignOffDate("1877-09-01")
 			.withShip("Briggen Freja")
+			.withBirthParishCode("228101")
+			.withWage("50")
+			.withWagePeriod("Månad")
+			.withCurrency("Kr")
+			.withSignOffReason("A")
+			.withRegistrationNumber("4070")
 			.withHomePort("Sundsvall")
 			.withShipType("Brigg")
 			.withShipOwner("Rederi AB Nord")
@@ -66,6 +72,12 @@ class SeamanEntityTest {
 		assertThat(result.getLastName1()).isEqualTo("Nordin");
 		assertThat(result.getLastName2()).isEqualTo("Sjöberg");
 		assertThat(result.getIdNumber()).isEqualTo(4711);
+		assertThat(result.getBirthParishCode()).isEqualTo("228101");
+		assertThat(result.getWage()).isEqualTo("50");
+		assertThat(result.getWagePeriod()).isEqualTo("Månad");
+		assertThat(result.getCurrency()).isEqualTo("Kr");
+		assertThat(result.getSignOffReason()).isEqualTo("A");
+		assertThat(result.getRegistrationNumber()).isEqualTo("4070");
 		assertThat(result.getBirthParish()).isEqualTo("Sundsvall");
 		assertThat(result.getSeamensHouse()).isEqualTo("Sundsvalls sjömanshus");
 		assertThat(result.getRank()).isEqualTo("Matros");

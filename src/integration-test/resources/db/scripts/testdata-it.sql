@@ -298,6 +298,10 @@ VALUES (1, 'Anton', 'Nordin', 'Sjöberg', 4711, '1852-03-14', '28', 'Sundsvall',
         'Matros', 'Briggen Freja', 'Sundsvall', 'Rederi AB Nord', 'Olof Berg', 'London', 'Avmönstrad',
         'Sundsvalls sjömanshus arkiv', 'A1:3', 'SE/HLA/1234', '42');
 
+-- The wage, the sign-off reason, the birth parish code and the ship's registration number (FSCBKOD … REGNR)
+UPDATE SJOMAN SET FSCBKOD = '228101', HYRA = '50', BETTID = 'Månad', VALUTA = 'Kr', ORSAK = 'A', REGNR = '4070'
+WHERE POSTNR = 1;
+
 INSERT INTO SJOMAN (POSTNR, FORNAMN, EFTERNAMN1, FODDAT, FODFORS)
 VALUES (2, 'Anna', 'Berg', '1870', 'Selånger');
 
