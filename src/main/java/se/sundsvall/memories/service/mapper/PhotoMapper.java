@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service.mapper;
 
 import java.util.List;
+import se.sundsvall.memories.api.model.Institution;
 import se.sundsvall.memories.api.model.Photo;
 import se.sundsvall.memories.api.model.Subject;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
@@ -19,11 +20,12 @@ public final class PhotoMapper {
 		return toBase(entity);
 	}
 
-	/** Detail mapping including FOTO_FOTO relations and FOTO_OCM subjects, used for get-by-id. */
+	/** Detail mapping including FOTO_FOTO relations, FOTO_OCM subjects and the institution, used for get-by-id. */
 	public static Photo toPhoto(final PhotoEntity entity, final List<Integer> relatedPhotoIds) {
 		return ofNullable(toBase(entity))
 			.map(photo -> photo.withRelatedPhotoIds(ofNullable(relatedPhotoIds).orElse(emptyList()))
-				.withSubjects(subjects(entity)))
+				.withSubjects(subjects(entity))
+				.withInstitution(institution(entity)))
 			.orElse(null);
 	}
 
@@ -38,6 +40,17 @@ public final class PhotoMapper {
 				.withText(subject.getText())
 				.withDescription(subject.getDescription()))
 			.toList();
+	}
+
+	/**
+	 * Maps the institution {@code M_I_ID} points at. The column defaults to the blank sentinel row, which carries no
+	 * name, so a nameless institution is reported as none.
+	 */
+	private static Institution institution(final PhotoEntity entity) {
+		return ofNullable(entity.getInstitution())
+			.filter(institution -> institution.getName() != null && !institution.getName().isBlank())
+			.map(InstitutionMapper::toInstitution)
+			.orElse(null);
 	}
 
 	/**
@@ -80,6 +93,7 @@ public final class PhotoMapper {
 				.withObservationDate(e.getObservationDate())
 				.withLocationText(e.getLocationText())
 				.withLocation(location(e))
+				.withTopography(TopographyMapper.toTopography(e.getTopography()))
 				.withStorageLocation(e.getStorageLocation())
 				.withObjectType(e.getObjectType())
 				.withColorMode(e.getColorMode())

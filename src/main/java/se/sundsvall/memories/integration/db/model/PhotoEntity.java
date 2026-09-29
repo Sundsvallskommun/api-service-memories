@@ -27,6 +27,11 @@ public class PhotoEntity extends AbstractCreatedEntity {
 	@JoinColumn(name = "F_T_ID")
 	private TopographyEntity topography;
 
+	/** {@code M_I_ID} — the institution holding the photo or object. Defaults to the blank sentinel row 1. */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "M_I_ID")
+	private InstitutionEntity institution;
+
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "FOTO_OCM",
 		joinColumns = @JoinColumn(name = "F_ID"),
@@ -184,6 +189,19 @@ public class PhotoEntity extends AbstractCreatedEntity {
 
 	public PhotoEntity withSubjects(final Set<OcmEntity> subjects) {
 		this.subjects = subjects;
+		return this;
+	}
+
+	public InstitutionEntity getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(final InstitutionEntity institution) {
+		this.institution = institution;
+	}
+
+	public PhotoEntity withInstitution(final InstitutionEntity institution) {
+		this.institution = institution;
 		return this;
 	}
 

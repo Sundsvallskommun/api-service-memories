@@ -47,6 +47,7 @@ class TextMapperTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getTextId()).isEqualTo(1001);
 		assertThat(result.getLocation()).isEqualTo("Sundsvall");
+		assertThat(result.getTopography().getTopographyId()).isEqualTo(4);
 		assertThat(result.getSubjectId()).isEqualTo(20);
 		assertThat(result.getSubject()).isEqualTo("Musik");
 		assertThat(result.getNodeId()).isEqualTo(20001);

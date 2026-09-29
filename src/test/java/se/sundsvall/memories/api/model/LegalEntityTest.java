@@ -44,6 +44,7 @@ class LegalEntityTest {
 			.withTopographyId(42)
 			.withLocationText("Sundsvall")
 			.withLocation("Sundsvalls kommun")
+			.withTopography(Topography.create().withTopographyId(22).withName("Sundsvalls Gustav Adolf (Sundsvalls stad)").withPlace("Stenstan"))
 			.withStartDate("1888")
 			.withEndDate("1889")
 			.withPrincipal("Sundsvalls stad")
@@ -54,6 +55,8 @@ class LegalEntityTest {
 			.withOptions(6)
 			.withDeletedDate(deletedDate);
 
+		assertThat(result.getTopography().getName()).isEqualTo("Sundsvalls Gustav Adolf (Sundsvalls stad)");
+		assertThat(result.getTopography().getPlace()).isEqualTo("Stenstan");
 		assertThat(result.getLegalEntityId()).isEqualTo(123);
 		assertThat(result.getName()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getAlternativeNames()).isEqualTo("Nödhjälpskommittén");

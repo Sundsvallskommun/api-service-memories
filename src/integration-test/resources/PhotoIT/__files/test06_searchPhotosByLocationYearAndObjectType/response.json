@@ -15,6 +15,13 @@
 			"latest": "1962",
 			"locationText": "Timrå",
 			"location": "Timrå",
+			"topography": {
+				"topographyId": 2,
+				"displayName": "Timrå",
+				"name": "Timrå",
+				"code": "TIM",
+				"municipality": "Timrå kommun"
+			},
 			"objectType": "Foto",
 			"thumbnailFilename": "FOTO.id_1003_fil_liten.jpg",
 			"largeImageFilename": "FOTO.id_1003_fil_stor.jpg",

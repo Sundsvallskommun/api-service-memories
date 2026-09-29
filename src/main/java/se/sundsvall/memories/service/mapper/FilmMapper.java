@@ -30,6 +30,7 @@ public final class FilmMapper {
 				.withTopographyId(topographyId(e))
 				.withLocationText(e.getLocationText())
 				.withLocation(location(e))
+				.withTopography(TopographyMapper.toTopography(e.getTopography()))
 				.withOrganizationId(e.getOrganizationId())
 				.withComment(e.getComment())
 				.withCreator(CreatorMapper.toCreator(e.getCreatorPerson(), e.getCreatorLegalEntity()))

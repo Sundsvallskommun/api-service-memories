@@ -17,6 +17,13 @@
 			"topographyId": 1,
 			"locationText": "Sundsvall",
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"organizationId": 1,
 			"creator": {
 				"personId": 1,
@@ -39,6 +46,13 @@
 			"topographyId": 1,
 			"locationText": "Sundsvall",
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"organizationId": 1,
 			"comment": "Dokumentation av stadsfesten",
 			"filmMimeType": "video/mp4",
@@ -55,6 +69,13 @@
 			"topographyId": 1,
 			"locationText": "Timrå",
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"organizationId": 2,
 			"comment": "Marknadsdag i Timrå centrum",
 			"filmMimeType": "video/mp4",

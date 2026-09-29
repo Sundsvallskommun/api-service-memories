@@ -15,6 +15,13 @@
 			"latest": "1955",
 			"locationText": "Sundsvall",
 			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
 			"objectType": "Foto",
 			"colorMode": "Färg",
 			"thumbnailFilename": "FOTO.id_1002_fil_liten.jpg",

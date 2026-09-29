@@ -1,10 +1,10 @@
 package se.sundsvall.memories.service;
 
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
@@ -37,8 +37,13 @@ class CombinedObjectServiceTest {
 	@Mock
 	private CombinedObjectRepository repositoryMock;
 
-	@InjectMocks
 	private CombinedObjectService service;
+
+	/** The facet service is real: its caching is covered in CombinedObjectFacetServiceTest, its counting here. */
+	@BeforeEach
+	void setUp() {
+		service = new CombinedObjectService(repositoryMock, new CombinedObjectFacetService(repositoryMock));
+	}
 
 	@Test
 	void searchDelegatesResolvesLocationAndBuildsTheCounters() {

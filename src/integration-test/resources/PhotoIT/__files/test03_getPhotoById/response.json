@@ -6,7 +6,22 @@
 	"latest": "1925",
 	"locationText": "Sundsvall",
 	"location": "Sundsvall",
+	"topography": {
+		"topographyId": 1,
+		"displayName": "Sundsvall",
+		"name": "Sundsvall",
+		"code": "SUN",
+		"municipality": "Sundsvalls kommun"
+	},
 	"objectType": "Foto",
+	"institution": {
+		"institutionId": 2,
+		"code": "SVM",
+		"name": "Sundsvalls museum",
+		"description": "Kommunalt museum med arkiv och samlingar",
+		"url": "https://sundsvallsmuseum.se",
+		"email": "museet@sundsvall.se"
+	},
 	"colorMode": "Svartvit",
 	"material": "Glas",
 	"technique": "Negativ",

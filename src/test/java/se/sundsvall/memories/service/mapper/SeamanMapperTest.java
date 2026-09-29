@@ -22,6 +22,12 @@ class SeamanMapperTest {
 			.withSeamensHouse("Sundsvalls sjömanshus")
 			.withRank("Matros")
 			.withShip("Briggen Freja")
+			.withBirthParishCode("228101")
+			.withWage("50")
+			.withWagePeriod("Månad")
+			.withCurrency("Kr")
+			.withSignOffReason("A")
+			.withRegistrationNumber("4070")
 			.withCaptain("Olof Berg")
 			.withArchive("Sundsvalls sjömanshus arkiv")
 			.withVolume("A1:3")
@@ -39,6 +45,12 @@ class SeamanMapperTest {
 		assertThat(result.getLastName1()).isEqualTo("Nordin");
 		assertThat(result.getLastName2()).isEqualTo("Sjöberg");
 		assertThat(result.getIdNumber()).isEqualTo(4711);
+		assertThat(result.getBirthParishCode()).isEqualTo("228101");
+		assertThat(result.getWage()).isEqualTo("50");
+		assertThat(result.getWagePeriod()).isEqualTo("Månad");
+		assertThat(result.getCurrency()).isEqualTo("Kr");
+		assertThat(result.getSignOffReason()).isEqualTo("A");
+		assertThat(result.getRegistrationNumber()).isEqualTo("4070");
 		assertThat(result.getBirthDate()).isEqualTo("1852-03-14");
 		assertThat(result.getBirthParish()).isEqualTo("Sundsvall");
 		assertThat(result.getSeamensHouse()).isEqualTo("Sundsvalls sjömanshus");

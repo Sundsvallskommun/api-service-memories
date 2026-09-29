@@ -61,6 +61,7 @@ class FilmTest {
 			.withTopographyId(topographyId)
 			.withLocationText(locationText)
 			.withLocation(location)
+			.withTopography(Topography.create().withTopographyId(22).withName("Sundsvalls Gustav Adolf (Sundsvalls stad)").withPlace("Stenstan"))
 			.withOrganizationId(organizationId)
 			.withComment(comment)
 			.withCreator(Creator.create().withPersonId(1).withPerson("Anton Nordin").withLegalEntityId(10).withLegalEntity("Nödhjälpskommittén 1888-1889"))
@@ -70,6 +71,8 @@ class FilmTest {
 			.withDeletedDate(deletedDate);
 
 		assertThat(result).hasNoNullFieldsOrProperties();
+		assertThat(result.getTopography().getName()).isEqualTo("Sundsvalls Gustav Adolf (Sundsvalls stad)");
+		assertThat(result.getTopography().getPlace()).isEqualTo("Stenstan");
 		assertThat(result.getCreator().getPerson()).isEqualTo("Anton Nordin");
 		assertThat(result.getCreator().getLegalEntity()).isEqualTo("Nödhjälpskommittén 1888-1889");
 		assertThat(result.getFilmId()).isEqualTo(filmId);

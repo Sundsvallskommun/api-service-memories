@@ -14,6 +14,7 @@ import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DELETED_DA
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.DOCUMENT_TITLE;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.EARLIEST;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.ID;
+import static se.sundsvall.memories.integration.db.model.PhotoEntity_.INSTITUTION;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.LATEST;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.LOCATION_TEXT;
 import static se.sundsvall.memories.integration.db.model.PhotoEntity_.OBJECT_TYPE;
@@ -109,5 +110,10 @@ public interface PhotoSpecification {
 
 	static Specification<PhotoEntity> fetchTopography() {
 		return BUILDER.buildFetchJoin(TOPOGRAPHY);
+	}
+
+	/** The institution, which only the detail response shows. A dangling {@code M_I_ID} leaves it {@code null}. */
+	static Specification<PhotoEntity> fetchInstitution() {
+		return BUILDER.buildFetchJoin(INSTITUTION);
 	}
 }

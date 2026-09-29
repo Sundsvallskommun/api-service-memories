@@ -33,6 +33,9 @@ public class Seaman {
 	@Schema(description = "Birth place", examples = "Sundsvall")
 	private String birthPlace;
 
+	@Schema(description = "SCB code of the birth parish (FSCBKOD)", examples = "228101")
+	private String birthParishCode;
+
 	@Schema(description = "Home parish", examples = "Njurunda")
 	private String homeParish;
 
@@ -66,14 +69,29 @@ public class Seaman {
 	@Schema(description = "Sign-on date", examples = "1876-05-01")
 	private String signOnDate;
 
+	@Schema(description = "Wage (HYRA), an amount in the given currency per the given period", examples = "50")
+	private String wage;
+
+	@Schema(description = "What period the wage is paid per (BETTID)", examples = "Månad")
+	private String wagePeriod;
+
+	@Schema(description = "Currency of the wage (VALUTA)", examples = "Kr")
+	private String currency;
+
 	@Schema(description = "Sign-off place", examples = "Göteborg")
 	private String signOffPlace;
 
 	@Schema(description = "Sign-off date", examples = "1877-09-01")
 	private String signOffDate;
 
+	@Schema(description = "Reason for signing off, as the source records it (ORSAK), a one-letter code", examples = "A")
+	private String signOffReason;
+
 	@Schema(description = "Ship", examples = "Briggen Freja")
 	private String ship;
+
+	@Schema(description = "Registration number of the ship (REGNR)", examples = "4070")
+	private String registrationNumber;
 
 	@Schema(description = "Home port", examples = "Sundsvall")
 	private String homePort;
@@ -229,6 +247,19 @@ public class Seaman {
 		return this;
 	}
 
+	public String getBirthParishCode() {
+		return birthParishCode;
+	}
+
+	public void setBirthParishCode(final String birthParishCode) {
+		this.birthParishCode = birthParishCode;
+	}
+
+	public Seaman withBirthParishCode(final String birthParishCode) {
+		this.birthParishCode = birthParishCode;
+		return this;
+	}
+
 	public String getHomeParish() {
 		return homeParish;
 	}
@@ -372,6 +403,45 @@ public class Seaman {
 		return this;
 	}
 
+	public String getWage() {
+		return wage;
+	}
+
+	public void setWage(final String wage) {
+		this.wage = wage;
+	}
+
+	public Seaman withWage(final String wage) {
+		this.wage = wage;
+		return this;
+	}
+
+	public String getWagePeriod() {
+		return wagePeriod;
+	}
+
+	public void setWagePeriod(final String wagePeriod) {
+		this.wagePeriod = wagePeriod;
+	}
+
+	public Seaman withWagePeriod(final String wagePeriod) {
+		this.wagePeriod = wagePeriod;
+		return this;
+	}
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(final String currency) {
+		this.currency = currency;
+	}
+
+	public Seaman withCurrency(final String currency) {
+		this.currency = currency;
+		return this;
+	}
+
 	public String getSignOffPlace() {
 		return signOffPlace;
 	}
@@ -398,6 +468,19 @@ public class Seaman {
 		return this;
 	}
 
+	public String getSignOffReason() {
+		return signOffReason;
+	}
+
+	public void setSignOffReason(final String signOffReason) {
+		this.signOffReason = signOffReason;
+	}
+
+	public Seaman withSignOffReason(final String signOffReason) {
+		this.signOffReason = signOffReason;
+		return this;
+	}
+
 	public String getShip() {
 		return ship;
 	}
@@ -408,6 +491,19 @@ public class Seaman {
 
 	public Seaman withShip(final String ship) {
 		this.ship = ship;
+		return this;
+	}
+
+	public String getRegistrationNumber() {
+		return registrationNumber;
+	}
+
+	public void setRegistrationNumber(final String registrationNumber) {
+		this.registrationNumber = registrationNumber;
+	}
+
+	public Seaman withRegistrationNumber(final String registrationNumber) {
+		this.registrationNumber = registrationNumber;
 		return this;
 	}
 
@@ -561,10 +657,12 @@ public class Seaman {
 		final Seaman that = (Seaman) o;
 		return Objects.equals(id, that.id) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName1, that.lastName1) && Objects.equals(lastName2, that.lastName2)
 			&& Objects.equals(idNumber, that.idNumber) && Objects.equals(birthDate, that.birthDate) && Objects.equals(age, that.age) && Objects.equals(birthParish, that.birthParish)
-			&& Objects.equals(birthPlace, that.birthPlace) && Objects.equals(homeParish, that.homeParish) && Objects.equals(homePlace, that.homePlace) && Objects.equals(civilStatus, that.civilStatus)
+			&& Objects.equals(birthPlace, that.birthPlace) && Objects.equals(birthParishCode, that.birthParishCode) && Objects.equals(homeParish, that.homeParish) && Objects.equals(homePlace, that.homePlace) && Objects.equals(civilStatus, that.civilStatus)
 			&& Objects.equals(father, that.father) && Objects.equals(mother, that.mother) && Objects.equals(seamensHouse, that.seamensHouse) && Objects.equals(enrollmentNumber, that.enrollmentNumber)
-			&& Objects.equals(enrollmentDate, that.enrollmentDate) && Objects.equals(rank, that.rank) && Objects.equals(signOnPlace, that.signOnPlace) && Objects.equals(signOnDate, that.signOnDate)
-			&& Objects.equals(signOffPlace, that.signOffPlace) && Objects.equals(signOffDate, that.signOffDate) && Objects.equals(ship, that.ship) && Objects.equals(homePort, that.homePort)
+			&& Objects.equals(enrollmentDate, that.enrollmentDate) && Objects.equals(rank, that.rank) && Objects.equals(signOnPlace, that.signOnPlace) && Objects.equals(signOnDate, that.signOnDate) && Objects.equals(wage, that.wage) && Objects.equals(
+				wagePeriod, that.wagePeriod) && Objects.equals(currency, that.currency)
+			&& Objects.equals(signOffPlace, that.signOffPlace) && Objects.equals(signOffDate, that.signOffDate) && Objects.equals(signOffReason, that.signOffReason) && Objects.equals(ship, that.ship) && Objects.equals(registrationNumber,
+				that.registrationNumber) && Objects.equals(homePort, that.homePort)
 			&& Objects.equals(shipType, that.shipType) && Objects.equals(shipOwner, that.shipOwner) && Objects.equals(captain, that.captain) && Objects.equals(destination, that.destination)
 			&& Objects.equals(other, that.other) && Objects.equals(note, that.note) && Objects.equals(archive, that.archive) && Objects.equals(volume, that.volume)
 			&& Objects.equals(archiveNumber, that.archiveNumber) && Objects.equals(page, that.page);
@@ -572,8 +670,9 @@ public class Seaman {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, firstName, lastName1, lastName2, idNumber, birthDate, age, birthParish, birthPlace, homeParish, homePlace, civilStatus, father, mother, seamensHouse, enrollmentNumber,
-			enrollmentDate, rank, signOnPlace, signOnDate, signOffPlace, signOffDate, ship, homePort, shipType, shipOwner, captain, destination, other, note, archive, volume, archiveNumber, page);
+		return Objects.hash(id, firstName, lastName1, lastName2, idNumber, birthDate, age, birthParish, birthPlace, birthParishCode, homeParish, homePlace, civilStatus, father, mother, seamensHouse, enrollmentNumber,
+			enrollmentDate, rank, signOnPlace, signOnDate, wage, wagePeriod, currency, signOffPlace, signOffDate, signOffReason, ship, registrationNumber, homePort, shipType, shipOwner, captain, destination, other, note, archive, volume, archiveNumber,
+			page);
 	}
 
 	@Override
@@ -588,6 +687,7 @@ public class Seaman {
 			", age='" + age + '\'' +
 			", birthParish='" + birthParish + '\'' +
 			", birthPlace='" + birthPlace + '\'' +
+			", birthParishCode='" + birthParishCode + '\'' +
 			", homeParish='" + homeParish + '\'' +
 			", homePlace='" + homePlace + '\'' +
 			", civilStatus='" + civilStatus + '\'' +
@@ -599,9 +699,14 @@ public class Seaman {
 			", rank='" + rank + '\'' +
 			", signOnPlace='" + signOnPlace + '\'' +
 			", signOnDate='" + signOnDate + '\'' +
+			", wage='" + wage + '\'' +
+			", wagePeriod='" + wagePeriod + '\'' +
+			", currency='" + currency + '\'' +
 			", signOffPlace='" + signOffPlace + '\'' +
 			", signOffDate='" + signOffDate + '\'' +
+			", signOffReason='" + signOffReason + '\'' +
 			", ship='" + ship + '\'' +
+			", registrationNumber='" + registrationNumber + '\'' +
 			", homePort='" + homePort + '\'' +
 			", shipType='" + shipType + '\'' +
 			", shipOwner='" + shipOwner + '\'' +

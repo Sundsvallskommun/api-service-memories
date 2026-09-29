@@ -34,6 +34,9 @@ public class Film extends AbstractCreatedObject<Film> {
 	@Schema(description = "Resolved place name from TOPOGRAFI (preferred over locationText when set)", examples = "Sundsvall")
 	private String location;
 
+	@Schema(description = "The place resolved from TOPOGRAFI, broken into its parts: name is the wider place (TOPNAMN, the legacy site's Ort) and place the specific one (PLATS, the legacy site's Plats)")
+	private Topography topography;
+
 	@Schema(description = "Film organization ID", examples = "1")
 	private Integer organizationId;
 
@@ -170,6 +173,19 @@ public class Film extends AbstractCreatedObject<Film> {
 		return this;
 	}
 
+	public Topography getTopography() {
+		return topography;
+	}
+
+	public void setTopography(final Topography topography) {
+		this.topography = topography;
+	}
+
+	public Film withTopography(final Topography topography) {
+		this.topography = topography;
+		return this;
+	}
+
 	public Integer getOrganizationId() {
 		return organizationId;
 	}
@@ -243,6 +259,7 @@ public class Film extends AbstractCreatedObject<Film> {
 		return Objects.equals(filmId, film.filmId) && Objects.equals(filename, film.filename) && Objects.equals(objectFilePath, film.objectFilePath)
 			&& Objects.equals(objectType, film.objectType) && Objects.equals(date, film.date) && Objects.equals(documentTitle, film.documentTitle)
 			&& Objects.equals(topographyId, film.topographyId) && Objects.equals(locationText, film.locationText) && Objects.equals(location, film.location)
+			&& Objects.equals(topography, film.topography)
 			&& Objects.equals(organizationId, film.organizationId)
 			&& Objects.equals(comment, film.comment) && Objects.equals(filmMimeType, film.filmMimeType)
 			&& Objects.equals(nodeId, film.nodeId) && Objects.equals(options, film.options) && Objects.equals(deletedDate, film.deletedDate)
@@ -251,7 +268,7 @@ public class Film extends AbstractCreatedObject<Film> {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, organizationId, comment, filmMimeType, nodeId, options,
+		return Objects.hash(filmId, filename, objectFilePath, objectType, date, documentTitle, topographyId, locationText, location, topography, organizationId, comment, filmMimeType, nodeId, options,
 			deletedDate, creator);
 	}
 
@@ -267,6 +284,7 @@ public class Film extends AbstractCreatedObject<Film> {
 			", topographyId=" + topographyId +
 			", locationText='" + locationText + '\'' +
 			", location='" + location + '\'' +
+			", topography=" + topography +
 			", organizationId=" + organizationId +
 			", comment='" + comment + '\'' +
 			", filmMimeType='" + filmMimeType + '\'' +

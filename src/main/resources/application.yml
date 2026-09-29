@@ -11,13 +11,26 @@ openapi:
 spring:
   application:
     name: api-service-memories
+  # Each open request would otherwise hold its pool connection until the response is written, file streams included.
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
   flyway:
     enabled: false
+  # Up to 20 connections under load, but only 5 held while idle: minimum-idle otherwise defaults to the maximum, so every
+  # instance (and every cached test context) would keep 20 open against the database's connection limit.
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  # objectFacets: the /objects facet counts, keyed on the filters. topographies: the /topographies list.
+  cache:
+    cache-names: objectFacets,topographies
+    caffeine:
+      spec: maximumSize=2000,expireAfterWrite=10m
 #========================================
 # Logbook — disable the servlet filter entirely.
 #
