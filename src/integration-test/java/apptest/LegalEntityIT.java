@@ -100,7 +100,8 @@ class LegalEntityIT extends AbstractAppTest {
 	}
 
 	/**
-	 * Legal entity 20 carries no HISTORIA, which is the ordinary case: only 18 of the 6 727 have one. The file itself is served from the SMB share, which the app tests do not stand up, so the
+	 * Legal entity 20 carries no HISTORIA, which is the ordinary case: only 18 of the 6 727 have one. The file itself is
+	 * served from the SMB share, which the app tests do not stand up, so the
 	 * streaming path is covered by the service and resource tests instead.
 	 */
 	@Test
