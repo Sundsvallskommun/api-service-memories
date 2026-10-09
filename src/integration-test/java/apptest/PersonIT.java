@@ -131,7 +131,8 @@ class PersonIT extends AbstractAppTest {
 	}
 
 	/**
-	 * Person 2 carries no BIOGRAFI, which is the ordinary case: only 23 of the 50 412 persons have one. The file itself is served from the SMB share, which the app tests do not stand up, so the
+	 * Person 2 carries no BIOGRAFI, which is the ordinary case: only 23 of the 50 412 persons have one. The file itself is
+	 * served from the SMB share, which the app tests do not stand up, so the
 	 * streaming path is covered by the service and resource tests instead.
 	 */
 	@Test
