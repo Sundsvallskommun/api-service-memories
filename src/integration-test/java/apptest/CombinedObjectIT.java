@@ -351,4 +351,34 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	@Test
+	void test32_searchObjectsFilteredByInstitution() {
+		setupCall()
+			.withServicePath(PATH + "?institutionId=2")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test33_searchObjectsFilteredBySeveralInstitutions() {
+		setupCall()
+			.withServicePath(PATH + "?institutionId=2&institutionId=3")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test34_searchObjectsByQueryAndInstitution() {
+		setupCall()
+			.withServicePath(PATH + "?query=Sundsvall&institutionId=2")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }
