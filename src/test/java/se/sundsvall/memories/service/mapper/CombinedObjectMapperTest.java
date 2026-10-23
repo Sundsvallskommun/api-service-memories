@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.InstitutionCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
@@ -188,5 +189,36 @@ class CombinedObjectMapperTest {
 			.extracting(se.sundsvall.memories.api.model.TopographyCount::getTopographyId, se.sundsvall.memories.api.model.TopographyCount::getName)
 			.containsExactly(tuple(4, "Kvissleby, Njurunda"), tuple(1, "Sundsvall"), tuple(9, "Sundsvall"), tuple(2, "Söråker, Timrå"), tuple(3, "Örnsköldsvik"));
 		assertThat(CombinedObjectMapper.toTopographyCountList(null)).isEqualTo(emptyList());
+	}
+
+	@Test
+	void toInstitutionCountList() {
+		final var result = CombinedObjectMapper.toInstitutionCountList(List.of(
+			new InstitutionCount(43, "Sundsvalls museum", 2L), new InstitutionCount(3, "Föreningsarkivet Västernorrland", 12L)));
+
+		assertThat(result).extracting(se.sundsvall.memories.api.model.InstitutionCount::getInstitutionId, se.sundsvall.memories.api.model.InstitutionCount::getName,
+			se.sundsvall.memories.api.model.InstitutionCount::getCount)
+			.containsExactly(tuple(3, "Föreningsarkivet Västernorrland", 12L), tuple(43, "Sundsvalls museum", 2L));
+	}
+
+	@Test
+	void toInstitutionCountListSortsByNameInSwedishOrderAndTiesById() {
+		assertThat(CombinedObjectMapper.toInstitutionCountList(List.of(
+			new InstitutionCount(4, "Örnsköldsviks museum", 1L),
+			new InstitutionCount(9, "Sundsvalls museum", 1L),
+			new InstitutionCount(2, "Sundsvalls museum", 1L),
+			new InstitutionCount(3, "Föreningsarkivet Västernorrland", 1L))))
+			.extracting(se.sundsvall.memories.api.model.InstitutionCount::getInstitutionId)
+			.containsExactly(3, 2, 9, 4);
+	}
+
+	@Test
+	void toInstitutionCountWhenNull() {
+		assertThat(CombinedObjectMapper.toInstitutionCount(null)).isNull();
+	}
+
+	@Test
+	void toInstitutionCountListWhenNull() {
+		assertThat(CombinedObjectMapper.toInstitutionCountList(null)).isEqualTo(emptyList());
 	}
 }

@@ -21,6 +21,7 @@ import se.sundsvall.memories.integration.db.AudioRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.InstitutionCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.PhotoRepository;
@@ -29,6 +30,7 @@ import se.sundsvall.memories.integration.db.model.AudioEntity;
 import se.sundsvall.memories.integration.db.model.CategoryEntity;
 import se.sundsvall.memories.integration.db.model.CensusRecordEntity;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
+import se.sundsvall.memories.integration.db.model.InstitutionEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.PersonEntity;
 import se.sundsvall.memories.integration.db.model.PhotoEntity;
@@ -78,6 +80,9 @@ class CombinedObjectSpecificationTest {
 		entityManager.createNativeQuery("DELETE FROM JURPERS").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM KATEGORI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM MANTAL").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM TBL_NODEATTRIBUTES").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM TBL_NODES").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM INSTITUTION").executeUpdate();
 		photoRepository.flush();
 	}
 
@@ -207,6 +212,13 @@ class CombinedObjectSpecificationTest {
 		entityManager.persist(topography);
 		entityManager.flush();
 		return topography;
+	}
+
+	private InstitutionEntity persistInstitution(final int id, final String name) {
+		final var institution = InstitutionEntity.create().withId(id).withName(name);
+		entityManager.persist(institution);
+		entityManager.flush();
+		return institution;
 	}
 
 	/**
@@ -539,6 +551,47 @@ class CombinedObjectSpecificationTest {
 		final var parameters = CombinedObjectParameters.create().withGender("Man");
 
 		assertThat(countByType(parameters)).containsExactly(entry("Foto", 1L), entry("Mantal", 1L), entry("Person", 1L));
+	}
+
+	/**
+	 * The institution counters ignore their own selection but no other filter, and an institution without a name to show
+	 * is not a chip, though the row itself still matches.
+	 */
+	@Test
+	void countByInstitutionIgnoresTheInstitutionSelectionButNoOtherFilter() {
+		persistInstitutionTree();
+		final var blank = persistInstitution(5, "  ");
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(7).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("Blank").withInstitution(blank));
+
+		final var parameters = CombinedObjectParameters.create().withInstitutionId(List.of(43));
+		assertThat(findKeys(parameters)).containsExactly("foto-1");
+		assertThat(countByInstitution(parameters)).containsOnly(entry(3, 2L), entry(43, 1L));
+
+		assertThat(countByInstitution(CombinedObjectParameters.create().withQuery("hamnen"))).containsOnly(entry(3, 1L));
+		assertThat(countByInstitution(CombinedObjectParameters.create().withObjectType(List.of("Person")))).isEmpty();
+		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of(5)))).containsExactly("foto-7");
+		assertThat(combinedObjectRepository.countByInstitution(CombinedObjectParameters.create()))
+			.extracting(InstitutionCount::institutionId, InstitutionCount::name, InstitutionCount::total)
+			.containsExactlyInAnyOrder(tuple(3, "Föreningsarkivet Västernorrland", 2L), tuple(43, "Sundsvalls museum", 1L));
+	}
+
+	@Test
+	void countByTypeAppliesTheInstitutionSelection() {
+		persistInstitutionTree();
+
+		assertThat(countByType(CombinedObjectParameters.create().withInstitutionId(List.of(3)))).containsOnly(entry("Foto", 1L), entry("Ljud", 1L));
+	}
+
+	@Test
+	void institutionFilterReadsThePhotosOwnInstitutionElseItsArchives() {
+		persistInstitutionTree();
+
+		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of(43)))).containsExactly("foto-1");
+		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of(3)))).containsExactly("foto-2", "ljud-3");
+		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of(3, 43)))).containsExactly("foto-1", "foto-2", "ljud-3");
+		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of(2)))).isEmpty();
+		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of(1)))).isEmpty();
+		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of()))).hasSize(6);
 	}
 
 	/** Census records are searchable as the object type {@code Mantal}, composed and dated like the other registers. */
@@ -968,5 +1021,48 @@ class CombinedObjectSpecificationTest {
 	private Map<String, Long> countByCategory(final CombinedObjectParameters parameters) {
 		return combinedObjectRepository.countByCategory(parameters).stream()
 			.collect(toMap(CategoryCount::name, CategoryCount::total, (first, _) -> first, LinkedHashMap::new));
+	}
+
+	/**
+	 * Archive 100 (Föreningsarkivet) holds series 110 and volume 111, archive 200 points at blank, archive 300
+	 * (Kommunarkivet) is deleted. Photo 1 names its own institution, photo 2 and the audio take their archives.
+	 */
+	private void persistInstitutionTree() {
+		final var museum = persistInstitution(43, "Sundsvalls museum");
+		persistInstitution(3, "Föreningsarkivet Västernorrland");
+		persistInstitution(2, "Sundsvalls kommun - Kommunarkivet");
+		persistInstitution(1, "");
+		persistNode(100, 0, 3, false);
+		persistNode(110, 100, null, false);
+		persistNode(111, 110, null, false);
+		persistNode(200, 0, 1, false);
+		persistNode(300, 0, 2, true);
+		persistNode(310, 300, null, false);
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(1).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("Stadsvy").withNodeId(111).withInstitution(museum));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(2).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("Hamnen").withNodeId(111));
+		audioRepository.saveAndFlush(AudioEntity.create().withId(3).withOptions(PUBLISHED).withDocumentTitle("Intervju").withNodeId(110));
+		publicationRepository.saveAndFlush(PublicationEntity.create().withId(4).withOptions(PUBLISHED).withDocumentTitle("Utan institution").withNodeId(200));
+		publicationRepository.saveAndFlush(PublicationEntity.create().withId(5).withOptions(PUBLISHED).withDocumentTitle("I raderat arkiv").withNodeId(310));
+		persistPerson(6, "Anton", "Nordin", null);
+	}
+
+	private void persistNode(final int id, final int parentId, final Integer institutionId, final boolean deleted) {
+		entityManager.createNativeQuery("INSERT INTO TBL_NODES (ID, PARENTID, NAME, NODETYPEID, DELETEDDATE) VALUES (?1, ?2, ?3, 1, "
+			+ (deleted ? "CURRENT_DATE" : "NULL") + ")")
+			.setParameter(1, id)
+			.setParameter(2, parentId)
+			.setParameter(3, "Nod " + id)
+			.executeUpdate();
+		if (institutionId != null) {
+			entityManager.createNativeQuery("INSERT INTO TBL_NODEATTRIBUTES (NODEID, FIELD3) VALUES (?1, ?2)")
+				.setParameter(1, id)
+				.setParameter(2, institutionId)
+				.executeUpdate();
+		}
+	}
+
+	private Map<Integer, Long> countByInstitution(final CombinedObjectParameters parameters) {
+		return combinedObjectRepository.countByInstitution(parameters).stream()
+			.collect(toMap(InstitutionCount::institutionId, InstitutionCount::total, (first, _) -> first, LinkedHashMap::new));
 	}
 }

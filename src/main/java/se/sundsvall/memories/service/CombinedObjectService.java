@@ -34,6 +34,7 @@ public class CombinedObjectService {
 			.withGenderCounts(facets.genderCounts())
 			.withCategoryCounts(facets.categoryCounts())
 			.withTopographyCounts(facets.topographyCounts())
+			.withInstitutionCounts(facets.institutionCounts())
 			.withMetaData(Pageables.metaDataOf(page, parameters));
 	}
 }

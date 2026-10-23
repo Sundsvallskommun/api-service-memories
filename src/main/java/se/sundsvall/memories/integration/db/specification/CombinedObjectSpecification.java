@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.integration.db.model.CategoryEntity_;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
+import se.sundsvall.memories.integration.db.model.InstitutionEntity_;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity_;
 import se.sundsvall.memories.integration.db.model.PersonEntity_;
 import se.sundsvall.memories.integration.db.model.PublicationEntity;
@@ -23,6 +24,7 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.CREATOR_LEGAL_ENTITY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.CREATOR_PERSON;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.GENDER;
+import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.INSTITUTION;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.LOCATION_TEXT;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.NAME_TEXT;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.NODE_ID;
@@ -80,6 +82,20 @@ public interface CombinedObjectSpecification {
 			.and(hasObjectType(parameters.getObjectType()))
 			.and(hasGender(parameters.getGender()))
 			.and(hasCategory(parameters.getCategoryId()))
+			.and(hasTopography(parameters.getTopographyId()))
+			.and(hasInstitution(parameters.getInstitutionId()));
+	}
+
+	/**
+	 * What the institution counters count over: every filter except the institution selection, the fifth dimension that
+	 * ignores only its own. The counters sum to the number of matched rows held by an institution — the registers and the
+	 * objects whose archive names none carry no institution.
+	 */
+	static Specification<CombinedObjectEntity> filtersExcludingInstitution(final CombinedObjectParameters parameters) {
+		return filtersExcludingFacets(parameters)
+			.and(hasObjectType(parameters.getObjectType()))
+			.and(hasGender(parameters.getGender()))
+			.and(hasCategory(parameters.getCategoryId()))
 			.and(hasTopography(parameters.getTopographyId()));
 	}
 
@@ -91,7 +107,8 @@ public interface CombinedObjectSpecification {
 		return filtersExcludingFacets(parameters)
 			.and(hasGender(parameters.getGender()))
 			.and(hasCategory(parameters.getCategoryId()))
-			.and(hasTopography(parameters.getTopographyId()));
+			.and(hasTopography(parameters.getTopographyId()))
+			.and(hasInstitution(parameters.getInstitutionId()));
 	}
 
 	/**
@@ -103,7 +120,8 @@ public interface CombinedObjectSpecification {
 		return filtersExcludingFacets(parameters)
 			.and(hasObjectType(parameters.getObjectType()))
 			.and(hasCategory(parameters.getCategoryId()))
-			.and(hasTopography(parameters.getTopographyId()));
+			.and(hasTopography(parameters.getTopographyId()))
+			.and(hasInstitution(parameters.getInstitutionId()));
 	}
 
 	/**
@@ -115,7 +133,8 @@ public interface CombinedObjectSpecification {
 		return filtersExcludingFacets(parameters)
 			.and(hasObjectType(parameters.getObjectType()))
 			.and(hasGender(parameters.getGender()))
-			.and(hasTopography(parameters.getTopographyId()));
+			.and(hasTopography(parameters.getTopographyId()))
+			.and(hasInstitution(parameters.getInstitutionId()));
 	}
 
 	/**
@@ -128,7 +147,8 @@ public interface CombinedObjectSpecification {
 		return filtersExcludingFacets(parameters)
 			.and(hasObjectType(parameters.getObjectType()))
 			.and(hasGender(parameters.getGender()))
-			.and(hasCategory(parameters.getCategoryId()));
+			.and(hasCategory(parameters.getCategoryId()))
+			.and(hasInstitution(parameters.getInstitutionId()));
 	}
 
 	/** The filters no counter leaves out: everything that is not a faceted selection. */
@@ -170,6 +190,15 @@ public interface CombinedObjectSpecification {
 	 */
 	static Specification<CombinedObjectEntity> hasObjectType(final List<String> objectTypes) {
 		return BUILDER.buildInFilter(OBJECT_TYPE, objectTypes);
+	}
+
+	/**
+	 * Restricts to the rows held by one of the given institutions, which are alternatives: a photo by its own institution
+	 * when it names one, every other object by the archive it sits in. The registers hold none, so this filter excludes
+	 * them the way categoryId does.
+	 */
+	static Specification<CombinedObjectEntity> hasInstitution(final List<Integer> institutionIds) {
+		return BUILDER.buildLookupInFilter(INSTITUTION, InstitutionEntity_.ID, institutionIds);
 	}
 
 	/**

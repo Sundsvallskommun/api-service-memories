@@ -12,7 +12,8 @@ import org.hibernate.annotations.Immutable;
 
 /**
  * Read-only entity mapped to the {@code VW_MEMORY_OBJECTS} view: the union of the five object tables (FOTO, FILM,
- * LJUD, TEXT, PUBL) and the three registers (PERSON, JURPERS, SJOMAN). Backs the combined {@code /objects} search.
+ * LJUD, TEXT, PUBL) and the three registers (PERSON, JURPERS, SJOMAN, MANTAL). Backs the combined {@code /objects}
+ * search.
  */
 @Entity
 @Immutable
@@ -68,6 +69,13 @@ public class CombinedObjectEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "CREATOR_LEGAL_ENTITY_ID")
 	private LegalEntityEntity creatorLegalEntity;
+
+	/**
+	 * The institution holding the row: a photo's own when it names one, otherwise its archive's. NULL for the registers.
+	 */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "INSTITUTION_ID")
+	private InstitutionEntity institution;
 
 	/**
 	 * The archive node (arkiv, serie or volym) the object was created in — {@code NODEID} on the object tables. The
@@ -247,6 +255,19 @@ public class CombinedObjectEntity {
 
 	public CombinedObjectEntity withNodeId(final Integer nodeId) {
 		this.nodeId = nodeId;
+		return this;
+	}
+
+	public InstitutionEntity getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(final InstitutionEntity institution) {
+		this.institution = institution;
+	}
+
+	public CombinedObjectEntity withInstitution(final InstitutionEntity institution) {
+		this.institution = institution;
 		return this;
 	}
 

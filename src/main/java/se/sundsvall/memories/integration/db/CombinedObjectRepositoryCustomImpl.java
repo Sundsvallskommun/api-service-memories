@@ -7,6 +7,8 @@ import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.integration.db.model.CategoryEntity;
 import se.sundsvall.memories.integration.db.model.CategoryEntity_;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
+import se.sundsvall.memories.integration.db.model.InstitutionEntity;
+import se.sundsvall.memories.integration.db.model.InstitutionEntity_;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity_;
 import se.sundsvall.memories.integration.db.model.TopographyEntity;
@@ -15,10 +17,12 @@ import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 import static java.util.Optional.ofNullable;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.CREATOR_LEGAL_ENTITY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.GENDER;
+import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.INSTITUTION;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.OBJECT_TYPE;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.TOPOGRAPHY;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingCategory;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingGender;
+import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingInstitution;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingObjectType;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.filtersExcludingTopography;
 import static se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification.hasCategorisedCreator;
@@ -32,6 +36,8 @@ class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCust
 	private static final String TOPOGRAPHY_ID_ALIAS = "topographyId";
 	private static final String TOPOGRAPHY_NAME_ALIAS = "topographyName";
 	private static final String TOPOGRAPHY_PLACE_ALIAS = "topographyPlace";
+	private static final String INSTITUTION_ID_ALIAS = "institutionId";
+	private static final String INSTITUTION_NAME_ALIAS = "institutionName";
 	private static final String TOTAL_ALIAS = "total";
 
 	private final EntityManager entityManager;
@@ -148,6 +154,35 @@ class CombinedObjectRepositoryCustomImpl implements CombinedObjectRepositoryCust
 		return entityManager.createQuery(query).getResultList().stream()
 			.map(tuple -> new TopographyCount(tuple.get(TOPOGRAPHY_ID_ALIAS, Integer.class), tuple.get(TOPOGRAPHY_NAME_ALIAS, String.class),
 				tuple.get(TOPOGRAPHY_PLACE_ALIAS, String.class), tuple.get(TOTAL_ALIAS, Long.class)))
+			.toList();
+	}
+
+	// Every filter but the institution selection, mirroring the other counters. No order: the mapper orders the chips
+	// by name in Swedish order, which the database's collation could not give.
+	@Override
+	public List<InstitutionCount> countByInstitution(final CombinedObjectParameters parameters) {
+		final var cb = entityManager.getCriteriaBuilder();
+		final var query = cb.createTupleQuery();
+		final var root = query.from(CombinedObjectEntity.class);
+
+		final var institution = root.<CombinedObjectEntity, InstitutionEntity>join(INSTITUTION, JoinType.LEFT);
+		final var institutionId = institution.<Integer>get(InstitutionEntity_.ID);
+		final var name = institution.<String>get(InstitutionEntity_.NAME);
+
+		final var predicate = ofNullable(filtersExcludingInstitution(parameters).toPredicate(root, query, cb))
+			.orElseGet(cb::conjunction);
+
+		// Only an institution with a name becomes a chip — the rule /institutions lists by
+		// (InstitutionSpecification.hasName()).
+		final var listable = cb.and(cb.isNotNull(institutionId), cb.isNotNull(cb.nullif(cb.trim(name), "")));
+
+		query.multiselect(institutionId.alias(INSTITUTION_ID_ALIAS), name.alias(INSTITUTION_NAME_ALIAS), cb.count(root).alias(TOTAL_ALIAS))
+			.where(cb.and(predicate, listable))
+			.groupBy(institutionId, name);
+
+		return entityManager.createQuery(query).getResultList().stream()
+			.map(tuple -> new InstitutionCount(tuple.get(INSTITUTION_ID_ALIAS, Integer.class),
+				tuple.get(INSTITUTION_NAME_ALIAS, String.class), tuple.get(TOTAL_ALIAS, Long.class)))
 			.toList();
 	}
 }
