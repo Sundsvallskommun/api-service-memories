@@ -1,0 +1,72 @@
+{
+	"_meta": {
+		"count": 2,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 2
+	},
+	"typeCounts": [
+		{
+			"objectType": "Film",
+			"count": 1
+		},
+		{
+			"objectType": "Foto",
+			"count": 1
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [
+		{
+			"categoryId": 5,
+			"name": "Kommitté",
+			"count": 1
+		}
+	],
+	"topographyCounts": [
+		{
+			"topographyId": 1,
+			"name": "Sundsvall",
+			"count": 1
+		}
+	],
+	"institutionCounts": [
+		{
+			"institutionId": 3,
+			"name": "Föreningsarkivet Västernorrland",
+			"count": 1
+		},
+		{
+			"institutionId": 2,
+			"name": "Sundsvalls museum",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "film-1",
+			"sourceId": 1,
+			"objectType": "Film",
+			"title": "Midsommarfirande i Sundsvall 1985",
+			"year": 1985,
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"locationText": "Sundsvall",
+			"nodeId": 100,
+			"creator": {
+				"legalEntity": "Nödhjälpskommittén 1888-1889",
+				"legalEntityId": 10,
+				"person": "Anton Nordin",
+				"personId": 1
+			}
+		},
+		{
+			"objectKey": "foto-1008",
+			"sourceId": 1008,
+			"objectType": "Foto",
+			"title": "Bild med egen institution",
+			"nodeId": 100
+		}
+	]
+}

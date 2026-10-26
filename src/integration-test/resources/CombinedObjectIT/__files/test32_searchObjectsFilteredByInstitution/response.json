@@ -1,10 +1,10 @@
 {
 	"_meta": {
-		"count": 2,
+		"count": 3,
 		"limit": 100,
 		"page": 1,
 		"totalPages": 1,
-		"totalRecords": 2
+		"totalRecords": 3
 	},
 	"typeCounts": [
 		{
@@ -13,7 +13,7 @@
 		},
 		{
 			"objectType": "Foto",
-			"count": 1
+			"count": 2
 		}
 	],
 	"genderCounts": [],
@@ -35,12 +35,12 @@
 		{
 			"institutionId": 3,
 			"name": "Föreningsarkivet Västernorrland",
-			"count": 1
+			"count": 2
 		},
 		{
 			"institutionId": 2,
 			"name": "Sundsvalls museum",
-			"count": 2
+			"count": 3
 		}
 	],
 	"objects": [
@@ -71,6 +71,13 @@
 			"location": "Sundsvall",
 			"locationText": "Sundsvall",
 			"nodeId": 19000
+		},
+		{
+			"objectKey": "foto-1006",
+			"sourceId": 1006,
+			"objectType": "Foto",
+			"title": "Bild i volym 1",
+			"nodeId": 111
 		}
 	]
 }

@@ -242,6 +242,16 @@ INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, TIDIG, OBJTYP, `OPTIONS`)
 VALUES (1005, 'Handelsbod vid Storgatan', 'Fotografi av Anton Nordin, skänkt av Nödhjälpskommittén. Stadsvy i bakgrunden.',
         '1890', 'Foto', 4);
 
+-- Photos that take the institution in the archive tree (VW_NODE_CONTEXT, see V2_8). They name no place, so they
+-- stay out of the place counters.
+--   1006 sits on volume 111, two levels below archive 100, and names no institution itself: it takes the archive's, 2.
+--   1007 sits on the deleted series 500 under archive 100: the walk stops at a deleted node, so it has no institution.
+--   1008 sits on archive 100 but names institution 3 itself (M_I_ID, set below): its own goes before the archive's.
+INSERT INTO FOTO (F_ID, DOKTITEL, KOMMENT_FF, OBJTYP, F_T_ID, NODEID, `OPTIONS`)
+VALUES (1006, 'Bild i volym 1', 'Två nivåer under arkivet, ärver dess institution', 'Foto', null, 111, 4),
+       (1007, 'Bild i en borttagen serie', 'Serien är borttagen, så bilden står utan institution', 'Foto', null, 500, 4),
+       (1008, 'Bild med egen institution', 'Egen institution som går före arkivets', 'Foto', null, 100, 4);
+
 --
 -- PERSON (personsök)
 -- id 1 & 2 published ((OPTIONS & 4) = 4); id 3 unpublished (bit 4 not set); id 0 placeholder ("ingen person")
@@ -372,6 +382,7 @@ VALUES (1, '', '', null, null, null),
 
 -- FOTO.M_I_ID — the institution holding a photo. Every other photo keeps the blank sentinel default, row 1.
 UPDATE FOTO SET M_I_ID = 2 WHERE F_ID = 1001;
+UPDATE FOTO SET M_I_ID = 3 WHERE F_ID = 1008;
 
 --
 -- TBL_NODEATTRIBUTES — what the archive records about a node beyond the tree. FIELD1 arkivbildare (JURPERS),
