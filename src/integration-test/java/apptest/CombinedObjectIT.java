@@ -351,4 +351,64 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	@Test
+	void test32_searchObjectsFilteredByInstitution() {
+		setupCall()
+			.withServicePath(PATH + "?institutionId=2")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test33_searchObjectsFilteredBySeveralInstitutions() {
+		setupCall()
+			.withServicePath(PATH + "?institutionId=2&institutionId=3")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test34_searchObjectsByQueryAndInstitution() {
+		setupCall()
+			.withServicePath(PATH + "?query=Sundsvall&institutionId=2")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test35_searchObjectsInstitutionFromArchive() {
+		setupCall()
+			.withServicePath(PATH + "?nodeId=111")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test36_searchObjectsNoInstitutionOnDeletedNode() {
+		setupCall()
+			.withServicePath(PATH + "?nodeId=500")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test37_searchObjectsPhotosOwnInstitutionPreferred() {
+		setupCall()
+			.withServicePath(PATH + "?nodeId=100")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

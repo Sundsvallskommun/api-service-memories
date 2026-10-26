@@ -1,0 +1,34 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [],
+	"topographyCounts": [],
+	"institutionCounts": [
+		{
+			"institutionId": 2,
+			"name": "Sundsvalls museum",
+			"count": 1
+		}
+	],
+	"objects": [
+		{
+			"objectKey": "foto-1006",
+			"sourceId": 1006,
+			"objectType": "Foto",
+			"title": "Bild i volym 1",
+			"nodeId": 111
+		}
+	]
+}

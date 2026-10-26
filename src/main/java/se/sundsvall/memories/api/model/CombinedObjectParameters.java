@@ -8,9 +8,10 @@ import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBase;
 
 @Schema(description = """
-	Combined object search parameters (across all object and register types). All filters are optional \
-	and combined with AND, except that several values of objectType are alternatives. Sort on one of: relevance, objectKey, \
-	title, year, objectType or location. Defaults to relevance when a query is given.""")
+	Combined object search parameters (across all object and register types). All filters are optional and combined \
+	with AND, except that several values of one list filter (objectType, categoryId, topographyId, creatorLegalEntityId, \
+	nodeId, institutionId) are alternatives. Sort on one of: relevance, objectKey, title, year, objectType or location. \
+	Defaults to relevance when a query is given.""")
 public class CombinedObjectParameters extends AbstractParameterPagingAndSortingBase {
 
 	@Schema(description = """
@@ -79,6 +80,15 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		/nodes/{id}/children. Only the object types are placed in the tree, so this filter excludes the register types.""",
 		examples = "19000"))
 	private List<Integer> nodeId;
+
+	@ArraySchema(schema = @Schema(description = """
+		ID of the institution (arkivinstitution) holding the object, as listed by /institutions and counted by \
+		institutionCounts. Repeat the parameter, or comma-separate the values, to select several — they are \
+		alternatives. A photo or object counts under its own institution when it has one, otherwise under the \
+		institution of the archive it sits in; the other object types under their archive's. The registers \
+		(Person, Juridisk person, Sjöman and Mantal) hold no institution, so this filter excludes them, as it does \
+		the objects whose archive names none.""", examples = "3"))
+	private List<Integer> institutionId;
 
 	public static CombinedObjectParameters create() {
 		return new CombinedObjectParameters();
@@ -212,6 +222,19 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		return this;
 	}
 
+	public List<Integer> getInstitutionId() {
+		return institutionId;
+	}
+
+	public void setInstitutionId(final List<Integer> institutionId) {
+		this.institutionId = institutionId;
+	}
+
+	public CombinedObjectParameters withInstitutionId(final List<Integer> institutionId) {
+		this.institutionId = institutionId;
+		return this;
+	}
+
 	/**
 	 * {@code relevance} and {@code location} are translated by the specification; every other accepted value is an entity
 	 * attribute.
@@ -263,13 +286,13 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(objectType, that.objectType) && Objects.equals(gender, that.gender)
 			&& Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId)
 			&& Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId) && Objects.equals(categoryId, that.categoryId)
-			&& Objects.equals(nodeId, that.nodeId);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(institutionId, that.institutionId);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, topographyId, objectType, gender, creator, creatorPersonId, creatorLegalEntityId, categoryId,
-			nodeId);
+			nodeId, institutionId);
 	}
 
 	@Override
@@ -287,6 +310,7 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			", creatorLegalEntityId=" + creatorLegalEntityId +
 			", categoryId=" + categoryId +
 			", nodeId=" + nodeId +
+			", institutionId=" + institutionId +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

@@ -18,9 +18,9 @@ class CombinedObjectEntityTest {
 		assertThat(CombinedObjectEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography", "creatorPerson", "creatorLegalEntity"),
-			hasValidBeanEqualsExcluding("topography", "creatorPerson", "creatorLegalEntity"),
-			hasValidBeanToStringExcluding("topography", "creatorPerson", "creatorLegalEntity")));
+			hasValidBeanHashCodeExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution"),
+			hasValidBeanEqualsExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution"),
+			hasValidBeanToStringExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution")));
 	}
 
 	@Test
@@ -32,6 +32,7 @@ class CombinedObjectEntityTest {
 			.withTitle("Stadsvy")
 			.withYear(1920)
 			.withTopography(TopographyEntity.create().withId(1).withName("Sundsvalls kommun"))
+			.withInstitution(InstitutionEntity.create().withId(43).withName("Sundsvalls museum"))
 			.withLocationText("Sundsvall")
 			.withGender("man")
 			.withNodeId(19000);
@@ -42,6 +43,7 @@ class CombinedObjectEntityTest {
 		assertThat(result.getTitle()).isEqualTo("Stadsvy");
 		assertThat(result.getYear()).isEqualTo(1920);
 		assertThat(result.getTopography().getId()).isEqualTo(1);
+		assertThat(result.getInstitution().getId()).isEqualTo(43);
 		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
 		assertThat(result.getGender()).isEqualTo("man");
 		assertThat(result.getNodeId()).isEqualTo(19000);

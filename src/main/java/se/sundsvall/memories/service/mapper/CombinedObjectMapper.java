@@ -4,6 +4,7 @@ import java.util.List;
 import se.sundsvall.memories.api.model.CategoryCount;
 import se.sundsvall.memories.api.model.CombinedObject;
 import se.sundsvall.memories.api.model.GenderCount;
+import se.sundsvall.memories.api.model.InstitutionCount;
 import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.api.model.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom;
@@ -168,6 +169,37 @@ public final class CombinedObjectMapper {
 			.map(CombinedObjectMapper::toTopographyCount)
 			.sorted(comparing(TopographyCount::getName, swedishOrder())
 				.thenComparing(TopographyCount::getTopographyId))
+			.toList();
+	}
+
+	/**
+	 * Map one institution chip counter.
+	 *
+	 * @param  institutionCount the counter the search grouped
+	 * @return                  the mapped {@link InstitutionCount}, or {@code null} if {@code institutionCount} is null
+	 */
+	public static InstitutionCount toInstitutionCount(final CombinedObjectRepositoryCustom.InstitutionCount institutionCount) {
+		return ofNullable(institutionCount)
+			.map(count -> InstitutionCount.create()
+				.withInstitutionId(count.institutionId())
+				.withName(count.name())
+				.withCount(count.total()))
+			.orElse(null);
+	}
+
+	/**
+	 * Map the institution chip counters, in the order the chips are shown — the same order {@code /institutions} lists
+	 * the very same names in.
+	 *
+	 * @param  institutionCounts the counters the search grouped
+	 * @return                   list of mapped {@link InstitutionCount} objects (empty if {@code institutionCounts} is
+	 *                           null)
+	 */
+	public static List<InstitutionCount> toInstitutionCountList(final List<CombinedObjectRepositoryCustom.InstitutionCount> institutionCounts) {
+		return ofNullable(institutionCounts).orElse(emptyList()).stream()
+			.map(CombinedObjectMapper::toInstitutionCount)
+			.sorted(comparing(InstitutionCount::getName, swedishOrder())
+				.thenComparing(InstitutionCount::getInstitutionId))
 			.toList();
 	}
 

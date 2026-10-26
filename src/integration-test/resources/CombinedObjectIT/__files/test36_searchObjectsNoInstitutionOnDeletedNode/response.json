@@ -1,0 +1,28 @@
+{
+	"_meta": {
+		"count": 1,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 1
+	},
+	"typeCounts": [
+		{
+			"objectType": "Foto",
+			"count": 1
+		}
+	],
+	"genderCounts": [],
+	"categoryCounts": [],
+	"topographyCounts": [],
+	"institutionCounts": [],
+	"objects": [
+		{
+			"objectKey": "foto-1007",
+			"sourceId": 1007,
+			"objectType": "Foto",
+			"title": "Bild i en borttagen serie",
+			"nodeId": 500
+		}
+	]
+}

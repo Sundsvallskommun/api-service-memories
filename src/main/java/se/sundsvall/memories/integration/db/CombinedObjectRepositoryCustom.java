@@ -34,6 +34,13 @@ public interface CombinedObjectRepositoryCustom {
 	 */
 	List<TopographyCount> countByTopography(CombinedObjectParameters parameters);
 
+	/**
+	 * The institution counters, over the rows held by an institution. A fifth dimension of its own, overlapping the
+	 * others the same way, and the institution selection is not applied — see
+	 * {@link se.sundsvall.memories.integration.db.specification.CombinedObjectSpecification#filtersExcludingInstitution}.
+	 */
+	List<InstitutionCount> countByInstitution(CombinedObjectParameters parameters);
+
 	/** One chip: an object type, and how many rows of it the search matches across every page. */
 	record TypeCount(String objectType, long total) {
 	}
@@ -51,5 +58,11 @@ public interface CombinedObjectRepositoryCustom {
 	 * search matches.
 	 */
 	record TopographyCount(Integer topographyId, String name, String place, long total) {
+	}
+
+	/**
+	 * One chip: an institution, by id and name, and how many rows held by it the search matches.
+	 */
+	record InstitutionCount(Integer institutionId, String name, long total) {
 	}
 }

@@ -150,6 +150,31 @@ class CombinedObjectResourceTest {
 	}
 
 	@Test
+	void searchObjectsBindsRepeatedAndCommaSeparatedInstitutionIds() {
+		final var parameters = ArgumentCaptor.forClass(CombinedObjectParameters.class);
+		when(serviceMock.search(any())).thenReturn(PagedCombinedObjectResponse.create());
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("institutionId", "2")
+				.queryParam("institutionId", "43")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("institutionId", "2,43")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock, times(2)).search(parameters.capture());
+		assertThat(parameters.getAllValues()).extracting(CombinedObjectParameters::getInstitutionId)
+			.containsExactly(List.of(2, 43), List.of(2, 43));
+	}
+
+	@Test
 	void searchObjectsWithoutFilters() {
 		final var pagedResponse = PagedCombinedObjectResponse.create()
 			.withObjects(List.of())

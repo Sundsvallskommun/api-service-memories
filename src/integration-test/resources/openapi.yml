@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.13"
+  version: "3.14"
 servers:
-- url: http://localhost:61485
+- url: http://localhost:60434
   description: Generated server url
 tags:
 - name: Node
@@ -779,9 +779,10 @@ paths:
       description: "Search across all object types (Foto, Föremål, Film, Ljud, Text,\
         \ Publikation) and registers (Person, Juridisk person, Sjöman, Mantal) in\
         \ one call, with global sorting, pagination and counts per type, gender, originator\
-        \ category and place. Pass objectType, gender, categoryId or topographyId\
-        \ to narrow the search; each counter leaves out only its own selection, so\
-        \ the chips stay selectable. Pass nodeId to list what an archive node holds."
+        \ category and place. Pass objectType, gender, categoryId, topographyId or\
+        \ institutionId to narrow the search; each counter leaves out only its own\
+        \ selection, so the chips stay selectable. Pass nodeId to list what an archive\
+        \ node holds."
       operationId: searchObjects
       parameters:
       - name: municipalityId
@@ -1659,16 +1660,16 @@ components:
     Problem:
       type: object
       properties:
-        title:
-          type: string
-        detail:
-          type: string
         instance:
           type: string
           format: uri
         type:
           type: string
           format: uri
+        title:
+          type: string
+        detail:
+          type: string
         status:
           type: integer
           format: int32
@@ -1687,11 +1688,11 @@ components:
             $ref: "#/components/schemas/Violation"
         title:
           type: string
-        detail:
-          type: string
         instance:
           type: string
           format: uri
+        detail:
+          type: string
     Violation:
       type: object
       properties:
@@ -3029,7 +3030,8 @@ components:
       type: object
       description: "Combined object search parameters (across all object and register\
         \ types). All filters are optional and combined with AND, except that several\
-        \ values of objectType are alternatives. Sort on one of: relevance, objectKey,\
+        \ values of one list filter (objectType, categoryId, topographyId, creatorLegalEntityId,\
+        \ nodeId, institutionId) are alternatives. Sort on one of: relevance, objectKey,\
         \ title, year, objectType or location. Defaults to relevance when a query\
         \ is given."
       properties:
@@ -3188,6 +3190,22 @@ components:
               \ the register types."
             examples:
             - 19000
+        institutionId:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the institution (arkivinstitution) holding the object,\
+              \ as listed by /institutions and counted by institutionCounts. Repeat\
+              \ the parameter, or comma-separate the values, to select several — they\
+              \ are alternatives. A photo or object counts under its own institution\
+              \ when it has one, otherwise under the institution of the archive it\
+              \ sits in; the other object types under their archive's. The registers\
+              \ (Person, Juridisk person, Sjöman and Mantal) hold no institution,\
+              \ so this filter excludes them, as it does the objects whose archive\
+              \ names none."
+            examples:
+            - 3
     CategoryCount:
       type: object
       description: How many objects with an originator in one category the search
@@ -3294,6 +3312,31 @@ components:
             \ holds types that record none."
           examples:
           - 12
+    InstitutionCount:
+      type: object
+      description: How many objects held by one institution the search matches
+      properties:
+        institutionId:
+          type: integer
+          format: int32
+          description: "Institution ID, which the institutionId filter accepts"
+          examples:
+          - 3
+        name:
+          type: string
+          description: Institution name
+          examples:
+          - Föreningsarkivet Västernorrland
+        count:
+          type: integer
+          format: int64
+          description: "Number of matching objects held by that institution, across\
+            \ every page. A photo or object counts under its own institution when\
+            \ it has one, otherwise under its archive's. The counters cover every\
+            \ matched row with an institution, so they sum to fewer than totalRecords\
+            \ whenever the result also holds rows without one, such as the registers."
+          examples:
+          - 12
     ObjectTypeCount:
       type: object
       description: How many objects of one type the search matches
@@ -3367,6 +3410,19 @@ components:
             \ how many objects selecting that place would return."
           items:
             $ref: "#/components/schemas/TopographyCount"
+        institutionCounts:
+          type: array
+          description: "Total number of matching objects per institution (for chip\
+            \ counters), ordered by institution name, over the rows held by an institution.\
+            \ A dimension of its own like categoryCounts, so these overlap with typeCounts\
+            \ rather than summing with them, and the register rows and objects whose\
+            \ archive names no institution are not counted. The counts are independent\
+            \ of the current page and of the institutionId filter — every other filter\
+            \ applies, so a chip keeps saying how many objects selecting that institution\
+            \ would return."
+          items:
+            $ref: "#/components/schemas/InstitutionCount"
+            readOnly: true
         _meta:
           $ref: "#/components/schemas/PagingAndSortingMetaData"
           readOnly: true

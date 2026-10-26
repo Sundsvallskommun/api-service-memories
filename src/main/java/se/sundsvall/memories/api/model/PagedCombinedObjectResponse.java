@@ -49,6 +49,15 @@ public class PagedCombinedObjectResponse {
 		would return."""))
 	private List<TopographyCount> topographyCounts;
 
+	@ArraySchema(schema = @Schema(implementation = InstitutionCount.class, accessMode = READ_ONLY),
+		arraySchema = @Schema(description = """
+			Total number of matching objects per institution (for chip counters), ordered by institution name, over the \
+			rows held by an institution. A dimension of its own like categoryCounts, so these overlap with typeCounts \
+			rather than summing with them, and the register rows and objects whose archive names no institution are not \
+			counted. The counts are independent of the current page and of the institutionId filter — every other filter \
+			applies, so a chip keeps saying how many objects selecting that institution would return."""))
+	private List<InstitutionCount> institutionCounts;
+
 	@JsonProperty("_meta")
 	@Schema(implementation = PagingAndSortingMetaData.class, accessMode = READ_ONLY)
 	private PagingAndSortingMetaData metaData;
@@ -122,6 +131,19 @@ public class PagedCombinedObjectResponse {
 		return this;
 	}
 
+	public List<InstitutionCount> getInstitutionCounts() {
+		return institutionCounts;
+	}
+
+	public void setInstitutionCounts(final List<InstitutionCount> institutionCounts) {
+		this.institutionCounts = institutionCounts;
+	}
+
+	public PagedCombinedObjectResponse withInstitutionCounts(final List<InstitutionCount> institutionCounts) {
+		this.institutionCounts = institutionCounts;
+		return this;
+	}
+
 	public PagingAndSortingMetaData getMetaData() {
 		return metaData;
 	}
@@ -141,12 +163,13 @@ public class PagedCombinedObjectResponse {
 			return false;
 		final PagedCombinedObjectResponse that = (PagedCombinedObjectResponse) o;
 		return Objects.equals(objects, that.objects) && Objects.equals(typeCounts, that.typeCounts) && Objects.equals(genderCounts, that.genderCounts)
-			&& Objects.equals(categoryCounts, that.categoryCounts) && Objects.equals(metaData, that.metaData) && Objects.equals(topographyCounts, that.topographyCounts);
+			&& Objects.equals(categoryCounts, that.categoryCounts) && Objects.equals(metaData, that.metaData) && Objects.equals(topographyCounts, that.topographyCounts)
+			&& Objects.equals(institutionCounts, that.institutionCounts);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(objects, typeCounts, genderCounts, categoryCounts, metaData, topographyCounts);
+		return Objects.hash(objects, typeCounts, genderCounts, categoryCounts, metaData, topographyCounts, institutionCounts);
 	}
 
 	@Override
@@ -157,6 +180,7 @@ public class PagedCombinedObjectResponse {
 			", genderCounts=" + genderCounts +
 			", categoryCounts=" + categoryCounts +
 			", topographyCounts=" + topographyCounts +
+			", institutionCounts=" + institutionCounts +
 			", metaData=" + metaData +
 			'}';
 	}

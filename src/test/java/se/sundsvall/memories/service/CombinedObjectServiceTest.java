@@ -14,6 +14,7 @@ import se.sundsvall.memories.api.model.ObjectTypeCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepository;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.CategoryCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.GenderCount;
+import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.InstitutionCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TopographyCount;
 import se.sundsvall.memories.integration.db.CombinedObjectRepositoryCustom.TypeCount;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
@@ -57,6 +58,7 @@ class CombinedObjectServiceTest {
 		when(repositoryMock.countByGender(parameters)).thenReturn(List.of(new GenderCount("kvinna", 2L), new GenderCount("man", 5L)));
 		when(repositoryMock.countByCategory(parameters)).thenReturn(List.of(new CategoryCount(5, "Kommitté", 4L)));
 		when(repositoryMock.countByTopography(parameters)).thenReturn(List.of(new TopographyCount(4, "Njurunda", "Kvissleby", 2L)));
+		when(repositoryMock.countByInstitution(parameters)).thenReturn(List.of(new InstitutionCount(43, "Sundsvalls museum", 2L)));
 
 		final var result = service.search(parameters);
 
@@ -72,6 +74,9 @@ class CombinedObjectServiceTest {
 		assertThat(result.getTopographyCounts()).extracting(se.sundsvall.memories.api.model.TopographyCount::getTopographyId,
 			se.sundsvall.memories.api.model.TopographyCount::getName, se.sundsvall.memories.api.model.TopographyCount::getCount)
 			.containsExactly(tuple(4, "Kvissleby, Njurunda", 2L));
+		assertThat(result.getInstitutionCounts()).extracting(se.sundsvall.memories.api.model.InstitutionCount::getInstitutionId,
+			se.sundsvall.memories.api.model.InstitutionCount::getName, se.sundsvall.memories.api.model.InstitutionCount::getCount)
+			.containsExactly(tuple(43, "Sundsvalls museum", 2L));
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
 	}
 
@@ -91,6 +96,7 @@ class CombinedObjectServiceTest {
 		assertThat(result.getGenderCounts()).isEmpty();
 		assertThat(result.getCategoryCounts()).isEmpty();
 		assertThat(result.getTopographyCounts()).isEmpty();
+		assertThat(result.getInstitutionCounts()).isEmpty();
 
 		final var searchCaptor = ArgumentCaptor.forClass(CombinedObjectParameters.class);
 		verify(repositoryMock).findAllByParameters(searchCaptor.capture(), eq(PAGEABLE));
@@ -99,6 +105,7 @@ class CombinedObjectServiceTest {
 		verify(repositoryMock).countByGender(parameters);
 		verify(repositoryMock).countByCategory(parameters);
 		verify(repositoryMock).countByTopography(parameters);
+		verify(repositoryMock).countByInstitution(parameters);
 	}
 
 	/** The metadata reports the caller's own sort only, not relevance or the id tiebreak. */

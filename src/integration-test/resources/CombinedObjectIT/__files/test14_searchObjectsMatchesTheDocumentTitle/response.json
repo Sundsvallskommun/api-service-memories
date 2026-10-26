@@ -21,6 +21,13 @@
 			"count": 2
 		}
 	],
+	"institutionCounts": [
+		{
+			"institutionId": 2,
+			"name": "Sundsvalls museum",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "foto-1001",

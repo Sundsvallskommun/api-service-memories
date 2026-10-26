@@ -45,6 +45,13 @@
 			"count": 1
 		}
 	],
+	"institutionCounts": [
+		{
+			"institutionId": 2,
+			"name": "Sundsvalls museum",
+			"count": 1
+		}
+	],
 	"objects": [
 		{
 			"objectKey": "film-1",

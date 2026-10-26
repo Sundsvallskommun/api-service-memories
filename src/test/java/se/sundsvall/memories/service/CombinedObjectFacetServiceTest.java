@@ -78,6 +78,7 @@ class CombinedObjectFacetServiceTest {
 		verify(repositoryMock, times(1)).countByGender(any());
 		verify(repositoryMock, times(1)).countByCategory(any());
 		verify(repositoryMock, times(1)).countByTopography(any());
+		verify(repositoryMock, times(1)).countByInstitution(any());
 	}
 
 	@Test
@@ -90,10 +91,19 @@ class CombinedObjectFacetServiceTest {
 	}
 
 	@Test
+	void countsAgainWhenTheInstitutionChanges() {
+		service.getFacets(CombinedObjectParameters.create().withQuery("Sundsvall"));
+		service.getFacets(CombinedObjectParameters.create().withQuery("Sundsvall").withInstitutionId(List.of(43)));
+
+		verify(repositoryMock, times(2)).countByType(any());
+		verify(repositoryMock, times(2)).countByInstitution(any());
+	}
+
+	@Test
 	void keyHoldsTheFiltersOnly() {
-		final var parameters = CombinedObjectParameters.create().withQuery("Nordin").withTopographyId(List.of(4)).withPage(3);
+		final var parameters = CombinedObjectParameters.create().withQuery("Nordin").withTopographyId(List.of(4)).withInstitutionId(List.of(43)).withPage(3);
 
 		assertThat(CombinedObjectFacetService.key(parameters))
-			.containsExactly("Nordin", null, null, null, List.of(4), null, null, null, null, null, null, null);
+			.containsExactly("Nordin", null, null, null, List.of(4), null, null, null, null, null, null, null, List.of(43));
 	}
 }
