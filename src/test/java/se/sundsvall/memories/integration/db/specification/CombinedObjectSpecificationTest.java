@@ -594,6 +594,31 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of()))).hasSize(6);
 	}
 
+	/**
+	 * Every link of the walk counts: the archive is found from the archive itself and from three and four levels down,
+	 * but not from five, and an object on a deleted node gets no institution though it stays in the results. One and two
+	 * levels down are covered by institutionFilterReadsThePhotosOwnInstitutionElseItsArchives.
+	 */
+	@Test
+	void institutionFilterReachesTheArchiveFromEveryLevel() {
+		persistInstitution(3, "Föreningsarkivet Västernorrland");
+		persistNode(100, 0, 3, false);
+		persistNode(110, 100, null, false);
+		persistNode(111, 110, null, false);
+		persistNode(112, 111, null, false);
+		persistNode(113, 112, null, false);
+		persistNode(114, 113, null, false);
+		persistNode(120, 100, null, true);
+		audioRepository.saveAndFlush(AudioEntity.create().withId(1).withOptions(PUBLISHED).withDocumentTitle("archive").withNodeId(100));
+		audioRepository.saveAndFlush(AudioEntity.create().withId(2).withOptions(PUBLISHED).withDocumentTitle("3 nodes deep").withNodeId(112));
+		audioRepository.saveAndFlush(AudioEntity.create().withId(3).withOptions(PUBLISHED).withDocumentTitle("4 nodes deep").withNodeId(113));
+		audioRepository.saveAndFlush(AudioEntity.create().withId(4).withOptions(PUBLISHED).withDocumentTitle("5 nodes deep").withNodeId(114));
+		audioRepository.saveAndFlush(AudioEntity.create().withId(5).withOptions(PUBLISHED).withDocumentTitle("deleted node").withNodeId(120));
+
+		assertThat(findKeys(CombinedObjectParameters.create().withInstitutionId(List.of(3)))).containsExactly("ljud-1", "ljud-2", "ljud-3");
+		assertThat(findKeys(CombinedObjectParameters.create())).containsExactly("ljud-1", "ljud-2", "ljud-3", "ljud-4", "ljud-5");
+	}
+
 	/** Census records are searchable as the object type {@code Mantal}, composed and dated like the other registers. */
 	@Test
 	void searchIncludesCensusRecordsAsMantal() {
