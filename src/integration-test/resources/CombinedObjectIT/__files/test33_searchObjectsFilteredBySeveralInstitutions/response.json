@@ -1,10 +1,10 @@
 {
 	"_meta": {
-		"count": 3,
+		"count": 5,
 		"limit": 100,
 		"page": 1,
 		"totalPages": 1,
-		"totalRecords": 3
+		"totalRecords": 5
 	},
 	"typeCounts": [
 		{
@@ -13,7 +13,7 @@
 		},
 		{
 			"objectType": "Foto",
-			"count": 1
+			"count": 3
 		},
 		{
 			"objectType": "Ljud",
@@ -39,12 +39,12 @@
 		{
 			"institutionId": 3,
 			"name": "Föreningsarkivet Västernorrland",
-			"count": 1
+			"count": 2
 		},
 		{
 			"institutionId": 2,
 			"name": "Sundsvalls museum",
-			"count": 2
+			"count": 3
 		}
 	],
 	"objects": [
@@ -75,6 +75,20 @@
 			"location": "Sundsvall",
 			"locationText": "Sundsvall",
 			"nodeId": 19000
+		},
+		{
+			"objectKey": "foto-1006",
+			"sourceId": 1006,
+			"objectType": "Foto",
+			"title": "Bild i volym 1",
+			"nodeId": 111
+		},
+		{
+			"objectKey": "foto-1008",
+			"sourceId": 1008,
+			"objectType": "Foto",
+			"title": "Bild med egen institution",
+			"nodeId": 100
 		},
 		{
 			"objectKey": "ljud-1",

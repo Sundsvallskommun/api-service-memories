@@ -2,8 +2,8 @@
 	"_meta": {
 		"page": 1,
 		"limit": 100,
-		"count": 5,
-		"totalRecords": 5,
+		"count": 8,
+		"totalRecords": 8,
 		"totalPages": 1
 	},
 	"photos": [
@@ -102,6 +102,27 @@
 				"code": "SUN",
 				"municipality": "Sundsvalls kommun"
 			}
+		},
+		{
+			"photoId": 1006,
+			"documentTitle": "Bild i volym 1",
+			"comment": "Två nivåer under arkivet, ärver dess institution",
+			"objectType": "Foto",
+			"nodeId": 111
+		},
+		{
+			"photoId": 1007,
+			"documentTitle": "Bild i en borttagen serie",
+			"comment": "Serien är borttagen, så bilden står utan institution",
+			"objectType": "Foto",
+			"nodeId": 500
+		},
+		{
+			"photoId": 1008,
+			"documentTitle": "Bild med egen institution",
+			"comment": "Egen institution som går före arkivets",
+			"objectType": "Foto",
+			"nodeId": 100
 		}
 	]
 }
