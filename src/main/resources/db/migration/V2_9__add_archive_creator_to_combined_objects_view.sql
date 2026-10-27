@@ -1,22 +1,21 @@
 -- Changes VW_NODE_CONTEXT and VW_MEMORY_OBJECTS (see V2_8) in one way each; no table is altered.
 --
---   * VW_NODE_CONTEXT also gives every node the arkivbildare of the archive it sits in, found the same way as the
---     institution: the nearest one in TBL_NODEATTRIBUTES on the node itself or on one of its four nearest parents.
---     FIELD2 holds it when it is a person, FIELD1 when it is a legal entity. In the real data the arkivbildare is set
---     on the archives, and no archive names both a person and a legal entity (checked against sm-test, October 2026).
---     PERSON 0 and JURPERS 1 are the blank sentinel rows and count as no arkivbildare. The walk stops at a soft-deleted
---     node, as it does for the institution.
+--   * VW_NODE_CONTEXT also gives every node the arkivbildare of the archive it sits in, when that arkivbildare is a
+--     legal entity, found the same way as the institution: the nearest TBL_NODEATTRIBUTES.FIELD1 on the node itself or
+--     on one of its four nearest parents. JURPERS 1 is the blank sentinel row and counts as no arkivbildare. An
+--     archive whose arkivbildare is a person (FIELD2) gives none: the filter offers legal entities only. The walk stops
+--     at a soft-deleted node, as it does for the institution.
 --
---   * VW_MEMORY_OBJECTS gains ARCHIVE_CREATOR_PERSON_ID and ARCHIVE_CREATOR_LEGAL_ENTITY_ID, which the
---     archiveCreatorPersonId and archiveCreatorLegalEntityId filters read. They name the arkivbildare of the archive a
---     row sits in, which is not the row's upphovsman (CREATOR_PERSON_ID and CREATOR_LEGAL_ENTITY_ID):
+--   * VW_MEMORY_OBJECTS gains ARCHIVE_CREATOR_LEGAL_ENTITY_ID, which the archiveCreatorLegalEntityId filter reads. It
+--     names the arkivbildare of the archive a row sits in, which is not the row's upphovsman
+--     (CREATOR_LEGAL_ENTITY_ID):
 --       - FOTO, FILM, LJUD, TEXT and PUBL: the arkivbildare of the archive they sit in.
---       - The registers (PERSON, JURPERS, SJOMAN, MANTAL) are not placed in the tree and emit NULL, so the filters
---         exclude them, the way institutionId does.
---     The new columns are the last ones in every branch: UNION ALL pairs the columns by position, not by name.
+--       - The registers (PERSON, JURPERS, SJOMAN, MANTAL) are not placed in the tree and emit NULL, so the filter
+--         excludes them, the way institutionId does.
+--     The new column is the last one in every branch: UNION ALL pairs the columns by position, not by name.
 --
 -- Flyway is off in the real environments, so this has to be applied by hand there, after V2_8 and before the code that
--- reads the new columns ships. It is written to survive a re-run.
+-- reads ARCHIVE_CREATOR_LEGAL_ENTITY_ID ships. It is written to survive a re-run.
 
 CREATE OR REPLACE VIEW VW_NODE_CONTEXT AS
 SELECT n0.ID AS NODE_ID,
@@ -25,11 +24,6 @@ SELECT n0.ID AS NODE_ID,
                 CASE WHEN a2.FIELD3 > 1 THEN a2.FIELD3 END,
                 CASE WHEN a3.FIELD3 > 1 THEN a3.FIELD3 END,
                 CASE WHEN a4.FIELD3 > 1 THEN a4.FIELD3 END) AS INSTITUTION_ID,
-       COALESCE(CASE WHEN a0.FIELD2 > 0 THEN a0.FIELD2 END,
-                CASE WHEN a1.FIELD2 > 0 THEN a1.FIELD2 END,
-                CASE WHEN a2.FIELD2 > 0 THEN a2.FIELD2 END,
-                CASE WHEN a3.FIELD2 > 0 THEN a3.FIELD2 END,
-                CASE WHEN a4.FIELD2 > 0 THEN a4.FIELD2 END) AS ARCHIVE_CREATOR_PERSON_ID,
        COALESCE(CASE WHEN a0.FIELD1 > 1 THEN a0.FIELD1 END,
                 CASE WHEN a1.FIELD1 > 1 THEN a1.FIELD1 END,
                 CASE WHEN a2.FIELD1 > 1 THEN a2.FIELD1 END,
@@ -62,7 +56,6 @@ SELECT CONCAT('foto-', F_ID)  AS OBJECT_KEY,
        U_J_ID                 AS CREATOR_LEGAL_ENTITY_ID,
        NODEID                 AS NODE_ID,
        COALESCE(CASE WHEN M_I_ID > 1 THEN M_I_ID END, c.INSTITUTION_ID) AS INSTITUTION_ID,
-       c.ARCHIVE_CREATOR_PERSON_ID       AS ARCHIVE_CREATOR_PERSON_ID,
        c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID AS ARCHIVE_CREATOR_LEGAL_ENTITY_ID
 FROM FOTO
          LEFT JOIN VW_NODE_CONTEXT c ON c.NODE_ID = FOTO.NODEID
@@ -73,7 +66,7 @@ SELECT CONCAT('film-', FILM_ID), FILM_ID, 'Film', DOKTITEL,
        CONCAT_WS(' ', NULLIF(DOKTITEL, '')),
        CONCAT_WS(' ', DOKTITEL, KOMMENT_FILM),
        NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0), FILM_T_ID, FILM_OPLATS, NULL, FILM_U_E_ID, FILM_U_J_ID,
-       NODEID, c.INSTITUTION_ID, c.ARCHIVE_CREATOR_PERSON_ID, c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID
+       NODEID, c.INSTITUTION_ID, c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID
 FROM FILM
          LEFT JOIN VW_NODE_CONTEXT c ON c.NODE_ID = FILM.NODEID
 WHERE (`OPTIONS` & 4) = 4
@@ -83,7 +76,7 @@ SELECT CONCAT('ljud-', LJUD_ID), LJUD_ID, 'Ljud', DOKTITEL,
        CONCAT_WS(' ', NULLIF(DOKTITEL, '')),
        CONCAT_WS(' ', DOKTITEL, KOMMENT_LJUD),
        NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0), LJUD_T_ID, LJUD_OPLATS, NULL, LJUD_U_E_ID, LJUD_U_J_ID,
-       NODEID, c.INSTITUTION_ID, c.ARCHIVE_CREATOR_PERSON_ID, c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID
+       NODEID, c.INSTITUTION_ID, c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID
 FROM LJUD
          LEFT JOIN VW_NODE_CONTEXT c ON c.NODE_ID = LJUD.NODEID
 WHERE (`OPTIONS` & 4) = 4
@@ -93,7 +86,7 @@ SELECT CONCAT('text-', ID_ID), ID_ID, 'Text', DOKTITEL,
        CONCAT_WS(' ', NULLIF(DOKTITEL, '')),
        CONCAT_WS(' ', DOKTITEL, KOMMENT_DOC),
        NULLIF(CAST(LEFT(NULLIF(DOKDATUM, ''), 4) AS UNSIGNED), 0), D_T_ID, D_OPLATS, NULL, U_E_ID, U_J_ID,
-       NODEID, c.INSTITUTION_ID, c.ARCHIVE_CREATOR_PERSON_ID, c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID
+       NODEID, c.INSTITUTION_ID, c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID
 FROM TEXT
          LEFT JOIN VW_NODE_CONTEXT c ON c.NODE_ID = TEXT.NODEID
 WHERE (`OPTIONS` & 4) = 4
@@ -103,7 +96,7 @@ SELECT CONCAT('publ-', P_ID), P_ID, 'Publikation', DOKTITEL,
        CONCAT_WS(' ', NULLIF(DOKTITEL, '')),
        CONCAT_WS(' ', DOKTITEL, KOMMENT_PUBL),
        NULLIF(CAST(LEFT(NULLIF(DATUM, ''), 4) AS UNSIGNED), 0), P_T_ID, P_OPLATS, NULL, U_E_ID, U_J_ID,
-       NODEID, c.INSTITUTION_ID, c.ARCHIVE_CREATOR_PERSON_ID, c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID
+       NODEID, c.INSTITUTION_ID, c.ARCHIVE_CREATOR_LEGAL_ENTITY_ID
 FROM PUBL
          LEFT JOIN VW_NODE_CONTEXT c ON c.NODE_ID = PUBL.NODEID
 WHERE (`OPTIONS` & 4) = 4
@@ -119,7 +112,7 @@ SELECT CONCAT('person-', P_ID), P_ID, 'Person',
            WHEN LOWER(KON) IN ('kvinna', '2') THEN 'Kvinna'
            ELSE 'Okänt'
            END,
-       NULL, NULL, NULL, NULL, NULL, NULL
+       NULL, NULL, NULL, NULL, NULL
 FROM PERSON
 WHERE (`OPTIONS` & 4) = 4
   AND P_ID <> 0
@@ -128,7 +121,7 @@ UNION ALL
 SELECT CONCAT('jurpers-', J_ID), J_ID, 'Juridisk person', JURPERS,
        CONCAT_WS(' ', NULLIF(JURPERS, ''), NULLIF(ALTNAMN, '')),
        CONCAT_WS(' ', JURPERS, ALTNAMN, HUVUDMAN, KOMMENT_JURPERS),
-       NULLIF(CAST(LEFT(NULLIF(STARTDATUM, ''), 4) AS UNSIGNED), 0), T_ID, OPLATS, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+       NULLIF(CAST(LEFT(NULLIF(STARTDATUM, ''), 4) AS UNSIGNED), 0), T_ID, OPLATS, NULL, NULL, NULL, NULL, NULL, NULL
 FROM JURPERS
 WHERE (`OPTIONS` & 4) = 4
   AND J_ID <> 1
@@ -140,7 +133,7 @@ SELECT CONCAT('sjoman-', POSTNR), POSTNR, 'Sjöman',
        CONCAT_WS(' ', NULLIF(FORNAMN, ''), NULLIF(EFTERNAMN1, '')),
        CONCAT_WS(' ', NULLIF(FORNAMN, ''), NULLIF(EFTERNAMN1, ''), NULLIF(EFTERNAMN2, '')),
        CONCAT_WS(' ', FORNAMN, EFTERNAMN1, EFTERNAMN2, FODFORS, FODPLATS, HEMFORS, HEMPLATS, BEFATTN, FARTYG),
-       NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0), NULL, FODFORS, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+       NULLIF(CAST(LEFT(NULLIF(FODDAT, ''), 4) AS UNSIGNED), 0), NULL, FODFORS, NULL, NULL, NULL, NULL, NULL, NULL
 FROM SJOMAN
 UNION ALL
 SELECT CONCAT('mantal-', KALLA, '-', ID), ID, 'Mantal',
@@ -153,5 +146,5 @@ SELECT CONCAT('mantal-', KALLA, '-', ID), ID, 'Mantal',
            WHEN LOWER(KON) IN ('kvinna', '2') THEN 'Kvinna'
            ELSE 'Okänt'
            END,
-       NULL, NULL, NULL, NULL, NULL, NULL
+       NULL, NULL, NULL, NULL, NULL
 FROM MANTAL;
