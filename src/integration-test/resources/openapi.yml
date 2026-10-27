@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.14"
+  version: "3.15"
 servers:
-- url: http://localhost:60434
+- url: http://localhost:58102
   description: Generated server url
 tags:
 - name: Node
@@ -781,7 +781,8 @@ paths:
         \ one call, with global sorting, pagination and counts per type, gender, originator\
         \ category and place. Pass objectType, gender, categoryId, topographyId or\
         \ institutionId to narrow the search; each counter leaves out only its own\
-        \ selection, so the chips stay selectable. Pass nodeId to list what an archive\
+        \ selection, so the chips stay selectable. Pass archiveCreatorLegalEntityId\
+        \ for what an arkivbildare's archives hold or nodeId to list what an archive\
         \ node holds."
       operationId: searchObjects
       parameters:
@@ -3031,9 +3032,9 @@ components:
       description: "Combined object search parameters (across all object and register\
         \ types). All filters are optional and combined with AND, except that several\
         \ values of one list filter (objectType, categoryId, topographyId, creatorLegalEntityId,\
-        \ nodeId, institutionId) are alternatives. Sort on one of: relevance, objectKey,\
-        \ title, year, objectType or location. Defaults to relevance when a query\
-        \ is given."
+        \ nodeId, institutionId, archiveCreatorLegalEntityId) are alternatives. Sort\
+        \ on one of: relevance, objectKey, title, year, objectType or location. Defaults\
+        \ to relevance when a query is given."
       properties:
         page:
           type: integer
@@ -3206,6 +3207,21 @@ components:
               \ names none."
             examples:
             - 3
+        archiveCreatorLegalEntityId:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: "ID of the arkivbildare — the legal entity whose archive\
+              \ holds the object — as listed by /legal-entities. Not the originator,\
+              \ which creatorLegalEntityId filters on. Repeat the parameter, or comma-separate\
+              \ the values, to select several — they are alternatives. An object counts\
+              \ under the arkivbildare of the archive it sits in. The registers (Person,\
+              \ Juridisk person, Sjöman and Mantal) sit in no archive, so this filter\
+              \ excludes them, as it does the objects whose archive names no arkivbildare\
+              \ or a person as its arkivbildare."
+            examples:
+            - 10
     CategoryCount:
       type: object
       description: How many objects with an originator in one category the search
@@ -3849,6 +3865,11 @@ components:
           description: Activity period year to (inclusive)
           examples:
           - 1920
+        archiveCreator:
+          type: boolean
+          description: Legal entities that are an archive creator
+          examples:
+          - true
     LegalEntity:
       type: object
       description: Legal entity (juridisk person) model

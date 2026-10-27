@@ -21,6 +21,7 @@ import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static java.util.function.Predicate.not;
 import static org.springframework.data.domain.Sort.Direction.ASC;
+import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.ARCHIVE_CREATOR_LEGAL_ENTITY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.CREATOR_LEGAL_ENTITY;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.CREATOR_PERSON;
 import static se.sundsvall.memories.integration.db.model.CombinedObjectEntity_.GENDER;
@@ -160,6 +161,7 @@ public interface CombinedObjectSpecification {
 			.and(matchesCreator(parameters.getCreator()))
 			.and(hasCreatorPerson(parameters.getCreatorPersonId()))
 			.and(hasCreatorLegalEntity(parameters.getCreatorLegalEntityId()))
+			.and(hasArchiveCreatorLegalEntity(parameters.getArchiveCreatorLegalEntityId()))
 			.and(hasNode(parameters.getNodeId()));
 	}
 
@@ -199,6 +201,16 @@ public interface CombinedObjectSpecification {
 	 */
 	static Specification<CombinedObjectEntity> hasInstitution(final List<Integer> institutionIds) {
 		return BUILDER.buildLookupInFilter(INSTITUTION, InstitutionEntity_.ID, institutionIds);
+	}
+
+	/**
+	 * Restricts to the objects in an archive whose arkivbildare is one of the given legal entities, which are
+	 * alternatives. Reads the archive's legal entity, not the object's originator ({@link #hasCreatorLegalEntity}). A
+	 * deleted legal entity selects nothing, the same rule the originator filters follow.
+	 */
+	static Specification<CombinedObjectEntity> hasArchiveCreatorLegalEntity(final List<Integer> archiveCreatorLegalEntityIds) {
+		return BUILDER.buildAssociationInFilter(ARCHIVE_CREATOR_LEGAL_ENTITY, LegalEntityEntity_.LEGAL_ENTITY_ID, LegalEntityEntity_.DELETED_DATE,
+			archiveCreatorLegalEntityIds);
 	}
 
 	/**

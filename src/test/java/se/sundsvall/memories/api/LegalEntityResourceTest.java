@@ -13,6 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.dept44.models.api.paging.PagingAndSortingMetaData;
 import se.sundsvall.memories.Application;
 import se.sundsvall.memories.api.model.LegalEntity;
+import se.sundsvall.memories.api.model.LegalEntityParameters;
 import se.sundsvall.memories.api.model.PagedLegalEntityResponse;
 import se.sundsvall.memories.service.LegalEntityService;
 
@@ -119,5 +120,29 @@ class LegalEntityResourceTest {
 			.expectStatus().isOk();
 
 		verify(serviceMock).streamHistory(eq(id), any(HttpServletResponse.class));
+	}
+
+	@Test
+	void searchLegalEntitiesThatAreArchiveCreators() {
+		final var entity = LegalEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén");
+		final var pagedResponse = PagedLegalEntityResponse.create()
+			.withLegalEntities(List.of(entity))
+			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
+
+		when(serviceMock.search(any())).thenReturn(pagedResponse);
+
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("archiveCreator", "true")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk()
+			.expectBody(PagedLegalEntityResponse.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getLegalEntities()).hasSize(1);
+		verify(serviceMock).search(LegalEntityParameters.create().withArchiveCreator(true));
 	}
 }

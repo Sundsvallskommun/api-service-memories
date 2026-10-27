@@ -53,7 +53,7 @@ public class CombinedObjectFacetService {
 		return Arrays.asList(parameters.getQuery(), parameters.getYearFrom(), parameters.getYearTo(), parameters.getLocation(),
 			parameters.getTopographyId(), parameters.getObjectType(), parameters.getGender(), parameters.getCreator(),
 			parameters.getCreatorPersonId(), parameters.getCreatorLegalEntityId(), parameters.getCategoryId(), parameters.getNodeId(),
-			parameters.getInstitutionId());
+			parameters.getInstitutionId(), parameters.getArchiveCreatorLegalEntityId());
 	}
 
 	public record Facets(List<ObjectTypeCount> typeCounts, List<GenderCount> genderCounts, List<CategoryCount> categoryCounts,

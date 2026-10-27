@@ -16,6 +16,7 @@ import static se.sundsvall.memories.integration.db.specification.LegalEntitySpec
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasCategory;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasId;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasName;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.isArchiveCreator;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.matchesLocation;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.notDeleted;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.notPlaceholder;
@@ -37,7 +38,8 @@ public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, 
 			.and(matchesLocation(parameters.getLocation()))
 			.and(hasCategory(parameters.getCategoryId()))
 			.and(activeFrom(parameters.getYearFrom()))
-			.and(activeUntil(parameters.getYearTo())),
+			.and(activeUntil(parameters.getYearTo()))
+			.and(isArchiveCreator(parameters.getArchiveCreator())),
 			pageable);
 	}
 

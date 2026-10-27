@@ -10,7 +10,7 @@ import se.sundsvall.dept44.models.api.paging.AbstractParameterPagingAndSortingBa
 @Schema(description = """
 	Combined object search parameters (across all object and register types). All filters are optional and combined \
 	with AND, except that several values of one list filter (objectType, categoryId, topographyId, creatorLegalEntityId, \
-	nodeId, institutionId) are alternatives. Sort on one of: relevance, objectKey, title, year, objectType or location. \
+	nodeId, institutionId, archiveCreatorLegalEntityId) are alternatives. Sort on one of: relevance, objectKey, title, year, objectType or location. \
 	Defaults to relevance when a query is given.""")
 public class CombinedObjectParameters extends AbstractParameterPagingAndSortingBase {
 
@@ -89,6 +89,14 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		(Person, Juridisk person, Sjöman and Mantal) hold no institution, so this filter excludes them, as it does \
 		the objects whose archive names none.""", examples = "3"))
 	private List<Integer> institutionId;
+
+	@ArraySchema(schema = @Schema(description = """
+		ID of the arkivbildare — the legal entity whose archive holds the object — as listed by /legal-entities. Not the \
+		originator, which creatorLegalEntityId filters on. Repeat the parameter, or comma-separate the values, to select \
+		several — they are alternatives. An object counts under the arkivbildare of the archive it sits in. The registers \
+		(Person, Juridisk person, Sjöman and Mantal) sit in no archive, so this filter excludes them, as it does the \
+		objects whose archive names no arkivbildare or a person as its arkivbildare.""", examples = "10"))
+	private List<Integer> archiveCreatorLegalEntityId;
 
 	public static CombinedObjectParameters create() {
 		return new CombinedObjectParameters();
@@ -235,6 +243,19 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 		return this;
 	}
 
+	public List<Integer> getArchiveCreatorLegalEntityId() {
+		return archiveCreatorLegalEntityId;
+	}
+
+	public void setArchiveCreatorLegalEntityId(final List<Integer> archiveCreatorLegalEntityId) {
+		this.archiveCreatorLegalEntityId = archiveCreatorLegalEntityId;
+	}
+
+	public CombinedObjectParameters withArchiveCreatorLegalEntityId(final List<Integer> archiveCreatorLegalEntityId) {
+		this.archiveCreatorLegalEntityId = archiveCreatorLegalEntityId;
+		return this;
+	}
+
 	/**
 	 * {@code relevance} and {@code location} are translated by the specification; every other accepted value is an entity
 	 * attribute.
@@ -286,13 +307,14 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			&& Objects.equals(topographyId, that.topographyId) && Objects.equals(objectType, that.objectType) && Objects.equals(gender, that.gender)
 			&& Objects.equals(creator, that.creator) && Objects.equals(creatorPersonId, that.creatorPersonId)
 			&& Objects.equals(creatorLegalEntityId, that.creatorLegalEntityId) && Objects.equals(categoryId, that.categoryId)
-			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(institutionId, that.institutionId);
+			&& Objects.equals(nodeId, that.nodeId) && Objects.equals(institutionId, that.institutionId)
+			&& Objects.equals(archiveCreatorLegalEntityId, that.archiveCreatorLegalEntityId);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), query, yearFrom, yearTo, location, topographyId, objectType, gender, creator, creatorPersonId, creatorLegalEntityId, categoryId,
-			nodeId, institutionId);
+			nodeId, institutionId, archiveCreatorLegalEntityId);
 	}
 
 	@Override
@@ -311,6 +333,7 @@ public class CombinedObjectParameters extends AbstractParameterPagingAndSortingB
 			", categoryId=" + categoryId +
 			", nodeId=" + nodeId +
 			", institutionId=" + institutionId +
+			", archiveCreatorLegalEntityId=" + archiveCreatorLegalEntityId +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

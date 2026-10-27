@@ -27,6 +27,9 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 	@Schema(description = "Activity period year to (inclusive)", examples = "1920")
 	private Integer yearTo;
 
+	@Schema(description = "Legal entities that are an archive creator", examples = "true")
+	private Boolean archiveCreator;
+
 	public static LegalEntityParameters create() {
 		return new LegalEntityParameters();
 	}
@@ -96,6 +99,19 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 		return this;
 	}
 
+	public Boolean getArchiveCreator() {
+		return archiveCreator;
+	}
+
+	public void setArchiveCreator(final Boolean archiveCreator) {
+		this.archiveCreator = archiveCreator;
+	}
+
+	public LegalEntityParameters withArchiveCreator(final Boolean archiveCreator) {
+		this.archiveCreator = archiveCreator;
+		return this;
+	}
+
 	public LegalEntityParameters withPage(final int page) {
 		super.setPage(page);
 		return this;
@@ -122,12 +138,12 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 			return false;
 		final LegalEntityParameters that = (LegalEntityParameters) o;
 		return Objects.equals(name, that.name) && Objects.equals(location, that.location) && Objects.equals(categoryId, that.categoryId)
-			&& Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo);
+			&& Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(archiveCreator, that.archiveCreator);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), name, location, categoryId, yearFrom, yearTo);
+		return Objects.hash(super.hashCode(), name, location, categoryId, yearFrom, yearTo, archiveCreator);
 	}
 
 	@Override
@@ -138,6 +154,7 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 			", categoryId=" + categoryId +
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
+			", archiveCreator=" + archiveCreator +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

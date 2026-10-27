@@ -411,4 +411,34 @@ class CombinedObjectIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	@Test
+	void test38_searchObjectsFilteredByArchiveCreator() {
+		setupCall()
+			.withServicePath(PATH + "?archiveCreatorLegalEntityId=10")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test39_searchObjectsArchiveCreatorIsNotOrigin() {
+		setupCall()
+			.withServicePath(PATH + "?archiveCreatorLegalEntityId=20")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test40_searchObjectsByArchiveCreatorAndOrigin() {
+		setupCall()
+			.withServicePath(PATH + "?archiveCreatorLegalEntityId=10&creatorLegalEntityId=10")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

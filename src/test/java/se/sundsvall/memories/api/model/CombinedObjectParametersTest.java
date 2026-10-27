@@ -36,6 +36,7 @@ class CombinedObjectParametersTest {
 			.withGender("man")
 			.withCategoryId(List.of(2, 5))
 			.withInstitutionId(List.of(2, 43))
+			.withArchiveCreatorLegalEntityId(List.of(42, 67))
 			.withNodeId(List.of(19000, 20001))
 			.withPage(2)
 			.withLimit(50);
@@ -49,6 +50,7 @@ class CombinedObjectParametersTest {
 		assertThat(result.getGender()).isEqualTo("man");
 		assertThat(result.getCategoryId()).containsExactly(2, 5);
 		assertThat(result.getInstitutionId()).containsExactly(2, 43);
+		assertThat(result.getArchiveCreatorLegalEntityId()).containsExactly(42, 67);
 		assertThat(result.getNodeId()).containsExactly(19000, 20001);
 		assertThat(result.getPage()).isEqualTo(2);
 		assertThat(result.getLimit()).isEqualTo(50);
@@ -67,6 +69,7 @@ class CombinedObjectParametersTest {
 		assertThat(result.getGender()).isNull();
 		assertThat(result.getCategoryId()).isNull();
 		assertThat(result.getInstitutionId()).isNull();
+		assertThat(result.getArchiveCreatorLegalEntityId()).isNull();
 		assertThat(result.getNodeId()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
