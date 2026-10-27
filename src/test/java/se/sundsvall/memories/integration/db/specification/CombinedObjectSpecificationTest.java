@@ -1048,6 +1048,33 @@ class CombinedObjectSpecificationTest {
 	}
 
 	/**
+	 * The walk stops at the first node that names any arkivbildare: a series whose arkivbildare is a person does not take
+	 * the legal entity of the archive above it. JURPERS 1 is the blank sentinel and names no arkivbildare, even though the
+	 * row exists.
+	 */
+	@Test
+	void archiveCreatorFilterStopsAtAPersonAndSkipsTheSentinel() {
+		final var placeholder = LegalEntityEntity.create().withLegalEntityId(1).withName("Ingen");
+		final var committee = LegalEntityEntity.create().withLegalEntityId(20).withName("Nödhjälpskommittén");
+		entityManager.persist(placeholder);
+		entityManager.persist(committee);
+		entityManager.flush();
+		persistNode(100, 0, null, false);
+		persistNode(110, 100, null, false);
+		persistNode(400, 0, null, false);
+		persistNodeAttribute(100, "FIELD1", 20);
+		persistNodeAttribute(110, "FIELD2", 7);
+		persistNodeAttribute(400, "FIELD1", 1);
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(1).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I arkivet").withNodeId(100));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(2).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I en persons serie").withNodeId(110));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(3).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I ett arkiv utan arkivbildare").withNodeId(400));
+		entityManager.clear();
+
+		assertThat(findKeys(CombinedObjectParameters.create().withArchiveCreatorLegalEntityId(List.of(20)))).containsExactly("foto-1");
+		assertThat(findKeys(CombinedObjectParameters.create().withArchiveCreatorLegalEntityId(List.of(1)))).isEmpty();
+	}
+
+	/**
 	 * Two categories with one originator each, a photo apiece, plus a photo whose originator is the sentinel legal
 	 * entity (in the sentinel category, as every legal entity is by default) and one without any originator at all.
 	 */
