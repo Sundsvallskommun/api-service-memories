@@ -1,10 +1,12 @@
 package se.sundsvall.memories.integration.db;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import se.sundsvall.memories.api.model.CombinedObjectParameters;
 import se.sundsvall.memories.integration.db.model.CombinedObjectEntity;
 
@@ -28,4 +30,11 @@ public interface CombinedObjectRepository extends JpaRepository<CombinedObjectEn
 			.and(orderedBy(parameters.getQuery(), parameters.sort())),
 			pageable);
 	}
+
+	/**
+	 * The legal entities that are the arkivbildare of at least one row, each id once. A full pass over the combined view,
+	 * so {@link se.sundsvall.memories.service.ArchiveCreatorService} caches it.
+	 */
+	@Query("SELECT DISTINCT o.archiveCreatorLegalEntity.legalEntityId FROM CombinedObjectEntity o WHERE o.archiveCreatorLegalEntity IS NOT NULL")
+	List<Integer> findArchiveCreatorLegalEntityIds();
 }

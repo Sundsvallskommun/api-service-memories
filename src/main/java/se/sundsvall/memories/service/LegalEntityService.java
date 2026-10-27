@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.problem.Problem;
@@ -8,6 +9,7 @@ import se.sundsvall.memories.api.model.LegalEntity;
 import se.sundsvall.memories.api.model.LegalEntityParameters;
 import se.sundsvall.memories.api.model.PagedLegalEntityResponse;
 import se.sundsvall.memories.integration.db.LegalEntityRepository;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.LegalEntityMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -26,12 +28,14 @@ public class LegalEntityService {
 	private static final String HISTORY_SUBFOLDER = "historia";
 
 	private final LegalEntityRepository legalEntityRepository;
+	private final ArchiveCreatorService archiveCreatorService;
 	private final SambaIntegrationProperties sambaProperties;
 	private final FileStreamer fileStreamer;
 
-	public LegalEntityService(final LegalEntityRepository legalEntityRepository, final SambaIntegrationProperties sambaProperties,
-		final FileStreamer fileStreamer) {
+	public LegalEntityService(final LegalEntityRepository legalEntityRepository, final ArchiveCreatorService archiveCreatorService,
+		final SambaIntegrationProperties sambaProperties, final FileStreamer fileStreamer) {
 		this.legalEntityRepository = legalEntityRepository;
+		this.archiveCreatorService = archiveCreatorService;
 		this.sambaProperties = sambaProperties;
 		this.fileStreamer = fileStreamer;
 	}
@@ -40,11 +44,10 @@ public class LegalEntityService {
 	public PagedLegalEntityResponse search(final LegalEntityParameters parameters) {
 		final var pageable = Pageables.of(parameters, "legalEntityId");
 
-		final var page = legalEntityRepository.findAllByParameters(parameters, pageable);
-
-		return PagedLegalEntityResponse.create()
-			.withLegalEntities(LegalEntityMapper.toLegalEntityList(page.getContent()))
-			.withMetaData(Pageables.metaDataOf(page, "legalEntityId"));
+		if (Boolean.TRUE.equals(parameters.getArchiveCreatorWithObjects())) {
+			return toResponse(legalEntityRepository.findAllByParameters(parameters, archiveCreatorService.getLegalEntityIdsWithObjects(), pageable));
+		}
+		return toResponse(legalEntityRepository.findAllByParameters(parameters, pageable));
 	}
 
 	@Transactional(readOnly = true)
@@ -73,5 +76,11 @@ public class LegalEntityService {
 
 		fileStreamer.streamInline(path, filename, FileStreamer.downloadFilename(LEGAL_ENTITY, id, filename), true, response,
 			"IOException occurred when streaming history for legal entity with id '%s'".formatted(id));
+	}
+
+	private static PagedLegalEntityResponse toResponse(final Page<LegalEntityEntity> page) {
+		return PagedLegalEntityResponse.create()
+			.withLegalEntities(LegalEntityMapper.toLegalEntityList(page.getContent()))
+			.withMetaData(Pageables.metaDataOf(page, "legalEntityId"));
 	}
 }

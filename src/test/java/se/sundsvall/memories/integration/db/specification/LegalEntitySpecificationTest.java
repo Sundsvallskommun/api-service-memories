@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -287,6 +288,20 @@ class LegalEntitySpecificationTest {
 		assertThat(findIds(LegalEntitySpecification.isArchiveCreator(null))).containsExactly(2, 3, 4);
 		assertThat(legalEntityRepository.findAllByParameters(LegalEntityParameters.create().withArchiveCreator(true), Pageable.unpaged()).getContent())
 			.extracting(LegalEntityEntity::getLegalEntityId).containsExactly(2);
+	}
+
+	/** No ids means no limit, and an empty set keeps none: then no legal entity has objects. */
+	@Test
+	void hasIdInKeepsOnlyTheGivenIds() {
+		persist(2, PUBLISHED, "Arkivbildare med objekt");
+		persist(3, PUBLISHED, "Arkivbildare utan objekt");
+		persist(4, PUBLISHED, "Bara upphovsman");
+
+		assertThat(findIds(LegalEntitySpecification.hasIdIn(Set.of(2, 4)))).containsExactly(2, 4);
+		assertThat(findIds(LegalEntitySpecification.hasIdIn(Set.of()))).isEmpty();
+		assertThat(findIds(LegalEntitySpecification.hasIdIn(null))).containsExactly(2, 3, 4);
+		assertThat(legalEntityRepository.findAllByParameters(LegalEntityParameters.create(), Set.of(3), Pageable.unpaged()).getContent())
+			.extracting(LegalEntityEntity::getLegalEntityId).containsExactly(3);
 	}
 
 	private void persistArchive(final int nodeId, final int legalEntityId, final boolean deleted) {

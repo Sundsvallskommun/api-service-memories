@@ -30,6 +30,9 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 	@Schema(description = "Legal entities that are an archive creator", examples = "true")
 	private Boolean archiveCreator;
 
+	@Schema(description = "Only archive creators with at least one object in /objects, counting the archives they created, not the objects they are the creator of", examples = "true")
+	private Boolean archiveCreatorWithObjects;
+
 	public static LegalEntityParameters create() {
 		return new LegalEntityParameters();
 	}
@@ -112,6 +115,19 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 		return this;
 	}
 
+	public Boolean getArchiveCreatorWithObjects() {
+		return archiveCreatorWithObjects;
+	}
+
+	public void setArchiveCreatorWithObjects(final Boolean archiveCreatorWithObjects) {
+		this.archiveCreatorWithObjects = archiveCreatorWithObjects;
+	}
+
+	public LegalEntityParameters withArchiveCreatorWithObjects(final Boolean archiveCreatorWithObjects) {
+		this.archiveCreatorWithObjects = archiveCreatorWithObjects;
+		return this;
+	}
+
 	public LegalEntityParameters withPage(final int page) {
 		super.setPage(page);
 		return this;
@@ -138,12 +154,13 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 			return false;
 		final LegalEntityParameters that = (LegalEntityParameters) o;
 		return Objects.equals(name, that.name) && Objects.equals(location, that.location) && Objects.equals(categoryId, that.categoryId)
-			&& Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(archiveCreator, that.archiveCreator);
+			&& Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(archiveCreator, that.archiveCreator)
+			&& Objects.equals(archiveCreatorWithObjects, that.archiveCreatorWithObjects);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), name, location, categoryId, yearFrom, yearTo, archiveCreator);
+		return Objects.hash(super.hashCode(), name, location, categoryId, yearFrom, yearTo, archiveCreator, archiveCreatorWithObjects);
 	}
 
 	@Override
@@ -155,6 +172,7 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
 			", archiveCreator=" + archiveCreator +
+			", archiveCreatorWithObjects=" + archiveCreatorWithObjects +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

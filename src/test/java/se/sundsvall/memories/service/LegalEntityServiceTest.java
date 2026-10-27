@@ -3,6 +3,7 @@ package se.sundsvall.memories.service;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,13 +39,16 @@ class LegalEntityServiceTest {
 	private LegalEntityRepository repositoryMock;
 
 	@Mock
+	private ArchiveCreatorService archiveCreatorServiceMock;
+
+	@Mock
 	private FileStreamer fileStreamerMock;
 
 	private LegalEntityService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new LegalEntityService(repositoryMock, SAMBA_PROPERTIES, fileStreamerMock);
+		service = new LegalEntityService(repositoryMock, archiveCreatorServiceMock, SAMBA_PROPERTIES, fileStreamerMock);
 	}
 
 	@Test
@@ -90,6 +94,7 @@ class LegalEntityServiceTest {
 		final var parametersCaptor = ArgumentCaptor.forClass(LegalEntityParameters.class);
 		verify(repositoryMock).findAllByParameters(parametersCaptor.capture(), eq(pageable));
 		assertThat(parametersCaptor.getValue()).isSameAs(parameters);
+		verifyNoInteractions(archiveCreatorServiceMock);
 	}
 
 	@Test
@@ -168,5 +173,23 @@ class LegalEntityServiceTest {
 			.hasMessageContaining("Legal entity with id '82' has no history");
 
 		verifyNoInteractions(fileStreamerMock);
+	}
+
+	@Test
+	void searchWithArchiveCreatorWithObjectsKeepsTheArkivbildareWithObjects() {
+		final var pageable = PageRequest.of(0, 100, Sort.by("legalEntityId"));
+		final var parameters = LegalEntityParameters.create().withArchiveCreator(true).withArchiveCreatorWithObjects(true);
+		final var ids = Set.of(10, 20);
+		final var entity = LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén");
+
+		when(archiveCreatorServiceMock.getLegalEntityIdsWithObjects()).thenReturn(ids);
+		when(repositoryMock.findAllByParameters(parameters, ids, pageable)).thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
+
+		final var result = service.search(parameters);
+
+		assertThat(result.getLegalEntities()).hasSize(1);
+		assertThat(result.getLegalEntities().getFirst().getLegalEntityId()).isEqualTo(10);
+		verify(archiveCreatorServiceMock).getLegalEntityIdsWithObjects();
+		verify(repositoryMock).findAllByParameters(parameters, ids, pageable);
 	}
 }

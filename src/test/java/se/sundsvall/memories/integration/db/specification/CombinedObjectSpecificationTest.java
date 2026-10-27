@@ -1074,6 +1074,24 @@ class CombinedObjectSpecificationTest {
 		assertThat(findKeys(CombinedObjectParameters.create().withArchiveCreatorLegalEntityId(List.of(1)))).isEmpty();
 	}
 
+	/** Each arkivbildare once, however many objects its archive holds, and none for an archive without objects. */
+	@Test
+	void findArchiveCreatorLegalEntityIdsListsEachArkivbildareWithObjectsOnce() {
+		entityManager.persist(LegalEntityEntity.create().withLegalEntityId(20).withName("Nödhjälpskommittén"));
+		entityManager.persist(LegalEntityEntity.create().withLegalEntityId(30).withName("Berg Aktiebolag"));
+		entityManager.flush();
+		persistNode(100, 0, null, false);
+		persistNode(110, 100, null, false);
+		persistNode(600, 0, null, false);
+		persistNodeAttribute(100, "FIELD1", 20);
+		persistNodeAttribute(600, "FIELD1", 30);
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(1).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I arkivet").withNodeId(100));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(2).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I en serie").withNodeId(110));
+		entityManager.clear();
+
+		assertThat(combinedObjectRepository.findArchiveCreatorLegalEntityIds()).containsExactly(20);
+	}
+
 	/**
 	 * Two categories with one originator each, a photo apiece, plus a photo whose originator is the sentinel legal
 	 * entity (in the sentinel category, as every legal entity is by default) and one without any originator at all.

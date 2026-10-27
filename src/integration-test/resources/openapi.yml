@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "3.15"
+  version: "3.16"
 servers:
-- url: http://localhost:58102
+- url: http://localhost:63424
   description: Generated server url
 tags:
 - name: Node
@@ -3868,6 +3868,13 @@ components:
         archiveCreator:
           type: boolean
           description: Legal entities that are an archive creator
+          examples:
+          - true
+        archiveCreatorWithObjects:
+          type: boolean
+          description: "Only archive creators with at least one object in /objects,\
+            \ counting the archives they created, not the objects they are the creator\
+            \ of"
           examples:
           - true
     LegalEntity:
