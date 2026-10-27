@@ -32,7 +32,7 @@ class LegalEntityParametersTest {
 			.withYearFrom(1880)
 			.withYearTo(1920)
 			.withArchiveCreator(true)
-			.withHasObjects(true)
+			.withArchiveCreatorWithObjects(true)
 			.withPage(2)
 			.withLimit(50);
 
@@ -42,7 +42,7 @@ class LegalEntityParametersTest {
 		assertThat(result.getYearFrom()).isEqualTo(1880);
 		assertThat(result.getYearTo()).isEqualTo(1920);
 		assertThat(result.getArchiveCreator()).isTrue();
-		assertThat(result.getHasObjects()).isTrue();
+		assertThat(result.getArchiveCreatorWithObjects()).isTrue();
 		assertThat(result.getPage()).isEqualTo(2);
 		assertThat(result.getLimit()).isEqualTo(50);
 	}
@@ -57,7 +57,7 @@ class LegalEntityParametersTest {
 		assertThat(result.getYearFrom()).isNull();
 		assertThat(result.getYearTo()).isNull();
 		assertThat(result.getArchiveCreator()).isNull();
-		assertThat(result.getHasObjects()).isNull();
+		assertThat(result.getArchiveCreatorWithObjects()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
 	}

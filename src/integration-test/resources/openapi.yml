@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.16"
 servers:
-- url: http://localhost:53884
+- url: http://localhost:63424
   description: Generated server url
 tags:
 - name: Node
@@ -1667,9 +1667,9 @@ components:
         type:
           type: string
           format: uri
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
         status:
           type: integer
@@ -3870,9 +3870,11 @@ components:
           description: Legal entities that are an archive creator
           examples:
           - true
-        hasObjects:
+        archiveCreatorWithObjects:
           type: boolean
-          description: Only archive creators with at least one object in /objects
+          description: "Only archive creators with at least one object in /objects,\
+            \ counting the archives they created, not the objects they are the creator\
+            \ of"
           examples:
           - true
     LegalEntity:

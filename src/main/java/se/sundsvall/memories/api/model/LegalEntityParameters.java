@@ -30,8 +30,8 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 	@Schema(description = "Legal entities that are an archive creator", examples = "true")
 	private Boolean archiveCreator;
 
-	@Schema(description = "Only archive creators with at least one object in /objects", examples = "true")
-	private Boolean hasObjects;
+	@Schema(description = "Only archive creators with at least one object in /objects, counting the archives they created, not the objects they are the creator of", examples = "true")
+	private Boolean archiveCreatorWithObjects;
 
 	public static LegalEntityParameters create() {
 		return new LegalEntityParameters();
@@ -115,16 +115,16 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 		return this;
 	}
 
-	public Boolean getHasObjects() {
-		return hasObjects;
+	public Boolean getArchiveCreatorWithObjects() {
+		return archiveCreatorWithObjects;
 	}
 
-	public void setHasObjects(final Boolean hasObjects) {
-		this.hasObjects = hasObjects;
+	public void setArchiveCreatorWithObjects(final Boolean archiveCreatorWithObjects) {
+		this.archiveCreatorWithObjects = archiveCreatorWithObjects;
 	}
 
-	public LegalEntityParameters withHasObjects(final Boolean hasObjects) {
-		this.hasObjects = hasObjects;
+	public LegalEntityParameters withArchiveCreatorWithObjects(final Boolean archiveCreatorWithObjects) {
+		this.archiveCreatorWithObjects = archiveCreatorWithObjects;
 		return this;
 	}
 
@@ -155,12 +155,12 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 		final LegalEntityParameters that = (LegalEntityParameters) o;
 		return Objects.equals(name, that.name) && Objects.equals(location, that.location) && Objects.equals(categoryId, that.categoryId)
 			&& Objects.equals(yearFrom, that.yearFrom) && Objects.equals(yearTo, that.yearTo) && Objects.equals(archiveCreator, that.archiveCreator)
-			&& Objects.equals(hasObjects, that.hasObjects);
+			&& Objects.equals(archiveCreatorWithObjects, that.archiveCreatorWithObjects);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), name, location, categoryId, yearFrom, yearTo, archiveCreator, hasObjects);
+		return Objects.hash(super.hashCode(), name, location, categoryId, yearFrom, yearTo, archiveCreator, archiveCreatorWithObjects);
 	}
 
 	@Override
@@ -172,7 +172,7 @@ public class LegalEntityParameters extends AbstractParameterPagingAndSortingBase
 			", yearFrom=" + yearFrom +
 			", yearTo=" + yearTo +
 			", archiveCreator=" + archiveCreator +
-			", hasObjects=" + hasObjects +
+			", archiveCreatorWithObjects=" + archiveCreatorWithObjects +
 			", page=" + page +
 			", limit=" + limit +
 			", sortBy=" + sortBy +

@@ -158,7 +158,7 @@ class LegalEntityResourceTest {
 		final var response = webTestClient.get()
 			.uri(builder -> builder.path(SEARCH_PATH)
 				.queryParam("archiveCreator", "true")
-				.queryParam("hasObjects", "true")
+				.queryParam("archiveCreatorWithObjects", "true")
 				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
 			.exchange()
 			.expectStatus().isOk()
@@ -168,6 +168,6 @@ class LegalEntityResourceTest {
 
 		assertThat(response).isNotNull();
 		assertThat(response.getLegalEntities()).hasSize(1);
-		verify(serviceMock).search(LegalEntityParameters.create().withArchiveCreator(true).withHasObjects(true));
+		verify(serviceMock).search(LegalEntityParameters.create().withArchiveCreator(true).withArchiveCreatorWithObjects(true));
 	}
 }

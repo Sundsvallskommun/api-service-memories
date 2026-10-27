@@ -127,7 +127,7 @@ class LegalEntityIT extends AbstractAppTest {
 	@Test
 	void test10_searchLegalEntitiesThatAreArchiveCreatorsWithObjects() {
 		setupCall()
-			.withServicePath(PATH + "?archiveCreator=true&hasObjects=true")
+			.withServicePath(PATH + "?archiveCreator=true&archiveCreatorWithObjects=true")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)

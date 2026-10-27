@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -67,7 +66,7 @@ class LegalEntityServiceTest {
 			.withTopography(TopographyEntity.create().withId(42).withName("Sundsvalls kommun"))
 			.withCategory(CategoryEntity.create().withCategoryId(5).withName("Kommitté"));
 
-		when(repositoryMock.findAllByParameters(any(LegalEntityParameters.class), isNull(), eq(pageable)))
+		when(repositoryMock.findAllByParameters(any(LegalEntityParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(entity), pageable, 1));
 
 		final var result = service.search(parameters);
@@ -76,7 +75,7 @@ class LegalEntityServiceTest {
 		assertThat(result.getLegalEntities().getFirst().getLocation()).isEqualTo("Sundsvalls kommun");
 		assertThat(result.getLegalEntities().getFirst().getCategory()).isEqualTo("Kommitté");
 		assertThat(result.getMetaData().getTotalRecords()).isEqualTo(1);
-		verify(repositoryMock).findAllByParameters(any(LegalEntityParameters.class), isNull(), eq(pageable));
+		verify(repositoryMock).findAllByParameters(any(LegalEntityParameters.class), eq(pageable));
 	}
 
 	@Test
@@ -84,7 +83,7 @@ class LegalEntityServiceTest {
 		final var pageable = PageRequest.of(0, 100, Sort.by("legalEntityId"));
 		final var parameters = LegalEntityParameters.create().withName("  ").withLocation("");
 
-		when(repositoryMock.findAllByParameters(any(LegalEntityParameters.class), isNull(), eq(pageable)))
+		when(repositoryMock.findAllByParameters(any(LegalEntityParameters.class), eq(pageable)))
 			.thenReturn(new PageImpl<>(List.of(), pageable, 0));
 
 		final var result = service.search(parameters);
@@ -93,7 +92,7 @@ class LegalEntityServiceTest {
 		// Trimming and the "blank means no filter" rule live in the specifications, verified against a real database in
 		// LegalEntitySpecificationTest. The service only has to hand the parameters over untouched.
 		final var parametersCaptor = ArgumentCaptor.forClass(LegalEntityParameters.class);
-		verify(repositoryMock).findAllByParameters(parametersCaptor.capture(), isNull(), eq(pageable));
+		verify(repositoryMock).findAllByParameters(parametersCaptor.capture(), eq(pageable));
 		assertThat(parametersCaptor.getValue()).isSameAs(parameters);
 		verifyNoInteractions(archiveCreatorServiceMock);
 	}
@@ -177,9 +176,9 @@ class LegalEntityServiceTest {
 	}
 
 	@Test
-	void searchWithHasObjectsKeepsTheArkivbildareWithObjects() {
+	void searchWithArchiveCreatorWithObjectsKeepsTheArkivbildareWithObjects() {
 		final var pageable = PageRequest.of(0, 100, Sort.by("legalEntityId"));
-		final var parameters = LegalEntityParameters.create().withArchiveCreator(true).withHasObjects(true);
+		final var parameters = LegalEntityParameters.create().withArchiveCreator(true).withArchiveCreatorWithObjects(true);
 		final var ids = Set.of(10, 20);
 		final var entity = LegalEntityEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén");
 

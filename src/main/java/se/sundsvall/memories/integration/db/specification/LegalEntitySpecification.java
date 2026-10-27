@@ -90,7 +90,8 @@ public interface LegalEntitySpecification {
 	/**
 	 * With {@code true}, keeps the legal entities that are the arkivbildare ({@code TBL_NODEATTRIBUTES.FIELD1}) of at
 	 * least one archive that is not deleted, whether or not the archive holds any objects: most archives are described
-	 * down to series and volumes only. {@code false} or no value keeps every legal entity. {@code hasObjects} narrows
+	 * down to series and volumes only. {@code false} or no value keeps every legal entity.
+	 * {@code archiveCreatorWithObjects} narrows
 	 * this to the ones the arkivbildare filter on /objects finds anything for, see {@link #hasIdIn(Collection)}.
 	 */
 	static Specification<LegalEntityEntity> isArchiveCreator(final Boolean archiveCreator) {

@@ -1,7 +1,7 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Set;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.problem.Problem;
@@ -9,6 +9,7 @@ import se.sundsvall.memories.api.model.LegalEntity;
 import se.sundsvall.memories.api.model.LegalEntityParameters;
 import se.sundsvall.memories.api.model.PagedLegalEntityResponse;
 import se.sundsvall.memories.integration.db.LegalEntityRepository;
+import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
 import se.sundsvall.memories.integration.samba.SambaIntegrationProperties;
 import se.sundsvall.memories.service.mapper.LegalEntityMapper;
 import se.sundsvall.memories.service.util.FileStreamer;
@@ -43,11 +44,10 @@ public class LegalEntityService {
 	public PagedLegalEntityResponse search(final LegalEntityParameters parameters) {
 		final var pageable = Pageables.of(parameters, "legalEntityId");
 
-		final var page = legalEntityRepository.findAllByParameters(parameters, idsWithObjects(parameters), pageable);
-
-		return PagedLegalEntityResponse.create()
-			.withLegalEntities(LegalEntityMapper.toLegalEntityList(page.getContent()))
-			.withMetaData(Pageables.metaDataOf(page, "legalEntityId"));
+		if (Boolean.TRUE.equals(parameters.getArchiveCreatorWithObjects())) {
+			return toResponse(legalEntityRepository.findAllByParameters(parameters, archiveCreatorService.getLegalEntityIdsWithObjects(), pageable));
+		}
+		return toResponse(legalEntityRepository.findAllByParameters(parameters, pageable));
 	}
 
 	@Transactional(readOnly = true)
@@ -78,14 +78,9 @@ public class LegalEntityService {
 			"IOException occurred when streaming history for legal entity with id '%s'".formatted(id));
 	}
 
-	/**
-	 * The arkivbildare that have objects when hasObjects asks for them, and otherwise null, which limits nothing. Finding
-	 * them takes a pass over the combined view, so they come from a cache and are only looked up when asked for.
-	 */
-	private Set<Integer> idsWithObjects(final LegalEntityParameters parameters) {
-		if (!Boolean.TRUE.equals(parameters.getHasObjects())) {
-			return null;
-		}
-		return archiveCreatorService.getLegalEntityIdsWithObjects();
+	private static PagedLegalEntityResponse toResponse(final Page<LegalEntityEntity> page) {
+		return PagedLegalEntityResponse.create()
+			.withLegalEntities(LegalEntityMapper.toLegalEntityList(page.getContent()))
+			.withMetaData(Pageables.metaDataOf(page, "legalEntityId"));
 	}
 }
