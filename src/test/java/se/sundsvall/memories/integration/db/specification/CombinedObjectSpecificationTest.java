@@ -1005,6 +1005,49 @@ class CombinedObjectSpecificationTest {
 	}
 
 	/**
+	 * The arkivbildare filter reads the legal entity on the archive, not the originator on the object. It reaches an
+	 * object from levels below the archive, an archive whose arkivbildare is a person counts as none, and a deleted legal
+	 * entity selects nothing. Combined with the originator filter, both have to hold.
+	 */
+	@Test
+	void archiveCreatorFilterReadsTheArchiveNotTheOriginator() {
+		final var committee = LegalEntityEntity.create().withLegalEntityId(20).withName("Nödhjälpskommittén");
+		final var shipping = LegalEntityEntity.create().withLegalEntityId(21).withName("Rederiet");
+		final var closed = LegalEntityEntity.create().withLegalEntityId(22).withName("Nedlagt bolag");
+		entityManager.persist(committee);
+		entityManager.persist(shipping);
+		entityManager.persist(closed);
+		entityManager.flush();
+		persistNode(100, 0, null, false);
+		persistNode(110, 100, null, false);
+		persistNode(111, 110, null, false);
+		persistNode(200, 0, null, false);
+		persistNode(300, 0, null, false);
+		persistNodeAttribute(100, "FIELD1", 20);
+		persistNodeAttribute(200, "FIELD2", 7);
+		persistNodeAttribute(300, "FIELD1", 22);
+		entityManager.createNativeQuery("UPDATE JURPERS SET DELETEDDATE = '2026-01-01' WHERE J_ID = 22").executeUpdate();
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(1).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I en volym").withNodeId(111));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(2).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I arkivet").withNodeId(100));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(3).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("Utan arkiv"));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(4).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I en persons arkiv").withNodeId(200));
+		photoRepository.saveAndFlush(PhotoEntity.create().withId(5).withOptions(PUBLISHED).withObjectType("Foto").withDocumentTitle("I ett nedlagt bolags arkiv").withNodeId(300));
+		photoRepository.findById(1).ifPresent(photo -> photo.setCreatorLegalEntity(shipping));
+		photoRepository.findById(3).ifPresent(photo -> photo.setCreatorLegalEntity(committee));
+		photoRepository.flush();
+		entityManager.clear();
+
+		final var bothFilters = CombinedObjectParameters.create().withArchiveCreatorLegalEntityId(List.of(20));
+		bothFilters.setCreatorLegalEntityId(List.of(21));
+
+		assertThat(findKeys(CombinedObjectParameters.create().withArchiveCreatorLegalEntityId(List.of(20)))).containsExactly("foto-1", "foto-2");
+		assertThat(findKeys(CombinedObjectParameters.create().withArchiveCreatorLegalEntityId(List.of(21)))).isEmpty();
+		assertThat(findKeys(CombinedObjectParameters.create().withArchiveCreatorLegalEntityId(List.of(22)))).isEmpty();
+		assertThat(findKeys(bothFilters)).containsExactly("foto-1");
+		assertThat(findKeys(CombinedObjectParameters.create().withArchiveCreatorLegalEntityId(List.of()))).hasSize(5);
+	}
+
+	/**
 	 * Two categories with one originator each, a photo apiece, plus a photo whose originator is the sentinel legal
 	 * entity (in the sentinel category, as every legal entity is by default) and one without any originator at all.
 	 */
@@ -1084,6 +1127,13 @@ class CombinedObjectSpecificationTest {
 				.setParameter(2, institutionId)
 				.executeUpdate();
 		}
+	}
+
+	private void persistNodeAttribute(final int nodeId, final String field, final int value) {
+		entityManager.createNativeQuery("INSERT INTO TBL_NODEATTRIBUTES (NODEID, " + field + ") VALUES (?1, ?2)")
+			.setParameter(1, nodeId)
+			.setParameter(2, value)
+			.executeUpdate();
 	}
 
 	private Map<Integer, Long> countByInstitution(final CombinedObjectParameters parameters) {

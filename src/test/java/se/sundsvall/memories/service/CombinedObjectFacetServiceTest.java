@@ -101,9 +101,18 @@ class CombinedObjectFacetServiceTest {
 
 	@Test
 	void keyHoldsTheFiltersOnly() {
-		final var parameters = CombinedObjectParameters.create().withQuery("Nordin").withTopographyId(List.of(4)).withInstitutionId(List.of(43)).withPage(3);
+		final var parameters = CombinedObjectParameters.create().withQuery("Nordin").withTopographyId(List.of(4)).withInstitutionId(List.of(43))
+			.withArchiveCreatorLegalEntityId(List.of(10)).withPage(3);
 
 		assertThat(CombinedObjectFacetService.key(parameters))
-			.containsExactly("Nordin", null, null, null, List.of(4), null, null, null, null, null, null, null, List.of(43));
+			.containsExactly("Nordin", null, null, null, List.of(4), null, null, null, null, null, null, null, List.of(43), List.of(10));
+	}
+
+	@Test
+	void countsAgainWhenTheArchiveCreatorChanges() {
+		service.getFacets(CombinedObjectParameters.create().withQuery("Sundsvall"));
+		service.getFacets(CombinedObjectParameters.create().withQuery("Sundsvall").withArchiveCreatorLegalEntityId(List.of(10)));
+
+		verify(repositoryMock, times(2)).countByType(any());
 	}
 }

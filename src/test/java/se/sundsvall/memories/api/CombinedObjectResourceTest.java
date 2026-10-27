@@ -175,6 +175,31 @@ class CombinedObjectResourceTest {
 	}
 
 	@Test
+	void searchObjectsBindsRepeatedAndCommaSeparatedArchiveCreatorIds() {
+		final var parameters = ArgumentCaptor.forClass(CombinedObjectParameters.class);
+		when(serviceMock.search(any())).thenReturn(PagedCombinedObjectResponse.create());
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("archiveCreatorLegalEntityId", "10")
+				.queryParam("archiveCreatorLegalEntityId", "20")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("archiveCreatorLegalEntityId", "10,20")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(serviceMock, times(2)).search(parameters.capture());
+		assertThat(parameters.getAllValues()).extracting(CombinedObjectParameters::getArchiveCreatorLegalEntityId)
+			.containsExactly(List.of(10, 20), List.of(10, 20));
+	}
+
+	@Test
 	void searchObjectsWithoutFilters() {
 		final var pagedResponse = PagedCombinedObjectResponse.create()
 			.withObjects(List.of())

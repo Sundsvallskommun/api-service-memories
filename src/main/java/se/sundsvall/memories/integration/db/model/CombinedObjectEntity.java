@@ -78,6 +78,14 @@ public class CombinedObjectEntity {
 	private InstitutionEntity institution;
 
 	/**
+	 * The arkivbildare of the archive the row sits in, when it is a legal entity. Not the row's upphovsman
+	 * ({@link #creatorLegalEntity}). NULL for the registers and for objects whose archive names none or a person.
+	 */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ARCHIVE_CREATOR_LEGAL_ENTITY_ID")
+	private LegalEntityEntity archiveCreatorLegalEntity;
+
+	/**
 	 * The archive node (arkiv, serie or volym) the object was created in — {@code NODEID} on the object tables. The
 	 * registers are not placed in the tree and emit {@code NULL}. Kept as a plain id: the search only ever filters on
 	 * it and reports it, and resolving it into a name and a path is what {@code /nodes/{id}} is for.
@@ -268,6 +276,19 @@ public class CombinedObjectEntity {
 
 	public CombinedObjectEntity withInstitution(final InstitutionEntity institution) {
 		this.institution = institution;
+		return this;
+	}
+
+	public LegalEntityEntity getArchiveCreatorLegalEntity() {
+		return archiveCreatorLegalEntity;
+	}
+
+	public void setArchiveCreatorLegalEntity(final LegalEntityEntity archiveCreatorLegalEntity) {
+		this.archiveCreatorLegalEntity = archiveCreatorLegalEntity;
+	}
+
+	public CombinedObjectEntity withArchiveCreatorLegalEntity(final LegalEntityEntity archiveCreatorLegalEntity) {
+		this.archiveCreatorLegalEntity = archiveCreatorLegalEntity;
 		return this;
 	}
 

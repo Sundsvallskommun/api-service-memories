@@ -18,9 +18,9 @@ class CombinedObjectEntityTest {
 		assertThat(CombinedObjectEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCodeExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution"),
-			hasValidBeanEqualsExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution"),
-			hasValidBeanToStringExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution")));
+			hasValidBeanHashCodeExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution", "archiveCreatorLegalEntity"),
+			hasValidBeanEqualsExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution", "archiveCreatorLegalEntity"),
+			hasValidBeanToStringExcluding("topography", "creatorPerson", "creatorLegalEntity", "institution", "archiveCreatorLegalEntity")));
 	}
 
 	@Test
@@ -33,6 +33,7 @@ class CombinedObjectEntityTest {
 			.withYear(1920)
 			.withTopography(TopographyEntity.create().withId(1).withName("Sundsvalls kommun"))
 			.withInstitution(InstitutionEntity.create().withId(43).withName("Sundsvalls museum"))
+			.withArchiveCreatorLegalEntity(LegalEntityEntity.create().withLegalEntityId(67))
 			.withLocationText("Sundsvall")
 			.withGender("man")
 			.withNodeId(19000);
@@ -44,6 +45,7 @@ class CombinedObjectEntityTest {
 		assertThat(result.getYear()).isEqualTo(1920);
 		assertThat(result.getTopography().getId()).isEqualTo(1);
 		assertThat(result.getInstitution().getId()).isEqualTo(43);
+		assertThat(result.getArchiveCreatorLegalEntity().getLegalEntityId()).isEqualTo(67);
 		assertThat(result.getLocationText()).isEqualTo("Sundsvall");
 		assertThat(result.getGender()).isEqualTo("man");
 		assertThat(result.getNodeId()).isEqualTo(19000);
