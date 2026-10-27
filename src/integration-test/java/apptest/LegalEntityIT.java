@@ -123,4 +123,14 @@ class LegalEntityIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	@Test
+	void test10_searchLegalEntitiesThatAreArchiveCreatorsWithObjects() {
+		setupCall()
+			.withServicePath(PATH + "?archiveCreator=true&hasObjects=true")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }
