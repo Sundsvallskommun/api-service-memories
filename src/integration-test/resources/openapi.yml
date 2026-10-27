@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "3.15"
 servers:
-- url: http://localhost:53545
+- url: http://localhost:58102
   description: Generated server url
 tags:
 - name: Node
@@ -3865,6 +3865,11 @@ components:
           description: Activity period year to (inclusive)
           examples:
           - 1920
+        archiveCreator:
+          type: boolean
+          description: Legal entities that are an archive creator
+          examples:
+          - true
     LegalEntity:
       type: object
       description: Legal entity (juridisk person) model

@@ -49,6 +49,8 @@ class LegalEntitySpecificationTest {
 		legalEntityRepository.deleteAll();
 		entityManager.createNativeQuery("DELETE FROM TOPOGRAFI").executeUpdate();
 		entityManager.createNativeQuery("DELETE FROM KATEGORI").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM TBL_NODEATTRIBUTES").executeUpdate();
+		entityManager.createNativeQuery("DELETE FROM TBL_NODES").executeUpdate();
 		legalEntityRepository.flush();
 	}
 
@@ -269,5 +271,33 @@ class LegalEntitySpecificationTest {
 		assertThat(legalEntityRepository.countByCategory())
 			.extracting("categoryId", "total")
 			.containsExactly(tuple(5, 2L), tuple(6, 1L));
+	}
+
+	/** Only the arkivbildare of an archive that is not deleted is kept; false or no value keeps every legal entity. */
+	@Test
+	void isArchiveCreatorKeepsTheArkivbildareOfAnArchiveThatIsNotDeleted() {
+		persist(2, PUBLISHED, "Arkivbildare");
+		persist(3, PUBLISHED, "Arkivbildare för ett raderat arkiv");
+		persist(4, PUBLISHED, "Bara upphovsman");
+		persistArchive(100, 2, false);
+		persistArchive(300, 3, true);
+
+		assertThat(findIds(LegalEntitySpecification.isArchiveCreator(true))).containsExactly(2);
+		assertThat(findIds(LegalEntitySpecification.isArchiveCreator(false))).containsExactly(2, 3, 4);
+		assertThat(findIds(LegalEntitySpecification.isArchiveCreator(null))).containsExactly(2, 3, 4);
+		assertThat(legalEntityRepository.findAllByParameters(LegalEntityParameters.create().withArchiveCreator(true), Pageable.unpaged()).getContent())
+			.extracting(LegalEntityEntity::getLegalEntityId).containsExactly(2);
+	}
+
+	private void persistArchive(final int nodeId, final int legalEntityId, final boolean deleted) {
+		entityManager.createNativeQuery("INSERT INTO TBL_NODES (ID, PARENTID, NAME, NODETYPEID, DELETEDDATE) VALUES (?1, 0, ?2, 1, "
+			+ (deleted ? "CURRENT_DATE" : "NULL") + ")")
+			.setParameter(1, nodeId)
+			.setParameter(2, "Arkiv " + nodeId)
+			.executeUpdate();
+		entityManager.createNativeQuery("INSERT INTO TBL_NODEATTRIBUTES (NODEID, FIELD1) VALUES (?1, ?2)")
+			.setParameter(1, nodeId)
+			.setParameter(2, legalEntityId)
+			.executeUpdate();
 	}
 }

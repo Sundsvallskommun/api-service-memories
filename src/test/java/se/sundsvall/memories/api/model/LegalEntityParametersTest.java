@@ -31,6 +31,7 @@ class LegalEntityParametersTest {
 			.withCategoryId(5)
 			.withYearFrom(1880)
 			.withYearTo(1920)
+			.withArchiveCreator(true)
 			.withPage(2)
 			.withLimit(50);
 
@@ -39,6 +40,7 @@ class LegalEntityParametersTest {
 		assertThat(result.getCategoryId()).isEqualTo(5);
 		assertThat(result.getYearFrom()).isEqualTo(1880);
 		assertThat(result.getYearTo()).isEqualTo(1920);
+		assertThat(result.getArchiveCreator()).isTrue();
 		assertThat(result.getPage()).isEqualTo(2);
 		assertThat(result.getLimit()).isEqualTo(50);
 	}
@@ -52,6 +54,7 @@ class LegalEntityParametersTest {
 		assertThat(result.getCategoryId()).isNull();
 		assertThat(result.getYearFrom()).isNull();
 		assertThat(result.getYearTo()).isNull();
+		assertThat(result.getArchiveCreator()).isNull();
 		assertThat(result.getPage()).isEqualTo(1);
 		assertThat(result.getLimit()).isEqualTo(100);
 	}

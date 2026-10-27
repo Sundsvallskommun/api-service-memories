@@ -4,6 +4,9 @@ import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.CategoryEntity_;
 import se.sundsvall.memories.integration.db.model.LegalEntityEntity;
+import se.sundsvall.memories.integration.db.model.NodeAttributesEntity_;
+import se.sundsvall.memories.integration.db.model.NodeEntity;
+import se.sundsvall.memories.integration.db.model.NodeEntity_;
 import se.sundsvall.memories.integration.db.model.TopographyEntity_;
 
 import static se.sundsvall.memories.integration.db.model.LegalEntityEntity_.ALTERNATIVE_NAMES;
@@ -81,6 +84,29 @@ public interface LegalEntitySpecification {
 	// about when it began, so it matches.
 	static Specification<LegalEntityEntity> activeUntil(final Integer yearTo) {
 		return BUILDER.buildYearAtMostOrOpenFilter(PERIOD_START_ATTRIBUTES, yearTo);
+	}
+
+	/**
+	 * With {@code true}, keeps the legal entities that are the arkivbildare ({@code TBL_NODEATTRIBUTES.FIELD1}) of at
+	 * least one archive that is not deleted, which is what the arkivbildare filter on /objects can find. {@code false}
+	 * or no value keeps every legal entity.
+	 */
+	static Specification<LegalEntityEntity> isArchiveCreator(final Boolean archiveCreator) {
+		if (!Boolean.TRUE.equals(archiveCreator)) {
+			return Specification.unrestricted();
+		}
+		return (root, query, cb) -> {
+			if (query == null) {
+				return cb.disjunction();
+			}
+			final var subquery = query.subquery(Integer.class);
+			final var node = subquery.from(NodeEntity.class);
+			final var attributes = node.join(NodeEntity_.ATTRIBUTES);
+			subquery.select(cb.literal(1))
+				.where(cb.equal(attributes.get(NodeAttributesEntity_.LEGAL_ENTITY).get(LEGAL_ENTITY_ID), root.get(LEGAL_ENTITY_ID)),
+					cb.isNull(node.get(NodeEntity_.DELETED_DATE)));
+			return cb.exists(subquery);
+		};
 	}
 
 	static Specification<LegalEntityEntity> fetchTopography() {
