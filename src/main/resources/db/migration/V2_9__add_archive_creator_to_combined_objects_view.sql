@@ -1,10 +1,12 @@
 -- Changes VW_NODE_CONTEXT and VW_MEMORY_OBJECTS (see V2_8) in one way each; no table is altered.
 --
 --   * VW_NODE_CONTEXT also gives every node the arkivbildare of the archive it sits in, when that arkivbildare is a
---     legal entity, found the same way as the institution: the nearest TBL_NODEATTRIBUTES.FIELD1 on the node itself or
---     on one of its four nearest parents. JURPERS 1 is the blank sentinel row and counts as no arkivbildare. An
---     archive whose arkivbildare is a person (FIELD2) gives none: the filter offers legal entities only. The walk stops
---     at a soft-deleted node, as it does for the institution.
+--     legal entity. The walk goes up from the node itself through its four nearest parents and stops at the first node
+--     that names any arkivbildare in TBL_NODEATTRIBUTES: FIELD1 for a legal entity, FIELD2 for a person. A legal entity
+--     there is the answer. A person stops the walk and gives none, since the filter offers legal entities only, so a
+--     series that names a person does not take the legal entity of the archive above it. JURPERS 1 and PERSON 0 are
+--     the blank sentinel rows and name no one. In the real data only the archive nodes carry FIELD1 or FIELD2 (checked
+--     against sm-test, October 2026). The walk stops at a soft-deleted node, as it does for the institution.
 --
 --   * VW_MEMORY_OBJECTS gains ARCHIVE_CREATOR_LEGAL_ENTITY_ID, which the archiveCreatorLegalEntityId filter reads. It
 --     names the arkivbildare of the archive a row sits in, which is not the row's upphovsman
@@ -15,7 +17,8 @@
 --     The new column is the last one in every branch: UNION ALL pairs the columns by position, not by name.
 --
 -- Flyway is off in the real environments, so this has to be applied by hand there, after V2_8 and before the code that
--- reads ARCHIVE_CREATOR_LEGAL_ENTITY_ID ships. It is written to survive a re-run.
+-- reads ARCHIVE_CREATOR_LEGAL_ENTITY_ID ships: the entity maps the column, so Hibernate selects it in every query
+-- against the view. It is written to survive a re-run.
 
 CREATE OR REPLACE VIEW VW_NODE_CONTEXT AS
 SELECT n0.ID AS NODE_ID,
@@ -24,11 +27,11 @@ SELECT n0.ID AS NODE_ID,
                 CASE WHEN a2.FIELD3 > 1 THEN a2.FIELD3 END,
                 CASE WHEN a3.FIELD3 > 1 THEN a3.FIELD3 END,
                 CASE WHEN a4.FIELD3 > 1 THEN a4.FIELD3 END) AS INSTITUTION_ID,
-       COALESCE(CASE WHEN a0.FIELD1 > 1 THEN a0.FIELD1 END,
-                CASE WHEN a1.FIELD1 > 1 THEN a1.FIELD1 END,
-                CASE WHEN a2.FIELD1 > 1 THEN a2.FIELD1 END,
-                CASE WHEN a3.FIELD1 > 1 THEN a3.FIELD1 END,
-                CASE WHEN a4.FIELD1 > 1 THEN a4.FIELD1 END) AS ARCHIVE_CREATOR_LEGAL_ENTITY_ID
+       CASE WHEN a0.FIELD1 > 1 THEN a0.FIELD1 WHEN a0.FIELD2 > 0 THEN NULL
+            WHEN a1.FIELD1 > 1 THEN a1.FIELD1 WHEN a1.FIELD2 > 0 THEN NULL
+            WHEN a2.FIELD1 > 1 THEN a2.FIELD1 WHEN a2.FIELD2 > 0 THEN NULL
+            WHEN a3.FIELD1 > 1 THEN a3.FIELD1 WHEN a3.FIELD2 > 0 THEN NULL
+            WHEN a4.FIELD1 > 1 THEN a4.FIELD1 END AS ARCHIVE_CREATOR_LEGAL_ENTITY_ID
 FROM TBL_NODES n0
          LEFT JOIN TBL_NODES n1 ON n1.ID = n0.PARENTID AND n1.DELETEDDATE IS NULL
          LEFT JOIN TBL_NODES n2 ON n2.ID = n1.PARENTID AND n2.DELETEDDATE IS NULL
