@@ -27,8 +27,9 @@ spring:
       maximum-pool-size: 20
       minimum-idle: 5
   # objectFacets: the /objects facet counts, keyed on the filters. topographies: the /topographies list.
+  # archiveCreators: the arkivbildare that have objects, for /legal-entities?hasObjects=true.
   cache:
-    cache-names: objectFacets,topographies
+    cache-names: objectFacets,topographies,archiveCreators
     caffeine:
       spec: maximumSize=2000,expireAfterWrite=10m
 #========================================

@@ -1,5 +1,6 @@
 package se.sundsvall.memories.integration.db.specification;
 
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import se.sundsvall.memories.integration.db.model.CategoryEntity_;
@@ -88,8 +89,9 @@ public interface LegalEntitySpecification {
 
 	/**
 	 * With {@code true}, keeps the legal entities that are the arkivbildare ({@code TBL_NODEATTRIBUTES.FIELD1}) of at
-	 * least one archive that is not deleted, which is what the arkivbildare filter on /objects can find. {@code false}
-	 * or no value keeps every legal entity.
+	 * least one archive that is not deleted, whether or not the archive holds any objects: most archives are described
+	 * down to series and volumes only. {@code false} or no value keeps every legal entity. {@code hasObjects} narrows
+	 * this to the ones the arkivbildare filter on /objects finds anything for, see {@link #hasIdIn(Collection)}.
 	 */
 	static Specification<LegalEntityEntity> isArchiveCreator(final Boolean archiveCreator) {
 		if (!Boolean.TRUE.equals(archiveCreator)) {
@@ -107,6 +109,20 @@ public interface LegalEntitySpecification {
 					cb.isNull(node.get(NodeEntity_.DELETED_DATE)));
 			return cb.exists(subquery);
 		};
+	}
+
+	/**
+	 * Keeps the legal entities whose id is one of the given ones. {@code null} keeps every legal entity, and an empty
+	 * collection keeps none, unlike the id filters on the searches, where an empty selection means no filter.
+	 */
+	static Specification<LegalEntityEntity> hasIdIn(final Collection<Integer> ids) {
+		if (ids == null) {
+			return Specification.unrestricted();
+		}
+		if (ids.isEmpty()) {
+			return (_, _, cb) -> cb.disjunction();
+		}
+		return (root, _, _) -> root.get(LEGAL_ENTITY_ID).in(ids);
 	}
 
 	static Specification<LegalEntityEntity> fetchTopography() {

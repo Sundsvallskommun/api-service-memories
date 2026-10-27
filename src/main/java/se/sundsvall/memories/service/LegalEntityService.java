@@ -1,6 +1,7 @@
 package se.sundsvall.memories.service;
 
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sundsvall.dept44.problem.Problem;
@@ -26,12 +27,14 @@ public class LegalEntityService {
 	private static final String HISTORY_SUBFOLDER = "historia";
 
 	private final LegalEntityRepository legalEntityRepository;
+	private final ArchiveCreatorService archiveCreatorService;
 	private final SambaIntegrationProperties sambaProperties;
 	private final FileStreamer fileStreamer;
 
-	public LegalEntityService(final LegalEntityRepository legalEntityRepository, final SambaIntegrationProperties sambaProperties,
-		final FileStreamer fileStreamer) {
+	public LegalEntityService(final LegalEntityRepository legalEntityRepository, final ArchiveCreatorService archiveCreatorService,
+		final SambaIntegrationProperties sambaProperties, final FileStreamer fileStreamer) {
 		this.legalEntityRepository = legalEntityRepository;
+		this.archiveCreatorService = archiveCreatorService;
 		this.sambaProperties = sambaProperties;
 		this.fileStreamer = fileStreamer;
 	}
@@ -40,7 +43,7 @@ public class LegalEntityService {
 	public PagedLegalEntityResponse search(final LegalEntityParameters parameters) {
 		final var pageable = Pageables.of(parameters, "legalEntityId");
 
-		final var page = legalEntityRepository.findAllByParameters(parameters, pageable);
+		final var page = legalEntityRepository.findAllByParameters(parameters, idsWithObjects(parameters), pageable);
 
 		return PagedLegalEntityResponse.create()
 			.withLegalEntities(LegalEntityMapper.toLegalEntityList(page.getContent()))
@@ -73,5 +76,16 @@ public class LegalEntityService {
 
 		fileStreamer.streamInline(path, filename, FileStreamer.downloadFilename(LEGAL_ENTITY, id, filename), true, response,
 			"IOException occurred when streaming history for legal entity with id '%s'".formatted(id));
+	}
+
+	/**
+	 * The arkivbildare that have objects when hasObjects asks for them, and otherwise null, which limits nothing. Finding
+	 * them takes a pass over the combined view, so they come from a cache and are only looked up when asked for.
+	 */
+	private Set<Integer> idsWithObjects(final LegalEntityParameters parameters) {
+		if (!Boolean.TRUE.equals(parameters.getHasObjects())) {
+			return null;
+		}
+		return archiveCreatorService.getLegalEntityIdsWithObjects();
 	}
 }

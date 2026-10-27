@@ -1,6 +1,7 @@
 package se.sundsvall.memories.integration.db;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import java.util.Collection;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import static se.sundsvall.memories.integration.db.specification.LegalEntitySpec
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.fetchTopography;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasCategory;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasId;
+import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasIdIn;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.hasName;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.isArchiveCreator;
 import static se.sundsvall.memories.integration.db.specification.LegalEntitySpecification.matchesLocation;
@@ -29,6 +31,14 @@ import static se.sundsvall.memories.integration.db.specification.LegalEntitySpec
 public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, Integer>, JpaSpecificationExecutor<LegalEntityEntity>, LegalEntityRepositoryCustom {
 
 	default Page<LegalEntityEntity> findAllByParameters(final LegalEntityParameters parameters, final Pageable pageable) {
+		return findAllByParameters(parameters, null, pageable);
+	}
+
+	/**
+	 * As {@link #findAllByParameters(LegalEntityParameters, Pageable)}, limited to the given ids. {@code null} means no
+	 * limit, and an empty collection matches nothing.
+	 */
+	default Page<LegalEntityEntity> findAllByParameters(final LegalEntityParameters parameters, final Collection<Integer> ids, final Pageable pageable) {
 		return findAll(fetchTopography()
 			.and(fetchCategory())
 			.and(published())
@@ -39,7 +49,8 @@ public interface LegalEntityRepository extends JpaRepository<LegalEntityEntity, 
 			.and(hasCategory(parameters.getCategoryId()))
 			.and(activeFrom(parameters.getYearFrom()))
 			.and(activeUntil(parameters.getYearTo()))
-			.and(isArchiveCreator(parameters.getArchiveCreator())),
+			.and(isArchiveCreator(parameters.getArchiveCreator()))
+			.and(hasIdIn(ids)),
 			pageable);
 	}
 

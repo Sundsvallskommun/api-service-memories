@@ -145,4 +145,29 @@ class LegalEntityResourceTest {
 		assertThat(response.getLegalEntities()).hasSize(1);
 		verify(serviceMock).search(LegalEntityParameters.create().withArchiveCreator(true));
 	}
+
+	@Test
+	void searchLegalEntitiesThatAreArchiveCreatorsWithObjects() {
+		final var entity = LegalEntity.create().withLegalEntityId(10).withName("Nödhjälpskommittén");
+		final var pagedResponse = PagedLegalEntityResponse.create()
+			.withLegalEntities(List.of(entity))
+			.withMetaData(PagingAndSortingMetaData.create().withPage(1).withLimit(100).withCount(1).withTotalRecords(1).withTotalPages(1));
+
+		when(serviceMock.search(any())).thenReturn(pagedResponse);
+
+		final var response = webTestClient.get()
+			.uri(builder -> builder.path(SEARCH_PATH)
+				.queryParam("archiveCreator", "true")
+				.queryParam("hasObjects", "true")
+				.build(Map.of("municipalityId", MUNICIPALITY_ID)))
+			.exchange()
+			.expectStatus().isOk()
+			.expectBody(PagedLegalEntityResponse.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getLegalEntities()).hasSize(1);
+		verify(serviceMock).search(LegalEntityParameters.create().withArchiveCreator(true).withHasObjects(true));
+	}
 }
