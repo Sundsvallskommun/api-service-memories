@@ -781,7 +781,7 @@ paths:
         \ one call, with global sorting, pagination and counts per type, gender, originator\
         \ category and place. Pass objectType, gender, categoryId, topographyId or\
         \ institutionId to narrow the search; each counter leaves out only its own\
-        \ selection, so the chips stay selectable.  Pass archiveCreatorLegalEntityId\
+        \ selection, so the chips stay selectable. Pass archiveCreatorLegalEntityId\
         \ for what an arkivbildare's archives hold or nodeId to list what an archive\
         \ node holds."
       operationId: searchObjects
