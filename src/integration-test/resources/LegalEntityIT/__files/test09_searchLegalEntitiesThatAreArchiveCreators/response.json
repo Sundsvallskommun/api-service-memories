@@ -1,0 +1,50 @@
+{
+	"_meta": {
+		"count": 2,
+		"limit": 100,
+		"page": 1,
+		"totalPages": 1,
+		"totalRecords": 2
+	},
+	"legalEntities": [
+		{
+			"legalEntityId": 10,
+			"name": "Nödhjälpskommittén 1888-1889",
+			"alternativeNames": "Nödhjälpskommittén",
+			"topographyId": 1,
+			"location": "Sundsvall",
+			"topography": {
+				"topographyId": 1,
+				"displayName": "Sundsvall",
+				"name": "Sundsvall",
+				"code": "SUN",
+				"municipality": "Sundsvalls kommun"
+			},
+			"startDate": "1888",
+			"endDate": "1889",
+			"principal": "Sundsvalls stad",
+			"comment": "Bildad efter branden 1888",
+			"historyFilename": "jurpers_10_historia.xml",
+			"categoryId": 5,
+			"category": "Kommitté",
+			"options": 6
+		},
+		{
+			"legalEntityId": 20,
+			"name": "Berg Aktiebolag",
+			"topographyId": 2,
+			"location": "Timrå",
+			"topography": {
+				"topographyId": 2,
+				"displayName": "Timrå",
+				"name": "Timrå",
+				"code": "TIM",
+				"municipality": "Timrå kommun"
+			},
+			"startDate": "1920",
+			"categoryId": 2,
+			"category": "Aktiebolag",
+			"options": 4
+		}
+	]
+}
